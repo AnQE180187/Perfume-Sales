@@ -43,3 +43,81 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# ===================================
+# Environment & Sensitive Files
+# ===================================
+# Environment variables (NEVER commit these!)
+.env
+.env.local
+.env.*.local
+assets/.env
+assets/.env.local
+
+# Keep example files for reference
+!.env.example
+!assets/.env.example
+
+# API Keys & Secrets
+**/secrets/
+**/credentials/
+google-services.json
+GoogleService-Info.plist
+
+# Firebase config (if used)
+firebase_options.dart
+
+# ===================================
+# IDE & Editor
+# ===================================
+.vscode/
+.idea/
+*.code-workspace
+
+# ===================================
+# OS Files
+# ===================================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===================================
+# Temporary & Cache Files
+# ===================================
+*.tmp
+*.temp
+*.cache
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+
+# ===================================
+# Build & Generated Files
+# ===================================
+*.g.dart
+*.freezed.dart
+*.gr.dart
+*.config.dart
+*.mocks.dart
+
+# ===================================
+# Testing & Coverage
+# ===================================
+/coverage/
+test/.test_coverage.dart
+.test_coverage.dart
+
+# ===================================
+# Local Configuration
+# ===================================
+# User-specific settings
+.flutter-devtools/
+.metadata
+.dart_tool/package_config.json
+
+# ===================================
+# Backup Files
+# ===================================
+*.bak
+*.backup
+*~
