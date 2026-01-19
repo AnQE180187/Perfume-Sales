@@ -1,0 +1,125 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-serif: var(--font-serif);
+  --font-sans: var(--font-sans);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-gold: #CA8A04;
+  --color-luxury-black: #1C1917;
+  --color-luxury-stone: #44403C;
+  --color-luxury-cream: #FAFAF9;
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+}
+
+:root {
+  --radius: 0.75rem;
+  --background: #FAFAF9;
+  --foreground: #0C0A09;
+
+  --card: #FFFFFF;
+  --card-foreground: #0C0A09;
+
+  --primary: #1C1917;
+  --primary-foreground: #FAFAF9;
+
+  --secondary: #44403C;
+  --secondary-foreground: #FAFAF9;
+
+  --muted: #F5F5F4;
+  --muted-foreground: #57534E;
+  /* Improved contrast from #78716C */
+
+  --accent: #CA8A04;
+  --accent-foreground: #FFFFFF;
+
+  --border: #E7E5E4;
+  --input: #E7E5E4;
+  --ring: #A8A29E;
+}
+
+.dark {
+  --background: #0C0A09;
+  --foreground: #FAFAF9;
+
+  --card: #1C1917;
+  --card-foreground: #FAFAF9;
+
+  --primary: #FAFAF9;
+  --primary-foreground: #1C1917;
+
+  --secondary: #A8A29E;
+  --secondary-foreground: #1C1917;
+
+  --muted: #292524;
+  --muted-foreground: #D6D3D1;
+  /* Improved contrast from #A8A29E */
+
+  --accent: #EAB308;
+  --accent-foreground: #0C0A09;
+
+  --border: #292524;
+  --input: #292524;
+  --ring: #57534E;
+}
+
+@utility glass {
+  background: rgba(255, 255, 255, 0.8);
+  /* Improved from 0.6 */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+
+  .dark & {
+    background: rgba(28, 25, 23, 0.8);
+    /* Improved from 0.7 */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+@utility glass-dark {
+  background: rgba(28, 25, 23, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50 transition-colors duration-300;
+  }
+
+  body {
+    @apply bg-background text-foreground selection:bg-accent/30;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-serif tracking-tight;
+  }
+}

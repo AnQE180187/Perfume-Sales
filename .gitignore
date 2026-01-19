@@ -1,0 +1,101 @@
+# ===================================
+# Root Level Gitignore
+# ===================================
+# This file covers the entire monorepo
+
+# ===================================
+# Environment & Sensitive Files
+# ===================================
+# NEVER commit these files!
+.env
+.env.local
+.env.*.local
+*.env
+!.env.example
+
+# API Keys & Secrets
+**/secrets/
+**/credentials/
+**/*secret*
+**/*key*.json
+!**/example-key.json
+
+# ===================================
+# IDE & Editor
+# ===================================
+.vscode/
+.idea/
+*.code-workspace
+*.sublime-project
+*.sublime-workspace
+.fleet/
+
+# ===================================
+# OS Files
+# ===================================
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+*~
+
+# ===================================
+# Logs
+# ===================================
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ===================================
+# Temporary & Cache
+# ===================================
+*.tmp
+*.temp
+.cache/
+tmp/
+.temp/
+
+# ===================================
+# Backup Files
+# ===================================
+*.bak
+*.backup
+*.old
+
+# ===================================
+# Database Files (local only)
+# ===================================
+*.db
+*.sqlite
+*.sqlite3
+local-data/
+
+# ===================================
+# Build Artifacts
+# ===================================
+dist/
+build/
+out/
+
+# ===================================
+# Node Modules (if any at root)
+# ===================================
+node_modules/
+
+# ===================================
+# Platform Specific (handled in subdirs)
+# ===================================
+# Mobile - see mobile/.gitignore
+# Web - see web/.gitignore
+# Database - see database/.gitignore
+
+# ===================================
+# UI/UX Pro Max Workflow
+# ===================================
+**/.shared/ui-ux-pro-max/
+.shared/ui-ux-pro-max/
+**/ui-ux-pro-max/

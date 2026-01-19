@@ -1,6 +1,6 @@
 {
-    "name": "mobile",
-    "short_name": "mobile",
+    "name": "perfume_gpt_app",
+    "short_name": "perfume_gpt_app",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
