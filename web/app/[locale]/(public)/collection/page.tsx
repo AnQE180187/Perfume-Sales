@@ -9,20 +9,14 @@ import { Filter, ChevronDown, ShoppingBag, Sparkles, ArrowRight } from "lucide-r
 import { useCart } from "@/features/cart/CartContext";
 import { useTranslations } from "next-intl";
 
-const perfumes = [
-    { id: "1", name: "Lumina No. 01", price: "240", type: "Extrait de Parfum", category: "Floral", image: "/images/hero.png" },
-    { id: "2", name: "Oud Mystère", price: "380", type: "Pure Essence", category: "Woody", image: "/images/hero.png" },
-    { id: "3", name: "Santal Bloom", price: "195", type: "Eau de Parfum", category: "Floral", image: "/images/hero.png" },
-    { id: "4", name: "Amber Noir", price: "290", type: "Extrait de Parfum", category: "Amber", image: "/images/hero.png" },
-    { id: "5", name: "Bergamot Sky", price: "180", type: "Eau de Parfum", category: "Citrus", image: "/images/hero.png" },
-    { id: "6", name: "Velvet Jasmine", price: "310", type: "Pure Essence", category: "Floral", image: "/images/hero.png" },
-];
-
 export default function CollectionPage() {
     const t = useTranslations("Collection");
     const h = useTranslations("Home");
     const { addToCart } = useCart();
     const [activeCategory, setActiveCategory] = useState("All");
+    const [products, setProducts] = useState<any[]>([]);
+    const [collections, setCollections] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
     const containerRef = useRef(null);
     const { scrollYProgress } = useScroll({
         target: containerRef,
@@ -32,9 +26,41 @@ export default function CollectionPage() {
     const bannerY = useTransform(scrollYProgress, [0, 0.4], ["0%", "30%"]);
     const bannerOpacity = useTransform(scrollYProgress, [0, 0.4], [1, 0.5]);
 
+    React.useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [productsRes, collectionsRes] = await Promise.all([
+                    fetch('/api/products'),
+                    fetch('/api/collections')
+                ]);
+
+                let productsData = [];
+                let collectionsData = [];
+
+                if (productsRes.ok) {
+                    const json = await productsRes.json();
+                    productsData = Array.isArray(json) ? json : [];
+                }
+
+                if (collectionsRes.ok) {
+                    const json = await collectionsRes.json();
+                    collectionsData = Array.isArray(json) ? json : [];
+                }
+
+                setProducts(productsData);
+                setCollections(collectionsData);
+            } catch (error) {
+                console.error("Failed to fetch data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
     const filteredPerfumes = activeCategory === "All"
-        ? perfumes
-        : perfumes.filter(p => p.category === activeCategory);
+        ? products
+        : products.filter(p => p.category?.name === activeCategory);
 
     return (
         <div className="min-h-screen bg-white dark:bg-zinc-950 transition-colors" ref={containerRef}>
@@ -65,6 +91,33 @@ export default function CollectionPage() {
                         <h1 className="text-7xl md:text-9xl font-serif text-white mb-6 leading-none tracking-tighter">{t("h1_1")}<span className="italic">{t("h1_2")}</span></h1>
                         <div className="w-16 h-px bg-accent mx-auto" />
                     </motion.div>
+                </div>
+            </section>
+
+            {/* Curated Collections Slider */}
+            <section className="py-20 bg-stone-50 dark:bg-zinc-900/50 transition-colors">
+                <div className="container mx-auto px-6">
+                    <div className="flex justify-between items-end mb-12">
+                        <div>
+                            <span className="text-[10px] font-bold tracking-[.3em] uppercase text-accent mb-4 block">{t("curated_span")}</span>
+                            <h2 className="text-4xl font-serif text-luxury-black dark:text-white transition-colors">{t("curated_h")}</h2>
+                        </div>
+                    </div>
+
+                    <div className="flex gap-8 overflow-x-auto pb-10 scrollbar-hide">
+                        {Array.isArray(collections) && collections.map((col: any) => (
+                            <Link key={col.id} href={`/collections/${col.slug}`} className="group flex-shrink-0 w-80">
+                                <div className="relative aspect-[4/5] rounded-[2rem] overflow-hidden mb-6 shadow-lg group-hover:shadow-2xl transition-all duration-500">
+                                    <Image src={col.image_url || "/images/collection-banner.png"} alt={col.name} fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                                    <div className="absolute bottom-8 left-8 right-8">
+                                        <h3 className="text-2xl font-serif text-white mb-2">{col.name}</h3>
+                                        <p className="text-[10px] text-stone-300 font-bold tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-opacity duration-300">{t("explore")}</p>
+                                    </div>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
                 </div>
             </section>
 
@@ -114,10 +167,10 @@ export default function CollectionPage() {
                             transition={{ duration: 0.8, delay: i * 0.1 }}
                             className="group"
                         >
-                            <Link href={`/collection/${perfume.id}`}>
+                            <Link href={`/collection/${perfume.slug || perfume.id}`}>
                                 <div className="relative aspect-[3/4] bg-stone-50 dark:bg-zinc-900 rounded-[3.5rem] overflow-hidden mb-10 border border-stone-100 dark:border-white/5 shadow-sm group-hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.1)] group-hover:-translate-y-4 transition-all duration-700 ease-out">
                                     <Image
-                                        src={perfume.image}
+                                        src={perfume.images?.[0]?.image_url || "/images/hero.png"}
                                         alt={perfume.name}
                                         fill
                                         className="object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110 grayscale-[0.1] group-hover:grayscale-0"
@@ -130,13 +183,14 @@ export default function CollectionPage() {
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 e.stopPropagation();
+                                                const variant = perfume.variants?.[0];
                                                 addToCart({
-                                                    id: parseInt(perfume.id),
+                                                    id: perfume.id,
                                                     name: perfume.name,
-                                                    price: parseInt(perfume.price),
-                                                    type: perfume.type,
+                                                    price: variant?.price || 0,
+                                                    type: variant?.concentration || "Eau de Parfum",
                                                     quantity: 1,
-                                                    image: perfume.image
+                                                    image: perfume.images?.[0]?.image_url || "/images/hero.png"
                                                 });
                                             }}
                                             className="w-full glass py-4 rounded-full text-[10px] font-bold tracking-[.3em] uppercase text-white hover:bg-white hover:text-luxury-black transition-all flex items-center justify-center gap-3 shadow-2xl cursor-pointer"
@@ -148,21 +202,21 @@ export default function CollectionPage() {
                                     {/* Tag */}
                                     <div className="absolute top-10 left-10">
                                         <span className="glass px-5 py-2 rounded-full text-[9px] font-bold tracking-[.3em] uppercase text-white shadow-xl">
-                                            {perfume.category}
+                                            {perfume.category?.name || "Original"}
                                         </span>
                                     </div>
                                 </div>
                             </Link>
 
                             <div className="text-center">
-                                <Link href={`/collection/${perfume.id}`}>
+                                <Link href={`/collection/${perfume.slug || perfume.id}`}>
                                     <h3 className="text-3xl font-serif text-luxury-black dark:text-white mb-2 group-hover:italic transition-all duration-500">
                                         {perfume.name}
                                     </h3>
                                 </Link>
-                                <p className="text-[10px] text-stone-500 dark:text-stone-400 font-bold uppercase tracking-[.4em] mb-4 transition-colors font-serif italic">{perfume.type}</p>
+                                <p className="text-[10px] text-stone-500 dark:text-stone-400 font-bold uppercase tracking-[.4em] mb-4 transition-colors font-serif italic">{perfume.variants?.[0]?.concentration || "Eau de Parfum"}</p>
                                 <div className="w-8 h-px bg-stone-100 dark:bg-accent/20 mx-auto mb-6 transition-colors" />
-                                <span className="text-xl font-serif italic text-luxury-black dark:text-white transition-colors tracking-widest">${perfume.price}</span>
+                                <span className="text-xl font-serif italic text-luxury-black dark:text-white transition-colors tracking-widest">${perfume.variants?.[0]?.price || 0}</span>
                             </div>
                         </motion.div>
                     ))}
