@@ -12,8 +12,7 @@ export const ProductService = {
         category:categories(*),
         variants:product_variants(*),
         images:product_images(*)
-      `)
-            .eq('is_active', true);
+      `);
 
         if (filters?.gender) query = query.eq('gender', filters.gender);
         if (filters?.brand_id) query = query.eq('brand_id', filters.brand_id);
@@ -70,6 +69,40 @@ export const ProductService = {
             match_threshold: 0.5,
             match_count: 5
         });
+
+        if (error) throw error;
+        return data;
+    },
+
+    // Collections
+    async getCollections() {
+        const { data, error } = await supabaseAdmin
+            .from('collections')
+            .select('*')
+            .eq('is_active', true)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        return data;
+    },
+
+    async getCollectionDetail(slug: string) {
+        const { data, error } = await supabaseAdmin
+            .from('collections')
+            .select(`
+                *,
+                products:collection_products(
+                    product:products(
+                        *,
+                        brand:brands(*),
+                        category:categories(*),
+                        variants:product_variants(*),
+                        images:product_images(*)
+                    )
+                )
+            `)
+            .eq('slug', slug)
+            .single();
 
         if (error) throw error;
         return data;
