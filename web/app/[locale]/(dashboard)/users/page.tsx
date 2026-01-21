@@ -13,7 +13,8 @@ import {
     XCircle,
     UserCheck,
     History,
-    Key
+    Key,
+    BrainCircuit
 } from "lucide-react";
 
 const mockUsers = [
