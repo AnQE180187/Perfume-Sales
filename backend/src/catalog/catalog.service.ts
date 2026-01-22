@@ -1,0 +1,70 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateBrandDto } from './dto/create-brand.dto';
+import { UpdateBrandDto } from './dto/update-brand.dto';
+import { CreateCategoryDto } from './dto/create-category.dto';
+import { UpdateCategoryDto } from './dto/update-category.dto';
+
+@Injectable()
+export class CatalogService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  // Brand
+  listBrands() {
+    return this.prisma.brand.findMany({
+      orderBy: { id: 'asc' },
+    });
+  }
+
+  async getBrand(id: number) {
+    const brand = await this.prisma.brand.findUnique({ where: { id } });
+    if (!brand) throw new NotFoundException('Brand not found');
+    return brand;
+  }
+
+  createBrand(dto: CreateBrandDto) {
+    return this.prisma.brand.create({ data: dto });
+  }
+
+  updateBrand(id: number, dto: UpdateBrandDto) {
+    return this.prisma.brand.update({
+      where: { id },
+      data: dto,
+    });
+  }
+
+  async deleteBrand(id: number) {
+    await this.prisma.brand.delete({ where: { id } });
+    return { success: true };
+  }
+
+  // Category
+  listCategories() {
+    return this.prisma.category.findMany({
+      orderBy: { id: 'asc' },
+    });
+  }
+
+  async getCategory(id: number) {
+    const category = await this.prisma.category.findUnique({ where: { id } });
+    if (!category) throw new NotFoundException('Category not found');
+    return category;
+  }
+
+  createCategory(dto: CreateCategoryDto) {
+    return this.prisma.category.create({ data: dto });
+  }
+
+  updateCategory(id: number, dto: UpdateCategoryDto) {
+    return this.prisma.category.update({
+      where: { id },
+      data: dto,
+    });
+  }
+
+  async deleteCategory(id: number) {
+    await this.prisma.category.delete({ where: { id } });
+    return { success: true };
+  }
+}
+

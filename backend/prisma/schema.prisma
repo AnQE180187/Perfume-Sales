@@ -1,0 +1,450 @@
+// Prisma schema for PerfumeGPT backend (PostgreSQL)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Core user & auth models
+
+enum UserRoleEnum {
+  CUSTOMER
+  STAFF
+  ADMIN
+}
+
+model User {
+  id             String           @id @default(cuid())
+  email          String           @unique
+  phone          String?          @unique
+  passwordHash   String?
+  isActive       Boolean          @default(true)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  role           UserRoleEnum     @default(CUSTOMER)
+
+  // Profile & basic preferences
+  fullName    String?
+  gender      String?
+  dateOfBirth DateTime?
+  address     String?
+  city        String?
+  country     String?
+  avatarUrl   String?
+  budgetMin   Int?
+  budgetMax   Int?
+  loyaltyPoints Int              @default(0)
+  accounts       OAuthAccount[]
+  sessions       Session[]
+  preferences    UserScentPreference[]
+  quizResults    QuizResult[]
+  orders         Order[]
+  carts          Cart[]
+  reviews        Review[]
+  notifications  Notification[]
+  auditLogs      AuditLog[]
+  aiRequestLogs  AiRequestLog[]
+}
+
+model OAuthAccount {
+  id                String  @id @default(cuid())
+  userId            String
+  provider          String
+  providerAccountId String
+  accessToken       String?
+  refreshToken      String?
+  expiresAt         DateTime?
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id             String   @id @default(cuid())
+  userId         String
+  refreshToken   String   @unique
+  userAgent      String?
+  ipAddress      String?
+  expiresAt      DateTime
+  createdAt      DateTime @default(now())
+  lastActivityAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+/// Scent & preference models
+model ScentFamily {
+  id          Int                  @id @default(autoincrement())
+  name        String               @unique
+  description String?
+  products    Product[]
+  preferences UserScentPreference[]
+}
+
+model ScentNote {
+  id          Int                 @id @default(autoincrement())
+  name        String
+  type        ScentNoteType
+  description String?
+  products    ProductScentNote[]
+  preferences UserScentPreference[]
+
+  @@unique([name, type])
+}
+
+enum ScentNoteType {
+  TOP
+  MIDDLE
+  BASE
+}
+
+model UserScentPreference {
+  id            Int          @id @default(autoincrement())
+  userId        String
+  scentFamilyId Int?
+  noteId        Int?
+  intensity     Int? // 1-5
+
+  user        User        @relation(fields: [userId], references: [id])
+  scentFamily ScentFamily? @relation(fields: [scentFamilyId], references: [id])
+  note        ScentNote?  @relation(fields: [noteId], references: [id])
+}
+
+model QuizResult {
+  id              String    @id @default(cuid())
+  userId          String
+  gender          String?
+  occasion        String?
+  budgetMin       Int?
+  budgetMax       Int?
+  preferredFamily String?
+  longevity       String?
+  createdAt       DateTime  @default(now())
+  recommendation  String?   // JSON string of recommended products & scores
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+/// Product & catalog models
+model Brand {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?
+  products    Product[]
+}
+
+model Category {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?
+  products    Product[]
+}
+
+model Product {
+  id               String              @id @default(cuid())
+  name             String
+  slug             String              @unique
+  brandId          Int
+  categoryId       Int?
+  scentFamilyId    Int?
+  description      String?
+  gender           String?
+  longevity        String?
+  concentration    String?
+  price            Int
+  currency         String              @default("VND")
+  isActive         Boolean             @default(true)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  brand            Brand               @relation(fields: [brandId], references: [id])
+  category         Category?           @relation(fields: [categoryId], references: [id])
+  scentFamily      ScentFamily?        @relation(fields: [scentFamilyId], references: [id])
+  notes            ProductScentNote[]
+  inventories      Inventory[]
+  orderItems       OrderItem[]
+  cartItems        CartItem[]
+  reviews          Review[]
+  reviewSummary    ReviewSummary?
+}
+model ProductScentNote {
+  productId String
+  noteId    Int
+
+  product Product   @relation(fields: [productId], references: [id])
+  note    ScentNote @relation(fields: [noteId], references: [id])
+
+  @@id([productId, noteId])
+}
+
+/// Inventory & store models
+model Store {
+  id          Int         @id @default(autoincrement())
+  name        String
+  code        String      @unique
+  address     String?
+  phone       String?
+  isActive    Boolean     @default(true)
+  inventories Inventory[]
+  orders      Order[]
+}
+
+model Inventory {
+  id             Int           @id @default(autoincrement())
+  storeId        Int
+  productId      String
+  quantity       Int           @default(0)
+  lowStockLevel  Int?          // threshold for alerts
+  expiryDate     DateTime?
+  updatedAt      DateTime      @updatedAt
+
+  store          Store         @relation(fields: [storeId], references: [id])
+  product        Product       @relation(fields: [productId], references: [id])
+
+  @@unique([storeId, productId])
+}
+
+/// Cart & order & payment & shipping
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  user      User       @relation(fields: [userId], references: [id])
+  items     CartItem[]
+}
+
+model CartItem {
+  id        Int     @id @default(autoincrement())
+  cartId    String
+  productId String
+  quantity  Int     @default(1)
+
+  cart      Cart    @relation(fields: [cartId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@unique([cartId, productId])
+}
+
+model Order {
+  id              String                 @id @default(cuid())
+  code            String                 @unique
+  userId          String?
+  storeId         Int?
+  totalAmount     Int
+  discountAmount  Int                    @default(0)
+  finalAmount     Int
+  status          OrderStatus            @default(PENDING)
+  paymentStatus   PaymentStatus          @default(PENDING)
+  shippingAddress String?
+  phone           String?
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+
+  user            User?                  @relation(fields: [userId], references: [id])
+  store           Store?                 @relation(fields: [storeId], references: [id])
+  items           OrderItem[]
+  payments        Payment[]
+  shipments       Shipment[]
+  statusHistory   OrderStatusHistory[]
+  promotions      AppliedPromotion[]
+}
+
+model OrderItem {
+  id         Int     @id @default(autoincrement())
+  orderId    String
+  productId  String
+  unitPrice  Int
+  quantity   Int
+  totalPrice Int
+
+  order      Order   @relation(fields: [orderId], references: [id])
+  product    Product @relation(fields: [productId], references: [id])
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+model OrderStatusHistory {
+  id        Int         @id @default(autoincrement())
+  orderId   String
+  status    OrderStatus
+  note      String?
+  createdAt DateTime    @default(now())
+
+  order     Order       @relation(fields: [orderId], references: [id])
+}
+
+model Payment {
+  id                String          @id @default(cuid())
+  orderId           String
+  provider          PaymentProvider
+  amount            Int
+  status            PaymentStatus   @default(PENDING)
+  transactionId     String?
+  providerRawData   String?         // JSON
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  order             Order           @relation(fields: [orderId], references: [id])
+}
+
+enum PaymentProvider {
+  VNPAY
+  MOMO
+  COD
+}
+
+model Shipment {
+  id               String            @id @default(cuid())
+  orderId          String
+  provider         ShippingProvider
+  trackingCode     String?
+  fee              Int?
+  status           ShipmentStatus    @default(PENDING)
+  address          String?
+  rawProviderData  String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  order            Order             @relation(fields: [orderId], references: [id])
+}
+
+enum ShippingProvider {
+  GHN
+  GHTK
+}
+
+enum ShipmentStatus {
+  PENDING
+  PICKED_UP
+  IN_TRANSIT
+  DELIVERED
+  FAILED
+  RETURNED
+}
+/// CRM, loyalty & promotion (simplified)
+
+enum PromotionDiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+model PromotionCode {
+  id             Int                   @id @default(autoincrement())
+  code           String                @unique
+  description    String?
+  discountType   PromotionDiscountType
+  percentageOff  Int?
+  amountOff      Int?
+  minOrderValue  Int?
+  startsAt       DateTime
+  endsAt         DateTime
+  usageLimit     Int?
+  usedCount      Int                   @default(0)
+  isActive       Boolean               @default(true)
+
+  appliedOrders  AppliedPromotion[]
+}
+
+model AppliedPromotion {
+  id               Int            @id @default(autoincrement())
+  orderId          String
+  promotionCodeId  Int
+  discountAmount   Int
+
+  order            Order          @relation(fields: [orderId], references: [id])
+  promotionCode    PromotionCode  @relation(fields: [promotionCodeId], references: [id])
+}
+
+/// Reviews & AI summarization
+model Review {
+  id          Int       @id @default(autoincrement())
+  userId      String
+  productId   String
+  rating      Int
+  title       String?
+  content     String?
+  createdAt   DateTime  @default(now())
+
+  user        User      @relation(fields: [userId], references: [id])
+  product     Product   @relation(fields: [productId], references: [id])
+}
+
+model ReviewSummary {
+  productId String  @id
+  summary   String
+  sentiment String?
+  updatedAt DateTime @updatedAt
+
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+/// Notifications
+model Notification {
+  id          String              @id @default(cuid())
+  userId      String?
+  channel     NotificationChannel
+  type        String
+  title       String
+  content     String
+  data        String?             // JSON
+  isRead      Boolean             @default(false)
+  createdAt   DateTime            @default(now())
+
+  user        User?               @relation(fields: [userId], references: [id])
+}
+
+enum NotificationChannel {
+  EMAIL
+  SMS
+  IN_APP
+}
+
+/// AI orchestration & logs
+model AiRequestLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  type        String
+  request     String   // JSON of prompt / params
+  response    String?  // JSON of AI response
+  status      String?
+  createdAt   DateTime @default(now())
+
+  user        User?    @relation(fields: [userId], references: [id])
+}
+
+/// Audit & system
+model AuditLog {
+  id          Int       @id @default(autoincrement())
+  userId      String?
+  action      String
+  entity      String?
+  entityId    String?
+  metadata    String?   // JSON
+  createdAt   DateTime  @default(now())
+
+  user        User?     @relation(fields: [userId], references: [id])
+}
+
+
