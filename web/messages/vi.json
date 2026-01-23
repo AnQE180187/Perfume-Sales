@@ -59,7 +59,7 @@
         "updatePassword": "CẬP NHẬT DANH TÍNH",
         "passwordsDoNotMatch": "Mật khẩu xác nhận không khớp",
         "errorTermsRequired": "Bạn phải đồng ý với các điều khoản và điều kiện",
-        "confirmEmailAlert": "Đăng ký thành công! Vui lòng kiểm tra email của bạn để xác thực tài khoản."
+        "confirmEmailAlert": "Đăng ký thành công! Bạn đã được tự động đăng nhập."
     },
     "Home": {
         "hero": {

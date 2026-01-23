@@ -3,10 +3,14 @@ import { PrismaService } from '../prisma/prisma.service';
 import { QueryProductsDto } from './dto/query-products.dto';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Injectable()
 export class ProductsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
 
   async listPublic(query: QueryProductsDto) {
     const { search, skip = 0, take = 20, brandId, categoryId } = query;
@@ -36,6 +40,9 @@ export class ProductsService {
         include: {
           brand: true,
           category: true,
+          images: {
+            orderBy: { order: 'asc' },
+          },
         },
         orderBy: { createdAt: 'desc' },
       }),
@@ -56,6 +63,9 @@ export class ProductsService {
       include: {
         brand: true,
         category: true,
+        images: {
+          orderBy: { order: 'asc' },
+        },
         reviews: true,
       },
     });
@@ -107,9 +117,95 @@ export class ProductsService {
   }
 
   async remove(id: string) {
+    // Get all images to delete from Cloudinary
+    const product = await this.prisma.product.findUnique({
+      where: { id },
+      include: { images: true },
+    });
+
+    if (product && product.images.length > 0) {
+      const publicIds = product.images.map((img) => img.publicId);
+      await this.cloudinaryService.deleteImages(publicIds);
+    }
+
     await this.prisma.product.delete({
       where: { id },
     });
+    return { success: true };
+  }
+
+  async uploadImages(
+    productId: string,
+    files: Express.Multer.File[],
+    orders?: number[],
+  ) {
+    // Check if product exists
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+      include: { images: true },
+    });
+
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    // Check total images limit (max 10)
+    const currentImageCount = product.images.length;
+    if (currentImageCount + files.length > 10) {
+      throw new Error(
+        `Cannot upload more than 10 images. Current: ${currentImageCount}, Trying to add: ${files.length}`,
+      );
+    }
+
+    // Upload images to Cloudinary
+    const uploadResults = await this.cloudinaryService.uploadImages(
+      files.map((f) => f.buffer),
+      `perfume-gpt/products/${productId}`,
+    );
+
+    // Save to database
+    const imageData = uploadResults.map((result, index) => ({
+      productId,
+      url: result.url,
+      publicId: result.publicId,
+      order: orders && orders[index] !== undefined ? orders[index] : index,
+    }));
+
+    const createdImages = await this.prisma.productImage.createMany({
+      data: imageData,
+    });
+
+    // Return updated product with images
+    return this.prisma.product.findUnique({
+      where: { id: productId },
+      include: {
+        images: {
+          orderBy: { order: 'asc' },
+        },
+      },
+    });
+  }
+
+  async deleteImage(productId: string, imageId: string) {
+    const image = await this.prisma.productImage.findFirst({
+      where: {
+        id: Number(imageId),
+        productId,
+      },
+    });
+
+    if (!image) {
+      throw new NotFoundException('Image not found');
+    }
+
+    // Delete from Cloudinary
+    await this.cloudinaryService.deleteImage(image.publicId);
+
+    // Delete from database
+    await this.prisma.productImage.delete({
+      where: { id: Number(imageId) },
+    });
+
     return { success: true };
   }
 }

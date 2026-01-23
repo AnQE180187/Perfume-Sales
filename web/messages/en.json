@@ -59,7 +59,7 @@
         "updatePassword": "UPDATE IDENTITY",
         "passwordsDoNotMatch": "Passwords do not match resonance",
         "errorTermsRequired": "You must accept the terms and conditions",
-        "confirmEmailAlert": "Registration successful! Please check your email to verify your account."
+        "confirmEmailAlert": "Registration successful! You have been automatically logged in."
     },
     "Home": {
         "hero": {

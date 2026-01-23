@@ -167,12 +167,27 @@ model Product {
   category         Category?           @relation(fields: [categoryId], references: [id])
   scentFamily      ScentFamily?        @relation(fields: [scentFamilyId], references: [id])
   notes            ProductScentNote[]
+  images           ProductImage[]
   inventories      Inventory[]
   orderItems       OrderItem[]
   cartItems        CartItem[]
   reviews          Review[]
   reviewSummary    ReviewSummary?
 }
+
+model ProductImage {
+  id          Int      @id @default(autoincrement())
+  productId   String
+  url         String   // Cloudinary URL
+  publicId   String   // Cloudinary public_id for deletion
+  order       Int      @default(0) // Display order (0 = main image)
+  createdAt   DateTime @default(now())
+
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+}
+
 model ProductScentNote {
   productId String
   noteId    Int

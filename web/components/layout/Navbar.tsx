@@ -110,7 +110,10 @@ export const Navbar = () => {
                                 </button>
                                 {user ? (
                                     <div className="flex items-center gap-4 pl-4 border-l border-stone-100 dark:border-white/10 transition-colors">
-                                        {(profile?.roles?.includes('admin') || profile?.roles?.includes('staff')) && (
+                                        {(() => {
+                                            const userRole = profile?.role || profile?.roles?.[0];
+                                            return userRole && (userRole.toUpperCase() === 'ADMIN' || userRole.toUpperCase() === 'STAFF');
+                                        })() && (
                                             <Link
                                                 href="/dashboard"
                                                 className="hidden xl:block text-[9px] font-bold text-accent uppercase tracking-widest hover:underline"

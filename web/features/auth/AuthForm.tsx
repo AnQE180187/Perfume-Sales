@@ -7,7 +7,7 @@ import { ArrowRight, Mail, Lock, User, Sparkles, Facebook, Globe, Eye, EyeOff } 
 import Image from "next/image";
 import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
-import { supabase } from "@/lib/supabase";
+import { apiClient } from "@/lib/api-client";
 
 interface AuthFormProps {
     defaultMode?: "login" | "signup";
@@ -56,36 +56,31 @@ export const AuthForm = ({ defaultMode = "login", hideModeToggle = false }: Auth
         setIsLoading(true);
         setError(null);
 
-
-        const endpoint = mode === "login" ? "/api/auth/login" : "/api/auth/register";
-
         try {
-            const response = await fetch(endpoint, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData),
-            });
-
-            const result = await response.json();
-
-            if (!response.ok) {
-                throw new Error(result.error || "Something went wrong");
-            }
-
-            if (mode === "signup") {
-                alert(t("confirmEmailAlert") || "Registration successful! Please check your email.");
-                setMode("login");
-            } else {
-                // Login success - update global Supabase state
-                if (result.session) {
-                    const { error: sessionError } = await supabase.auth.setSession({
-                        access_token: result.session.access_token,
-                        refresh_token: result.session.refresh_token,
-                    });
-                    if (sessionError) throw sessionError;
+            if (mode === "login") {
+                const response = await apiClient.login(formData.email, formData.password);
+                if (response.error) {
+                    throw new Error(response.error);
                 }
-
-                // Redirect or update global state
+                // Login success - redirect to home
+                window.location.href = `/${locale}`;
+            } else {
+                // Register
+                const response = await apiClient.register(
+                    formData.email,
+                    formData.password,
+                    formData.full_name,
+                    formData.phone
+                );
+                if (response.error) {
+                    throw new Error(response.error);
+                }
+                // Registration successful - auto login
+                const loginResponse = await apiClient.login(formData.email, formData.password);
+                if (loginResponse.error) {
+                    throw new Error(loginResponse.error);
+                }
+                // Redirect to home after successful registration and login
                 window.location.href = `/${locale}`;
             }
         } catch (err: any) {
@@ -99,19 +94,10 @@ export const AuthForm = ({ defaultMode = "login", hideModeToggle = false }: Auth
         setIsLoading(true);
         setError(null);
         try {
-            // If we are currently on an auth page, redirect to home after login
-            const currentPath = window.location.pathname;
-            const nextParam = (currentPath.includes("/auth") || currentPath.includes("/login") || currentPath.includes("/register"))
-                ? "/"
-                : currentPath;
-
-            const { error } = await supabase.auth.signInWithOAuth({
-                provider: "google",
-                options: {
-                    redirectTo: `${window.location.origin}/${locale}/auth/callback?next=${nextParam}`,
-                },
-            });
-            if (error) throw error;
+            // TODO: Implement OAuth with backend
+            // For now, show error that OAuth is not yet implemented
+            setError("Google OAuth is not yet implemented. Please use email/password login.");
+            setIsLoading(false);
         } catch (err: any) {
             setError(err.message);
             setIsLoading(false);
@@ -122,18 +108,10 @@ export const AuthForm = ({ defaultMode = "login", hideModeToggle = false }: Auth
         setIsLoading(true);
         setError(null);
         try {
-            const currentPath = window.location.pathname;
-            const nextParam = (currentPath.includes("/auth") || currentPath.includes("/login") || currentPath.includes("/register"))
-                ? "/"
-                : currentPath;
-
-            const { error } = await supabase.auth.signInWithOAuth({
-                provider: "facebook",
-                options: {
-                    redirectTo: `${window.location.origin}/${locale}/auth/callback?next=${nextParam}`,
-                },
-            });
-            if (error) throw error;
+            // TODO: Implement OAuth with backend
+            // For now, show error that OAuth is not yet implemented
+            setError("Facebook OAuth is not yet implemented. Please use email/password login.");
+            setIsLoading(false);
         } catch (err: any) {
             setError(err.message);
             setIsLoading(false);

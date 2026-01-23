@@ -1,65 +1,33 @@
-import { supabaseAdmin } from '../supabaseAdmin';
+import { apiClient } from '../api-client';
 
 export const UserService = {
     // Update user scent preferences from quiz results
     async updateScentPreferences(userId: string, preferences: any) {
-        const { data, error } = await supabaseAdmin
-            .from('profiles')
-            .update({ scent_preferences: preferences })
-            .eq('id', userId)
-            .select()
-            .single();
-
-        if (error) throw error;
-        return data;
+        // TODO: Add scent preferences endpoint to backend
+        // For now, update via profile update
+        const response = await apiClient.updateMe({ scentPreferences: preferences });
+        if (response.error) throw new Error(response.error);
+        return response.data;
     },
 
     // Wishlist (Favourite Products)
     async toggleFavourite(userId: string, productId: string) {
-        // Check if exists
-        const { data: existing } = await supabaseAdmin
-            .from('favourite_products')
-            .select('*')
-            .eq('user_id', userId)
-            .eq('product_id', productId)
-            .single();
-
-        if (existing) {
-            await supabaseAdmin
-                .from('favourite_products')
-                .delete()
-                .eq('user_id', userId)
-                .eq('product_id', productId);
-            return { status: 'removed' };
-        } else {
-            await supabaseAdmin
-                .from('favourite_products')
-                .insert({ user_id: userId, product_id: productId });
-            return { status: 'added' };
-        }
+        // TODO: Implement wishlist endpoints in backend
+        // For now, return placeholder
+        throw new Error('Wishlist feature not yet implemented in backend');
     },
 
     // Addresses
     async getAddresses(userId: string) {
-        const { data, error } = await supabaseAdmin
-            .from('user_addresses')
-            .select('*')
-            .eq('user_id', userId)
-            .order('is_default', { ascending: false });
-
-        if (error) throw error;
-        return data;
+        // TODO: Implement addresses endpoint in backend
+        // For now, return empty array
+        return [];
     },
 
     // Loyalty History
     async getLoyaltyLogs(userId: string) {
-        const { data, error } = await supabaseAdmin
-            .from('loyalty_logs')
-            .select('*')
-            .eq('user_id', userId)
-            .order('created_at', { ascending: false });
-
-        if (error) throw error;
-        return data;
+        // TODO: Implement loyalty logs endpoint in backend
+        // For now, return empty array
+        return [];
     }
 };

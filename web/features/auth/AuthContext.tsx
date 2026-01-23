@@ -2,8 +2,17 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { supabase } from "@/lib/supabase";
-import { User } from "@supabase/supabase-js";
+import { apiClient } from "@/lib/api-client";
+
+interface User {
+    id: string;
+    email: string;
+    role?: string;
+    fullName?: string;
+    phone?: string;
+    avatarUrl?: string;
+    loyaltyPoints?: number;
+}
 
 interface AuthContextType {
     user: User | null;
@@ -20,115 +29,99 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [profile, setProfile] = useState<any | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchProfile = async (userId: string) => {
+    const fetchProfile = async () => {
         try {
-            const { data, error } = await supabase
-                .from("profiles")
-                .select(`
-                    *,
-                    user_roles (
-                        roles (
-                            code
-                        )
-                    ),
-                    loyalty_accounts (
-                        current_points
-                    )
-                `)
-                .eq("id", userId)
-                .maybeSingle();
-
-            if (error) {
-                console.error("Supabase error fetching profile details:", {
-                    message: error.message,
-                    details: error.details,
-                    hint: error.hint,
-                    code: error.code,
-                    userId
+            const response = await apiClient.getMe();
+            if (response.data) {
+                const userData = response.data as any;
+                setUser({
+                    id: userData.id,
+                    email: userData.email,
+                    role: userData.role,
+                    fullName: userData.fullName,
+                    phone: userData.phone,
+                    avatarUrl: userData.avatarUrl,
+                    loyaltyPoints: userData.loyaltyPoints,
                 });
-
-                // Fallback: Try to fetch profile WITHOUT joins to see if it's a join/RLS issue
-                const { data: simpleData } = await supabase
-                    .from("profiles")
-                    .select("*")
-                    .eq("id", userId)
-                    .maybeSingle();
-
-                if (simpleData) {
-                    console.warn("Recovered by fetching simple profile without roles.");
-                    setProfile({ ...simpleData, roles: [] });
-                }
-                return;
-            }
-
-            if (data) {
-                const roles = (data as any)?.user_roles?.map((ur: any) => ur.roles?.code) || [];
-                const loyalty_points = (data as any)?.loyalty_accounts?.current_points || 0;
-                setProfile({ ...data, roles, loyalty_points });
+                setProfile({
+                    ...userData,
+                    role: userData.role, // Keep original role
+                    roles: userData.role ? [userData.role] : [],
+                    loyalty_points: userData.loyaltyPoints || 0,
+                    // Map camelCase to snake_case for backward compatibility with existing UI
+                    full_name: userData.fullName,
+                    avatar_url: userData.avatarUrl,
+                    budget_range: userData.budgetMin && userData.budgetMax ? {
+                        min: userData.budgetMin,
+                        max: userData.budgetMax
+                    } : undefined,
+                });
+            } else {
+                setUser(null);
+                setProfile(null);
             }
         } catch (err) {
             console.error("Unexpected error fetching profile:", err);
+            setUser(null);
+            setProfile(null);
         }
     };
 
-
     const refreshProfile = async () => {
-        if (user) {
-            await fetchProfile(user.id);
-        }
+        await fetchProfile();
     };
 
     useEffect(() => {
-        // 1. Get initial session
+        // Check if user is authenticated by trying to fetch profile
         const initAuth = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session?.user) {
-                setUser(session.user);
-                await fetchProfile(session.user.id);
+            const token = apiClient.getToken();
+            if (token) {
+                await fetchProfile();
             }
             setIsLoading(false);
         };
 
         initAuth();
 
-        // 2. Listen for auth changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            if (session?.user) {
-                setUser(session.user);
-                await fetchProfile(session.user.id);
-            } else {
-                setUser(null);
-                setProfile(null);
+        // Listen for storage changes (when token is set/removed)
+        const handleStorageChange = (e: StorageEvent) => {
+            if (e.key === 'accessToken') {
+                if (e.newValue) {
+                    fetchProfile();
+                } else {
+                    setUser(null);
+                    setProfile(null);
+                }
             }
-            setIsLoading(false);
-        });
+        };
 
+        window.addEventListener('storage', handleStorageChange);
         return () => {
-            subscription.unsubscribe();
+            window.removeEventListener('storage', handleStorageChange);
         };
     }, []);
 
     const signOut = async () => {
         try {
-            // 1. Clear server-side session
-            await fetch("/api/auth/logout", { method: "POST" });
+            // 1. Call backend logout
+            await apiClient.logout();
 
-            // 2. Clear client-side session via Supabase
-            // The onAuthStateChange listener above will handle setUser(null), setProfile(null) 
-            // and redirection when it detects the session is gone.
-            const { error } = await supabase.auth.signOut();
-            if (error) throw error;
+            // 2. Clear local state
+            setUser(null);
+            setProfile(null);
 
-            // 3. Fallback: If for some reason the listener doesn't trigger a redirect
+            // 3. Redirect to home
             setTimeout(() => {
                 if (window.location.pathname !== `/${locale}`) {
                     window.location.href = `/${locale}`;
                 }
-            }, 500);
-
+            }, 100);
         } catch (err) {
             console.error("Error signing out:", err);
-            // Force reload if everything fails
+            // Force clear and reload
+            apiClient.clearTokens();
+            setUser(null);
+            setProfile(null);
             window.location.href = `/${locale}`;
         }
     };

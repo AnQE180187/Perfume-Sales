@@ -1,5 +1,6 @@
-import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
 
 export async function POST(request: Request) {
     try {
@@ -12,32 +13,30 @@ export async function POST(request: Request) {
             );
         }
 
-        const supabase = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        );
-
-        // 1. Sign up user in Supabase Auth
-        const { data, error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-                data: {
-                    full_name: full_name,
-                    phone: phone,
-                },
-            },
+        // Call backend register API
+        const response = await fetch(`${API_BASE_URL}/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password, fullName: full_name, phone }),
         });
 
-        if (error) {
-            return NextResponse.json({ error: error.message }, { status: error.status || 400 });
+        const data = await response.json();
+
+        if (!response.ok) {
+            return NextResponse.json(
+                { error: data.message || data.error || 'Registration failed' },
+                { status: response.status }
+            );
         }
 
         return NextResponse.json({
-            message: 'Registration successful. Please check your email for verification.',
-            user: data.user,
+            message: 'Registration successful.',
+            accessToken: data.accessToken,
+            refreshToken: data.refreshToken,
+            user: data,
         });
     } catch (err: any) {
+        console.error('Register API error:', err);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }

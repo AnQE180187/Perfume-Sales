@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, Lock, Eye, EyeOff, Sparkles } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Navbar } from "@/components/layout/Navbar";
-import { supabase } from "@/lib/supabase";
+import { apiClient } from "@/lib/api-client";
 import { useRouter } from "@/i18n/routing";
 
 export default function ResetPasswordPage() {
@@ -30,17 +30,12 @@ export default function ResetPasswordPage() {
         setError(null);
 
         try {
-            const { error } = await supabase.auth.updateUser({
-                password: password,
-            });
-            if (error) throw error;
-            setStatus("success");
-            setTimeout(() => {
-                router.push("/login");
-            }, 3000);
+            // TODO: Implement password reset endpoint in backend
+            // For now, show error
+            setError("Password reset is not yet implemented. Please contact support.");
+            setIsLoading(false);
         } catch (err: any) {
             setError(err.message);
-        } finally {
             setIsLoading(false);
         }
     };

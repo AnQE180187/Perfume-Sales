@@ -8,7 +8,7 @@ import Image from "next/image";
 import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { Navbar } from "@/components/layout/Navbar";
-import { supabase } from "@/lib/supabase";
+import { apiClient } from "@/lib/api-client";
 
 export default function ForgotPasswordPage() {
     const t = useTranslations("Auth");
@@ -24,14 +24,12 @@ export default function ForgotPasswordPage() {
         setError(null);
 
         try {
-            const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: `${window.location.origin}/${locale}/reset-password`,
-            });
-            if (error) throw error;
-            setStatus("success");
+            // TODO: Implement forgot password endpoint in backend
+            // For now, show error
+            setError("Password reset email is not yet implemented. Please contact support.");
+            setIsLoading(false);
         } catch (err: any) {
             setError(err.message);
-        } finally {
             setIsLoading(false);
         }
     };

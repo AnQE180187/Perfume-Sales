@@ -1,0 +1,30 @@
+[Nest] 17976  - 01/24/2026, 12:44:10 AM   ERROR [ExceptionsHandler] PrismaClientUnknownRequestError:
+Invalid `this.prisma.user.findUnique()` invocation in
+D:\CVScode source\FPT-Capstonee\backend\src\users\users.service.ts:10:29
+
+   7 constructor(private readonly prisma: PrismaService) {}
+   8
+   9 findMe(userId: string) {
+→ 10   return this.prisma.user.findUnique(
+Error in connector: Error querying the database: FATAL: the database system is in recovery mode
+    at ei.handleRequestError (D:\CVScode source\FPT-Capstonee\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:237:13)
+    at ei.handleAndLogRequestError (D:\CVScode source\FPT-Capstonee\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:174:12)
+→ 10   return this.prisma.user.findUnique(
+Error in connector: Error querying the database: FATAL: the database system is in recovery mode
+    at ei.handleRequestError (D:\CVScode source\FPT-Capstonee\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:237:13)
+    at ei.handleAndLogRequestError (D:\CVScode source\FPT-Capstonee\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:174:12)
+ry mode
+    at ei.handleRequestError (D:\CVScode source\FPT-Capstonee\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:237:13)
+    at ei.handleAndLogRequestError (D:\CVScode source\FPT-Capstonee\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:174:12)
+    at ei.handleRequestError (D:\CVScode source\FPT-Capstonee\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:237:13)
+    at ei.handleAndLogRequestError (D:\CVScode source\FPT-Capstonee\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:174:12)
+ma\client\src\runtime\RequestHandler.ts:237:13)
+    at ei.handleAndLogRequestError (D:\CVScode source\FPT-Capstonee\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:174:12)
+    at ei.handleAndLogRequestError (D:\CVScode source\FPT-Capstonee\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:174:12)
+\@prisma\client\src\runtime\RequestHandler.ts:174:12)
+    at ei.request (D:\CVScode source\FPT-Capstonee\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:143:12)
+    at async a (D:\CVScode source\FPT-Capstonee\backend\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:833:24)
+    at async D:\CVScode source\FPT-Capstonee\backend\node_modules\@nestjs\core\router\router-execution-context.js:46:28
+    at async D:\CVScode source\FPT-Capstonee\backend\node_modules\@nestjs\core\router\router-proxy.js:9:17 {
+  clientVersion: '6.19.2'
+}

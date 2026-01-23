@@ -1,48 +1,58 @@
-import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
 
 export async function PUT(request: Request) {
     try {
         const body = await request.json()
         const {
-            id,
-            full_name,
+            fullName,
             phone,
-            avatar_url,
-            scent_preferences,
-            budget_range,
-            style_preferences
+            avatarUrl,
+            gender,
+            dateOfBirth,
+            address,
+            city,
+            country,
+            budgetMin,
+            budgetMax
         } = body
 
-        if (!id) {
-            return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
+        // Get token from Authorization header
+        const authHeader = request.headers.get('Authorization')
+        if (!authHeader) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
-
-        const supabase = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.SUPABASE_SERVICE_ROLE_KEY!
-        )
 
         // Build update object dynamically to only update provided fields
-        const updateData: any = {
-            updated_at: new Date().toISOString()
-        }
-        if (full_name !== undefined) updateData.full_name = full_name
+        const updateData: any = {}
+        if (fullName !== undefined) updateData.fullName = fullName
         if (phone !== undefined) updateData.phone = phone
-        if (avatar_url !== undefined) updateData.avatar_url = avatar_url
-        if (scent_preferences !== undefined) updateData.scent_preferences = scent_preferences
-        if (budget_range !== undefined) updateData.budget_range = budget_range
-        if (style_preferences !== undefined) updateData.style_preferences = style_preferences
+        if (avatarUrl !== undefined) updateData.avatarUrl = avatarUrl
+        if (gender !== undefined) updateData.gender = gender
+        if (dateOfBirth !== undefined) updateData.dateOfBirth = dateOfBirth
+        if (address !== undefined) updateData.address = address
+        if (city !== undefined) updateData.city = city
+        if (country !== undefined) updateData.country = country
+        if (budgetMin !== undefined) updateData.budgetMin = budgetMin
+        if (budgetMax !== undefined) updateData.budgetMax = budgetMax
 
-        const { data, error } = await supabase
-            .from('profiles')
-            .update(updateData)
-            .eq('id', id)
-            .select()
-            .single()
+        const response = await fetch(`${API_BASE_URL}/users/me`, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': authHeader,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updateData),
+        })
 
-        if (error) {
-            return NextResponse.json({ error: error.message }, { status: 400 })
+        const data = await response.json()
+
+        if (!response.ok) {
+            return NextResponse.json(
+                { error: data.message || data.error || 'Update failed' },
+                { status: response.status }
+            )
         }
 
         return NextResponse.json({ message: 'Profile updated successfully', profile: data })

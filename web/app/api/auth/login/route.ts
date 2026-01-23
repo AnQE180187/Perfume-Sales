@@ -1,5 +1,6 @@
-import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
 
 export async function POST(request: Request) {
     try {
@@ -12,66 +13,40 @@ export async function POST(request: Request) {
             );
         }
 
-        const supabase = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        );
-
-        // Sign in with password
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
+        // Call backend login API
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
         });
 
-        if (error) {
-            return NextResponse.json({ error: error.message }, { status: error.status || 401 });
-        }
+        const data = await response.json();
 
-        // Lấy thông tin Profile bổ sung (Role, Loyalty Points...)
-        const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select(`
-                *,
-                user_roles (
-                    roles (
-                        code
-                    )
-                ),
-                loyalty_accounts (
-                    current_points
-                )
-            `)
-            .eq('id', data.user.id)
-            .single();
-
-        if (profileError) {
-            console.error('Error fetching profile:', profileError);
-        }
-
-        // Kiểm tra trạng thái tài khoản
-        if (profile && profile.account_status !== 'active') {
-            await supabase.auth.signOut();
+        if (!response.ok) {
             return NextResponse.json(
-                { error: `Account is ${profile.account_status}. Please contact support.` },
-                { status: 403 }
+                { error: data.message || data.error || 'Login failed' },
+                { status: response.status }
             );
         }
 
-        // Flatten roles and points
-        const roles = profile?.user_roles?.map((ur: any) => ur.roles?.code) || [];
-        const loyalty_points = profile?.loyalty_accounts?.current_points || 0;
+        // Get user profile
+        const profileResponse = await fetch(`${API_BASE_URL}/users/me`, {
+            headers: {
+                'Authorization': `Bearer ${data.accessToken}`,
+            },
+        });
+
+        let user = null;
+        if (profileResponse.ok) {
+            const profileData = await profileResponse.json();
+            user = profileData;
+        }
 
         return NextResponse.json({
             message: 'Login successful',
-            session: data.session,
-            user: {
-                ...data.user,
-                profile: {
-                    ...profile,
-                    roles: roles,
-                    loyalty_points: loyalty_points
-                },
-            },
+            accessToken: data.accessToken,
+            refreshToken: data.refreshToken,
+            user: user || { email },
         });
     } catch (err: any) {
         console.error('Login API error:', err);

@@ -1,17 +1,58 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
 import { AdminSidebar } from "@/components/layout/AdminSidebar";
 import { Search, Bell, LogOut } from "lucide-react";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { useAuth } from "@/features/auth/AuthContext";
+import { isAdminOrStaff } from "@/lib/auth-utils";
 
 export default function DashboardLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    const { profile, signOut } = useAuth();
+    const { user, profile, isLoading, signOut } = useAuth();
+    const router = useRouter();
+    const { locale } = useParams();
+
+    useEffect(() => {
+        if (!isLoading) {
+            // Check if user is authenticated
+            if (!user) {
+                router.push(`/${locale}/auth`);
+                return;
+            }
+
+            // Check if user has admin or staff role
+            const userRole = user.role || profile?.role || profile?.roles?.[0];
+            if (!isAdminOrStaff(userRole)) {
+                // Redirect to home if not admin/staff
+                router.push(`/${locale}`);
+                return;
+            }
+        }
+    }, [user, profile, isLoading, router, locale]);
+
+    // Show loading state
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-stone-50 dark:bg-zinc-950">
+                <div className="animate-pulse flex flex-col items-center gap-4">
+                    <div className="w-16 h-16 border-4 border-accent border-t-transparent rounded-full animate-spin" />
+                    <span className="text-[10px] font-bold tracking-[.4em] uppercase text-stone-500">Verifying Access...</span>
+                </div>
+            </div>
+        );
+    }
+
+    // Don't render if user is not authenticated or doesn't have permission
+    const userRole = user?.role || profile?.role || profile?.roles?.[0];
+    if (!user || !isAdminOrStaff(userRole)) {
+        return null;
+    }
+
     return (
         <div className="flex min-h-screen bg-stone-100 dark:bg-black text-stone-900 dark:text-stone-100 overflow-hidden">
             <AdminSidebar />
@@ -44,7 +85,7 @@ export default function DashboardLayout({
                             <div className="flex flex-col pr-4">
                                 <span className="text-xs font-bold text-stone-900 dark:text-stone-100">{profile?.full_name?.split(' ')[0] || 'Admin'}</span>
                                 <span className="text-[10px] text-stone-500 dark:text-stone-500 uppercase tracking-tighter">
-                                    {profile?.roles?.[0] || 'Staff'}
+                                    {profile?.role || profile?.roles?.[0] || 'Staff'}
                                 </span>
                             </div>
 

@@ -26,6 +26,7 @@ import {
 import { useAuth } from "@/features/auth/AuthContext";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
+import { apiClient } from "@/lib/api-client";
 
 export default function ProfilePage() {
     const { user, profile, isLoading, refreshProfile } = useAuth();
@@ -58,7 +59,7 @@ export default function ProfilePage() {
     React.useEffect(() => {
         if (profile) {
             setEditData({
-                full_name: profile.full_name || "",
+                full_name: profile.full_name || profile.fullName || "",
                 phone: profile.phone || "",
                 scent_preferences: profile.scent_preferences || {
                     families: [],
@@ -66,10 +67,13 @@ export default function ProfilePage() {
                     disliked_notes: [],
                     intensity: "moderate"
                 },
-                budget_range: profile.budget_range || {
+                budget_range: profile.budget_range || (profile.budgetMin && profile.budgetMax ? {
+                    min: profile.budgetMin,
+                    max: profile.budgetMax
+                } : {
                     min: 500000,
                     max: 2000000
-                },
+                }),
                 style_preferences: profile.style_preferences || []
             });
         }
@@ -99,13 +103,28 @@ export default function ProfilePage() {
         setIsSaving(true);
         setMsg(null);
         try {
+            // Transform editData to match backend DTO (camelCase)
+            const updatePayload: any = {
+                fullName: editData.full_name,
+                phone: editData.phone,
+            };
+
+            // Add budget fields if they exist
+            if (editData.budget_range) {
+                updatePayload.budgetMin = editData.budget_range.min;
+                updatePayload.budgetMax = editData.budget_range.max;
+            }
+
+            // Note: scent_preferences and style_preferences are not in backend User model
+            // They might need to be stored separately if needed
+
             const response = await fetch("/api/profile", {
                 method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    id: user.id,
-                    ...editData
-                })
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${apiClient.getToken()}`
+                },
+                body: JSON.stringify(updatePayload)
             });
 
             if (!response.ok) throw new Error("Failed to update profile");
@@ -114,7 +133,7 @@ export default function ProfilePage() {
             // Refresh local auth context
             await refreshProfile();
         } catch (error: any) {
-            setMsg({ type: "error", text: t("errorUpdating") });
+            setMsg({ type: "error", text: t("errorUpdating") || error.message });
         } finally {
             setIsSaving(false);
         }
@@ -130,41 +149,41 @@ export default function ProfilePage() {
             }
 
             const file = event.target.files[0];
-            const fileExt = file.name.split(".").pop();
-            const filePath = `${user!.id}/${Date.now()}.${fileExt}`;
+            
+            // TODO: Implement file upload via backend API
+            // For now, convert to base64 or use a file upload service
+            // Option 1: Convert to base64 (not recommended for large files)
+            const reader = new FileReader();
+            reader.onloadend = async () => {
+                try {
+                    const base64String = reader.result as string;
+                    
+                    // Update profile with base64 avatar (temporary solution)
+                    const response = await fetch("/api/profile", {
+                        method: "PUT",
+                        headers: { 
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${apiClient.getToken()}`
+                        },
+                        body: JSON.stringify({
+                            avatarUrl: base64String
+                        })
+                    });
 
-            const { supabase } = await import("@/lib/supabase");
+                    if (!response.ok) throw new Error("Failed to update profile avatar");
 
-            // Upload to 'avatars' bucket
-            const { error: uploadError } = await supabase.storage
-                .from("avatars")
-                .upload(filePath, file);
-
-            if (uploadError) throw uploadError;
-
-            // Get public URL
-            const { data: { publicUrl } } = supabase.storage
-                .from("avatars")
-                .getPublicUrl(filePath);
-
-            // Update profile with new avatar URL
-            const response = await fetch("/api/profile", {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    id: user!.id,
-                    avatar_url: publicUrl
-                })
-            });
-
-            if (!response.ok) throw new Error("Failed to update profile avatar");
-
-            setMsg({ type: "success", text: t("identityUpdated") });
-            // Refreshing profile will sync the UI
-            await refreshProfile();
+                    setMsg({ type: "success", text: t("identityUpdated") });
+                    // Refreshing profile will sync the UI
+                    await refreshProfile();
+                    setUploading(false);
+                } catch (error: any) {
+                    setMsg({ type: "error", text: error.message });
+                    setUploading(false);
+                }
+            };
+            reader.readAsDataURL(file);
         } catch (error: any) {
-            alert(error.message);
-        } finally {
+            setMsg({ type: "error", text: error.message });
             setUploading(false);
         }
     };
@@ -216,9 +235,12 @@ export default function ProfilePage() {
     }
 
     // Role display mapping
-    const getRoleLabel = (roles: string[]) => {
-        if (roles?.includes("admin")) return t("roleAdmin");
-        if (roles?.includes("staff")) return t("roleStaff");
+    const getRoleLabel = (roles: string[] | string | null | undefined) => {
+        const roleArray = Array.isArray(roles) ? roles : roles ? [roles] : [];
+        const roleString = typeof roles === 'string' ? roles : roleArray[0] || '';
+        const upperRole = roleString.toUpperCase();
+        if (upperRole === 'ADMIN' || roleArray.some((r: string) => r.toUpperCase() === 'ADMIN')) return t("roleAdmin");
+        if (upperRole === 'STAFF' || roleArray.some((r: string) => r.toUpperCase() === 'STAFF')) return t("roleStaff");
         return t("roleMember");
     };
 
@@ -264,7 +286,7 @@ export default function ProfilePage() {
                                     <div className="flex items-center justify-center gap-3">
                                         <Crown size={14} className="text-accent" />
                                         <span className="text-[10px] font-bold tracking-[.4em] uppercase text-stone-500 italic">
-                                            {getRoleLabel(profile?.roles || [])}
+                                            {getRoleLabel(profile?.role || profile?.roles || [])}
                                         </span>
                                     </div>
                                     <p className="text-[9px] text-stone-400 mt-2 tracking-widest uppercase">{user.email}</p>
