@@ -1,0 +1,241 @@
+{
+    "common": {
+        "title": "Aura AI | Nước Hoa Cao Cấp Cá Nhân Hóa",
+        "consultation": "Tư Vấn AI",
+        "membership": "Hội Viên",
+        "discovery": "Khám Phá Mùi Hương",
+        "login": "Đăng Nhập",
+        "register": "Đăng Ký",
+        "logout": "Đăng Xuất",
+        "home": "Trang Chủ",
+        "collection": "Bộ Sưu Tập",
+        "about": "Về Chúng Tôi",
+        "contact": "Liên Hệ",
+        "cta_discover": "Bắt Đầu Hành Trình",
+        "cta_learn_more": "Nghệ Thuật Chế Tác",
+        "forgot_password": "Quên Mật Khẩu?",
+        "reset_password": "Cài Lại Mật Khẩu",
+        "back_to_login": "Quay Lại Cổng Đăng Nhập",
+        "send_reset_link": "Yêu Cầu Liên Kết Khôi Phục",
+        "search": "Tìm Kiếm",
+        "cart": "Giỏ Hàng",
+        "favorites": "Yêu Thích",
+        "profile": "Cá Nhân",
+        "orders": "Đơn Hàng",
+        "settings": "Cài Đặt",
+        "dashboard": "Bảng Điều Khiển"
+    },
+    "navigation": {
+        "customer": {
+            "ai_chat": "Trò Chuyện PerfumeGPT",
+            "quiz": "Trắc Nghiệm Mùi Hương",
+            "recommendations": "Gợi Ý Từ AI",
+            "history": "Lịch Sử Tư Vấn",
+            "loyalty": "Điểm Tích Lũy",
+            "promotions": "Ưu Đãi"
+        },
+        "staff": {
+            "pos": "Điểm Bán Hàng (POS)",
+            "inventory": "Kho Cửa Hàng",
+            "orders": "Đơn Tại Quầy",
+            "kpi": "Hiệu Suất Ngày"
+        },
+        "admin": {
+            "users": "Tài Khoản Người Dùng",
+            "rbac": "Phân Quyền Hệ Thống",
+            "products": "Quản Lý Danh Mục",
+            "analytics": "Trí Tuệ Hệ Thống",
+            "logs": "Nhật Ký & Log AI",
+            "marketing": "Chiến Dịch Tiếp Thị"
+        }
+    },
+    "hero": {
+        "badge": "Haute Parfumerie",
+        "title": "Bản Ngã Mùi Hương",
+        "subtitle": "Trải nghiệm hành trình khứu giác được dẫn dắt bởi trí tuệ thần kinh và nghệ thuật chế tác vượt thời gian.",
+        "cta": "Cá Nhân Hóa Mùi Hương",
+        "explore": "Bộ Sưu Tập"
+    },
+    "story": {
+        "badge": "Bộ Tổng Hợp Thần Kinh",
+        "title": "Dấu Ấn Của Bạn, Tinh Lọc Bởi AI.",
+        "subtitle": "Tại Aura AI, chúng tôi vượt qua sự hỗn loạn của các quầy truyền thống. Công cụ AI độc quyền giải mã sở thích khứu giác của bạn thông qua các kích hoạt cảm xúc và môi trường.",
+        "feature1_title": "Lập Bản Đồ DNA Khứu Giác",
+        "feature1_desc": "Giải trình tự số hóa các hợp âm nền và cộng hưởng nốt cao.",
+        "feature2_title": "Tầm Lan Môi Trường",
+        "feature2_desc": "Phép chiếu được tối ưu hóa cho khí hậu và mật độ xã hội cụ thể của bạn.",
+        "feature3_title": "Tính Toàn Vẹn Phân Tử",
+        "feature3_desc": "Nồng độ pha trộn thủ công được ổn định trong 90 ngày.",
+        "cta": "Bắt Đầu Tư Vấn",
+        "analysis_title": "Phân Tích Thần Kinh",
+        "analysis_subtitle": "Đang Xử Lý Hồ Sơ 042-B",
+        "affinity": "Ái Lực Mùi Hương"
+    },
+    "membership": {
+        "title": "Vòng Tròn Thượng Lưu",
+        "subtitle": "Sự sang trọng thực thụ là tiếng thì thầm, không phải lời kêu gọi. Hội viên độc quyền của chúng tôi là thánh đường cho những ai tìm kiếm sự độc bản.",
+        "benefit1_title": "Tổng Hợp Bespoke",
+        "benefit1_desc": "Nước hoa chế tác bởi AI hàng tháng, phù hợp với sự thay đổi của mùa và cảm xúc.",
+        "benefit2_title": "The Vault",
+        "benefit2_desc": "Quyền truy cập sớm các phiên bản cực kỳ giới hạn từ các bậc thầy khách mời.",
+        "benefit3_title": "Privé Concierge",
+        "benefit3_desc": "Truy cập 24/7 với tư vấn viên mùi hương AI cá nhân và hướng dẫn kết hợp mùi hương."
+    },
+    "discovery": {
+        "title": "Quy Trình Khám Phá AI",
+        "step1_title": "Bản Đồ Sinh Học",
+        "step1_desc": "AI của chúng tôi phân tích 147 điểm dữ liệu từ sở thích cảm quan và lối sống của bạn.",
+        "step2_title": "Tổng Hợp",
+        "step2_desc": "Một công thức phân tử độc nhất được tạo ra, kết hợp hơn 200 nguyên liệu quý hiếm.",
+        "step3_title": "Hiện Hữu",
+        "step3_desc": "Được rót thủ công tại Grasse, Pháp, và vận chuyển trong những chai thủy tinh obsidian."
+    },
+    "featured": {
+        "badge": "Kho Lưu Trữ",
+        "title": "Bộ Sưu Tập Vĩnh Cửu",
+        "cta": "Khám Phá Toàn Bộ Tác Phẩm",
+        "add": "Thêm Vào Bộ Sưu Tập"
+    },
+    "quiz": {
+        "title": "Khám Phá Bản Ngã",
+        "subtitle": "Hãy để AI của chúng tôi giải mã các sở thích cảm quan của bạn thành một công thức mùi hương toán học.",
+        "question": "Môi trường nào cộng hưởng với bạn nhất?",
+        "cta": "Bắt Đầu Tổng Hợp",
+        "options": {
+            "city": {
+                "title": "Đô Thị Về Đêm",
+                "desc": "Ánh đèn neon, mưa lạnh, cà phê đậm"
+            },
+            "sea": {
+                "title": "Bình Minh Aegean",
+                "desc": "Muối biển, vườn cam quýt, đá ấm"
+            },
+            "library": {
+                "title": "Thư Viện Nửa Đêm",
+                "desc": "Giấy cũ, gỗ tuyết tùng, vani"
+            },
+            "garden": {
+                "title": "Vườn Thái Dương",
+                "desc": "Cỏ đẫm sương, hoa nhài, gỗ đàn hương"
+            }
+        }
+    },
+    "auth": {
+        "login": {
+            "badge": "Truy Cập Riêng Tư",
+            "title": "Bước Vào Ngôi Nhà",
+            "subtitle": "Mở khóa hồ sơ mùi hương thần kinh, quản lý bộ sưu tập riêng tư và truy cập các phát hành dành riêng cho hội viên.",
+            "welcome_back": "Chào mừng trở lại",
+            "please_login": "Vui lòng đăng nhập để tiếp tục",
+            "email_label": "Địa Chỉ Email",
+            "email_placeholder": "alexander@lumina.com",
+            "password_label": "Mật Khẩu",
+            "password_placeholder": "••••••••",
+            "sign_in": "Đăng Nhập",
+            "or_continue": "Hoặc tiếp tục với",
+            "google": "Google",
+            "facebook": "Facebook",
+            "no_account": "Chưa có tài khoản?",
+            "sign_up": "Đăng ký"
+        },
+        "register": {
+            "badge": "Hành Trình Bắt Đầu",
+            "title": "Chế Tác Dấu Ấn Của Bạn",
+            "subtitle": "Tham gia cùng 50.000+ chuyên gia đã khám phá bản sắc khứu giác thực sự thông qua tổng hợp AI của chúng tôi.",
+            "page_title": "Khám Phá Bản Sắc Mùi Hương",
+            "page_subtitle": "Tạo tài khoản để bảo tồn bộ sưu tập riêng của bạn",
+            "name_label": "Họ Và Tên",
+            "name_placeholder": "Nguyễn Văn An",
+            "email_label": "Địa Chỉ Email",
+            "email_placeholder": "an.nguyen@lumina.com",
+            "password_label": "Mật Khẩu",
+            "password_placeholder": "••••••••",
+            "confirm_password_label": "Xác Nhận Mật Khẩu Mới",
+            "confirm_password_placeholder": "••••••••",
+            "terms_text": "Bằng việc tạo tài khoản, tôi đồng ý với",
+            "terms_link": "Điều Khoản Dịch Vụ",
+            "privacy_link": "Cam Kết Bảo Mật",
+            "start_journey": "Bắt Đầu Hành Trình",
+            "or_register": "Hoặc đăng ký với",
+            "google": "Google",
+            "facebook": "Facebook",
+            "already_member": "Đã là thành viên?",
+            "sign_in": "Đăng nhập"
+        },
+        "forgot_password": {
+            "badge": "Khôi Phục Danh Tính",
+            "title": "Lấy Lại Bản Chất",
+            "subtitle": "Chúng tôi sẽ truyền tải an toàn một liên kết khôi phục đến kênh liên lạc đã đăng ký của bạn.",
+            "page_title": "Quên Mật Khẩu?",
+            "enter_email": "Nhập định danh số của bạn để tiếp tục",
+            "email_label": "Email Đã Đăng Ký",
+            "email_placeholder": "an.nguyen@lumina.com",
+            "verification_sent": "Đã Gửi Xác Minh",
+            "check_email": "Vui lòng kiểm tra email để biết hướng dẫn",
+            "link_sent": "Một liên kết được mã hóa đã được gửi đến",
+            "link_valid": "Nó có hiệu lực trong vòng 60 phút.",
+            "didnt_receive": "Không nhận được? Thử lại"
+        },
+        "reset_password": {
+            "badge": "Tổng Hợp An Toàn",
+            "title": "Củng Cố Truy Cập",
+            "subtitle": "Xác định chữ ký mật mã mới để bảo vệ bộ sưu tập khứu giác riêng tư của bạn.",
+            "page_title": "Cài Lại Mật Khẩu",
+            "establish_security": "Thiết lập các thông số bảo mật mới của bạn",
+            "new_password_label": "Mật Khẩu Mới",
+            "new_password_placeholder": "••••••••",
+            "confirm_label": "Xác Nhận Chữ Ký",
+            "confirm_placeholder": "••••••••",
+            "update_security": "Cập Nhật Bảo Mật",
+            "security_updated": "Đã Cập Nhật Bảo Mật",
+            "portal_secured": "Cổng của bạn hiện được bảo mật bằng chữ ký mới",
+            "success_message": "Mật khẩu của bạn đã được tổng hợp lại thành công. Bây giờ bạn có thể quay lại cổng để xác thực lại.",
+            "proceed_login": "Tiến Đến Đăng Nhập"
+        },
+        "logout": {
+            "title": "Hẹn Gặp Lại Trong Cảm Hứng Tiếp Theo",
+            "subtitle": "Bạn đã được ngắt kết nối an toàn khỏi Ngôi Nhà",
+            "quote": "Hành trình ngàn mùi hương kết thúc bằng một ký ức duy nhất.",
+            "home": "Trang Chủ",
+            "return_portal": "Quay Lại Cổng"
+        }
+    },
+    "loyalty": {
+        "title": "Hạng Vàng",
+        "subtitle": "Điểm uy tín và quyền truy cập đẳng cấp.",
+        "points": "Tín Dụng Aura Hiện Có",
+        "progress": "Tiến trình lên hạng Bạch Kim",
+        "perks": {
+            "title": "Đặc Quyền Thượng Lưu",
+            "desc": "Bạn đã mở khóa dịch vụ chuyển phát nhanh miễn phí cho tất cả các giao dịch trong tương lai.",
+            "cta": "Xem Tất Cả Đặc Quyền"
+        },
+        "redeem": {
+            "title": "Trung Tâm Quy Đổi",
+            "cta": "Quy Đổi",
+            "items": {
+                "kit": "Bộ Mẫu Thử Đặc Trưng",
+                "engraving": "Khắc Tên Cá Nhân",
+                "masterclass": "Lớp Học AI Riêng Tư"
+            }
+        }
+    },
+    "collection": {
+        "badge": "Tập Ký",
+        "title": "Bộ Sưu Tập Thiết Yếu",
+        "refine": "Lọc",
+        "sortBy": "Sắp Xếp",
+        "showing": "Hiển thị {count} kết quả trong kho lưu trữ hiện tại"
+    },
+    "footer": {
+        "desc": "Một thiên đường số cho giác quan. Nơi khoa học thần kinh gặp gỡ di sản Grasse.",
+        "nav_title": "Điều Hướng",
+        "support_title": "Dịch Vụ Atelier",
+        "newsletter_title": "Tập Ký",
+        "newsletter_desc": "Trở thành người đầu tiên khám phá các phiên bản giới hạn và cập nhật hồ sơ AI.",
+        "email_placeholder": "Sổ Đăng Ký (Email)",
+        "copyright": "© 2026 AURA AI ATELIER. TẤT CẢ CÁC QUYỀN ĐƯỢC BẢO LƯU.",
+        "engine": "Công Cụ Mùi Hương Thần Kinh v1.2",
+        "location": "Ổn Định Tại Grasse"
+    }
+}
