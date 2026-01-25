@@ -1,0 +1,241 @@
+{
+    "common": {
+        "title": "Aura AI | Personalized Luxury Perfume",
+        "consultation": "AI Consultation",
+        "membership": "Membership",
+        "discovery": "Scent Discovery",
+        "login": "Login",
+        "register": "Register",
+        "logout": "Logout",
+        "home": "Home",
+        "collection": "Collection",
+        "about": "About Us",
+        "contact": "Contact",
+        "cta_discover": "Begin Your Odyssey",
+        "cta_learn_more": "The Craftsmanship",
+        "forgot_password": "Forgot Password?",
+        "reset_password": "Reset Password",
+        "back_to_login": "Return to Portal",
+        "send_reset_link": "Request Reset Link",
+        "search": "Search",
+        "cart": "Cart",
+        "favorites": "Favorites",
+        "profile": "Profile",
+        "orders": "Orders",
+        "settings": "Settings",
+        "dashboard": "Dashboard"
+    },
+    "navigation": {
+        "customer": {
+            "ai_chat": "PerfumeGPT Chat",
+            "quiz": "Scent Quiz",
+            "recommendations": "AI Recommendations",
+            "history": "Consultation History",
+            "loyalty": "Loyalty Points",
+            "promotions": "Offers"
+        },
+        "staff": {
+            "pos": "Sale Terminal (POS)",
+            "inventory": "Store Inventory",
+            "orders": "Store Orders",
+            "kpi": "Daily Performance"
+        },
+        "admin": {
+            "users": "User Accounts",
+            "rbac": "Access Control",
+            "products": "Catalog Management",
+            "analytics": "System Intelligence",
+            "logs": "Audit & AI Logs",
+            "marketing": "Campaign Manager"
+        }
+    },
+    "hero": {
+        "badge": "Haute Parfumerie",
+        "title": "The Soul of Scent",
+        "subtitle": "Experience an olfactory journey guided by neural intelligence and timeless craftsmanship.",
+        "cta": "Personalize My Scent",
+        "explore": "The Collection"
+    },
+    "story": {
+        "badge": "Neural Synthesizer",
+        "title": "Your Signature, AI-Refined.",
+        "subtitle": "At Aura AI, we bypass the chaos of traditional counters. Our proprietary AI engine decodes your olfactory preferences through a series of emotional and environmental triggers.",
+        "feature1_title": "Olfactory DNA Mapping",
+        "feature1_desc": "Digital sequencing of base chords and top note resonances.",
+        "feature2_title": "Environmental Sillage",
+        "feature2_desc": "Projection optimized for your specific climate and social density.",
+        "feature3_title": "Molecular Integrity",
+        "feature3_desc": "Hand-blended concentrations stabilized for 90 days.",
+        "cta": "Start Consultation",
+        "analysis_title": "Neural Analysis",
+        "analysis_subtitle": "Processing Profile 042-B",
+        "affinity": "Scent Affinity"
+    },
+    "membership": {
+        "title": "The Elite Circle",
+        "subtitle": "True luxury is a whisper, not a shout. Our exclusive membership offers a sanctuary for those who seek the truly bespoke.",
+        "benefit1_title": "Bespoke Synthesis",
+        "benefit1_desc": "Monthly AI-crafted fragrances tailored to your evolving seasons and moods.",
+        "benefit2_title": "The Vault",
+        "benefit2_desc": "Early access to extremely limited editions synthesized by guest master perfumers.",
+        "benefit3_title": "Privé Concierge",
+        "benefit3_desc": "24/7 access to your personal AI scent consultant and bespoke layering guides."
+    },
+    "discovery": {
+        "title": "The AI Discovery Process",
+        "step1_title": "Bio-Mapping",
+        "step1_desc": "Our AI analyzes 147 data points from your sensory preferences and lifestyle.",
+        "step2_title": "Synthesis",
+        "step2_desc": "A unique molecular formula is generated, blending over 200 rare ingredients.",
+        "step3_title": "Manifestation",
+        "step3_desc": "Hand-poured in Grasse, France, and shipped to your doorstep in obsidian glass."
+    },
+    "featured": {
+        "badge": "The Archive",
+        "title": "The Permanent Collection",
+        "cta": "Explore All Works",
+        "add": "Add to Collection"
+    },
+    "quiz": {
+        "title": "Essence Discovery",
+        "subtitle": "Allow our AI to decode your sensory preferences into a mathematical scent formula.",
+        "question": "Which environment resonates with you most?",
+        "cta": "Begin Synthesis",
+        "options": {
+            "city": {
+                "title": "Nocturnal Urban",
+                "desc": "Neon lights, cold rain, dark coffee"
+            },
+            "sea": {
+                "title": "Aegean Morning",
+                "desc": "Sea salt, citrus groves, warm stone"
+            },
+            "library": {
+                "title": "Midnight Library",
+                "desc": "Old paper, cedar wood, vanilla"
+            },
+            "garden": {
+                "title": "Solar Garden",
+                "desc": "Dewy grass, jasmine, sandalwood"
+            }
+        }
+    },
+    "auth": {
+        "login": {
+            "badge": "Private Access",
+            "title": "Enter the House",
+            "subtitle": "Unlock your neural scent profile, manage your private collection, and access member-exclusive releases.",
+            "welcome_back": "Welcome back",
+            "please_login": "Please log in to continue",
+            "email_label": "Email Address",
+            "email_placeholder": "alexander@lumina.com",
+            "password_label": "Password",
+            "password_placeholder": "••••••••",
+            "sign_in": "Sign In",
+            "or_continue": "Or continue with",
+            "google": "Google",
+            "facebook": "Facebook",
+            "no_account": "Don't have an account?",
+            "sign_up": "Sign up"
+        },
+        "register": {
+            "badge": "The Journey Begins",
+            "title": "Craft Your Signature",
+            "subtitle": "Join 50,000+ connoisseurs who have discovered their true olfactory identity through our AI synthesis.",
+            "page_title": "Discover Your Scent Identity",
+            "page_subtitle": "Create an account to preserve your private collection",
+            "name_label": "Full Name",
+            "name_placeholder": "Alexander Dupont",
+            "email_label": "Email Address",
+            "email_placeholder": "alexander@lumina.com",
+            "password_label": "Password",
+            "password_placeholder": "••••••••",
+            "confirm_password_label": "Confirm New Password",
+            "confirm_password_placeholder": "••••••••",
+            "terms_text": "By creating an account, I agree to the",
+            "terms_link": "Terms of Service",
+            "privacy_link": "Privacy Covenant",
+            "start_journey": "Start The Journey",
+            "or_register": "Or register with",
+            "google": "Google",
+            "facebook": "Facebook",
+            "already_member": "Already part of the House?",
+            "sign_in": "Sign in"
+        },
+        "forgot_password": {
+            "badge": "Identity Recovery",
+            "title": "Retrieve Your Essence",
+            "subtitle": "We will securely transmit a restoration link to your registered communication channel.",
+            "page_title": "Forgot Password?",
+            "enter_email": "Enter your digital identifier to proceed",
+            "email_label": "Registered Email",
+            "email_placeholder": "alexander@lumina.com",
+            "verification_sent": "Verification Sent",
+            "check_email": "Please check your transmission for instructions",
+            "link_sent": "An encrypted link has been dispatched to",
+            "link_valid": "It remains valid for a period of 60 minutes.",
+            "didnt_receive": "Didn't receive it? Try again"
+        },
+        "reset_password": {
+            "badge": "Secure Synthesis",
+            "title": "Fortify Your Access",
+            "subtitle": "Define a new cryptographic signature to safeguard your private olfactory collection.",
+            "page_title": "Reset Password",
+            "establish_security": "Establish your new security parameters",
+            "new_password_label": "New Password",
+            "new_password_placeholder": "••••••••",
+            "confirm_label": "Confirm Signature",
+            "confirm_placeholder": "••••••••",
+            "update_security": "Update Security",
+            "security_updated": "Security Updated",
+            "portal_secured": "Your portal is now secured with a new signature",
+            "success_message": "Your password has been successfully re-synthesized. You may now return to the portal to re-authenticate.",
+            "proceed_login": "Proceed to Login"
+        },
+        "logout": {
+            "title": "Until the next Inspiration",
+            "subtitle": "You have been safely disconnected from the House",
+            "quote": "A journey of a thousand scents ends with a single memory.",
+            "home": "The Home",
+            "return_portal": "Return to Portal"
+        }
+    },
+    "loyalty": {
+        "title": "Gold Status",
+        "subtitle": "Prestige points and elite access.",
+        "points": "Aura Credits Available",
+        "progress": "Progress to Platinum Tier",
+        "perks": {
+            "title": "Elite Privileges",
+            "desc": "You have unlocked free expedited courier service for all future acquisitions.",
+            "cta": "View All Perks"
+        },
+        "redeem": {
+            "title": "Redemption Emporium",
+            "cta": "Redeem",
+            "items": {
+                "kit": "Signature Sample Kit",
+                "engraving": "Personalized Engraving",
+                "masterclass": "Private AI Masterclass"
+            }
+        }
+    },
+    "collection": {
+        "badge": "The Anthology",
+        "title": "Les Essentiels",
+        "refine": "Refine",
+        "sortBy": "Sort By",
+        "showing": "Showing {count} Results in Current Archive"
+    },
+    "footer": {
+        "desc": "A digital sanctuary for the senses. Where neural science encounters the heritage of Grasse.",
+        "nav_title": "Navigation",
+        "support_title": "Atelier Services",
+        "newsletter_title": "The Anthology",
+        "newsletter_desc": "Be the first to explore limited drops and AI profile updates.",
+        "email_placeholder": "The Registry (Email)",
+        "copyright": "© 2026 AURA AI ATELIER. ALL RIGHTS RESERVED.",
+        "engine": "Neural Scent Engine v1.2",
+        "location": "Stabilized in Grasse"
+    }
+}
