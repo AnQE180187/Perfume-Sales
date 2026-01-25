@@ -111,6 +111,7 @@
             "overview": "Overview",
             "orders": "Orders",
             "inventory": "Inventory",
+            "catalog": "Catalog",
             "rbac": "Users & RBAC",
             "clients": "Clients",
             "analytics": "AI Insights",

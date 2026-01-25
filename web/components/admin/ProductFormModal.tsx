@@ -52,9 +52,9 @@ interface ScentFamily {
 interface ProductFormData {
     name: string;
     slug: string;
-    brandId: number | null;
-    categoryId: number | null;
-    scentFamilyId: number | null;
+    brandId: number | string;
+    categoryId: number | string;
+    scentFamilyId: number | string;
     description: string;
     gender: string;
     longevity: string;
@@ -87,7 +87,23 @@ export const ProductFormModal = ({
         control,
         reset,
         formState: { errors, isSubmitting },
-    } = useForm<ProductFormData>();
+    } = useForm<ProductFormData>({
+        defaultValues: {
+            name: "",
+            slug: "",
+            brandId: "",
+            categoryId: "",
+            scentFamilyId: "",
+            description: "",
+            gender: "Unisex",
+            longevity: "",
+            concentration: "",
+            price: 0,
+            currency: "VND",
+            isActive: true,
+            stock: 0,
+        }
+    });
 
     const [brands, setBrands] = useState<Brand[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
@@ -101,20 +117,33 @@ export const ProductFormModal = ({
 
     const fetchDropdownData = useCallback(async () => {
         setIsLoading(true);
+        setError(null);
         try {
             const [brandsRes, categoriesRes, scentFamiliesRes] = await Promise.all([
                 apiClient.get("/admin/brands"),
                 apiClient.get("/admin/categories"),
-                apiClient.get("/admin/scent-families"), // Assuming this endpoint exists
+                apiClient.get("/admin/scent-families"),
             ]);
-            
-            setBrands(brandsRes.data?.items || []);
-            setCategories(categoriesRes.data?.items || []);
-            setScentFamilies(scentFamiliesRes.data?.items || []);
 
-        } catch (err) {
-            setError("Failed to load initial data. Please try again.");
-            console.error(err);
+            if (brandsRes.error) {
+                throw new Error(`Brands: ${brandsRes.error}`);
+            }
+            if (categoriesRes.error) {
+                throw new Error(`Categories: ${categoriesRes.error}`);
+            }
+            if (scentFamiliesRes.error) {
+                throw new Error(`Scent Families: ${scentFamiliesRes.error}`);
+            }
+            
+            setBrands(brandsRes.data || []);
+            setCategories(categoriesRes.data || []);
+            setScentFamilies(scentFamiliesRes.data || []);
+
+        } catch (err: any) {
+            const errorMessage = err.message || "Failed to load initial data. Please try again.";
+            setError(errorMessage);
+            console.error("Error fetching dropdown data:", err);
+            toast.error(errorMessage);
         } finally {
             setIsLoading(false);
         }
@@ -135,10 +164,10 @@ export const ProductFormModal = ({
                     name: currentProduct.name,
                     slug: currentProduct.slug,
                     brandId: currentProduct.brandId,
-                    categoryId: currentProduct.categoryId ?? null,
-                    scentFamilyId: currentProduct.scentFamilyId ?? null,
+                    categoryId: currentProduct.categoryId ?? "",
+                    scentFamilyId: currentProduct.scentFamilyId ?? "",
                     description: currentProduct.description ?? "",
-                    gender: currentProduct.gender ?? "",
+                    gender: currentProduct.gender ?? "Unisex",
                     longevity: currentProduct.longevity ?? "",
                     concentration: currentProduct.concentration ?? "",
                     price: currentProduct.price,
@@ -152,9 +181,9 @@ export const ProductFormModal = ({
                 reset({
                     name: "",
                     slug: "",
-                    brandId: null,
-                    categoryId: null,
-                    scentFamilyId: null,
+                    brandId: "",
+                    categoryId: "",
+                    scentFamilyId: "",
                     description: "",
                     gender: "Unisex",
                     longevity: "",
@@ -200,16 +229,22 @@ export const ProductFormModal = ({
     const onSubmit = async (data: ProductFormData) => {
         setError(null);
 
-        const payload = {
-            ...data,
-            brandId: data.brandId || null,
-            categoryId: data.categoryId || null,
-            scentFamilyId: data.scentFamilyId || null,
-            inventory: {
+        const { brandId, categoryId, scentFamilyId, stock, ...rest } = data;
+        const payload: any = { ...rest };
+
+        // Add IDs only if they are not empty
+        if (brandId && brandId !== "") payload.brandId = brandId;
+        if (categoryId && categoryId !== "") payload.categoryId = categoryId;
+        if (scentFamilyId && scentFamilyId !== "") payload.scentFamilyId = scentFamilyId;
+
+        if(stock !== undefined && stock > 0) {
+            payload.inventory = {
                 storeId: mainStoreId,
-                quantity: data.stock
-            }
-        };
+                quantity: stock,
+            };
+        }
+
+        console.log("Payload:", payload);
 
         try {
             let productResponse;
@@ -242,10 +277,6 @@ export const ProductFormModal = ({
             if (err instanceof Error) {
                 errorMessage = err.message;
             }
-            // A more robust error handling could check for axios error structure
-            // if (axios.isAxiosError(err) && err.response?.data?.message) {
-            //     errorMessage = err.response.data.message;
-            // }
             setError(errorMessage);
             toast.error(errorMessage);
             console.error(err);
@@ -308,7 +339,12 @@ export const ProductFormModal = ({
                                         control={control}
                                         rules={{ required: "Brand is required" }}
                                         render={({ field }) => (
-                                            <select {...field} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600">
+                                            <select 
+                                                {...field} 
+                                                value={field.value || ""}
+                                                onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : "")}
+                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600"
+                                            >
                                                 <option value="">Select a brand</option>
                                                 {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
                                             </select>
@@ -322,7 +358,12 @@ export const ProductFormModal = ({
                                         name="categoryId"
                                         control={control}
                                         render={({ field }) => (
-                                            <select {...field} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600">
+                                            <select 
+                                                {...field}
+                                                value={field.value || ""}
+                                                onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : "")}
+                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600"
+                                            >
                                                 <option value="">Select a category</option>
                                                 {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                                             </select>
@@ -335,7 +376,12 @@ export const ProductFormModal = ({
                                         name="scentFamilyId"
                                         control={control}
                                         render={({ field }) => (
-                                            <select {...field} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600">
+                                            <select 
+                                                {...field}
+                                                value={field.value || ""}
+                                                onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : "")}
+                                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600"
+                                            >
                                                 <option value="">Select a scent family</option>
                                                 {scentFamilies.map(sf => <option key={sf.id} value={sf.id}>{sf.name}</option>)}
                                             </select>

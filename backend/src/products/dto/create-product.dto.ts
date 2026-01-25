@@ -1,4 +1,10 @@
-import { IsBoolean, IsInt, IsOptional, IsString, Min } from 'class-validator';
+import {
+  IsBoolean,
+  IsInt,
+  IsOptional,
+  IsString,
+  Min,
+} from 'class-validator';
 
 export class CreateProductDto {
   @IsString()
@@ -12,7 +18,11 @@ export class CreateProductDto {
 
   @IsOptional()
   @IsInt()
-  categoryId?: number;
+  categoryId?: number | null;
+
+  @IsOptional()
+  @IsInt()
+  scentFamilyId?: number | null;
 
   @IsOptional()
   @IsString()
@@ -44,5 +54,12 @@ export class CreateProductDto {
 
   @IsOptional()
   @IsInt()
+  @Min(0)
   stock?: number;
+
+  @IsOptional()
+  inventory?: {
+    storeId: number;
+    quantity: number;
+  };
 }

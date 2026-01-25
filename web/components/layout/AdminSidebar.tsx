@@ -13,7 +13,8 @@ import {
     ClipboardList,
     Shield,
     Zap,
-    FileText
+    FileText,
+    Database // Added Database icon
 } from "lucide-react";
 import { useAuth } from "@/features/auth/AuthContext";
 
@@ -26,6 +27,7 @@ export function AdminSidebar() {
         { icon: LayoutDashboard, label: t("overview"), href: "/dashboard" },
         { icon: ClipboardList, label: t("orders"), href: "/dashboard/orders" },
         { icon: ShoppingBag, label: t("inventory"), href: "/dashboard/inventory" },
+        { icon: Database, label: t("catalog"), href: "/dashboard/catalog" }, // Added Catalog link
         { icon: Shield, label: t("rbac"), href: "/dashboard/users" },
         { icon: Users, label: t("clients"), href: "/dashboard/clients" },
         { icon: Sparkles, label: t("analytics"), href: "/dashboard/ai-analytics" },

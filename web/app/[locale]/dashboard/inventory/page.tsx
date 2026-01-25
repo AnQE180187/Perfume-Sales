@@ -45,7 +45,7 @@ interface Product {
     currency?: string;
     isActive: boolean;
     images: ProductImage[];
-    inventories: { quantity: number }[];
+    inventory: { quantity: number } | null;
     category: { name: string } | null;
 }
 
@@ -122,7 +122,6 @@ export default function InventoryPage() {
                 }}
                 onProductSaved={fetchProducts}
                 currentProduct={editingProduct}
-                mainStoreId={1} // Assuming 1 is the main warehouse/store
             />
             {/* Header Area */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
@@ -201,7 +200,7 @@ export default function InventoryPage() {
                             </thead>
                             <tbody className="divide-y divide-stone-50 dark:divide-white/5 transition-colors">
                                 {products.map((item) => {
-                                    const totalStock = item.inventories.reduce((acc, inv) => acc + inv.quantity, 0);
+                                    const totalStock = item.inventory?.quantity ?? 0;
                                     return (
                                         <tr key={item.id} className="group hover:bg-stone-50/80 dark:hover:bg-white/5 transition-all">
                                             <td className="px-8 py-6">
@@ -296,8 +295,8 @@ export default function InventoryPage() {
 
             {activeTab === "Critical Alerts" && (
                 <div className="space-y-6">
-                    {products.filter(i => i.inventories.reduce((acc, inv) => acc + inv.quantity, 0) <= 12).map((item, idx) => {
-                        const totalStock = item.inventories.reduce((acc, inv) => acc + inv.quantity, 0);
+                    {products.filter(i => (i.inventory?.quantity ?? 0) <= 12).map((item, idx) => {
+                        const totalStock = item.inventory?.quantity ?? 0;
                         return (
                             <motion.div
                                 key={item.id}

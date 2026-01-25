@@ -41,7 +41,7 @@ export class ProductsService {
           images: {
             orderBy: { order: 'asc' },
           },
-          inventories: true,
+          inventory: true,
         },
         orderBy: { createdAt: 'desc' },
       }),
@@ -126,28 +126,22 @@ export class ProductsService {
 
   create(dto: CreateProductDto) {
     return this.prisma.$transaction(async (tx) => {
+      const { stock, inventory, ...productData } = dto;
       const product = await tx.product.create({
         data: {
-          name: dto.name,
-          slug: dto.slug,
-          brandId: dto.brandId,
-          categoryId: dto.categoryId,
-          description: dto.description,
-          gender: dto.gender,
-          longevity: dto.longevity,
-          concentration: dto.concentration,
-          price: dto.price,
+          ...productData,
           currency: dto.currency ?? 'VND',
           isActive: dto.isActive ?? true,
         },
       });
 
-      if (dto.stock !== undefined) {
+      // Use inventory object if provided, otherwise use stock field
+      const quantity = inventory?.quantity ?? stock;
+      if (quantity !== undefined && quantity > 0) {
         await tx.inventory.create({
           data: {
             productId: product.id,
-            quantity: dto.stock,
-            storeId: 1, // Assuming a default store
+            quantity: quantity,
           },
         });
       }
@@ -158,28 +152,26 @@ export class ProductsService {
 
   update(id: string, dto: UpdateProductDto) {
     return this.prisma.$transaction(async (tx) => {
-      const { stock, ...productData } = dto;
+      const { stock, inventory, ...productData } = dto;
 
       const product = await tx.product.update({
         where: { id },
         data: productData,
       });
 
-      if (stock !== undefined) {
+      // Use inventory object if provided, otherwise use stock field
+      const quantity = inventory?.quantity ?? stock;
+      if (quantity !== undefined) {
         await tx.inventory.upsert({
           where: {
-            storeId_productId: {
-              storeId: 1, // Assuming a default store
-              productId: id,
-            },
+            productId: id,
           },
           update: {
-            quantity: stock,
+            quantity: quantity,
           },
           create: {
             productId: id,
-            quantity: stock,
-            storeId: 1, // Assuming a default store
+            quantity: quantity,
           },
         });
       }
@@ -258,7 +250,10 @@ export class ProductsService {
     });
   }
 
-  async deleteImage(productId: string, imageId: string) {
+  async deleteImage(
+    productId: string,
+    imageId: string,
+  ) {
     const image = await this.prisma.productImage.findFirst({
       where: {
         id: Number(imageId),

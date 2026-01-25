@@ -147,13 +147,10 @@ class ApiClient {
 
   // Auth methods
   async login(email: string, password: string) {
-    const response = await this.request<{
+    const response = await this.post<{
       accessToken: string;
       refreshToken: string;
-    }>('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    });
+    }>('/auth/login', { email, password });
 
     if (response.data) {
       this.setToken(response.data.accessToken, response.data.refreshToken);
@@ -163,30 +160,22 @@ class ApiClient {
   }
 
   async register(email: string, password: string, fullName?: string, phone?: string) {
-    return this.request('/auth/register', {
-      method: 'POST',
-      body: JSON.stringify({ email, password, fullName, phone }),
-    });
+    return this.post('/auth/register', { email, password, fullName, phone });
   }
 
   async logout() {
-    const response = await this.request('/auth/logout', {
-      method: 'POST',
-    });
+    const response = await this.post('/auth/logout', {});
     this.clearTokens();
     return response;
   }
 
   // User methods
   async getMe() {
-    return this.request('/users/me');
+    return this.get('/users/me');
   }
 
   async updateMe(data: any) {
-    return this.request('/users/me', {
-      method: 'PATCH',
-      body: JSON.stringify(data),
-    });
+    return this.patch('/users/me', data);
   }
 
   // Product methods
@@ -197,7 +186,7 @@ class ApiClient {
     if (filters?.categoryId) params.append('categoryId', filters.categoryId);
 
     const query = params.toString();
-    return this.request(`/products${query ? `?${query}` : ''}`);
+    return this.get(`/products${query ? `?${query}` : ''}`);
   }
 
   async getAdminProducts(filters?: { gender?: string; brandId?: string; categoryId?: string }) {
@@ -207,87 +196,62 @@ class ApiClient {
     if (filters?.categoryId) params.append('categoryId', filters.categoryId);
 
     const query = params.toString();
-    return this.request(`/admin/products${query ? `?${query}` : ''}`);
+    return this.get(`/admin/products${query ? `?${query}` : ''}`);
   }
 
   async getProduct(id: string) {
-    return this.request(`/products/${id}`);
+    return this.get(`/products/${id}`);
   }
 
   async createProduct(data: any) {
-    return this.request('/admin/products', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
+    return this.post('/admin/products', data);
   }
 
   async updateProduct(id: string, data: any) {
-    return this.request(`/admin/products/${id}`, {
-      method: 'PATCH',
-      body: JSON.stringify(data),
-    });
+    return this.patch(`/admin/products/${id}`, data);
   }
 
   async deleteProduct(id: string) {
-    return this.request(`/admin/products/${id}`, {
-      method: 'DELETE',
-    });
+    return this.delete(`/admin/products/${id}`);
   }
 
   async uploadProductImages(productId: string, formData: FormData) {
-    return this.request(`/admin/products/${productId}/images`, {
-      method: 'POST',
-      body: formData,
-      headers: {}, // Do not set Content-Type header for FormData
-    });
+    return this.post(`/admin/products/${productId}/images`, formData);
   }
 
   async deleteProductImage(productId: string, imageId: string) {
-    return this.request(`/admin/products/${productId}/images/${imageId}`, {
-      method: 'DELETE',
-    });
+    return this.delete(`/admin/products/${productId}/images/${imageId}`);
   }
 
 
   // Cart methods
   async getCart() {
-    return this.request('/cart');
+    return this.get('/cart');
   }
 
   async addToCart(productId: string, quantity: number) {
-    return this.request('/cart/items', {
-      method: 'POST',
-      body: JSON.stringify({ productId, quantity }),
-    });
+    return this.post('/cart/items', { productId, quantity });
   }
 
   async updateCartItem(id: string, quantity: number) {
-    return this.request(`/cart/items/${id}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ quantity }),
-    });
+    return this.patch(`/cart/items/${id}`, { quantity });
   }
 
   async removeCartItem(id: string) {
-    return this.request(`/cart/items/${id}`, {
-      method: 'DELETE',
-    });
+    return this.delete(`/cart/items/${id}`);
   }
 
   // Order methods
   async createOrder(data: any) {
-    return this.request('/orders', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
+    return this.post('/orders', data);
   }
 
   async getOrders() {
-    return this.request('/orders');
+    return this.get('/orders');
   }
 
   async getOrder(id: string) {
-    return this.request(`/orders/${id}`);
+    return this.get(`/orders/${id}`);
   }
 
   // Catalog methods (using admin endpoints - may need public endpoints later)
