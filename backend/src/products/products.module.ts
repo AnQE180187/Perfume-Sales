@@ -12,6 +12,3 @@ import { CloudinaryModule } from '../cloudinary/cloudinary.module';
   exports: [ProductsService],
 })
 export class ProductsModule {}
-
-
-

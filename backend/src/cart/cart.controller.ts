@@ -1,4 +1,14 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { CartService } from './cart.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AddToCartDto } from './dto/add-to-cart.dto';
@@ -25,7 +35,11 @@ export class CartController {
     @Param('id') id: string,
     @Body() dto: UpdateCartItemDto,
   ) {
-    return this.cartService.updateItemQuantity(req.user.userId, Number(id), dto);
+    return this.cartService.updateItemQuantity(
+      req.user.userId,
+      Number(id),
+      dto,
+    );
   }
 
   @Delete('items/:id')
@@ -33,5 +47,3 @@ export class CartController {
     return this.cartService.removeItem(req.user.userId, Number(id));
   }
 }
-
-

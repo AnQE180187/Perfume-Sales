@@ -28,10 +28,7 @@ export class CloudinaryService {
         {
           folder,
           resource_type: 'image',
-          transformation: [
-            { quality: 'auto' },
-            { fetch_format: 'auto' },
-          ],
+          transformation: [{ quality: 'auto' }, { fetch_format: 'auto' }],
         },
         (error, result) => {
           if (error) {

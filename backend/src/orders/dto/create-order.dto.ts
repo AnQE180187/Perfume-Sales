@@ -9,5 +9,3 @@ export class CreateOrderDto {
   @IsString()
   phone?: string;
 }
-
-

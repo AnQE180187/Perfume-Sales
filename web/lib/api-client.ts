@@ -73,9 +73,13 @@ class ApiClient {
     const url = `${this.baseUrl}${endpoint}`;
 
     const headers: HeadersInit = {
-      'Content-Type': 'application/json',
       ...options.headers,
     };
+
+    if (!options.body || !(options.body instanceof FormData)) {
+        headers['Content-Type'] = 'application/json';
+    }
+
 
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
@@ -113,6 +117,32 @@ class ApiClient {
         error: error.message || 'Network error',
       };
     }
+  }
+    // Generic methods
+  async get<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, { ...options, method: 'GET' });
+  }
+
+  async post<T>(endpoint: string, body: any, options?: RequestInit): Promise<ApiResponse<T>> {
+    const isFormData = body instanceof FormData;
+    return this.request<T>(endpoint, {
+      ...options,
+      method: 'POST',
+      body: isFormData ? body : JSON.stringify(body),
+      headers: isFormData ? {} : { 'Content-Type': 'application/json', ...options?.headers },
+    });
+  }
+
+  async patch<T>(endpoint: string, body: any, options?: RequestInit): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, {
+      ...options,
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    });
+  }
+
+  async delete<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, { ...options, method: 'DELETE' });
   }
 
   // Auth methods
@@ -170,9 +200,54 @@ class ApiClient {
     return this.request(`/products${query ? `?${query}` : ''}`);
   }
 
+  async getAdminProducts(filters?: { gender?: string; brandId?: string; categoryId?: string }) {
+    const params = new URLSearchParams();
+    if (filters?.gender) params.append('gender', filters.gender);
+    if (filters?.brandId) params.append('brandId', filters.brandId);
+    if (filters?.categoryId) params.append('categoryId', filters.categoryId);
+
+    const query = params.toString();
+    return this.request(`/admin/products${query ? `?${query}` : ''}`);
+  }
+
   async getProduct(id: string) {
     return this.request(`/products/${id}`);
   }
+
+  async createProduct(data: any) {
+    return this.request('/admin/products', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateProduct(id: string, data: any) {
+    return this.request(`/admin/products/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteProduct(id: string) {
+    return this.request(`/admin/products/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async uploadProductImages(productId: string, formData: FormData) {
+    return this.request(`/admin/products/${productId}/images`, {
+      method: 'POST',
+      body: formData,
+      headers: {}, // Do not set Content-Type header for FormData
+    });
+  }
+
+  async deleteProductImage(productId: string, imageId: string) {
+    return this.request(`/admin/products/${productId}/images/${imageId}`, {
+      method: 'DELETE',
+    });
+  }
+
 
   // Cart methods
   async getCart() {
@@ -217,11 +292,15 @@ class ApiClient {
 
   // Catalog methods (using admin endpoints - may need public endpoints later)
   async getBrands() {
-    return this.request('/admin/brands');
+    return this.get('/admin/brands');
   }
 
   async getCategories() {
-    return this.request('/admin/categories');
+    return this.get('/admin/categories');
+  }
+
+  async getScentFamilies() {
+    return this.get('/admin/scent-families');
   }
 }
 

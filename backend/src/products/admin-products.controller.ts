@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -18,12 +19,18 @@ import { UploadImagesDto } from './dto/upload-images.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
+import { QueryProductsDto } from './dto/query-products.dto';
 
 @Controller('admin/products')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('ADMIN')
 export class AdminProductsController {
   constructor(private readonly productsService: ProductsService) {}
+
+  @Get()
+  list(@Query() query: QueryProductsDto) {
+    return this.productsService.list(query);
+  }
 
   @Post()
   create(@Body() dto: CreateProductDto) {
@@ -63,5 +70,3 @@ export class AdminProductsController {
     return this.productsService.deleteImage(productId, imageId);
   }
 }
-
-

@@ -8,6 +8,7 @@ import { NewsletterModal } from "@/components/common/NewsletterModal";
 import { CartProvider } from "@/features/cart/CartContext";
 import { AuthProvider } from "@/features/auth/AuthContext";
 import { ReactNode } from "react";
+import { Toaster } from "react-hot-toast";
 
 const cormorant = Cormorant_Garamond({
   variable: "--font-serif",
@@ -53,6 +54,7 @@ export default async function RootLayout({
             </AuthProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
+        <Toaster />
       </body>
     </html>
   );

@@ -1,4 +1,11 @@
-import { IsDateString, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import {
+  IsDateString,
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+} from 'class-validator';
 
 export class UpdateProfileDto {
   @IsOptional()
@@ -40,5 +47,3 @@ export class UpdateProfileDto {
   @Max(1_000_000_000)
   budgetMax?: number;
 }
-
-

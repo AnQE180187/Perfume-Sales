@@ -29,5 +29,3 @@ export class QueryProductsDto {
   @IsInt()
   categoryId?: number;
 }
-
-

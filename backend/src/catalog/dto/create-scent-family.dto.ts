@@ -1,6 +1,6 @@
 import { IsOptional, IsString } from 'class-validator';
 
-export class CreateBrandDto {
+export class CreateScentFamilyDto {
   @IsString()
   name: string;
 

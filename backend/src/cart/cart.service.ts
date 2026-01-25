@@ -13,7 +13,11 @@ export class CartService {
       include: {
         items: {
           include: {
-            product: true,
+            product: {
+              include: {
+                images: true,
+              },
+            },
           },
         },
       },
@@ -26,7 +30,13 @@ export class CartService {
         },
         include: {
           items: {
-            include: { product: true },
+            include: {
+              product: {
+                include: {
+                  images: true,
+                },
+              },
+            },
           },
         },
       });
@@ -92,5 +102,3 @@ export class CartService {
     return this.getCart(userId);
   }
 }
-
-

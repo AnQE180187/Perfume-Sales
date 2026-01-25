@@ -8,5 +8,3 @@ export class AddToCartDto {
   @Min(1)
   quantity: number;
 }
-
-

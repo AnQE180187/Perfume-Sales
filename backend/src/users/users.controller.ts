@@ -19,5 +19,3 @@ export class UsersController {
     return this.usersService.updateMe(req.user.userId, dto);
   }
 }
-
-

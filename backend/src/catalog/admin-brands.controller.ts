@@ -46,4 +46,3 @@ export class AdminBrandsController {
     return this.catalogService.deleteBrand(Number(id));
   }
 }
-

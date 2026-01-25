@@ -46,4 +46,3 @@ export class AdminCategoriesController {
     return this.catalogService.deleteCategory(Number(id));
   }
 }
-

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -20,21 +20,110 @@ import {
     Activity,
     Package
 } from "lucide-react";
+import { apiClient } from "@/lib/api-client";
+import { ProductFormModal } from "@/components/admin/ProductFormModal";
+import { toast } from "react-hot-toast";
 
-const inventory = [
-    { id: "1", name: "Lumina No. 01", sku: "LMN-001", stock: 142, status: "Healthy", category: "Niche", price: 240, expiry: "2027-12", platform: "Omnichannel" },
-    { id: "2", name: "Oud Mystère", sku: "LMN-008", stock: 12, status: "Low Stock", category: "Prestige", price: 380, expiry: "2026-06", platform: "E-commerce" },
-    { id: "3", name: "Santal Bloom", sku: "LMN-015", stock: 0, status: "Out of Stock", category: "Botanical", price: 195, expiry: "2026-01", platform: "Retail Only" },
-    { id: "4", name: "Amber Noir", sku: "LMN-022", stock: 85, status: "Healthy", category: "Extraits", price: 290, expiry: "2028-03", platform: "Omnichannel" },
-    { id: "5", name: "Bergamot Sky", sku: "LMN-042", stock: 210, status: "Overstock", category: "Cologne", price: 180, expiry: "2025-11", platform: "Shopee Sync" },
-];
+interface ProductImage {
+    id: number;
+    url: string;
+    publicId: string;
+    order: number;
+}
+
+interface Product {
+    id: string;
+    name: string;
+    slug: string;
+    brandId: number;
+    categoryId?: number;
+    description?: string;
+    gender?: string;
+    longevity?: string;
+    concentration?: string;
+    price: number;
+    currency?: string;
+    isActive: boolean;
+    images: ProductImage[];
+    inventories: { quantity: number }[];
+    category: { name: string } | null;
+}
 
 export default function InventoryPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [activeTab, setActiveTab] = useState("Warehouse Registry");
+    const [products, setProducts] = useState<Product[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+
+    const fetchProducts = async () => {
+        try {
+            setLoading(true);
+            const response = await apiClient.getAdminProducts();
+            if (response.data) {
+                setProducts(response.data.items);
+            } else if (response.error) {
+                setError(response.error);
+            }
+        } catch (err: any) {
+            setError(err.message || "An unexpected error occurred");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchProducts();
+    }, []);
+
+    const getStatus = (stock: number, isActive: boolean) => {
+        if (!isActive) return "Archived";
+        if (stock === 0) return "Out of Stock";
+        if (stock <= 12) return "Low Stock";
+        if (stock > 200) return "Overstock";
+        return "Healthy";
+    }
+
+    const handleDelete = async (productId: string) => {
+        if (window.confirm("Are you sure you want to delete this product?")) {
+            try {
+                const response = await apiClient.deleteProduct(productId);
+                if (response.error) {
+                    toast.error(`Error: ${response.error}`);
+                } else {
+                    toast.success("Product deleted successfully!");
+                    fetchProducts();
+                }
+            } catch (err: any) {
+                toast.error(`An error occurred: ${err.message}`);
+            }
+        }
+    };
+
+    const handleEdit = (product: Product) => {
+        setEditingProduct(product);
+        setIsModalOpen(true);
+    };
+
+    const handleAdd = () => {
+        setEditingProduct(null);
+        setIsModalOpen(true);
+    };
 
     return (
         <div className="space-y-10 pb-20">
+            <ProductFormModal
+                isOpen={isModalOpen}
+                onClose={() => {
+                    setIsModalOpen(false);
+                    setEditingProduct(null); // Clear editing product on close
+                }}
+                onProductSaved={fetchProducts}
+                currentProduct={editingProduct}
+                mainStoreId={1} // Assuming 1 is the main warehouse/store
+            />
             {/* Header Area */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
                 <div>
@@ -45,7 +134,9 @@ export default function InventoryPage() {
                     <button className="flex-1 md:flex-none px-6 py-3 border border-stone-200 dark:border-white/10 rounded-full text-[10px] font-bold tracking-widest uppercase text-stone-500 hover:text-luxury-black dark:hover:text-white transition-all flex items-center justify-center gap-3">
                         <RefreshCcw size={14} /> Global Sync
                     </button>
-                    <button className="flex-1 md:flex-none px-8 py-3 bg-luxury-black dark:bg-accent text-white rounded-full text-[10px] font-bold tracking-widest uppercase shadow-xl flex items-center justify-center gap-3 group">
+                    <button 
+                        onClick={handleAdd}
+                        className="flex-1 md:flex-none px-8 py-3 bg-luxury-black dark:bg-accent text-white rounded-full text-[10px] font-bold tracking-widest uppercase shadow-xl flex items-center justify-center gap-3 group">
                         <Plus size={16} className="group-hover:rotate-90 transition-transform" /> Add New Essence
                     </button>
                 </div>
@@ -109,47 +200,54 @@ export default function InventoryPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-stone-50 dark:divide-white/5 transition-colors">
-                                {inventory.map((item) => (
-                                    <tr key={item.id} className="group hover:bg-stone-50/80 dark:hover:bg-white/5 transition-all">
-                                        <td className="px-8 py-6">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-12 h-16 relative rounded-2xl overflow-hidden bg-stone-100 dark:bg-zinc-800 flex-shrink-0 border border-stone-100 dark:border-white/10">
-                                                    <Image src="/images/hero.png" alt={item.name} fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
+                                {products.map((item) => {
+                                    const totalStock = item.inventories.reduce((acc, inv) => acc + inv.quantity, 0);
+                                    return (
+                                        <tr key={item.id} className="group hover:bg-stone-50/80 dark:hover:bg-white/5 transition-all">
+                                            <td className="px-8 py-6">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-12 h-16 relative rounded-2xl overflow-hidden bg-stone-100 dark:bg-zinc-800 flex-shrink-0 border border-stone-100 dark:border-white/10">
+                                                        <Image src={item.images.length > 0 ? item.images[0].url : "/images/hero.png"} alt={item.name} fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="text-sm font-bold text-luxury-black dark:text-white uppercase tracking-wider">{item.name}</h4>
+                                                        <p className="text-[10px] text-accent font-mono mt-1 uppercase">{item.id.slice(0, 8)}</p>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <h4 className="text-sm font-bold text-luxury-black dark:text-white uppercase tracking-wider">{item.name}</h4>
-                                                    <p className="text-[10px] text-accent font-mono mt-1 uppercase">{item.sku}</p>
+                                            </td>
+                                            <td className="px-8 py-6">
+                                                <span className="text-[10px] font-bold tracking-widest uppercase text-stone-400">{item.category?.name}</span>
+                                            </td>
+                                            <td className="px-8 py-6 text-center">
+                                                <span className={`text-sm font-bold ${totalStock <= 12 ? "text-red-500" : "text-luxury-black dark:text-white"}`}>{totalStock}</span>
+                                                <p className="text-[8px] text-stone-500 uppercase tracking-widest mt-1">Units</p>
+                                            </td>
+                                            <td className="px-8 py-6 text-center">
+                                                <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest border transition-colors ${getStatus(totalStock, item.isActive) === 'Healthy' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
+                                                    getStatus(totalStock, item.isActive) === 'Low Stock' ? 'bg-orange-500/10 text-orange-500 border-orange-500/20' :
+                                                        getStatus(totalStock, item.isActive) === 'Out of Stock' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
+                                                            'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                                                    }`}>
+                                                    {getStatus(totalStock, item.isActive)}
                                                 </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-8 py-6">
-                                            <span className="text-[10px] font-bold tracking-widest uppercase text-stone-400">{item.category}</span>
-                                        </td>
-                                        <td className="px-8 py-6 text-center">
-                                            <span className={`text-sm font-bold ${item.stock <= 12 ? "text-red-500" : "text-luxury-black dark:text-white"}`}>{item.stock}</span>
-                                            <p className="text-[8px] text-stone-500 uppercase tracking-widest mt-1">Units</p>
-                                        </td>
-                                        <td className="px-8 py-6 text-center">
-                                            <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest border transition-colors ${item.status === 'Healthy' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
-                                                item.status === 'Low Stock' ? 'bg-orange-500/10 text-orange-500 border-orange-500/20' :
-                                                    item.status === 'Out of Stock' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
-                                                        'bg-blue-500/10 text-blue-500 border-blue-500/20'
-                                                }`}>
-                                                {item.status}
-                                            </div>
-                                        </td>
-                                        <td className="px-8 py-6 text-right pr-12">
-                                            <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button className="p-3 bg-stone-50 dark:bg-white/5 hover:bg-black dark:hover:bg-accent hover:text-white rounded-xl transition-all border border-stone-100 dark:border-white/10 shadow-sm">
-                                                    <Edit3 size={16} />
-                                                </button>
-                                                <button className="p-3 bg-stone-50 dark:bg-white/5 hover:bg-red-500 hover:text-white rounded-xl transition-all border border-stone-100 dark:border-white/10 shadow-sm">
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
+                                            </td>
+                                            <td className="px-8 py-6 text-right pr-12">
+                                                <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button
+                                                        onClick={() => handleEdit(item)}
+                                                        className="p-3 bg-stone-50 dark:bg-white/5 hover:bg-black dark:hover:bg-accent hover:text-white rounded-xl transition-all border border-stone-100 dark:border-white/10 shadow-sm">
+                                                        <Edit3 size={16} />
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => handleDelete(item.id)}
+                                                        className="p-3 bg-stone-50 dark:bg-white/5 hover:bg-red-500 hover:text-white rounded-xl transition-all border border-stone-100 dark:border-white/10 shadow-sm">
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )
+                                })}
                             </tbody>
                         </table>
                     </div>
@@ -198,28 +296,31 @@ export default function InventoryPage() {
 
             {activeTab === "Critical Alerts" && (
                 <div className="space-y-6">
-                    {inventory.filter(i => i.stock <= 12).map((item, idx) => (
-                        <motion.div
-                            key={item.id}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: idx * 0.1 }}
-                            className="p-8 bg-red-50 dark:bg-red-500/5 border border-red-100 dark:border-red-500/20 rounded-[2.5rem] flex items-center justify-between gap-8 group"
-                        >
-                            <div className="flex items-center gap-6">
-                                <div className="w-14 h-14 rounded-full bg-red-100 dark:bg-red-500/10 flex items-center justify-center text-red-500 flex-shrink-0">
-                                    <AlertCircle size={24} />
+                    {products.filter(i => i.inventories.reduce((acc, inv) => acc + inv.quantity, 0) <= 12).map((item, idx) => {
+                        const totalStock = item.inventories.reduce((acc, inv) => acc + inv.quantity, 0);
+                        return (
+                            <motion.div
+                                key={item.id}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: idx * 0.1 }}
+                                className="p-8 bg-red-50 dark:bg-red-500/5 border border-red-100 dark:border-red-500/20 rounded-[2.5rem] flex items-center justify-between gap-8 group"
+                            >
+                                <div className="flex items-center gap-6">
+                                    <div className="w-14 h-14 rounded-full bg-red-100 dark:bg-red-500/10 flex items-center justify-center text-red-500 flex-shrink-0">
+                                        <AlertCircle size={24} />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-bold text-red-600 dark:text-red-400 uppercase tracking-wide italic">{item.name}</h3>
+                                        <p className="text-xs text-red-500/70 uppercase tracking-widest font-bold">Critical Scarcity: {totalStock} Units Remaining</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h3 className="text-lg font-bold text-red-600 dark:text-red-400 uppercase tracking-wide italic">{item.name}</h3>
-                                    <p className="text-xs text-red-500/70 uppercase tracking-widest font-bold">Critical Scarcity: {item.stock} Units Remaining</p>
-                                </div>
-                            </div>
-                            <button className="px-8 py-3 bg-red-600 text-white rounded-full text-[10px] font-bold tracking-[.3em] uppercase hover:bg-black transition-all shadow-lg group-hover:scale-105 duration-300">
-                                REPLENISH NOW
-                            </button>
-                        </motion.div>
-                    ))}
+                                <button className="px-8 py-3 bg-red-600 text-white rounded-full text-[10px] font-bold tracking-[.3em] uppercase hover:bg-black transition-all shadow-lg group-hover:scale-105 duration-300">
+                                    REPLENISH NOW
+                                </button>
+                            </motion.div>
+                        )
+                    })}
                 </div>
             )}
 
@@ -246,4 +347,3 @@ export default function InventoryPage() {
         </div>
     );
 }
-

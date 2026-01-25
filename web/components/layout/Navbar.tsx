@@ -29,7 +29,8 @@ export const Navbar = () => {
     const { user, profile, signOut } = useAuth();
 
     const menuItems = [
-        { name: t("collection"), href: "/collection" },
+        //  { name: t("collection"), href: "/collection" },
+        { name: t("collection"), href: "/products" },
         { name: t("consultation"), href: "/consultation" },
         { name: t("journal"), href: "/journal" },
         { name: t("subscription"), href: "/subscription" },
@@ -114,18 +115,18 @@ export const Navbar = () => {
                                             const userRole = profile?.role || profile?.roles?.[0];
                                             return userRole && (userRole.toUpperCase() === 'ADMIN' || userRole.toUpperCase() === 'STAFF');
                                         })() && (
-                                            <Link
-                                                href="/dashboard"
-                                                className="hidden xl:block text-[9px] font-bold text-accent uppercase tracking-widest hover:underline"
-                                            >
-                                                {t("dashboard")}
-                                            </Link>
-                                        )}
+                                                <Link
+                                                    href="/dashboard"
+                                                    className="hidden xl:block text-[9px] font-bold text-accent uppercase tracking-widest hover:underline"
+                                                >
+                                                    {t("dashboard")}
+                                                </Link>
+                                            )}
                                         <Link
                                             href="/profile"
                                             className="hidden md:flex flex-col items-end group"
                                         >
-                                            <span className="text-[9px] font-bold text-luxury-black dark:text-white uppercase tracking-widest">{profile?.full_name?.split(' ')[0] || 'Member'}</span>
+                                            <span className="text-[9px] font-bold text-luxury-black dark:text-white uppercase tracking-widest">{profile?.fullName?.split(' ')[0] || 'Member'}</span>
                                             <span className="text-[8px] text-accent font-bold uppercase tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity">View Profile</span>
                                         </Link>
                                         <button
@@ -191,7 +192,7 @@ export const Navbar = () => {
                                         className="text-xs font-bold tracking-[.3em] uppercase text-luxury-black dark:text-white hover:text-accent transition-colors flex items-center justify-between group pt-4 border-t border-stone-100 dark:border-white/10"
                                         onClick={() => setIsMobileMenuOpen(false)}
                                     >
-                                        {profile?.full_name || t("profile")}
+                                        {profile?.fullName || t("profile")}
                                         <ChevronRight size={14} />
                                     </Link>
                                     <button

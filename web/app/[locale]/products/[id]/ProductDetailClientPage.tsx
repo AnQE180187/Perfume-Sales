@@ -23,7 +23,7 @@ interface Product {
 }
 
 
-export default function ProductDetailPage() {
+export default function ProductDetailClientPage() {
     const { id } = useParams();
     const { addToCart } = useCart();
     const [product, setProduct] = useState<Product | null>(null);
@@ -46,7 +46,7 @@ export default function ProductDetailPage() {
                     if (currentProduct.category) {
                         const relatedResponse = await apiClient.getProducts({ categoryId: currentProduct.category.id });
                         if (relatedResponse.data) {
-                            setRelatedProducts(relatedResponse.data.filter((p: Product) => p.id !== id).slice(0, 4));
+                            setRelatedProducts(relatedResponse.data.items.filter((p: Product) => p.id !== id).slice(0, 4));
                         }
                     }
                 } else {
@@ -78,9 +78,9 @@ export default function ProductDetailPage() {
         return <div className="min-h-screen bg-stone-50 dark:bg-zinc-950 flex items-center justify-center">Error: {error || "Product not found."}</div>;
     }
 
-    const topNotes = product.notes.filter(n => n.type === 'TOP').map(n => n.name).join(', ');
-    const heartNotes = product.notes.filter(n => n.type === 'HEART').map(n => n.name).join(', ');
-    const baseNotes = product.notes.filter(n => n.type === 'BASE').map(n => n.name).join(', ');
+    const topNotes = product.notes ? product.notes.filter(n => n.type === 'TOP').map(n => n.name).join(', ') : '';
+    const heartNotes = product.notes ? product.notes.filter(n => n.type === 'HEART').map(n => n.name).join(', ') : '';
+    const baseNotes = product.notes ? product.notes.filter(n => n.type === 'BASE').map(n => n.name).join(', ') : '';
 
 
     return (
@@ -88,8 +88,8 @@ export default function ProductDetailPage() {
             <Navbar />
 
             <main className="container mx-auto px-6 py-32">
-                <Link href="/collection" className="inline-flex items-center gap-2 text-xs font-bold tracking-widest uppercase text-stone-400 hover:text-luxury-black dark:hover:text-white transition-colors mb-12">
-                    <ArrowLeft size={16} /> Back to Collection
+                <Link href="/products" className="inline-flex items-center gap-2 text-xs font-bold tracking-widest uppercase text-stone-400 hover:text-luxury-black dark:hover:text-white transition-colors mb-12">
+                    <ArrowLeft size={16} /> Back to Products
                 </Link>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 xl:gap-24">
@@ -228,7 +228,7 @@ export default function ProductDetailPage() {
                             <p className="text-[10px] text-stone-500 dark:text-stone-400 font-bold tracking-[.3em] uppercase mb-4 transition-colors">Curated Pairings</p>
                             <h2 className="text-3xl font-serif text-luxury-black dark:text-white transition-colors">Complementary Works</h2>
                         </div>
-                        <Link href="/collection" className="text-[10px] font-bold tracking-widest uppercase border-b-2 border-accent pb-1 text-luxury-black dark:text-white transition-colors">
+                        <Link href="/products" className="text-[10px] font-bold tracking-widest uppercase border-b-2 border-accent pb-1 text-luxury-black dark:text-white transition-colors">
                             Explore All
                         </Link>
                     </div>
@@ -243,7 +243,7 @@ export default function ProductDetailPage() {
                                 transition={{ duration: 0.5, delay: 0.1 }}
                                 className="group cursor-pointer text-center"
                             >
-                                <Link href={`/collection/${relatedProduct.id}`}>
+                                <Link href={`/products/${relatedProduct.id}`}>
                                     <div className="relative aspect-[3/4] bg-white dark:bg-zinc-900 mb-6 overflow-hidden rounded-2xl transition-colors border border-stone-200 dark:border-zinc-800 shadow-sm">
                                         <Image
                                             src={relatedProduct.images.length > 0 ? relatedProduct.images[0].url : "/images/hero.png"}

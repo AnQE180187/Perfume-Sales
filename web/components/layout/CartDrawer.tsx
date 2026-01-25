@@ -15,7 +15,17 @@ interface CartDrawerProps {
 
 export const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
     const t = useTranslations("Cart");
-    const { cartItems, removeFromCart, updateQuantity, cartTotal } = useCart();
+    const { cartItems, removeFromCart, updateQuantity, cartTotal, loading } = useCart();
+
+    const handleUpdateQuantity = async (id: string, currentQuantity: number, delta: number) => {
+        const newQuantity = currentQuantity + delta;
+        if (newQuantity > 0) {
+            await updateQuantity(id, newQuantity);
+        } else {
+            await removeFromCart(id);
+        }
+    };
+
 
     return (
         <AnimatePresence>
@@ -52,7 +62,11 @@ export const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
                         {/* Items */}
                         <div className="flex-1 overflow-y-auto p-8 space-y-8 scrollbar-hide">
                             <AnimatePresence mode="popLayout">
-                                {cartItems.length > 0 ? (
+                                {loading ? (
+                                    <div className="h-full flex flex-col items-center justify-center text-center space-y-6 opacity-40 py-20">
+                                        <p className="text-[10px] font-bold tracking-[.3em] uppercase">Loading cart...</p>
+                                    </div>
+                                ) : cartItems.length > 0 ? (
                                     cartItems.map((item) => (
                                         <motion.div
                                             key={item.id}
@@ -63,19 +77,20 @@ export const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
                                             className="flex gap-6 group"
                                         >
                                             <div className="relative w-24 h-32 rounded-2xl overflow-hidden bg-stone-50 dark:bg-zinc-900 border border-stone-100 dark:border-white/5 transition-colors">
-                                                <Image src={item.image} alt={item.name} fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
+                                                <Image src={item.product.images.length > 0 ? item.product.images[0].url : ''} alt={item.product.name} fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
                                             </div>
                                             <div className="flex-1 py-1">
                                                 <div className="flex justify-between mb-2">
-                                                    <h3 className="text-sm font-bold text-luxury-black dark:text-white uppercase tracking-wider">{item.name}</h3>
-                                                    <span className="text-sm font-medium text-luxury-black dark:text-white">${item.price * item.quantity}</span>
+                                                    <h3 className="text-sm font-bold text-luxury-black dark:text-white uppercase tracking-wider">{item.product.name}</h3>
+                                                    <span className="text-sm font-medium text-luxury-black dark:text-white">
+                                                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.product.price * item.quantity)}
+                                                    </span>
                                                 </div>
-                                                <p className="text-[10px] text-stone-400 uppercase tracking-widest mb-6 italic">{item.type}</p>
 
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-4 bg-stone-50 dark:bg-white/5 px-3 py-1.5 rounded-full border border-stone-100 dark:border-white/5 transition-colors">
                                                         <button
-                                                            onClick={() => updateQuantity(item.id, -1)}
+                                                            onClick={() => handleUpdateQuantity(item.id, item.quantity, -1)}
                                                             className="text-stone-400 hover:text-luxury-black dark:hover:text-white transition-colors cursor-pointer"
                                                             disabled={item.quantity <= 1}
                                                         >
@@ -83,11 +98,11 @@ export const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
                                                         </button>
                                                         <span className="text-[10px] font-bold w-4 text-center dark:text-white">{item.quantity}</span>
                                                         <button
-                                                            onClick={() => updateQuantity(item.id, 1)}
+                                                            onClick={() => handleUpdateQuantity(item.id, item.quantity, 1)}
                                                             className="text-stone-400 hover:text-luxury-black dark:hover:text-white transition-colors cursor-pointer"
                                                         >
                                                             <Plus size={14} />
-                                                        </button>
+</button>
                                                     </div>
                                                     <button
                                                         onClick={() => removeFromCart(item.id)}
@@ -114,7 +129,7 @@ export const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
                             <div className="flex justify-between items-center">
                                 <span className="text-[10px] font-bold tracking-[.3em] uppercase text-stone-400">{t("total")}</span>
                                 <span className="text-2xl font-serif text-luxury-black dark:text-white transition-all">
-                                    ${cartTotal.toLocaleString()}
+                                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(cartTotal)}
                                 </span>
                             </div>
                             <div className="space-y-3">

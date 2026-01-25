@@ -12,6 +12,50 @@ export class ProductsService {
     private readonly cloudinaryService: CloudinaryService,
   ) {}
 
+  async list(query: QueryProductsDto) {
+    const { search, skip = 0, take = 20, brandId, categoryId } = query;
+
+    const where: any = {};
+
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+    if (brandId) {
+      where.brandId = brandId;
+    }
+    if (categoryId) {
+      where.categoryId = categoryId;
+    }
+
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.product.findMany({
+        where,
+        skip,
+        take,
+        include: {
+          brand: true,
+          category: true,
+          images: {
+            orderBy: { order: 'asc' },
+          },
+          inventories: true,
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.product.count({ where }),
+    ]);
+
+    return {
+      items,
+      total,
+      skip,
+      take,
+    };
+  }
+
   async listPublic(query: QueryProductsDto) {
     const { search, skip = 0, take = 20, brandId, categoryId } = query;
 
@@ -67,6 +111,7 @@ export class ProductsService {
           orderBy: { order: 'asc' },
         },
         reviews: true,
+        notes: true,
       },
     });
 
@@ -80,39 +125,66 @@ export class ProductsService {
   // Admin operations
 
   create(dto: CreateProductDto) {
-    return this.prisma.product.create({
-      data: {
-        name: dto.name,
-        slug: dto.slug,
-        brandId: dto.brandId,
-        categoryId: dto.categoryId,
-        description: dto.description,
-        gender: dto.gender,
-        longevity: dto.longevity,
-        concentration: dto.concentration,
-        price: dto.price,
-        currency: dto.currency ?? 'VND',
-        isActive: dto.isActive ?? true,
-      },
+    return this.prisma.$transaction(async (tx) => {
+      const product = await tx.product.create({
+        data: {
+          name: dto.name,
+          slug: dto.slug,
+          brandId: dto.brandId,
+          categoryId: dto.categoryId,
+          description: dto.description,
+          gender: dto.gender,
+          longevity: dto.longevity,
+          concentration: dto.concentration,
+          price: dto.price,
+          currency: dto.currency ?? 'VND',
+          isActive: dto.isActive ?? true,
+        },
+      });
+
+      if (dto.stock !== undefined) {
+        await tx.inventory.create({
+          data: {
+            productId: product.id,
+            quantity: dto.stock,
+            storeId: 1, // Assuming a default store
+          },
+        });
+      }
+
+      return product;
     });
   }
 
   update(id: string, dto: UpdateProductDto) {
-    return this.prisma.product.update({
-      where: { id },
-      data: {
-        name: dto.name,
-        slug: dto.slug,
-        brandId: dto.brandId,
-        categoryId: dto.categoryId,
-        description: dto.description,
-        gender: dto.gender,
-        longevity: dto.longevity,
-        concentration: dto.concentration,
-        price: dto.price,
-        currency: dto.currency,
-        isActive: dto.isActive,
-      },
+    return this.prisma.$transaction(async (tx) => {
+      const { stock, ...productData } = dto;
+
+      const product = await tx.product.update({
+        where: { id },
+        data: productData,
+      });
+
+      if (stock !== undefined) {
+        await tx.inventory.upsert({
+          where: {
+            storeId_productId: {
+              storeId: 1, // Assuming a default store
+              productId: id,
+            },
+          },
+          update: {
+            quantity: stock,
+          },
+          create: {
+            productId: id,
+            quantity: stock,
+            storeId: 1, // Assuming a default store
+          },
+        });
+      }
+
+      return product;
     });
   }
 
@@ -209,5 +281,3 @@ export class ProductsService {
     return { success: true };
   }
 }
-
-

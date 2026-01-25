@@ -4,6 +4,8 @@ import { CreateBrandDto } from './dto/create-brand.dto';
 import { UpdateBrandDto } from './dto/update-brand.dto';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { CreateScentFamilyDto } from './dto/create-scent-family.dto';
+import { UpdateScentFamilyDto } from './dto/update-scent-family.dto';
 
 @Injectable()
 export class CatalogService {
@@ -66,5 +68,35 @@ export class CatalogService {
     await this.prisma.category.delete({ where: { id } });
     return { success: true };
   }
-}
 
+  // Scent Family
+  listScentFamilies() {
+    return this.prisma.scentFamily.findMany({
+      orderBy: { id: 'asc' },
+    });
+  }
+
+  async getScentFamily(id: number) {
+    const scentFamily = await this.prisma.scentFamily.findUnique({
+      where: { id },
+    });
+    if (!scentFamily) throw new NotFoundException('Scent family not found');
+    return scentFamily;
+  }
+
+  createScentFamily(dto: CreateScentFamilyDto) {
+    return this.prisma.scentFamily.create({ data: dto });
+  }
+
+  updateScentFamily(id: number, dto: UpdateScentFamilyDto) {
+    return this.prisma.scentFamily.update({
+      where: { id },
+      data: dto,
+    });
+  }
+
+  async deleteScentFamily(id: number) {
+    await this.prisma.scentFamily.delete({ where: { id } });
+    return { success: true };
+  }
+}
