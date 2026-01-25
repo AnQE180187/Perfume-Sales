@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import Image from "next/image";
 import { Link } from "@/i18n/routing";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, MotionValue } from "framer-motion";
 import { Navbar } from "@/components/layout/Navbar";
 import { ArrowRight, Sparkles, Droplets, Wind, Shield } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -13,9 +13,15 @@ export default function Home() {
   const f = useTranslations("Footer");
   const n = useTranslations("Navbar");
   const a = useTranslations("Auth");
-  const containerRef = useRef(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const { scrollYProgress } = useScroll({
-    target: containerRef,
+    target: isMounted ? containerRef : undefined,
     offset: ["start start", "end start"]
   });
 

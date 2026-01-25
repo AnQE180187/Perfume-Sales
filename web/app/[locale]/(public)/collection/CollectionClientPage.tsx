@@ -30,10 +30,16 @@ export default function CollectionClientPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [activeCategory, setActiveCategory] = useState("All");
+    const [isMounted, setIsMounted] = useState(false);
 
-    const containerRef = useRef(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
     const { scrollYProgress } = useScroll({
-        target: containerRef,
+        target: isMounted ? containerRef : undefined,
         offset: ["start start", "end start"]
     });
 
@@ -46,7 +52,8 @@ export default function CollectionClientPage() {
                 setLoading(true);
                 const response = await apiClient.getProducts();
                 if (response.data) {
-                    setProducts(response.data.items);
+                    // Backend returns array directly, not wrapped in items
+                    setProducts(Array.isArray(response.data) ? response.data : []);
                 } else if (response.error) {
                     setError(response.error);
                 }
@@ -65,7 +72,7 @@ export default function CollectionClientPage() {
     const filteredPerfumes = activeCategory === "All"
         ? products
         : products.filter(p => p.category.name === activeCategory);
-    
+
     if (loading) {
         return <div className="min-h-screen bg-white dark:bg-zinc-950 flex items-center justify-center">Loading...</div>;
     }
