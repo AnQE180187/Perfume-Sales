@@ -10,7 +10,7 @@ export class ProductsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly cloudinaryService: CloudinaryService,
-  ) {}
+  ) { }
 
   async list(query: QueryProductsDto) {
     const { search, skip = 0, take = 20, brandId, categoryId } = query;

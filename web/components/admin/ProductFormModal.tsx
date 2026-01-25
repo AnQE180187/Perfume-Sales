@@ -134,7 +134,7 @@ export const ProductFormModal = ({
             if (scentFamiliesRes.error) {
                 throw new Error(`Scent Families: ${scentFamiliesRes.error}`);
             }
-            
+
             setBrands(brandsRes.data || []);
             setCategories(categoriesRes.data || []);
             setScentFamilies(scentFamiliesRes.data || []);
@@ -237,7 +237,7 @@ export const ProductFormModal = ({
         if (categoryId && categoryId !== "") payload.categoryId = categoryId;
         if (scentFamilyId && scentFamilyId !== "") payload.scentFamilyId = scentFamilyId;
 
-        if(stock !== undefined && stock > 0) {
+        if (stock !== undefined && stock > 0) {
             payload.inventory = {
                 storeId: mainStoreId,
                 quantity: stock,
@@ -267,7 +267,7 @@ export const ProductFormModal = ({
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
             }
-            
+
             toast.success(`Product ${isEditMode ? 'updated' : 'created'} successfully!`);
             onProductSaved();
             onClose();
@@ -332,15 +332,15 @@ export const ProductFormModal = ({
                                     <input {...register("slug", { required: "Slug is required" })} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600" />
                                     {errors.slug && <p className="text-red-500 text-xs mt-1">{errors.slug.message}</p>}
                                 </div>
-                                 <div>
+                                <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Brand</label>
                                     <Controller
                                         name="brandId"
                                         control={control}
                                         rules={{ required: "Brand is required" }}
                                         render={({ field }) => (
-                                            <select 
-                                                {...field} 
+                                            <select
+                                                {...field}
                                                 value={field.value || ""}
                                                 onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : "")}
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600"
@@ -358,7 +358,7 @@ export const ProductFormModal = ({
                                         name="categoryId"
                                         control={control}
                                         render={({ field }) => (
-                                            <select 
+                                            <select
                                                 {...field}
                                                 value={field.value || ""}
                                                 onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : "")}
@@ -372,11 +372,11 @@ export const ProductFormModal = ({
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Scent Family</label>
-                                     <Controller
+                                    <Controller
                                         name="scentFamilyId"
                                         control={control}
                                         render={({ field }) => (
-                                            <select 
+                                            <select
                                                 {...field}
                                                 value={field.value || ""}
                                                 onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : "")}
@@ -393,7 +393,7 @@ export const ProductFormModal = ({
                                     <textarea {...register("description")} rows={4} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600" />
                                 </div>
                             </div>
-                            
+
                             {/* Right Column */}
                             <div className="space-y-6">
                                 <div className="grid grid-cols-2 gap-4">
@@ -427,16 +427,16 @@ export const ProductFormModal = ({
                                     <input {...register("longevity")} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600" />
                                 </div>
                                 <div>
-                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
                                     <div className="mt-2 flex items-center">
-                                         <Controller
+                                        <Controller
                                             name="isActive"
                                             control={control}
                                             render={({ field }) => (
                                                 <label className="inline-flex items-center cursor-pointer">
-                                                  <input type="checkbox" className="sr-only peer" checked={field.value} onChange={field.onChange} />
-                                                  <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                                                  <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Active</span>
+                                                    <input type="checkbox" className="sr-only peer" checked={field.value} onChange={field.onChange} />
+                                                    <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                                                    <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">Active</span>
                                                 </label>
                                             )}
                                         />
@@ -471,7 +471,7 @@ export const ProductFormModal = ({
                             </div>
                         </div>
                     </form>
-                    
+
                     {/* Footer */}
                     <div className="flex justify-end items-center p-6 border-t border-gray-200 dark:border-gray-700">
                         <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600">
