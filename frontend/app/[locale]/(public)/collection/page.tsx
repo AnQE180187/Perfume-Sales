@@ -6,70 +6,25 @@ import { Link } from '@/lib/i18n';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Filter, ChevronDown, ShoppingBag, Sparkles } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-
-// Mock data - replace with API call later
-const MOCK_PRODUCTS = [
-    {
-        id: '1',
-        name: 'Lumina No. 01',
-        brand: 'Aura AI',
-        category: 'Floral',
-        price: 5900000,
-        type: 'Extrait de Parfum',
-        image: '/luxury_perfume_hero_cinematic.png'
-    },
-    {
-        id: '2',
-        name: 'Oud Mystère',
-        brand: 'Aura AI',
-        category: 'Oriental',
-        price: 8500000,
-        type: 'Pure Essence',
-        image: '/luxury_ai_scent_lab.png'
-    },
-    {
-        id: '3',
-        name: 'Santal Bloom',
-        brand: 'Aura AI',
-        category: 'Woody',
-        price: 4500000,
-        type: 'Eau de Parfum',
-        image: '/luxury_perfume_auth_aesthetic.png'
-    },
-    {
-        id: '4',
-        name: 'Nuit de Rose',
-        brand: 'Aura AI',
-        category: 'Floral',
-        price: 6200000,
-        type: 'Parfum',
-        image: '/luxury_perfume_hero_cinematic.png'
-    },
-    {
-        id: '5',
-        name: 'Amber Noir',
-        brand: 'Aura AI',
-        category: 'Oriental',
-        price: 7800000,
-        type: 'Extrait',
-        image: '/luxury_ai_scent_lab.png'
-    },
-    {
-        id: '6',
-        name: 'Citrus Dawn',
-        brand: 'Aura AI',
-        category: 'Fresh',
-        price: 3900000,
-        type: 'Eau de Toilette',
-        image: '/luxury_perfume_auth_aesthetic.png'
-    },
-];
+import { productService, type Product, type ProductListRes } from '@/services/product.service';
+import { cartService } from '@/services/cart.service';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function CollectionPage() {
     const t = useTranslations('collection');
+    const [products, setProducts] = useState<Product[]>([]);
+    const [loading, setLoading] = useState(true);
     const [activeCategory, setActiveCategory] = useState('All');
     const [isMounted, setIsMounted] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
+    const { isAuthenticated } = useAuth();
+
+    useEffect(() => {
+        productService.list({ take: 100 }).then((r: ProductListRes) => {
+            setProducts(r.items);
+            setLoading(false);
+        }).catch(() => setLoading(false));
+    }, []);
 
     useEffect(() => {
         setIsMounted(true);
@@ -83,11 +38,26 @@ export default function CollectionPage() {
     const bannerY = useTransform(scrollYProgress, [0, 0.4], ['0%', '30%']);
     const bannerOpacity = useTransform(scrollYProgress, [0, 0.4], [1, 0.5]);
 
-    const categories = ['All', ...Array.from(new Set(MOCK_PRODUCTS.map(p => p.category)))];
-
+    const categories = ['All', ...Array.from(new Set(products.map(p => p.category?.name).filter(Boolean) as string[]))];
     const filteredProducts = activeCategory === 'All'
-        ? MOCK_PRODUCTS
-        : MOCK_PRODUCTS.filter(p => p.category === activeCategory);
+        ? products
+        : products.filter(p => p.category?.name === activeCategory);
+
+    const handleAddToCart = async (e: React.MouseEvent, productId: string) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!isAuthenticated) {
+            window.location.href = '/login';
+            return;
+        }
+        try {
+            await cartService.addItem(productId, 1);
+            // Optional: toast or cart badge update
+        } catch (err) {
+            // eslint-disable-next-line no-console
+            console.error(err);
+        }
+    };
 
     return (
         <div className="min-h-screen bg-white dark:bg-zinc-950 transition-colors" ref={containerRef}>
@@ -171,7 +141,10 @@ export default function CollectionPage() {
 
                 {/* Grid */}
                 <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-16 gap-y-24">
-                    {filteredProducts.map((product, i) => (
+                    {loading ? (
+                        <div className="col-span-full py-20 text-center text-stone-400 text-sm uppercase tracking-widest">Loading…</div>
+                    ) : (
+                    filteredProducts.map((product, i) => (
                         <motion.div
                             key={product.id}
                             initial={{ opacity: 0, y: 30 }}
@@ -182,24 +155,35 @@ export default function CollectionPage() {
                         >
                             <Link href={`/collection/${product.id}`}>
                                 <div className="relative aspect-[3/4] bg-stone-50 dark:bg-zinc-900 rounded-[3.5rem] overflow-hidden mb-10 border border-stone-100 dark:border-white/5 shadow-sm group-hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.1)] group-hover:-translate-y-4 transition-all duration-700 ease-out">
-                                    <Image
-                                        src={product.image}
-                                        alt={product.name}
-                                        fill
-                                        className="object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110"
-                                    />
+                                    {product.images?.[0]?.url ? (
+                                        <img
+                                            src={product.images[0].url}
+                                            alt={product.name}
+                                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110"
+                                        />
+                                    ) : (
+                                        <Image
+                                            src="/luxury_perfume_hero_cinematic.png"
+                                            alt={product.name}
+                                            fill
+                                            className="object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110"
+                                        />
+                                    )}
                                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-500" />
 
                                     {/* Category Badge */}
                                     <div className="absolute top-10 left-10">
                                         <span className="glass px-5 py-2 rounded-full text-[9px] font-bold tracking-[.3em] uppercase text-white shadow-xl">
-                                            {product.category}
+                                            {product.category?.name ?? '—'}
                                         </span>
                                     </div>
 
                                     {/* Quick Add */}
                                     <div className="absolute bottom-10 left-10 right-10 translate-y-8 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700">
-                                        <button className="w-full glass py-4 rounded-full text-[10px] font-bold tracking-[.3em] uppercase text-white hover:bg-white hover:text-luxury-black transition-all flex items-center justify-center gap-3 shadow-2xl cursor-pointer">
+                                        <button
+                                            onClick={(e) => handleAddToCart(e, product.id)}
+                                            className="w-full glass py-4 rounded-full text-[10px] font-bold tracking-[.3em] uppercase text-white hover:bg-white hover:text-luxury-black transition-all flex items-center justify-center gap-3 shadow-2xl cursor-pointer"
+                                        >
                                             <ShoppingBag size={14} /> Add to Cart
                                         </button>
                                     </div>
@@ -213,15 +197,16 @@ export default function CollectionPage() {
                                     </h3>
                                 </Link>
                                 <p className="text-[10px] text-stone-500 dark:text-stone-400 font-bold uppercase tracking-[.4em] mb-4 transition-colors font-serif italic">
-                                    {product.brand}
+                                    {product.brand?.name ?? '—'}
                                 </p>
                                 <div className="w-8 h-px bg-stone-100 dark:bg-gold/20 mx-auto mb-6 transition-colors" />
                                 <span className="text-xl font-serif italic text-luxury-black dark:text-white transition-colors tracking-widest">
-                                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price)}
+                                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: product.currency || 'VND' }).format(product.price)}
                                 </span>
                             </div>
                         </motion.div>
-                    ))}
+                    ))
+                    )}
                 </div>
             </section>
         </div>

@@ -8,9 +8,10 @@ import {
     Menu,
     X,
     ChevronRight,
-    User,
     LogOut,
-    Globe
+    Globe,
+    LayoutDashboard,
+    ShieldCheck
 } from 'lucide-react';
 import { Link, usePathname } from '@/lib/i18n';
 import { ThemeToggle } from './theme-toggle';
@@ -38,14 +39,16 @@ export const Header = () => {
     }, []);
 
     const menuItems = [
-        { name: 'Products', href: '/products' },
+        { name: 'Products', href: '/collection' },
         { name: 'Consultation', href: '/customer/consultation' },
         { name: 'Journal', href: '/journal' },
         { name: 'Subscription', href: '/customer/subscription' },
         { name: 'Boutiques', href: '/boutiques' },
     ];
 
-    const role = user?.role || 'customer';
+    const role = user?.role || 'CUSTOMER';
+    const isAdmin = role === 'ADMIN';
+    const isStaff = role === 'STAFF';
 
     return (
         <>
@@ -123,8 +126,28 @@ export const Header = () => {
 
                                 {isAuthenticated ? (
                                     <div className="flex items-center gap-2 md:gap-4 pl-2 md:pl-4 border-l border-stone-100 dark:border-white/10 transition-colors ml-2">
+                                        {isAdmin && (
+                                            <Link
+                                                href="/dashboard/admin"
+                                                className="hidden md:flex items-center gap-2 px-4 py-2 rounded-full bg-gold/10 hover:bg-gold/20 text-gold text-[9px] font-bold tracking-widest uppercase transition-colors"
+                                                title="Admin Dashboard"
+                                            >
+                                                <ShieldCheck size={16} />
+                                                Admin
+                                            </Link>
+                                        )}
+                                        {isStaff && !isAdmin && (
+                                            <Link
+                                                href="/dashboard/staff"
+                                                className="hidden md:flex items-center gap-2 px-4 py-2 rounded-full bg-gold/10 hover:bg-gold/20 text-gold text-[9px] font-bold tracking-widest uppercase transition-colors"
+                                                title="Staff Dashboard"
+                                            >
+                                                <LayoutDashboard size={16} />
+                                                Dashboard
+                                            </Link>
+                                        )}
                                         <Link
-                                            href={`/${role}/profile`}
+                                            href="/dashboard/profile"
                                             className="hidden md:flex flex-col items-end group"
                                         >
                                             <span className="text-[9px] font-bold text-luxury-black dark:text-white uppercase tracking-widest">
@@ -193,8 +216,28 @@ export const Header = () => {
                             )}
                             {isAuthenticated && (
                                 <>
+                                    {isAdmin && (
+                                        <Link
+                                            href="/dashboard/admin"
+                                            className="text-xs font-bold tracking-[.3em] uppercase text-gold hover:text-gold/80 transition-colors flex items-center justify-between group pt-4 border-t border-stone-100 dark:border-white/10"
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                        >
+                                            Admin Dashboard
+                                            <ChevronRight size={14} />
+                                        </Link>
+                                    )}
+                                    {isStaff && !isAdmin && (
+                                        <Link
+                                            href="/dashboard/staff"
+                                            className="text-xs font-bold tracking-[.3em] uppercase text-gold hover:text-gold/80 transition-colors flex items-center justify-between group pt-4 border-t border-stone-100 dark:border-white/10"
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                        >
+                                            Staff Dashboard
+                                            <ChevronRight size={14} />
+                                        </Link>
+                                    )}
                                     <Link
-                                        href={`/${role}/profile`}
+                                        href="/dashboard/profile"
                                         className="text-xs font-bold tracking-[.3em] uppercase text-luxury-black dark:text-white hover:text-gold transition-colors flex items-center justify-between group pt-4 border-t border-stone-100 dark:border-white/10"
                                         onClick={() => setIsMobileMenuOpen(false)}
                                     >

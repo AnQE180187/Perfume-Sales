@@ -5,7 +5,7 @@ interface User {
     id: string;
     name: string;
     email: string;
-    role: 'admin' | 'staff' | 'customer';
+    role: 'ADMIN' | 'STAFF' | 'CUSTOMER';
     points?: number;
 }
 
@@ -25,6 +25,7 @@ export const useAuthStore = create<AuthState>()(
             logout: () => {
                 if (typeof window !== 'undefined') {
                     localStorage.removeItem('token');
+                    localStorage.removeItem('refreshToken');
                 }
                 set({ user: null, token: null });
             },

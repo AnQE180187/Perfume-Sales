@@ -1,11 +1,24 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import { useSearchParams } from 'next/navigation';
 import { Link } from '@/lib/i18n';
 import { motion } from 'framer-motion';
 import { CheckCircle, Truck, Package, Calendar } from 'lucide-react';
+import { orderService } from '@/services/order.service';
 
 export default function OrderSuccessPage() {
+    const searchParams = useSearchParams();
+    const orderId = searchParams?.get('orderId');
+    const [order, setOrder] = useState<any>(null);
+
+    useEffect(() => {
+        if (orderId) {
+            orderService.getById(orderId).then(setOrder).catch(() => { });
+        }
+    }, [orderId]);
+
     return (
         <div className="min-h-screen bg-stone-50 dark:bg-zinc-950 flex items-center justify-center p-6 py-24 transition-colors">
             <div className="max-w-4xl w-full">
@@ -22,19 +35,19 @@ export default function OrderSuccessPage() {
                         </motion.div>
 
                         <h1 className="text-4xl font-serif text-luxury-black dark:text-white mb-6">
-                            Gratitude, Your Selection is Confirmed.
+                            Đặt hàng thành công!
                         </h1>
                         <p className="text-stone-500 dark:text-stone-400 text-lg font-light leading-relaxed mb-10">
-                            An email confirmation has been dispatched. Our artisans are now preparing your selection for its journey.
+                            Cảm ơn bạn đã đặt hàng. Chúng tôi sẽ xử lý đơn hàng của bạn trong thời gian sớm nhất.
                         </p>
 
                         <div className="space-y-6 mb-12">
                             <div className="flex items-center gap-4 text-stone-600 dark:text-stone-400">
                                 <Package size={20} className="text-stone-300 dark:text-stone-600" />
                                 <span className="text-sm font-medium">
-                                    Order Number:{' '}
+                                    Mã đơn hàng:{' '}
                                     <span className="text-luxury-black dark:text-white font-bold">
-                                        #AURA-{Math.floor(Math.random() * 900000 + 100000)}
+                                        {order?.code || '—'}
                                     </span>
                                 </span>
                             </div>
@@ -51,9 +64,9 @@ export default function OrderSuccessPage() {
                             <div className="flex items-center gap-4 text-stone-600 dark:text-stone-400">
                                 <Truck size={20} className="text-stone-300 dark:text-stone-600" />
                                 <span className="text-sm font-medium">
-                                    Method:{' '}
+                                    Phương thức:{' '}
                                     <span className="text-luxury-black dark:text-white font-bold italic tracking-wide">
-                                        Concierge White-Glove
+                                        {order?.paymentStatus === 'PAID' ? 'Đã thanh toán' : order?.paymentStatus === 'PENDING' ? 'Chờ thanh toán' : 'COD'}
                                     </span>
                                 </span>
                             </div>
@@ -61,16 +74,16 @@ export default function OrderSuccessPage() {
 
                         <div className="flex flex-col sm:flex-row gap-4">
                             <Link
-                                href="/customer/orders"
+                                href="/dashboard/customer/orders"
                                 className="flex-1 bg-luxury-black dark:bg-gold text-white py-4 rounded-full font-bold tracking-widest uppercase text-center text-xs hover:bg-stone-800 dark:hover:bg-gold/80 transition-all shadow-xl"
                             >
-                                Track Order
+                                Xem đơn hàng
                             </Link>
                             <Link
                                 href="/"
                                 className="flex-1 border border-stone-200 dark:border-stone-800 text-stone-400 dark:text-stone-500 py-4 rounded-full font-bold tracking-widest uppercase text-center text-xs hover:border-luxury-black dark:hover:border-white hover:text-luxury-black dark:hover:text-white transition-all"
                             >
-                                Return Home
+                                Về trang chủ
                             </Link>
                         </div>
                     </div>

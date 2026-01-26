@@ -8,7 +8,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 
 @Injectable()
 export class OrdersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async createFromCart(userId: string, dto: CreateOrderDto) {
     const cart = await this.prisma.cart.findFirst({
@@ -64,8 +64,35 @@ export class OrdersService {
   listMyOrders(userId: string) {
     return this.prisma.order.findMany({
       where: { userId },
+      include: {
+        items: { include: { product: true } },
+        user: true,
+      },
       orderBy: { createdAt: 'desc' },
     });
+  }
+
+  async listAllOrders(skip: number, take: number) {
+    const [orders, total] = await Promise.all([
+      this.prisma.order.findMany({
+        include: {
+          items: { include: { product: true } },
+          user: true,
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take,
+      }),
+      this.prisma.order.count(),
+    ]);
+
+    return {
+      data: orders,
+      total,
+      skip,
+      take,
+      pages: Math.ceil(total / take),
+    };
   }
 
   async getMyOrderById(userId: string, orderId: string) {
@@ -75,6 +102,25 @@ export class OrdersService {
         items: {
           include: { product: true },
         },
+        user: true,
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    return order;
+  }
+
+  async getOrderById(orderId: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        items: {
+          include: { product: true },
+        },
+        user: true,
       },
     });
 

@@ -1,0 +1,89 @@
+import api from '@/lib/axios';
+import { env } from '@/lib/env';
+
+// Public: GET /products, GET /products/:id
+// Admin: GET/POST/PATCH/DELETE /admin/products, POST/DELETE /admin/products/:id/images
+
+export type Product = {
+  id: string;
+  name: string;
+  slug: string;
+  brandId: number;
+  categoryId?: number | null;
+  scentFamilyId?: number | null;
+  description?: string | null;
+  gender?: string | null;
+  longevity?: string | null;
+  concentration?: string | null;
+  price: number;
+  currency: string;
+  isActive: boolean;
+  brand?: { id: number; name: string };
+  category?: { id: number; name: string } | null;
+  images?: { id: number; url: string; order: number; publicId?: string }[];
+  inventory?: { quantity: number } | null;
+};
+
+export type ProductListRes = {
+  items: Product[];
+  total: number;
+  skip: number;
+  take: number;
+};
+
+export const productService = {
+  // Public
+  list(params?: { search?: string; skip?: number; take?: number; brandId?: number; categoryId?: number }) {
+    return api.get<ProductListRes>('/products', { params }).then((r) => r.data);
+  },
+  getById(id: string) {
+    return api.get<Product>('/products/' + id).then((r) => r.data);
+  },
+
+  // Admin
+  adminList(params?: { search?: string; skip?: number; take?: number; brandId?: number; categoryId?: number }) {
+    return api.get<ProductListRes>('/admin/products', { params }).then((r) => r.data);
+  },
+  adminCreate(dto: {
+    name: string;
+    slug: string;
+    brandId: number;
+    categoryId?: number | null;
+    scentFamilyId?: number | null;
+    description?: string;
+    gender?: string;
+    longevity?: string;
+    concentration?: string;
+    price: number;
+    currency?: string;
+    isActive?: boolean;
+    stock?: number;
+  }) {
+    return api.post<Product>('/admin/products', dto).then((r) => r.data);
+  },
+  adminUpdate(id: string, dto: Partial<Parameters<typeof productService.adminCreate>[0]>) {
+    return api.patch<Product>('/admin/products/' + id, dto).then((r) => r.data);
+  },
+  adminDelete(id: string) {
+    return api.delete<{ success: boolean }>('/admin/products/' + id).then((r) => r.data);
+  },
+  adminGetById(id: string) {
+    return api.get<Product>('/admin/products/' + id).then((r) => r.data);
+  },
+  adminUploadImages(productId: string, files: File[]): Promise<Product> {
+    const form = new FormData();
+    files.forEach((f) => form.append('images', f));
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    return fetch(env.NEXT_PUBLIC_API_URL + '/admin/products/' + productId + '/images', {
+      method: 'POST',
+      headers: token ? { Authorization: 'Bearer ' + token } : {},
+      body: form,
+    }).then((r) => {
+      if (!r.ok) return r.json().then((d) => { throw new Error(d?.message || 'Upload failed'); });
+      return r.json();
+    });
+  },
+  adminDeleteImage(productId: string, imageId: number | string) {
+    return api.delete<{ success: boolean }>('/admin/products/' + productId + '/images/' + imageId).then((r) => r.data);
+  },
+};

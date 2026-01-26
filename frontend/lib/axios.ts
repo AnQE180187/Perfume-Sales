@@ -10,7 +10,6 @@ const api = axios.create({
 
 api.interceptors.request.use(
     (config) => {
-        // Add token from localStorage or cookies if needed
         if (typeof window !== 'undefined') {
             const token = localStorage.getItem('token');
             if (token) {
@@ -20,6 +19,22 @@ api.interceptors.request.use(
         return config;
     },
     (error) => Promise.reject(error)
+);
+
+// Parse backend error for user-friendly messages
+api.interceptors.response.use(
+    (res) => res,
+    (err) => {
+        const msg = err?.response?.data?.message;
+        if (Array.isArray(msg)) {
+            err.message = msg.join(', ');
+        } else if (typeof msg === 'string') {
+            err.message = msg;
+        } else if (!err.message) {
+            err.message = 'Request failed';
+        }
+        return Promise.reject(err);
+    }
 );
 
 export default api;

@@ -10,6 +10,7 @@ import { CartModule } from './cart/cart.module';
 import { OrdersModule } from './orders/orders.module';
 import { CatalogModule } from './catalog/catalog.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     OrdersModule,
     CatalogModule,
     CloudinaryModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

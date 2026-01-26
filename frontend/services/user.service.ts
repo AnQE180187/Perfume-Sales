@@ -1,16 +1,13 @@
 import api from '@/lib/axios';
 
+// Backend: GET/PATCH /users/me
 export const userService = {
-    async getProfile() {
-        const response = await api.get('/users/profile');
-        return response.data;
+    async getMe() {
+        const { data } = await api.get('/users/me');
+        return data;
     },
-    async updateProfile(data: any) {
-        const response = await api.put('/users/profile', data);
-        return response.data;
+    async updateProfile(payload: { fullName?: string; gender?: string; dateOfBirth?: string; address?: string; city?: string; country?: string; avatarUrl?: string; budgetMin?: number; budgetMax?: number }) {
+        const { data } = await api.patch('/users/me', payload);
+        return data;
     },
-    async getAllUsers() {
-        const response = await api.get('/admin/users');
-        return response.data;
-    }
 };

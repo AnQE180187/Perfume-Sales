@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateBrandDto } from './dto/create-brand.dto';
 import { UpdateBrandDto } from './dto/update-brand.dto';
@@ -36,6 +36,15 @@ export class CatalogService {
   }
 
   async deleteBrand(id: number) {
+    // Check if brand has products (brandId is required, cannot be null)
+    const productCount = await this.prisma.product.count({
+      where: { brandId: id },
+    });
+    if (productCount > 0) {
+      throw new ConflictException(
+        `Cannot delete brand: it has ${productCount} product(s). Please remove or reassign products first.`,
+      );
+    }
     await this.prisma.brand.delete({ where: { id } });
     return { success: true };
   }
@@ -65,7 +74,16 @@ export class CatalogService {
   }
 
   async deleteCategory(id: number) {
-    await this.prisma.category.delete({ where: { id } });
+    // Category is optional, so we can delete it
+    // Products with this categoryId will have categoryId set to null automatically
+    // But we should update products to remove the reference first for clarity
+    await this.prisma.$transaction(async (tx) => {
+      await tx.product.updateMany({
+        where: { categoryId: id },
+        data: { categoryId: null },
+      });
+      await tx.category.delete({ where: { id } });
+    });
     return { success: true };
   }
 
@@ -96,7 +114,15 @@ export class CatalogService {
   }
 
   async deleteScentFamily(id: number) {
-    await this.prisma.scentFamily.delete({ where: { id } });
+    // ScentFamily is optional, so we can delete it
+    // Products with this scentFamilyId will have scentFamilyId set to null automatically
+    await this.prisma.$transaction(async (tx) => {
+      await tx.product.updateMany({
+        where: { scentFamilyId: id },
+        data: { scentFamilyId: null },
+      });
+      await tx.scentFamily.delete({ where: { id } });
+    });
     return { success: true };
   }
 }

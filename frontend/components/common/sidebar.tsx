@@ -5,7 +5,7 @@ import {
     LayoutDashboard, Users, User, Settings, LogOut, Package,
     MessageSquare, BrainCircuit, Heart, History, Coins, Tag,
     Monitor, Box, ClipboardList, BarChart3, ShieldCheck,
-    Globe, Mail, FileText, Settings2, Smartphone, Receipt
+    Globe, Mail, FileText, Settings2, Smartphone, Receipt, FolderTree
 } from 'lucide-react';
 import { Link, usePathname } from '@/lib/i18n';
 import { useAuth } from '@/hooks/use-auth';
@@ -29,38 +29,39 @@ export const Sidebar = () => {
         ];
 
         const shared = [
-            { icon: LayoutDashboard, label: commonT('dashboard'), href: `/${role}` },
-            { icon: User, label: commonT('profile'), href: '/profile' },
+            { icon: LayoutDashboard, label: commonT('dashboard'), href: `/dashboard/${role.toLowerCase()}` },
+            { icon: User, label: commonT('profile'), href: '/dashboard/profile' },
         ];
 
         const customer = [
-            { icon: MessageSquare, label: navT('customer.ai_chat'), href: '/customer/ai-chat' },
-            { icon: BrainCircuit, label: navT('customer.quiz'), href: '/customer/quiz' },
+            { icon: MessageSquare, label: navT('customer.ai_chat'), href: '/dashboard/customer/ai-chat' },
+            { icon: BrainCircuit, label: navT('customer.quiz'), href: '/dashboard/customer/quiz' },
             { icon: Heart, label: commonT('favorites'), href: '/favorite' },
-            { icon: ClipboardList, label: commonT('orders'), href: '/customer/orders' },
-            { icon: Coins, label: navT('customer.loyalty'), href: '/customer/loyalty' },
-            { icon: Tag, label: navT('customer.promotions'), href: '/customer/promotions' },
+            { icon: ClipboardList, label: commonT('orders'), href: '/dashboard/customer/orders' },
+            { icon: Coins, label: navT('customer.loyalty'), href: '/dashboard/customer/loyalty' },
+            { icon: Tag, label: navT('customer.promotions'), href: '/dashboard/customer/promotions' },
         ];
 
         const staff = [
-            { icon: Smartphone, label: navT('staff.pos'), href: '/staff/pos' },
-            { icon: Box, label: navT('staff.inventory'), href: '/staff/inventory' },
-            { icon: ClipboardList, label: navT('staff.orders'), href: '/staff/orders' },
-            { icon: BarChart3, label: navT('staff.kpi'), href: '/staff/kpi' },
+            { icon: Smartphone, label: navT('staff.pos'), href: '/dashboard/staff/pos' },
+            { icon: Box, label: navT('staff.inventory'), href: '/dashboard/staff/inventory' },
+            { icon: ClipboardList, label: navT('staff.orders'), href: '/dashboard/staff/orders' },
+            { icon: BarChart3, label: navT('staff.kpi'), href: '/dashboard/staff/kpi' },
         ];
 
         const admin = [
-            { icon: Users, label: navT('admin.users'), href: '/admin/users' },
-            { icon: ShieldCheck, label: navT('admin.rbac'), href: '/admin/rbac' },
-            { icon: Package, label: navT('admin.products'), href: '/admin/collection' },
-            { icon: BarChart3, label: navT('admin.analytics'), href: '/admin/analytics' },
-            { icon: FileText, label: navT('admin.logs'), href: '/admin/logs' },
-            { icon: Mail, label: navT('admin.marketing'), href: '/admin/marketing' },
-            { icon: Settings2, label: commonT('settings'), href: '/admin/settings' },
+            { icon: Users, label: navT('admin.users'), href: '/dashboard/admin/users' },
+            { icon: ShieldCheck, label: navT('admin.rbac'), href: '/dashboard/admin/rbac' },
+            { icon: Package, label: navT('admin.products'), href: '/dashboard/admin/products' },
+            { icon: FolderTree, label: 'Catalog', href: '/dashboard/admin/catalog' },
+            { icon: Receipt, label: commonT('orders'), href: '/dashboard/admin/orders' },
+            { icon: BarChart3, label: navT('admin.analytics'), href: '/dashboard/admin/analytics' },
+            { icon: Mail, label: navT('admin.marketing'), href: '/dashboard/admin/marketing' },
+            { icon: Settings2, label: commonT('settings'), href: '/dashboard/admin/settings' },
         ];
 
-        if (role === 'admin') return [...publicPages, ...shared, ...admin];
-        if (role === 'staff') return [...publicPages, ...shared, ...staff];
+        if (role === 'ADMIN') return [...publicPages, ...shared, ...admin];
+        if (role === 'STAFF') return [...publicPages, ...shared, ...staff];
         return [...publicPages, ...shared, ...customer];
     };
 

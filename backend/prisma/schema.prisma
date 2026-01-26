@@ -309,6 +309,8 @@ model Payment {
 enum PaymentProvider {
   VNPAY
   MOMO
+  PAYOS
+  VIETQR
   COD
 }
 
