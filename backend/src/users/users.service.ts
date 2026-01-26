@@ -4,7 +4,7 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   findMe(userId: string) {
     return this.prisma.user.findUnique({
@@ -60,6 +60,12 @@ export class UsersService {
         loyaltyPoints: true,
         createdAt: true,
       },
+    });
+  }
+
+  async remove(id: string) {
+    return this.prisma.user.delete({
+      where: { id },
     });
   }
 }

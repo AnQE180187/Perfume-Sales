@@ -37,10 +37,8 @@ const myOrders = [
 
 export default function CustomerOrdersPage() {
     return (
-        <div className="min-h-screen bg-stone-50 dark:bg-zinc-950 transition-colors">
-            <Header />
-
-            <main className="container mx-auto px-6 py-32 lg:py-40">
+        <div className="p-8 lg:p-12">
+            <main>
                 <div className="max-w-5xl mx-auto">
                     <header className="mb-20">
                         <h1 className="text-5xl md:text-6xl font-serif text-luxury-black dark:text-white mb-6">
@@ -87,8 +85,8 @@ export default function CustomerOrdersPage() {
                                                         {order.price}
                                                     </span>
                                                     <span className={`inline-flex items-center gap-2 text-[10px] px-4 py-1.5 rounded-full font-bold uppercase ${order.status === 'Delivered'
-                                                            ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600'
-                                                            : 'bg-gold/10 text-gold'
+                                                        ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600'
+                                                        : 'bg-gold/10 text-gold'
                                                         }`}>
                                                         {order.status === 'Delivered' ? <PackageCheck size={12} /> : <Truck size={12} />}
                                                         {order.status}

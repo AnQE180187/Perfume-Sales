@@ -34,7 +34,7 @@ export default function Home() {
         >
             <Header />
 
-            <main>
+            <main className="relative">
                 <Hero
                     heroY={heroY}
                     heroScale={heroScale}

@@ -20,7 +20,7 @@ export const Sidebar = () => {
     const { user, logout } = useAuth();
     const pathname = usePathname();
 
-    const role = user?.role || 'customer';
+    const role = (user?.role || 'customer').toLowerCase();
 
     const getMenuItems = () => {
         const publicPages = [
@@ -30,7 +30,7 @@ export const Sidebar = () => {
 
         const shared = [
             { icon: LayoutDashboard, label: commonT('dashboard'), href: `/${role}` },
-            { icon: User, label: commonT('profile'), href: '/profile' },
+            { icon: User, label: commonT('profile'), href: `/${role}/profile` },
         ];
 
         const customer = [
@@ -52,7 +52,7 @@ export const Sidebar = () => {
         const admin = [
             { icon: Users, label: navT('admin.users'), href: '/admin/users' },
             { icon: ShieldCheck, label: navT('admin.rbac'), href: '/admin/rbac' },
-            { icon: Package, label: navT('admin.products'), href: '/admin/collection' },
+            { icon: Package, label: navT('admin.products'), href: '/admin/products' },
             { icon: BarChart3, label: navT('admin.analytics'), href: '/admin/analytics' },
             { icon: FileText, label: navT('admin.logs'), href: '/admin/logs' },
             { icon: Mail, label: navT('admin.marketing'), href: '/admin/marketing' },
@@ -68,12 +68,12 @@ export const Sidebar = () => {
 
     return (
         <aside className="w-72 h-screen glass border-r border-border flex flex-col p-6 sticky top-0 overflow-y-auto custom-scrollbar">
-            <div className="flex items-center gap-3 mb-12 px-2">
-                <div className="w-8 h-8 rounded-lg bg-gold flex items-center justify-center">
-                    <BrainCircuit className="text-primary w-5 h-5" />
+            <Link href="/" className="flex items-center gap-3 mb-12 px-2 group cursor-pointer transition-transform hover:scale-[1.02]">
+                <div className="w-8 h-8 rounded-lg bg-gold flex items-center justify-center shadow-lg group-hover:shadow-gold/20">
+                    <BrainCircuit className="text-primary-foreground w-5 h-5" />
                 </div>
-                <span className="font-heading text-xl gold-gradient tracking-widest uppercase">Aura AI</span>
-            </div>
+                <span className="font-heading text-xl gold-gradient tracking-widest uppercase font-bold">Aura AI</span>
+            </Link>
 
             <nav className="flex-1 space-y-1">
                 {items.map((item, index) => {
@@ -110,10 +110,10 @@ export const Sidebar = () => {
             <div className="mt-8 pt-6 border-t border-border space-y-4">
                 <div className="px-4 py-3 rounded-2xl glass border-gold/10 flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-xs font-heading border border-white/5 uppercase">
-                        {user?.name?.substring(0, 2) || 'AI'}
+                        {(user?.fullName || user?.name || 'AI').substring(0, 2)}
                     </div>
                     <div className="flex-1 overflow-hidden">
-                        <p className="text-xs font-heading text-foreground truncate uppercase tracking-tighter">{user?.name || 'Explorer'}</p>
+                        <p className="text-xs font-heading text-foreground truncate uppercase tracking-tighter">{user?.fullName || user?.name || 'Explorer'}</p>
                         <p className="text-[10px] text-gold uppercase tracking-widest font-bold">{role}</p>
                     </div>
                 </div>
@@ -125,7 +125,7 @@ export const Sidebar = () => {
                 </div>
 
                 <button
-                    onClick={logout}
+                    onClick={() => logout()}
                     className="flex items-center gap-4 px-4 py-3.5 w-full text-muted-foreground hover:text-gold hover:bg-gold/5 transition-all rounded-2xl font-heading text-[10px] uppercase tracking-[0.2em] group"
                 >
                     <LogOut className="w-4 h-4 transition-transform group-hover:translate-x-1" />

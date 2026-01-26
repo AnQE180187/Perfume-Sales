@@ -10,39 +10,38 @@ import {
     Crown, TrendingUp, ChevronRight, Camera, Edit2
 } from 'lucide-react';
 
-// Mock user data
-const MOCK_USER = {
-    id: '1',
-    email: 'alexander@auraai.com',
-    full_name: 'Alexander Dupont',
-    phone: '+84 912 345 678',
-    avatar_url: '/luxury_perfume_hero_cinematic.png',
-    role: 'CUSTOMER',
-    account_status: 'active',
-    loyalty_points: 2450,
-    scent_preferences: {
-        families: ['Floral', 'Woody'],
-        notes: ['Rose', 'Sandalwood', 'Vanilla'],
-        intensity: 'moderate',
-        emotion: 'Balanced',
-        environment: 'Elegant'
-    }
-};
+import { useAuth } from '@/hooks/use-auth';
 
+// Mock orders for demonstration
 const MOCK_ORDERS = [
     { id: '1', date: '2026-01-20', status: 'delivered', amount: 5900000, items: 2 },
     { id: '2', date: '2026-01-15', status: 'processing', amount: 8500000, items: 1 },
 ];
 
 export default function ProfilePage() {
+    const { user: authUser } = useAuth();
     const [activeTab, setActiveTab] = useState('dna');
-    const user = MOCK_USER;
+
+    // Merge real data with defaults for parts we don't have yet
+    const user = {
+        id: authUser?.id || '?',
+        email: authUser?.email || 'no-email@aura.ai',
+        full_name: authUser?.fullName || authUser?.name || 'Explorer',
+        phone: authUser?.phoneNumber || '+84 -- --- ---',
+        avatar_url: authUser?.avatarUrl || '/luxury_perfume_hero_cinematic.png',
+        loyalty_points: 2450, // Static for now
+        scent_preferences: {
+            families: ['Floral', 'Woody'],
+            notes: ['Rose', 'Sandalwood', 'Vanilla'],
+            intensity: 'moderate',
+            emotion: 'Balanced',
+            environment: 'Elegant'
+        }
+    };
 
     return (
-        <div className="min-h-screen bg-stone-50 dark:bg-zinc-950 transition-colors">
-            <Header />
-
-            <main className="container mx-auto px-6 py-32 lg:py-40">
+        <div className="p-8 lg:p-12">
+            <main>
                 <div className="max-w-7xl mx-auto">
                     <div className="flex flex-col lg:flex-row gap-16 items-start">
                         {/* Sidebar - Identity Card */}
@@ -97,8 +96,8 @@ export default function ProfilePage() {
                                             key={item.id}
                                             onClick={() => setActiveTab(item.id)}
                                             className={`w-full flex items-center justify-between px-8 py-5 rounded-[2rem] text-[10px] font-bold tracking-[.2em] uppercase transition-all ${activeTab === item.id
-                                                    ? 'bg-luxury-black dark:bg-gold text-white shadow-2xl translate-x-2'
-                                                    : 'text-stone-400 hover:bg-stone-50 dark:hover:bg-white/5 hover:text-luxury-black dark:hover:text-white'
+                                                ? 'bg-luxury-black dark:bg-gold text-white shadow-2xl translate-x-2'
+                                                : 'text-stone-400 hover:bg-stone-50 dark:hover:bg-white/5 hover:text-luxury-black dark:hover:text-white'
                                                 }`}
                                         >
                                             <div className="flex items-center gap-5">

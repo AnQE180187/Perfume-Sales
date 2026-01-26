@@ -1,12 +1,12 @@
 import api from '@/lib/axios';
 
 export const userService = {
-    async getProfile() {
-        const response = await api.get('/users/profile');
+    async getMe() {
+        const response = await api.get('/users/me');
         return response.data;
     },
-    async updateProfile(data: any) {
-        const response = await api.put('/users/profile', data);
+    async updateMe(data: any) {
+        const response = await api.patch('/users/me', data);
         return response.data;
     },
     async getAllUsers() {

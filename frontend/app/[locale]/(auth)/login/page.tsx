@@ -7,11 +7,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Mail, Lock, Globe, Facebook, Eye, EyeOff } from 'lucide-react';
 import { Link } from '@/lib/i18n';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 
 export default function LoginPage() {
     const t = useTranslations('auth.login');
     const router = useRouter();
+    const params = useParams();
+    const locale = params.locale as string;
     const { login } = useAuth();
 
     const [formData, setFormData] = useState({
@@ -42,7 +44,8 @@ export default function LoginPage() {
     };
 
     const handleOAuthLogin = (provider: string) => {
-        setError(`${provider} OAuth is not yet implemented. Please use email/password login.`);
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+        window.location.href = `${apiUrl}/auth/${provider.toLowerCase()}?locale=${locale}`;
     };
 
     return (
@@ -54,6 +57,7 @@ export default function LoginPage() {
                         src="/luxury_perfume_hero_cinematic.png"
                         alt="Luxury Scent"
                         fill
+                        sizes="(max-width: 768px) 100vw, 50vw"
                         className="object-cover contrast-110"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-luxury-black/90 via-luxury-black/20 to-transparent flex flex-col justify-end p-16">

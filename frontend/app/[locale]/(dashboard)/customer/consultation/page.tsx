@@ -83,10 +83,8 @@ export default function ConsultationPage() {
     ];
 
     return (
-        <div className="min-h-screen bg-stone-100 dark:bg-zinc-950 transition-colors flex flex-col">
-            <Header />
-
-            <main className="flex-1 container mx-auto px-6 py-32 flex flex-col items-center justify-center">
+        <div className="p-8 lg:p-12 overflow-x-hidden">
+            <main className="flex-1 flex flex-col items-center justify-center py-20">
                 <div className="max-w-4xl w-full">
                     {/* Progress Indicator */}
                     <div className="flex items-center justify-center gap-4 mb-20">
@@ -94,8 +92,8 @@ export default function ConsultationPage() {
                             <div key={s} className="flex items-center gap-4">
                                 <div
                                     className={`w-3 h-3 rounded-full transition-all duration-500 ${step >= s
-                                            ? 'bg-gold scale-125 shadow-[0_0_15px_rgba(197,160,89,0.5)]'
-                                            : 'bg-stone-400 dark:bg-stone-800'
+                                        ? 'bg-gold scale-125 shadow-[0_0_15px_rgba(197,160,89,0.5)]'
+                                        : 'bg-stone-400 dark:bg-stone-800'
                                         }`}
                                 />
                                 {s < 4 && (

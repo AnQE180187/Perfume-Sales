@@ -9,8 +9,11 @@ import {
     Clock,
     Search,
     Filter,
-    ArrowUpRight
+    ArrowUpRight,
+    Plus,
+    Users
 } from 'lucide-react';
+import { Link } from '@/lib/i18n';
 import Image from 'next/image';
 
 export default function AdminDashboard() {
@@ -101,8 +104,8 @@ export default function AdminDashboard() {
                                 <div className="flex items-center gap-10">
                                     <div className="hidden md:block text-right">
                                         <span className={`text-[9px] px-3 py-1 rounded-full uppercase font-bold tracking-widest transition-all ${c.status === "Completed"
-                                                ? "bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
-                                                : "bg-gold/10 dark:bg-gold/20 text-gold"
+                                            ? "bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                                            : "bg-gold/10 dark:bg-gold/20 text-gold"
                                             }`}>
                                             {c.status}
                                         </span>
@@ -174,9 +177,35 @@ export default function AdminDashboard() {
                         </div>
                     </div>
 
-                    <div className="relative z-10 pt-12">
-                        <button className="w-full py-5 bg-white/5 hover:bg-gold hover:text-white transition-all text-[10px] font-bold tracking-[.4em] uppercase rounded-[2rem] border border-white/10 shadow-lg cursor-pointer">
-                            Generate Full Report
+                    <div className="relative z-10 pt-10 space-y-6">
+                        <div className="p-8 rounded-[2.5rem] bg-white/5 border border-white/5">
+                            <h3 className="text-[10px] font-bold tracking-[.3em] uppercase text-stone-400 mb-6">Quick Actions</h3>
+                            <div className="grid grid-cols-1 gap-4">
+                                <Link
+                                    href="/admin/products"
+                                    className="flex items-center justify-between p-5 bg-gold/10 hover:bg-gold text-gold hover:text-white rounded-2xl transition-all group font-bold text-[10px] uppercase tracking-widest border border-gold/20"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <Plus size={18} />
+                                        <span>Curate New Essence</span>
+                                    </div>
+                                    <ArrowUpRight size={14} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                                </Link>
+                                <Link
+                                    href="/admin/users"
+                                    className="flex items-center justify-between p-5 bg-white/5 hover:bg-white/10 text-stone-300 rounded-2xl transition-all group font-bold text-[10px] uppercase tracking-widest border border-white/5"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <Users size={18} />
+                                        <span>Registry Management</span>
+                                    </div>
+                                    <ArrowUpRight size={14} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                                </Link>
+                            </div>
+                        </div>
+
+                        <button className="w-full py-5 bg-white/5 hover:bg-white/10 transition-all text-[10px] font-bold tracking-[.4em] uppercase rounded-[2rem] border border-white/10 shadow-lg cursor-pointer text-stone-400">
+                            Generate Intelligence Report
                         </button>
                     </div>
 

@@ -104,6 +104,7 @@ export const Story = () => {
                             src="/luxury_ai_scent_lab.png"
                             alt="AI Consultation Interface"
                             fill
+                            sizes="(max-width: 768px) 100vw, 50vw"
                             className="object-cover"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-luxury-black/60 to-transparent" />

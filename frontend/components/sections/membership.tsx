@@ -98,6 +98,7 @@ export const Membership = () => {
                                     src="/luxury_membership_card_cinematic.png"
                                     alt="Elite Membership Card"
                                     fill
+                                    sizes="(max-width: 1024px) 100vw, 50vw"
                                     className="object-cover"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-tr from-ebony/60 via-transparent to-white/10" />

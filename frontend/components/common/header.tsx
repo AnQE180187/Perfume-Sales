@@ -18,16 +18,17 @@ import { LanguageSwitch } from './language-switch';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/use-auth';
+import { useCartStore } from '@/store/cart.store';
 
 export const Header = () => {
     const t = useTranslations('common');
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const { isAuthenticated, user, logout } = useAuth();
+    const { getItemCount } = useCartStore();
     const pathname = usePathname();
 
-    // Mock cart count - in real app would come from a cart context
-    const cartCount = 2;
+    const cartCount = getItemCount();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -38,14 +39,14 @@ export const Header = () => {
     }, []);
 
     const menuItems = [
-        { name: 'Products', href: '/products' },
-        { name: 'Consultation', href: '/customer/consultation' },
+        { name: t('collection'), href: '/collection' },
+        { name: t('consultation'), href: '/customer/consultation' },
         { name: 'Journal', href: '/journal' },
         { name: 'Subscription', href: '/customer/subscription' },
         { name: 'Boutiques', href: '/boutiques' },
     ];
 
-    const role = user?.role || 'customer';
+    const role = (user?.role || 'customer').toLowerCase();
 
     return (
         <>
@@ -128,7 +129,7 @@ export const Header = () => {
                                             className="hidden md:flex flex-col items-end group"
                                         >
                                             <span className="text-[9px] font-bold text-luxury-black dark:text-white uppercase tracking-widest">
-                                                {user?.name?.split(' ')[0] || 'Member'}
+                                                {(user?.fullName || user?.name || 'Member').split(' ')[0]}
                                             </span>
                                             <span className="text-[8px] text-gold font-bold uppercase tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity">
                                                 View Profile

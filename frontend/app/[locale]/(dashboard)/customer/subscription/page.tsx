@@ -2,15 +2,12 @@
 
 import React from 'react';
 import { Bookmark, Calendar, Zap } from 'lucide-react';
-import { Header } from '@/components/common/header';
 import { motion } from 'framer-motion';
 
 export default function SubscriptionPage() {
     return (
-        <div className="min-h-screen bg-stone-50 dark:bg-zinc-950 transition-colors">
-            <Header />
-
-            <main className="container mx-auto px-6 py-32 lg:py-40">
+        <div className="p-8 lg:p-12 overflow-x-hidden">
+            <main>
                 <div className="max-w-4xl mx-auto text-center mb-20">
                     <motion.h1
                         initial={{ opacity: 0, y: 20 }}

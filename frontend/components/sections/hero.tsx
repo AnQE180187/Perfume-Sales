@@ -50,6 +50,7 @@ export const Hero = ({ heroY: parentHeroY, heroScale: parentHeroScale, heroOpaci
                     src="/luxury_perfume_hero_cinematic.png"
                     alt="Luxury Fragrance"
                     fill
+                    sizes="100vw"
                     className="object-cover"
                     priority
                 />

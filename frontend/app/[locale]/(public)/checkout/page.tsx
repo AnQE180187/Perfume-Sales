@@ -7,36 +7,74 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Header } from '@/components/common/header';
 import {
     ArrowLeft, ArrowRight, CreditCard, Truck, ShieldCheck,
-    MapPin, ChevronRight, Minus, Plus, Trash2, ShoppingBag, Ticket
+    MapPin, ChevronRight, Minus, Plus, Trash2, ShoppingBag, Ticket, Loader2
 } from 'lucide-react';
 
-// Mock cart data
-const MOCK_CART = [
-    { id: 1, name: 'Lumina No. 01', price: 5900000, quantity: 1, image: '/luxury_perfume_hero_cinematic.png', type: '100ml Extrait' },
-    { id: 2, name: 'Oud Mystère', price: 8500000, quantity: 1, image: '/luxury_ai_scent_lab.png', type: '50ml Parfum' },
-];
+import { useCartStore } from '@/store/cart.store';
+import { orderService } from '@/services/order.service';
+import { toast } from 'sonner';
+import { useRouter } from '@/lib/i18n';
 
 export default function CheckoutPage() {
+    const router = useRouter();
+    const { items: cartItems, getTotal, clearCart, updateQuantity, removeItem } = useCartStore();
     const [step, setStep] = useState(1);
-    const [cartItems, setCartItems] = useState(MOCK_CART);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-    const shipping = 0; // Free shipping
+    // Form State
+    const [shippingInfo, setShippingInfo] = useState({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        address: '',
+        city: '',
+        postalCode: '',
+        country: 'Vietnam'
+    });
+
+    const [deliveryMethod, setDeliveryMethod] = useState('ghn');
+    const [paymentMethod, setPaymentMethod] = useState('credit_card');
+
+    const subtotal = getTotal();
+    const shipping = deliveryMethod === 'ghtk' ? 50000 : (deliveryMethod === 'vtp' ? 100000 : 0);
     const tax = subtotal * 0.1;
     const total = subtotal + shipping + tax;
 
-    const updateQuantity = (id: number, delta: number) => {
-        setCartItems(items =>
-            items.map(item =>
-                item.id === id
-                    ? { ...item, quantity: Math.max(1, item.quantity + delta) }
-                    : item
-            )
-        );
-    };
+    const handlePurchase = async () => {
+        if (cartItems.length === 0) {
+            toast.error('The collection is empty');
+            return;
+        }
 
-    const removeItem = (id: number) => {
-        setCartItems(items => items.filter(item => item.id !== id));
+        setIsSubmitting(true);
+        try {
+            const orderData = {
+                items: cartItems.map(item => ({
+                    productId: item.productId,
+                    quantity: item.quantity,
+                    price: item.price,
+                    variant: item.size
+                })),
+                shippingAddress: `${shippingInfo.address}, ${shippingInfo.city}, ${shippingInfo.country}`,
+                totalAmount: total,
+                paymentMethod: paymentMethod,
+                shippingMethod: deliveryMethod,
+                contactPhone: shippingInfo.phone,
+                contactEmail: shippingInfo.email,
+                customerName: `${shippingInfo.firstName} ${shippingInfo.lastName}`
+            };
+
+            const result = await orderService.create(orderData);
+            toast.success('Your purchase has been synchronized successfully');
+            clearCart();
+            router.push(`/checkout/success?orderId=${result.id}`);
+        } catch (error: any) {
+            console.error('Purchase failed:', error);
+            toast.error(error.response?.data?.message || 'Synchronization with bank failed');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -71,8 +109,8 @@ export default function CheckoutPage() {
                                         <div
                                             onClick={() => step > s.id && setStep(s.id)}
                                             className={`p-4 pl-6 pr-8 rounded-full flex items-center gap-4 transition-all cursor-pointer ${step >= s.id
-                                                    ? 'bg-luxury-black dark:bg-gold text-white shadow-2xl'
-                                                    : 'bg-white dark:bg-white/5 text-stone-300 border border-stone-100 dark:border-white/5'
+                                                ? 'bg-luxury-black dark:bg-gold text-white shadow-2xl'
+                                                : 'bg-white dark:bg-white/5 text-stone-300 border border-stone-100 dark:border-white/5'
                                                 }`}
                                         >
                                             <s.icon size={18} />
@@ -102,6 +140,8 @@ export default function CheckoutPage() {
                                                 </label>
                                                 <input
                                                     type="text"
+                                                    value={shippingInfo.firstName}
+                                                    onChange={(e) => setShippingInfo({ ...shippingInfo, firstName: e.target.value })}
                                                     className="w-full bg-white dark:bg-zinc-900 border border-stone-100 dark:border-white/10 rounded-[2rem] p-6 outline-none focus:border-gold transition-all text-sm text-luxury-black dark:text-white"
                                                     placeholder="Alexander"
                                                 />
@@ -112,6 +152,8 @@ export default function CheckoutPage() {
                                                 </label>
                                                 <input
                                                     type="text"
+                                                    value={shippingInfo.lastName}
+                                                    onChange={(e) => setShippingInfo({ ...shippingInfo, lastName: e.target.value })}
                                                     className="w-full bg-white dark:bg-zinc-900 border border-stone-100 dark:border-white/10 rounded-[2rem] p-6 outline-none focus:border-gold transition-all text-sm text-luxury-black dark:text-white"
                                                     placeholder="Dupont"
                                                 />
@@ -124,6 +166,8 @@ export default function CheckoutPage() {
                                             </label>
                                             <input
                                                 type="email"
+                                                value={shippingInfo.email}
+                                                onChange={(e) => setShippingInfo({ ...shippingInfo, email: e.target.value })}
                                                 className="w-full bg-white dark:bg-zinc-900 border border-stone-100 dark:border-white/10 rounded-[2rem] p-6 outline-none focus:border-gold transition-all text-sm text-luxury-black dark:text-white"
                                                 placeholder="alexander@auraai.com"
                                             />
@@ -135,6 +179,8 @@ export default function CheckoutPage() {
                                             </label>
                                             <input
                                                 type="text"
+                                                value={shippingInfo.address}
+                                                onChange={(e) => setShippingInfo({ ...shippingInfo, address: e.target.value })}
                                                 className="w-full bg-white dark:bg-zinc-900 border border-stone-100 dark:border-white/10 rounded-[2rem] p-6 outline-none focus:border-gold transition-all text-sm text-luxury-black dark:text-white"
                                                 placeholder="123 Nguyen Hue, District 1"
                                             />
@@ -147,6 +193,8 @@ export default function CheckoutPage() {
                                                 </label>
                                                 <input
                                                     type="text"
+                                                    value={shippingInfo.city}
+                                                    onChange={(e) => setShippingInfo({ ...shippingInfo, city: e.target.value })}
                                                     className="w-full bg-white dark:bg-zinc-900 border border-stone-100 dark:border-white/10 rounded-[2rem] p-6 outline-none focus:border-gold transition-all text-sm text-luxury-black dark:text-white"
                                                     placeholder="Ho Chi Minh"
                                                 />
@@ -317,9 +365,19 @@ export default function CheckoutPage() {
                                             >
                                                 Back
                                             </button>
-                                            <button className="flex-[2] py-6 bg-luxury-black dark:bg-gold text-white rounded-full font-bold tracking-[.4em] uppercase text-[10px] shadow-2xl hover:bg-stone-800 dark:hover:bg-gold/80 transition-all flex items-center justify-center gap-4 group">
-                                                Complete Purchase
-                                                <ShieldCheck size={18} className="group-hover:scale-110 transition-transform" />
+                                            <button
+                                                onClick={handlePurchase}
+                                                disabled={isSubmitting}
+                                                className="flex-[2] py-6 bg-luxury-black dark:bg-gold text-white rounded-full font-bold tracking-[.4em] uppercase text-[10px] shadow-2xl hover:bg-stone-800 dark:hover:bg-gold/80 transition-all flex items-center justify-center gap-4 group disabled:opacity-50"
+                                            >
+                                                {isSubmitting ? (
+                                                    <Loader2 className="animate-spin" size={18} />
+                                                ) : (
+                                                    <>
+                                                        Complete Purchase
+                                                        <ShieldCheck size={18} className="group-hover:scale-110 transition-transform" />
+                                                    </>
+                                                )}
                                             </button>
                                         </div>
                                     </motion.div>
@@ -337,7 +395,7 @@ export default function CheckoutPage() {
                                 <div className="space-y-10 mb-12 max-h-[50vh] overflow-y-auto">
                                     {cartItems.length > 0 ? (
                                         cartItems.map((item) => (
-                                            <div key={item.id} className="flex gap-6 group">
+                                            <div key={`${item.productId}-${item.size}`} className="flex gap-6 group">
                                                 <div className="relative w-24 h-32 rounded-2xl overflow-hidden bg-stone-50 dark:bg-zinc-800 flex-shrink-0 border border-stone-100 dark:border-white/5">
                                                     <Image
                                                         src={item.image}
@@ -356,13 +414,13 @@ export default function CheckoutPage() {
                                                         </span>
                                                     </div>
                                                     <p className="text-[10px] text-stone-400 uppercase tracking-widest italic mb-6">
-                                                        {item.type}
+                                                        {item.size} • {item.brand}
                                                     </p>
 
                                                     <div className="flex items-center justify-between">
                                                         <div className="flex items-center gap-4 bg-stone-50 dark:bg-white/5 px-3 py-1.5 rounded-full border border-stone-100 dark:border-white/5">
                                                             <button
-                                                                onClick={() => updateQuantity(item.id, -1)}
+                                                                onClick={() => updateQuantity(item.productId, item.size, item.quantity - 1)}
                                                                 className="text-stone-300 hover:text-luxury-black dark:hover:text-white transition-colors"
                                                             >
                                                                 <Minus size={12} />
@@ -371,14 +429,14 @@ export default function CheckoutPage() {
                                                                 {item.quantity}
                                                             </span>
                                                             <button
-                                                                onClick={() => updateQuantity(item.id, 1)}
+                                                                onClick={() => updateQuantity(item.productId, item.size, item.quantity + 1)}
                                                                 className="text-stone-300 hover:text-luxury-black dark:hover:text-white transition-colors"
                                                             >
                                                                 <Plus size={12} />
                                                             </button>
                                                         </div>
                                                         <button
-                                                            onClick={() => removeItem(item.id)}
+                                                            onClick={() => removeItem(item.productId, item.size)}
                                                             className="text-stone-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
                                                         >
                                                             <Trash2 size={16} />

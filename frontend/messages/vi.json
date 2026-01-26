@@ -43,7 +43,7 @@
         "admin": {
             "users": "Tài Khoản Người Dùng",
             "rbac": "Phân Quyền Hệ Thống",
-            "products": "Quản Lý Danh Mục",
+            "products": "Quản Lý Sản Phẩm",
             "analytics": "Trí Tuệ Hệ Thống",
             "logs": "Nhật Ký & Log AI",
             "marketing": "Chiến Dịch Tiếp Thị"

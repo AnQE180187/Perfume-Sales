@@ -18,7 +18,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   async register(dto: RegisterDto) {
     const existing = await this.prisma.user.findFirst({
@@ -78,6 +78,56 @@ export class AuthService {
     } catch {
       throw new ForbiddenException('Invalid refresh token');
     }
+  }
+
+  async validateOAuthUser(profile: any) {
+    const { email, fullName, avatarUrl, provider, providerId } = profile;
+
+    // 1. Find or create user
+    let user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      user = await this.prisma.user.create({
+        data: {
+          email,
+          fullName,
+          avatarUrl,
+          role: UserRoleEnum.CUSTOMER,
+          isActive: true,
+        },
+      });
+    } else {
+      // Update avatar if it was missing or changed
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { avatarUrl },
+      });
+    }
+
+    // 2. Find or create OAuth account
+    const oauthAccount = await this.prisma.oAuthAccount.findUnique({
+      where: {
+        provider_providerAccountId: {
+          provider,
+          providerAccountId: providerId,
+        },
+      },
+    });
+
+    if (!oauthAccount) {
+      await this.prisma.oAuthAccount.create({
+        data: {
+          userId: user.id,
+          provider,
+          providerAccountId: providerId,
+        },
+      });
+    }
+
+    // 3. Generate tokens
+    return this.generateTokens(user.id, user.email, user.role);
   }
 
   private async generateTokens(userId: string, email: string, role: string) {

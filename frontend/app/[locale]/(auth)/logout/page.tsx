@@ -6,9 +6,15 @@ import { Link } from '@/lib/i18n';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useEffect } from 'react';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function LogoutPage() {
+    const { logout } = useAuth();
     const commonT = useTranslations('common');
+
+    useEffect(() => {
+        logout(false);
+    }, []);
 
     return (
         <div className="min-h-screen bg-ebony flex flex-col items-center justify-center p-6 text-center overflow-hidden relative">

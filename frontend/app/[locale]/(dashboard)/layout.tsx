@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Sidebar } from '@/components/common/sidebar';
 import { ThemeToggle } from '@/components/common/theme-toggle';
 import { LanguageSwitch } from '@/components/common/language-switch';
@@ -12,6 +13,15 @@ export default function DashboardLayout({
     children: React.ReactNode;
 }) {
     const pathname = usePathname();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    const formattedDate = mounted
+        ? new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+        : '';
 
     return (
         <div className="flex min-h-screen bg-background transition-colors duration-500 overflow-hidden relative">
@@ -29,7 +39,7 @@ export default function DashboardLayout({
                         <div className="h-10 px-5 rounded-2xl glass border-gold/10 flex items-center gap-3 text-muted-foreground hover:text-foreground transition-all cursor-pointer group hover:border-gold/30">
                             <div className="w-2 h-2 rounded-full bg-gold animate-pulse" />
                             <span className="text-[10px] uppercase font-heading tracking-[0.2em] font-medium">
-                                {new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                                {formattedDate}
                             </span>
                         </div>
                     </div>

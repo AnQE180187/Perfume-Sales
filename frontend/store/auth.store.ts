@@ -3,10 +3,14 @@ import { persist } from 'zustand/middleware';
 
 interface User {
     id: string;
-    name: string;
+    fullName?: string;
+    name?: string; // Keep for compatibility
     email: string;
-    role: 'admin' | 'staff' | 'customer';
+    role: 'admin' | 'staff' | 'customer' | 'ADMIN' | 'STAFF' | 'CUSTOMER';
+    avatarUrl?: string;
     points?: number;
+    phoneNumber?: string;
+    status?: string;
 }
 
 interface AuthState {

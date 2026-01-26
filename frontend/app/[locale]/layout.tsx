@@ -6,6 +6,8 @@ import "../globals.css";
 
 import { ThemeProvider } from '@/components/common/theme-provider';
 
+import { Toaster } from 'sonner';
+
 export default async function LocaleLayout({
     children,
     params
@@ -35,6 +37,7 @@ export default async function LocaleLayout({
                         disableTransitionOnChange
                     >
                         {children}
+                        <Toaster position="top-right" richColors closeButton theme="dark" />
                     </ThemeProvider>
                 </NextIntlClientProvider>
             </body>

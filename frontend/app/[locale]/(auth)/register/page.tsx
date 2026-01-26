@@ -15,7 +15,7 @@ export default function RegisterPage() {
     const { register } = useAuth();
 
     const [formData, setFormData] = useState({
-        full_name: '',
+        fullName: '',
         email: '',
         password: '',
         confirmPassword: '',
@@ -51,7 +51,7 @@ export default function RegisterPage() {
             await register({
                 email: formData.email,
                 password: formData.password,
-                full_name: formData.full_name,
+                fullName: formData.fullName,
                 phone: formData.phone
             });
             router.push('/');
@@ -63,7 +63,8 @@ export default function RegisterPage() {
     };
 
     const handleOAuthLogin = (provider: string) => {
-        setError(`${provider} OAuth is not yet implemented. Please use email/password registration.`);
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+        window.location.href = `${apiUrl}/auth/${provider.toLowerCase()}`;
     };
 
     return (
@@ -75,6 +76,7 @@ export default function RegisterPage() {
                         src="/luxury_perfume_auth_aesthetic.png"
                         alt="Luxury Scent"
                         fill
+                        sizes="(max-width: 768px) 100vw, 50vw"
                         className="object-cover contrast-110"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-luxury-black/90 via-luxury-black/20 to-transparent flex flex-col justify-end p-16">
@@ -130,8 +132,8 @@ export default function RegisterPage() {
                                     <div className="relative">
                                         <User className="absolute left-6 top-1/2 -translate-y-1/2 text-stone-300" size={18} />
                                         <input
-                                            name="full_name"
-                                            value={formData.full_name}
+                                            name="fullName"
+                                            value={formData.fullName}
                                             onChange={handleInputChange}
                                             type="text"
                                             required

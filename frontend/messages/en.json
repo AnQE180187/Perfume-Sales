@@ -43,7 +43,7 @@
         "admin": {
             "users": "User Accounts",
             "rbac": "Access Control",
-            "products": "Catalog Management",
+            "products": "Manage Products",
             "analytics": "System Intelligence",
             "logs": "Audit & AI Logs",
             "marketing": "Campaign Manager"

@@ -63,10 +63,8 @@ const notifications = [
 
 export default function NotificationsPage() {
     return (
-        <div className="min-h-screen bg-stone-50 dark:bg-zinc-950 transition-colors">
-            <Header />
-
-            <main className="container mx-auto px-6 py-32 lg:py-40">
+        <div className="p-8 lg:p-12">
+            <main>
                 <div className="max-w-4xl mx-auto">
                     <header className="flex justify-between items-end mb-16 px-4">
                         <div>
@@ -95,8 +93,8 @@ export default function NotificationsPage() {
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: i * 0.1 }}
                                 className={`group relative glass rounded-[2.5rem] p-8 border transition-all cursor-pointer ${notif.read
-                                        ? 'bg-white/40 dark:bg-white/2 border-stone-100 dark:border-white/5 opacity-70'
-                                        : 'bg-white dark:bg-zinc-900 border-stone-200 dark:border-white/10 shadow-sm hover:shadow-xl'
+                                    ? 'bg-white/40 dark:bg-white/2 border-stone-100 dark:border-white/5 opacity-70'
+                                    : 'bg-white dark:bg-zinc-900 border-stone-200 dark:border-white/10 shadow-sm hover:shadow-xl'
                                     }`}
                             >
                                 {!notif.read && (
