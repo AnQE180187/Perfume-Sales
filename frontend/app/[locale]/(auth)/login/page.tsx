@@ -42,7 +42,9 @@ export default function LoginPage() {
     };
 
     const handleOAuthLogin = (provider: string) => {
-        setError(`${provider} OAuth is not yet implemented. Please use email/password login.`);
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+        const oauthUrl = `${apiUrl}/auth/${provider.toLowerCase()}`;
+        window.location.href = oauthUrl;
     };
 
     return (
