@@ -23,7 +23,12 @@
         "profile": "Profile",
         "orders": "Orders",
         "settings": "Settings",
-        "dashboard": "Dashboard"
+        "dashboard": "Dashboard",
+        "boutiques": "Boutiques",
+        "journal": "Journal",
+        "view_profile": "View Profile",
+        "my_profile": "My Profile",
+        "member": "Member"
     },
     "navigation": {
         "customer": {
@@ -32,7 +37,9 @@
             "recommendations": "AI Recommendations",
             "history": "Consultation History",
             "loyalty": "Loyalty Points",
-            "promotions": "Offers"
+            "promotions": "Offers",
+            "consultation": "AI Consultation",
+            "subscription": "Subscription"
         },
         "staff": {
             "pos": "Sale Terminal (POS)",

@@ -2,7 +2,7 @@ import { AuthGuard } from '@/components/auth/auth-guard';
 
 export default function CustomerDashboard() {
     return (
-        <AuthGuard allowedRoles={['customer']}>
+        <AuthGuard allowedRoles={['customer', 'admin']}>
             <main className="p-8">
                 <header className="mb-12">
                     <h1 className="text-4xl font-heading gold-gradient mb-2 uppercase tracking-tighter">My Sanctuary</h1>

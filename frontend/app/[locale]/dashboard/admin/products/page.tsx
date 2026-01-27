@@ -307,9 +307,8 @@ export default function AdminProducts() {
             {products.map((p) => (
               <div
                 key={p.id}
-                className={`glass rounded-[2rem] border-border overflow-hidden hover:border-gold/30 transition-all group ${
-                  !p.isActive ? 'opacity-60' : ''
-                }`}
+                className={`glass rounded-[2rem] border-border overflow-hidden hover:border-gold/30 transition-all group ${!p.isActive ? 'opacity-60' : ''
+                  }`}
               >
                 <div className="aspect-square bg-secondary/30 relative overflow-hidden">
                   {p.images?.length ? (
@@ -351,11 +350,10 @@ export default function AdminProducts() {
                     </button>
                     <button
                       onClick={() => handleToggleVisibility(p.id, p.isActive)}
-                      className={`transition-colors ${
-                        p.isActive
+                      className={`transition-colors ${p.isActive
                           ? 'text-muted-foreground hover:text-orange-500'
                           : 'text-muted-foreground hover:text-green-500'
-                      }`}
+                        }`}
                       title={p.isActive ? 'Hide product' : 'Show product'}
                     >
                       {p.isActive ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -382,209 +380,209 @@ export default function AdminProducts() {
               {loadingProduct ? (
                 <div className="py-12 text-center text-muted-foreground">Loading product…</div>
               ) : (
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Name *</label>
-                  <input
-                    className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold"
-                    value={form.name}
-                    onChange={(e) => onNameChange(e.target.value)}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Slug *</label>
-                  <input
-                    className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold"
-                    value={form.slug}
-                    onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Brand *</label>
-                  <select
-                    className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold"
-                    value={form.brandId || ''}
-                    onChange={(e) => setForm((f) => ({ ...f, brandId: Number(e.target.value) }))}
-                    required
-                  >
-                    <option value="">—</option>
-                    {brands.map((b) => (
-                      <option key={b.id} value={b.id}>{b.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Category</label>
-                  <select
-                    className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold"
-                    value={form.categoryId === '' ? '' : form.categoryId}
-                    onChange={(e) => setForm((f) => ({ ...f, categoryId: e.target.value === '' ? '' : Number(e.target.value) }))}
-                  >
-                    <option value="">—</option>
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Scent Family</label>
-                  <select
-                    className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold"
-                    value={form.scentFamilyId === '' ? '' : form.scentFamilyId}
-                    onChange={(e) => setForm((f) => ({ ...f, scentFamilyId: e.target.value === '' ? '' : Number(e.target.value) }))}
-                  >
-                    <option value="">—</option>
-                    {scentFamilies.map((s) => (
-                      <option key={s.id} value={s.id}>{s.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Description</label>
-                  <textarea
-                    className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold min-h-[80px]"
-                    value={form.description}
-                    onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+                <form onSubmit={handleSubmit} className="space-y-6">
                   <div>
-                    <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Gender</label>
+                    <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Name *</label>
                     <input
                       className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold"
-                      value={form.gender}
-                      onChange={(e) => setForm((f) => ({ ...f, gender: e.target.value }))}
-                      placeholder="e.g. Unisex"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Longevity</label>
-                    <input
-                      className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold"
-                      value={form.longevity}
-                      onChange={(e) => setForm((f) => ({ ...f, longevity: e.target.value }))}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Concentration</label>
-                  <input
-                    className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold"
-                    value={form.concentration}
-                    onChange={(e) => setForm((f) => ({ ...f, concentration: e.target.value }))}
-                    placeholder="e.g. Eau de Parfum"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Price (VND) *</label>
-                    <input
-                      type="number"
-                      min={0}
-                      className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold"
-                      value={form.price || ''}
-                      onChange={(e) => setForm((f) => ({ ...f, price: Number(e.target.value) || 0 }))}
+                      value={form.name}
+                      onChange={(e) => onNameChange(e.target.value)}
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Stock</label>
+                    <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Slug *</label>
                     <input
-                      type="number"
-                      min={0}
                       className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold"
-                      value={form.stock || ''}
-                      onChange={(e) => setForm((f) => ({ ...f, stock: Number(e.target.value) || 0 }))}
+                      value={form.slug}
+                      onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
+                      required
                     />
                   </div>
-                </div>
-                {/* Images (max 10) */}
-                <div>
-                  <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
-                    Images (max {MAX_IMAGES})
-                  </label>
-                  {editId && existingImages.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      {existingImages.map((img) => (
-                        <div key={img.id} className="relative group">
-                          <img src={img.url} alt="" className="w-16 h-16 object-cover rounded-lg border border-border" />
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteImage(img)}
-                            className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                            title="Remove image"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </div>
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Brand *</label>
+                    <select
+                      className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold"
+                      value={form.brandId || ''}
+                      onChange={(e) => setForm((f) => ({ ...f, brandId: Number(e.target.value) }))}
+                      required
+                    >
+                      <option value="">—</option>
+                      {brands.map((b) => (
+                        <option key={b.id} value={b.id}>{b.name}</option>
                       ))}
-                    </div>
-                  )}
-                  {imageFiles.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      {imageFiles.map((item, i) => (
-                        <div key={i} className="relative group">
-                          <img
-                            src={item.url}
-                            alt=""
-                            className="w-16 h-16 object-cover rounded-lg border border-border border-dashed"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removeImageFile(i)}
-                            className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                            title="Remove"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </div>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Category</label>
+                    <select
+                      className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold"
+                      value={form.categoryId === '' ? '' : form.categoryId}
+                      onChange={(e) => setForm((f) => ({ ...f, categoryId: e.target.value === '' ? '' : Number(e.target.value) }))}
+                    >
+                      <option value="">—</option>
+                      {categories.map((c) => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
                       ))}
-                    </div>
-                  )}
-                  {canAddMoreImages && (
-                    <label className="inline-flex items-center gap-2 px-4 py-2 bg-secondary/30 border border-border border-dashed rounded-xl cursor-pointer hover:border-gold/50 transition-colors text-sm text-muted-foreground">
-                      <ImagePlus className="w-4 h-4" />
-                      Add images
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Scent Family</label>
+                    <select
+                      className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold"
+                      value={form.scentFamilyId === '' ? '' : form.scentFamilyId}
+                      onChange={(e) => setForm((f) => ({ ...f, scentFamilyId: e.target.value === '' ? '' : Number(e.target.value) }))}
+                    >
+                      <option value="">—</option>
+                      {scentFamilies.map((s) => (
+                        <option key={s.id} value={s.id}>{s.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Description</label>
+                    <textarea
+                      className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold min-h-[80px]"
+                      value={form.description}
+                      onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Gender</label>
                       <input
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        className="sr-only"
-                        onChange={(e) => { addImageFiles(e.target.files); e.target.value = ''; }}
+                        className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold"
+                        value={form.gender}
+                        onChange={(e) => setForm((f) => ({ ...f, gender: e.target.value }))}
+                        placeholder="e.g. Unisex"
                       />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Longevity</label>
+                      <input
+                        className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold"
+                        value={form.longevity}
+                        onChange={(e) => setForm((f) => ({ ...f, longevity: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Concentration</label>
+                    <input
+                      className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold"
+                      value={form.concentration}
+                      onChange={(e) => setForm((f) => ({ ...f, concentration: e.target.value }))}
+                      placeholder="e.g. Eau de Parfum"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Price (VND) *</label>
+                      <input
+                        type="number"
+                        min={0}
+                        className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold"
+                        value={form.price || ''}
+                        onChange={(e) => setForm((f) => ({ ...f, price: Number(e.target.value) || 0 }))}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Stock</label>
+                      <input
+                        type="number"
+                        min={0}
+                        className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold"
+                        value={form.stock || ''}
+                        onChange={(e) => setForm((f) => ({ ...f, stock: Number(e.target.value) || 0 }))}
+                      />
+                    </div>
+                  </div>
+                  {/* Images (max 10) */}
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
+                      Images (max {MAX_IMAGES})
                     </label>
-                  )}
-                  <p className="text-[10px] text-muted-foreground mt-1">{totalImages} / {MAX_IMAGES}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="isActive"
-                    checked={form.isActive}
-                    onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.checked }))}
-                    className="rounded border-border"
-                  />
-                  <label htmlFor="isActive" className="text-sm">Active</label>
-                </div>
-                <div className="flex gap-4 pt-4">
-                  <button
-                    type="button"
-                    onClick={closeModal}
-                    className="flex-1 py-3 rounded-full border border-border text-muted-foreground hover:bg-secondary/50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={saving}
-                    className="flex-1 py-3 rounded-full bg-gold text-primary-foreground font-heading uppercase tracking-widest disabled:opacity-50"
-                  >
-                    {saving ? 'Saving…' : (editId ? 'Save' : 'Create')}
-                  </button>
-                </div>
-              </form>
+                    {editId && existingImages.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {existingImages.map((img) => (
+                          <div key={img.id} className="relative group">
+                            <img src={img.url} alt="" className="w-16 h-16 object-cover rounded-lg border border-border" />
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteImage(img)}
+                              className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                              title="Remove image"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {imageFiles.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {imageFiles.map((item, i) => (
+                          <div key={i} className="relative group">
+                            <img
+                              src={item.url}
+                              alt=""
+                              className="w-16 h-16 object-cover rounded-lg border border-border border-dashed"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeImageFile(i)}
+                              className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                              title="Remove"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {canAddMoreImages && (
+                      <label className="inline-flex items-center gap-2 px-4 py-2 bg-secondary/30 border border-border border-dashed rounded-xl cursor-pointer hover:border-gold/50 transition-colors text-sm text-muted-foreground">
+                        <ImagePlus className="w-4 h-4" />
+                        Add images
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          className="sr-only"
+                          onChange={(e) => { addImageFiles(e.target.files); e.target.value = ''; }}
+                        />
+                      </label>
+                    )}
+                    <p className="text-[10px] text-muted-foreground mt-1">{totalImages} / {MAX_IMAGES}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="isActive"
+                      checked={form.isActive}
+                      onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.checked }))}
+                      className="rounded border-border"
+                    />
+                    <label htmlFor="isActive" className="text-sm">Active</label>
+                  </div>
+                  <div className="flex gap-4 pt-4">
+                    <button
+                      type="button"
+                      onClick={closeModal}
+                      className="flex-1 py-3 rounded-full border border-border text-muted-foreground hover:bg-secondary/50"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={saving}
+                      className="flex-1 py-3 rounded-full bg-gold text-primary-foreground font-heading uppercase tracking-widest disabled:opacity-50"
+                    >
+                      {saving ? 'Saving…' : (editId ? 'Save' : 'Create')}
+                    </button>
+                  </div>
+                </form>
               )}
             </div>
           </div>

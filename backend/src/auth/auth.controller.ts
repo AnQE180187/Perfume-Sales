@@ -1,12 +1,29 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { GoogleAuthGuard } from './google-auth.guard';
+import { FacebookAuthGuard } from './facebook-auth.guard';
+import { JwtAuthGuard } from './jwt-auth.guard';
+import { Request, Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post('register')
   async register(@Body() dto: RegisterDto) {
@@ -25,10 +42,72 @@ export class AuthController {
     return this.authService.refreshTokens(dto.refreshToken);
   }
 
-  // Stateless logout – phía client chỉ cần xoá token.
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   async logout() {
-    return { success: true };
+    return { success: true, message: 'Logged out successfully' };
+  }
+
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto);
+  }
+
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto);
+  }
+
+  @Post('change-password')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async changePassword(@Req() req: any, @Body() dto: ChangePasswordDto) {
+    return this.authService.changePassword(req.user.sub, dto);
+  }
+
+  @Get('profile')
+  @UseGuards(JwtAuthGuard)
+  async getProfile(@Req() req: any) {
+    return this.authService.getProfile(req.user.sub);
+  }
+
+  // Google OAuth
+  @Get('google')
+  @UseGuards(GoogleAuthGuard)
+  async googleAuth() {
+    // Guard redirects to Google
+  }
+
+  @Get('google/callback')
+  @UseGuards(GoogleAuthGuard)
+  async googleAuthCallback(@Req() req: Request, @Res() res: Response) {
+    const tokens = await this.authService.validateOAuthUser(req.user as any);
+
+    // Redirect to frontend with tokens
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const redirectUrl = `${frontendUrl}/en/callback?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`;
+
+    return res.redirect(redirectUrl);
+  }
+
+  // Facebook OAuth
+  @Get('facebook')
+  @UseGuards(FacebookAuthGuard)
+  async facebookAuth() {
+    // Guard redirects to Facebook
+  }
+
+  @Get('facebook/callback')
+  @UseGuards(FacebookAuthGuard)
+  async facebookAuthCallback(@Req() req: Request, @Res() res: Response) {
+    const tokens = await this.authService.validateOAuthUser(req.user as any);
+
+    // Redirect to frontend with tokens
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const redirectUrl = `${frontendUrl}/en/callback?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`;
+
+    return res.redirect(redirectUrl);
   }
 }

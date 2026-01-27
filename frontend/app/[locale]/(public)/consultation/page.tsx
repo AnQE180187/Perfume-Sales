@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { Link } from '@/lib/i18n';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Header } from '@/components/common/header';
 import { Sparkles, ArrowRight, ArrowLeft, Droplet, Wind, Coffee, Zap, Moon, Sun, LucideIcon } from 'lucide-react';
 
 interface ConsultationOption {
@@ -82,8 +83,10 @@ export default function ConsultationPage() {
     ];
 
     return (
-        <div className="min-h-screen transition-colors flex flex-col">
-            <main className="flex-1 container mx-auto px-6 py-12 flex flex-col items-center justify-center">
+        <div className="min-h-screen bg-stone-100 dark:bg-zinc-950 transition-colors flex flex-col">
+            <Header />
+
+            <main className="flex-1 container mx-auto px-6 py-32 flex flex-col items-center justify-center">
                 <div className="max-w-4xl w-full">
                     {/* Progress Indicator */}
                     <div className="flex items-center justify-center gap-4 mb-20">
