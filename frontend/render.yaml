@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: perfume-sales-frontend
+    env: node
+    plan: free
+    buildCommand: |-
+      cd frontend
+      npm install
+      npm run build
+    startCommand: |-
+      cd frontend
+      npm run start
+    publish: frontend/.next
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        value: https://perfume-sales-backend.onrender.com
+      - key: NEXT_PUBLIC_BASE_URL
+        value: https://perfume-sales.onrender.com

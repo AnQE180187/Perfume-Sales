@@ -31,7 +31,33 @@ export type ProductListRes = {
   take: number;
 };
 
-export const productService = {
+interface IProductService {
+  list(params?: { search?: string; skip?: number; take?: number; brandId?: number; categoryId?: number }): Promise<ProductListRes>;
+  getById(id: string): Promise<Product>;
+  adminList(params?: { search?: string; skip?: number; take?: number; brandId?: number; categoryId?: number }): Promise<ProductListRes>;
+  adminCreate(dto: {
+    name: string;
+    slug: string;
+    brandId: number;
+    categoryId?: number | null;
+    scentFamilyId?: number | null;
+    description?: string;
+    gender?: string;
+    longevity?: string;
+    concentration?: string;
+    price: number;
+    currency?: string;
+    isActive?: boolean;
+    stock?: number;
+  }): Promise<Product>;
+  adminUpdate(id: string, dto: Partial<Parameters<IProductService['adminCreate']>[0]>): Promise<Product>;
+  adminDelete(id: string): Promise<{ success: boolean }>;
+  adminGetById(id: string): Promise<Product>;
+  adminUploadImages(productId: string, files: File[]): Promise<Product>;
+  adminDeleteImage(productId: string, imageId: number | string): Promise<{ success: boolean }>;
+}
+
+export const productService: IProductService = {
   // Public
   list(params?: { search?: string; skip?: number; take?: number; brandId?: number; categoryId?: number }) {
     return api.get<ProductListRes>('/products', { params }).then((r) => r.data);
@@ -61,7 +87,7 @@ export const productService = {
   }) {
     return api.post<Product>('/admin/products', dto).then((r) => r.data);
   },
-  adminUpdate(id: string, dto: Partial<Parameters<typeof productService.adminCreate>[0]>) {
+  adminUpdate(id: string, dto: Partial<Parameters<IProductService['adminCreate']>[0]>) {
     return api.patch<Product>('/admin/products/' + id, dto).then((r) => r.data);
   },
   adminDelete(id: string) {

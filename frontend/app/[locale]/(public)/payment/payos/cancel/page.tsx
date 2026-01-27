@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSearchParams } from '@/lib/i18n';
+import { useSearchParams } from 'next/navigation';
 import { XCircle } from 'lucide-react';
 import { orderService } from '@/services/order.service';
 import Link from 'next/link';

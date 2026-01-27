@@ -91,7 +91,7 @@ export default function AdminProducts() {
     if (showModal && editId) {
       setLoadingProduct(true);
       productService.adminGetById(editId)
-        .then((p) => {
+        .then((p: Product) => {
           setForm({
             name: p.name,
             slug: p.slug,
