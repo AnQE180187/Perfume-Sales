@@ -5,7 +5,8 @@ import {
     LayoutDashboard, Users, User, Settings, LogOut, Package,
     MessageSquare, BrainCircuit, Heart, History, Coins, Tag,
     Monitor, Box, ClipboardList, BarChart3, ShieldCheck,
-    Globe, Mail, FileText, Settings2, Smartphone, Receipt, FolderTree
+    Globe, Mail, FileText, Settings2, Smartphone, Receipt, FolderTree,
+    Sparkles, Zap
 } from 'lucide-react';
 import { Link, usePathname } from '@/lib/i18n';
 import { useAuth } from '@/hooks/use-auth';
@@ -36,6 +37,8 @@ export const Sidebar = () => {
         const customer = [
             { icon: MessageSquare, label: navT('customer.ai_chat'), href: '/dashboard/customer/ai-chat' },
             { icon: BrainCircuit, label: navT('customer.quiz'), href: '/dashboard/customer/quiz' },
+            { icon: Sparkles, label: navT('customer.consultation'), href: '/consultation' },
+            { icon: Zap, label: navT('customer.subscription'), href: '/subscription' },
             { icon: Heart, label: commonT('favorites'), href: '/favorite' },
             { icon: ClipboardList, label: commonT('orders'), href: '/dashboard/customer/orders' },
             { icon: Coins, label: navT('customer.loyalty'), href: '/dashboard/customer/loyalty' },
@@ -69,16 +72,30 @@ export const Sidebar = () => {
 
     return (
         <aside className="w-72 h-screen glass border-r border-border flex flex-col p-6 sticky top-0 overflow-y-auto custom-scrollbar">
-            <div className="flex items-center gap-3 mb-12 px-2">
-                <div className="w-8 h-8 rounded-lg bg-gold flex items-center justify-center">
+            <Link href="/" className="flex items-center gap-3 mb-12 px-2 group cursor-pointer">
+                <div className="w-8 h-8 rounded-lg bg-gold flex items-center justify-center group-hover:scale-110 transition-transform">
                     <BrainCircuit className="text-primary w-5 h-5" />
                 </div>
-                <span className="font-heading text-xl gold-gradient tracking-widest uppercase">Aura AI</span>
-            </div>
+                <span className="font-heading text-xl gold-gradient tracking-widest uppercase group-hover:tracking-[0.3em] transition-all">AURA</span>
+            </Link>
 
             <nav className="flex-1 space-y-1">
                 {items.map((item, index) => {
-                    const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+                    // Find all items that match the current pathname
+                    const matchingItems = items.filter(i =>
+                        pathname === i.href || pathname.startsWith(i.href + '/')
+                    );
+
+                    // Get the most specific match (longest href)
+                    const mostSpecificMatch = matchingItems.length > 0
+                        ? matchingItems.reduce((prev, current) =>
+                            current.href.length > prev.href.length ? current : prev
+                        )
+                        : null;
+
+                    // Only this item is active if it's the most specific match
+                    const isActive = mostSpecificMatch?.href === item.href;
+
                     return (
                         <Link
                             key={item.href}
@@ -115,7 +132,6 @@ export const Sidebar = () => {
                     </div>
                     <div className="flex-1 overflow-hidden">
                         <p className="text-xs font-heading text-foreground truncate uppercase tracking-tighter">{user?.name || 'Explorer'}</p>
-                        <p className="text-[10px] text-gold uppercase tracking-widest font-bold">{role}</p>
                     </div>
                 </div>
 

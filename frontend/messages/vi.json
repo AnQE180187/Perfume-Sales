@@ -23,7 +23,12 @@
         "profile": "Cá Nhân",
         "orders": "Đơn Hàng",
         "settings": "Cài Đặt",
-        "dashboard": "Bảng Điều Khiển"
+        "dashboard": "Bảng Điều Khiển",
+        "boutiques": "Cửa Hàng",
+        "journal": "Tạp Chí",
+        "view_profile": "Xem Hồ Sơ",
+        "my_profile": "Hồ Sơ Của Tôi",
+        "member": "Thành Viên"
     },
     "navigation": {
         "customer": {
@@ -32,7 +37,9 @@
             "recommendations": "Gợi Ý Từ AI",
             "history": "Lịch Sử Tư Vấn",
             "loyalty": "Điểm Tích Lũy",
-            "promotions": "Ưu Đãi"
+            "promotions": "Ưu Đãi",
+            "consultation": "Tư Vấn AI",
+            "subscription": "Gói Hội Viên"
         },
         "staff": {
             "pos": "Điểm Bán Hàng (POS)",

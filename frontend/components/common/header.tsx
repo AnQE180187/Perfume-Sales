@@ -39,11 +39,11 @@ export const Header = () => {
     }, []);
 
     const menuItems = [
-        { name: 'Products', href: '/collection' },
-        { name: 'Consultation', href: '/customer/consultation' },
-        { name: 'Journal', href: '/journal' },
-        { name: 'Subscription', href: '/customer/subscription' },
-        { name: 'Boutiques', href: '/boutiques' },
+        { name: t('collection'), href: '/collection' },
+        { name: t('consultation'), href: '/consultation' },
+        { name: t('journal'), href: '/journal' },
+        { name: t('membership'), href: '/subscription' },
+        { name: t('boutiques'), href: '/boutiques' },
     ];
 
     const role = user?.role || 'CUSTOMER';
@@ -151,16 +151,16 @@ export const Header = () => {
                                             className="hidden md:flex flex-col items-end group"
                                         >
                                             <span className="text-[9px] font-bold text-luxury-black dark:text-white uppercase tracking-widest">
-                                                {user?.name?.split(' ')[0] || 'Member'}
+                                                {user?.name?.split(' ')[0] || t('member')}
                                             </span>
                                             <span className="text-[8px] text-gold font-bold uppercase tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity">
-                                                View Profile
+                                                {t('view_profile')}
                                             </span>
                                         </Link>
                                         <button
                                             onClick={() => logout()}
                                             className="p-2 text-stone-400 hover:text-red-500 transition-colors cursor-pointer"
-                                            title="Sign Out"
+                                            title={t('logout')}
                                         >
                                             <LogOut size={18} strokeWidth={1.5} />
                                         </button>
@@ -170,7 +170,7 @@ export const Header = () => {
                                         href="/login"
                                         className="ml-2 md:ml-4 px-4 md:px-6 py-2 md:py-2.5 border border-stone-200 dark:border-white/10 rounded-full text-[9px] font-bold tracking-[.2em] uppercase text-luxury-black dark:text-white hover:bg-luxury-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all shadow-sm"
                                     >
-                                        Login
+                                        {t('login')}
                                     </Link>
                                 )}
 
@@ -211,9 +211,18 @@ export const Header = () => {
                                     className="mt-4 px-8 py-4 bg-luxury-black dark:bg-gold text-white rounded-full text-[10px] font-bold tracking-widest uppercase text-center shadow-xl"
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >
-                                    Login / Register
+                                    {t('login')} / {t('register')}
                                 </Link>
                             )}
+
+                            {/* Mobile Language Switch & Theme Toggle */}
+                            <div className="flex items-center justify-between pt-6 border-t border-stone-100 dark:border-white/10">
+                                <span className="text-[10px] font-bold tracking-widest uppercase text-stone-400">Settings</span>
+                                <div className="flex items-center gap-4">
+                                    <LanguageSwitch />
+                                    <ThemeToggle />
+                                </div>
+                            </div>
                             {isAuthenticated && (
                                 <>
                                     {isAdmin && (
@@ -241,7 +250,7 @@ export const Header = () => {
                                         className="text-xs font-bold tracking-[.3em] uppercase text-luxury-black dark:text-white hover:text-gold transition-colors flex items-center justify-between group pt-4 border-t border-stone-100 dark:border-white/10"
                                         onClick={() => setIsMobileMenuOpen(false)}
                                     >
-                                        {user?.name || 'My Profile'}
+                                        {user?.name || t('my_profile')}
                                         <ChevronRight size={14} />
                                     </Link>
                                     <button
@@ -251,7 +260,7 @@ export const Header = () => {
                                         }}
                                         className="text-xs font-bold tracking-[.3em] uppercase text-red-500 hover:text-red-600 transition-colors flex items-center justify-between group"
                                     >
-                                        Sign Out
+                                        {t('logout')}
                                         <LogOut size={14} />
                                     </button>
                                 </>
