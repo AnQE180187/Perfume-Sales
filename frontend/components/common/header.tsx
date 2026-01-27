@@ -126,26 +126,7 @@ export const Header = () => {
 
                                 {isAuthenticated ? (
                                     <div className="flex items-center gap-2 md:gap-4 pl-2 md:pl-4 border-l border-stone-100 dark:border-white/10 transition-colors ml-2">
-                                        {isAdmin && (
-                                            <Link
-                                                href="/dashboard/admin"
-                                                className="hidden md:flex items-center gap-2 px-4 py-2 rounded-full bg-gold/10 hover:bg-gold/20 text-gold text-[9px] font-bold tracking-widest uppercase transition-colors"
-                                                title="Admin Dashboard"
-                                            >
-                                                <ShieldCheck size={16} />
-                                                Admin
-                                            </Link>
-                                        )}
-                                        {isStaff && !isAdmin && (
-                                            <Link
-                                                href="/dashboard/staff"
-                                                className="hidden md:flex items-center gap-2 px-4 py-2 rounded-full bg-gold/10 hover:bg-gold/20 text-gold text-[9px] font-bold tracking-widest uppercase transition-colors"
-                                                title="Staff Dashboard"
-                                            >
-                                                <LayoutDashboard size={16} />
-                                                Dashboard
-                                            </Link>
-                                        )}
+
                                         <Link
                                             href="/dashboard/profile"
                                             className="hidden md:flex flex-col items-end group"

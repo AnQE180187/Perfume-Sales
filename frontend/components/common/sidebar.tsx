@@ -37,8 +37,8 @@ export const Sidebar = () => {
         const customer = [
             { icon: MessageSquare, label: navT('customer.ai_chat'), href: '/dashboard/customer/ai-chat' },
             { icon: BrainCircuit, label: navT('customer.quiz'), href: '/dashboard/customer/quiz' },
-            { icon: Sparkles, label: navT('customer.consultation'), href: '/consultation' },
-            { icon: Zap, label: navT('customer.subscription'), href: '/subscription' },
+
+
             { icon: Heart, label: commonT('favorites'), href: '/favorite' },
             { icon: ClipboardList, label: commonT('orders'), href: '/dashboard/customer/orders' },
             { icon: Coins, label: navT('customer.loyalty'), href: '/dashboard/customer/loyalty' },
@@ -132,6 +132,7 @@ export const Sidebar = () => {
                     </div>
                     <div className="flex-1 overflow-hidden">
                         <p className="text-xs font-heading text-foreground truncate uppercase tracking-tighter">{user?.name || 'Explorer'}</p>
+                        <p className="text-[10px] text-muted-foreground truncate uppercase tracking-widest mt-0.5">{user?.role || 'Guest'}</p>
                     </div>
                 </div>
 
