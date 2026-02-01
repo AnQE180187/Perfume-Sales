@@ -1,5 +1,5 @@
 ##################################################
-# OS & EDITOR FILES
+# OS & TEMP FILES
 ##################################################
 .DS_Store
 Thumbs.db
@@ -12,15 +12,16 @@ desktop.ini
 *.tmp
 *.temp
 *.cache
+*.log
 
 ##################################################
 # IDE / EDITOR
 ##################################################
 .idea/
+.vscode/
 *.iml
 *.ipr
 *.iws
-.vscode/
 *.code-workspace
 
 ##################################################
@@ -37,31 +38,36 @@ build/
 coverage/
 doc/api/
 .metadata
+.flutter-devtools/
 
 ##################################################
 # ANDROID
 ##################################################
+android/**/build/
 android/.gradle/
-android/app/debug/
-android/app/profile/
-android/app/release/
 
 ##################################################
-# IOS / MACOS
+# IOS / MACOS / WINDOWS / LINUX (GENERATED)
 ##################################################
+ios/Flutter/ephemeral/
+ios/Flutter/GeneratedPluginRegistrant.*
 ios/Flutter/.last_build_id
-ios/Flutter/Generated.xcconfig
-ios/Flutter/flutter_export_environment.sh
-macos/Flutter/ephemeral/
 
-##################################################
-# LINUX / WINDOWS GENERATED FILES
-##################################################
+macos/Flutter/ephemeral/
+macos/Flutter/GeneratedPluginRegistrant.swift
+
 linux/flutter/generated_plugin_registrant.*
 linux/flutter/generated_plugins.cmake
 
 windows/flutter/generated_plugin_registrant.*
 windows/flutter/generated_plugins.cmake
+
+##################################################
+# GENERATED (ANYWHERE)
+##################################################
+**/generated_plugin_registrant.*
+**/GeneratedPluginRegistrant.*
+**/generated_plugins.cmake
 
 ##################################################
 # GENERATED SOURCE FILES
@@ -73,13 +79,7 @@ windows/flutter/generated_plugins.cmake
 *.config.dart
 
 ##################################################
-# SYMBOLS & OBFUSCATION
-##################################################
-app.*.symbols
-app.*.map.json
-
-##################################################
-# ENVIRONMENT & SECRETS (CRITICAL)
+# ENVIRONMENT & SECRETS (NEVER COMMIT)
 ##################################################
 .env
 .env.*
@@ -88,7 +88,6 @@ app.*.map.json
 assets/.env
 assets/.env.*
 
-# Allow examples
 !.env.example
 !assets/.env.example
 
@@ -102,18 +101,14 @@ GoogleService-Info.plist
 firebase_options.dart
 
 ##################################################
-# DEVTOOLS / DEBUG
+# MARKDOWN (INTERNAL DOCS)
 ##################################################
-devtools_options.yaml
+*.md
+!README.md
 
 ##################################################
-# SCREENSHOTS / LOCAL ASSETS (OPTIONAL)
+# SCREENSHOTS / LOCAL ASSETS
 ##################################################
 flutter_*.png
 screenshots/
 .tmp/
-
-##################################################
-# LOG FILES
-##################################################
-*.log
