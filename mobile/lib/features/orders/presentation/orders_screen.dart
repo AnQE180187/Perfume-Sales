@@ -1,3 +1,18 @@
+// This file has been refactored with a modular architecture.
+// For backward compatibility, the old OrdersScreen name now points to the new implementation.
+
+import 'screens/orders_screen_refactored.dart';
+
+// Export the new screen with the old name for backward compatibility
+export 'screens/orders_screen_refactored.dart' show OrdersScreenRefactored;
+
+// Create an alias so existing code using OrdersScreen still works
+typedef OrdersScreen = OrdersScreenRefactored;
+
+// ============================================
+// OLD IMPLEMENTATION (PRESERVED FOR REFERENCE)
+// ============================================
+/*
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,8 +21,8 @@ import '../../../core/theme/app_theme.dart';
 import '../models/order.dart';
 import '../providers/order_provider.dart';
 
-class OrdersScreen extends ConsumerWidget {
-  const OrdersScreen({super.key});
+class OrdersScreenOld extends ConsumerWidget {
+  const OrdersScreenOld({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -325,3 +340,4 @@ class _OrderCard extends ConsumerWidget {
     );
   }
 }
+*/

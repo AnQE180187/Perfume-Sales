@@ -13,6 +13,9 @@ import '../../features/payment/presentation/payment_method_screen.dart';
 import '../../features/payment/presentation/payment_result_screen.dart';
 import '../../features/search/presentation/search_screen.dart';
 import '../../features/wishlist/presentation/wishlist_screen.dart';
+import '../../features/product/presentation/explore_screen.dart';
+import '../../features/product/presentation/product_detail_screen.dart';
+import '../../features/product/presentation/reviews_screen.dart';
 import '../widgets/main_shell.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -115,6 +118,28 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/wishlist',
         builder: (context, state) => const WishlistScreen(),
+      ),
+      GoRoute(
+        path: '/explore',
+        builder: (context, state) => const ExploreScreen(),
+      ),
+      GoRoute(
+        path: '/product/:id',
+        builder: (context, state) {
+          final productId = state.pathParameters['id']!;
+          return ProductDetailScreen(productId: productId);
+        },
+      ),
+      GoRoute(
+        path: '/product/:id/reviews',
+        builder: (context, state) {
+          final productId = state.pathParameters['id']!;
+          final productName = state.uri.queryParameters['name'] ?? 'Product';
+          return ReviewsScreen(
+            productId: productId,
+            productName: productName,
+          );
+        },
       ),
     ],
   );
