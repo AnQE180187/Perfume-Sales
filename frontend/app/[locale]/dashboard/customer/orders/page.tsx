@@ -1,148 +1,151 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import {
-    Package,
-    ArrowRight,
     MapPin,
     Truck,
     PackageCheck,
     Calendar,
-    ChevronRight
+    ChevronRight,
+    Loader2,
+    Clock,
+    XCircle,
+    Receipt
 } from 'lucide-react';
-import { Header } from '@/components/common/header';
-import Image from 'next/image';
+import { orderService, type Order } from '@/services/order.service';
+import { AuthGuard } from '@/components/auth/auth-guard';
+import { cn } from '@/lib/utils';
 
-const myOrders = [
-    {
-        id: "AURA-8420",
-        product: "Lumina No. 01 (Extrait)",
-        price: "5.400.000đ",
-        date: "Ordered Oct 26, 2025",
-        status: "Processing",
-        statusDesc: "Stabilizing molecular balance",
-        image: "/luxury_perfume_hero_cinematic.png"
-    },
-    {
-        id: "AURA-7912",
-        product: "Discovery Set Vol. 1",
-        price: "2.000.000đ",
-        date: "Delivered Oct 12, 2025",
-        status: "Delivered",
-        statusDesc: "Hand-delivered by Courier",
-        image: "/luxury_ai_scent_lab.png"
-    }
-];
+const STATUS_CONFIG = {
+    PENDING: { label: 'Chờ xác nhận', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', icon: Clock },
+    CONFIRMED: { label: 'Đã xác nhận', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20', icon: PackageCheck },
+    PROCESSING: { label: 'Đang chuẩn bị', color: 'bg-purple-500/10 text-purple-600 border-purple-500/20', icon: PackageCheck },
+    SHIPPED: { label: 'Đang giao hàng', color: 'bg-orange-500/10 text-orange-600 border-orange-500/20', icon: Truck },
+    COMPLETED: { label: 'Hoàn thành', color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', icon: PackageCheck },
+    CANCELLED: { label: 'Đã hủy', color: 'bg-red-500/10 text-red-600 border-red-500/20', icon: XCircle },
+};
 
 export default function CustomerOrdersPage() {
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    const fetchOrders = useCallback(async () => {
+        try {
+            const data = await orderService.listMy();
+            setOrders(data);
+        } catch (error) {
+            console.error('Failed to fetch my orders:', error);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchOrders();
+    }, [fetchOrders]);
+
     return (
-        <div className="min-h-screen bg-stone-50 dark:bg-zinc-950 transition-colors">
-            <Header />
+        <AuthGuard allowedRoles={['customer', 'staff', 'admin']}>
+            <div className="flex flex-col gap-10 py-10 px-8">
+                <header className="mb-2">
+                    <h1 className="text-4xl md:text-5xl font-serif text-luxury-black dark:text-white mb-2 transition-colors">
+                        My <span className="italic">Acquisitions</span>
+                    </h1>
+                    <p className="text-[10px] text-stone-500 uppercase tracking-[.4em] font-bold">
+                        Registry of your unique olfactory journey.
+                    </p>
+                </header>
 
-            <main className="container mx-auto px-6 py-32 lg:py-40">
-                <div className="max-w-5xl mx-auto">
-                    <header className="mb-20">
-                        <h1 className="text-5xl md:text-6xl font-serif text-luxury-black dark:text-white mb-6">
-                            My <span className="italic">Acquisitions</span>
-                        </h1>
-                        <p className="text-[10px] text-stone-500 uppercase tracking-[.4em] font-bold">
-                            Registry of your unique olfactory journey.
-                        </p>
-                    </header>
+                <div className="space-y-8">
+                    {loading ? (
+                        <div className="py-20 flex justify-center">
+                            <Loader2 className="animate-spin text-gold" size={40} />
+                        </div>
+                    ) : orders.length === 0 ? (
+                        <div className="py-20 text-center space-y-6 glass rounded-[3rem] border border-stone-100 dark:border-white/5 bg-white dark:bg-zinc-900">
+                            <Receipt className="mx-auto text-stone-200 dark:text-white/5" size={80} strokeWidth={1} />
+                            <div className="space-y-2">
+                                <h3 className="text-xl font-serif text-luxury-black dark:text-white">The Archival Registry is Empty</h3>
+                                <p className="text-[10px] font-bold tracking-widest uppercase text-stone-400">Start your journey into luxury scents today.</p>
+                            </div>
+                        </div>
+                    ) : (
+                        orders.map((order, i) => {
+                            const style = STATUS_CONFIG[order.status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.PENDING;
+                            const StatusIcon = style.icon;
 
-                    <div className="space-y-10">
-                        {myOrders.map((order, i) => (
-                            <motion.div
-                                key={order.id}
-                                initial={{ opacity: 0, y: 30 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: i * 0.1 }}
-                                className="glass bg-white dark:bg-zinc-900 rounded-[3.5rem] p-10 border border-stone-100 dark:border-white/5 shadow-sm hover:shadow-xl transition-all"
-                            >
-                                <div className="flex flex-col lg:flex-row gap-12">
-                                    {/* Order Visual */}
-                                    <div className="relative w-full lg:w-56 aspect-[3/4] rounded-3xl overflow-hidden shadow-2xl flex-shrink-0">
-                                        <Image src={order.image} alt={order.product} fill className="object-cover" />
-                                        <div className="absolute inset-0 bg-black/10" />
-                                    </div>
-
-                                    {/* Order Details */}
-                                    <div className="flex-1 flex flex-col justify-between py-2">
-                                        <div>
-                                            <div className="flex flex-wrap justify-between items-start gap-4 mb-8">
+                            return (
+                                <motion.div
+                                    key={order.id}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: i * 0.1 }}
+                                    className="glass bg-white dark:bg-zinc-900 rounded-[3rem] p-8 border border-stone-100 dark:border-white/5 shadow-sm hover:shadow-xl transition-all"
+                                >
+                                    <div className="flex flex-col lg:flex-row gap-8">
+                                        {/* Order Brief */}
+                                        <div className="flex-1">
+                                            <div className="flex flex-wrap justify-between items-start gap-4 mb-6">
                                                 <div>
-                                                    <span className="text-[10px] font-bold text-gold uppercase tracking-widest mb-2 block">
-                                                        Order {order.id}
+                                                    <span className="text-[9px] font-bold text-gold uppercase tracking-[.4em] mb-2 block">
+                                                        Order {order.code}
                                                     </span>
-                                                    <h2 className="text-3xl font-serif text-luxury-black dark:text-white mb-2">
-                                                        {order.product}
+                                                    <h2 className="text-2xl font-serif text-luxury-black dark:text-white mb-1 transition-colors">
+                                                        {order.items?.[0]?.product?.name || 'Fragrance Acquisition'}
+                                                        {order.items && order.items.length > 1 && <span className="text-sm italic text-stone-400 ml-2"> (+{order.items.length - 1} more)</span>}
                                                     </h2>
-                                                    <p className="text-xs text-stone-400 font-bold uppercase tracking-widest">
-                                                        {order.date}
+                                                    <p className="text-[9px] text-stone-400 font-bold uppercase tracking-widest flex items-center gap-2">
+                                                        <Calendar size={12} />
+                                                        {new Date(order.createdAt!).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                                                     </p>
                                                 </div>
                                                 <div className="text-right">
-                                                    <span className="text-2xl font-serif text-luxury-black dark:text-white block mb-2">
-                                                        {order.price}
+                                                    <span className="text-xl font-serif text-luxury-black dark:text-white block mb-2">
+                                                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.finalAmount)}
                                                     </span>
-                                                    <span className={`inline-flex items-center gap-2 text-[10px] px-4 py-1.5 rounded-full font-bold uppercase ${order.status === 'Delivered'
-                                                            ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600'
-                                                            : 'bg-gold/10 text-gold'
-                                                        }`}>
-                                                        {order.status === 'Delivered' ? <PackageCheck size={12} /> : <Truck size={12} />}
-                                                        {order.status}
-                                                    </span>
+                                                    <div className={cn(
+                                                        "inline-flex items-center gap-2 text-[8px] px-4 py-1.5 rounded-full font-bold uppercase tracking-widest border",
+                                                        style.color
+                                                    )}>
+                                                        <StatusIcon size={12} />
+                                                        {style.label}
+                                                    </div>
                                                 </div>
                                             </div>
 
-                                            <div className="grid md:grid-cols-2 gap-8 border-t border-stone-100 dark:border-white/5 pt-8">
+                                            <div className="grid md:grid-cols-2 gap-6 border-t border-stone-100 dark:border-white/5 pt-6">
                                                 <div className="flex items-start gap-4">
-                                                    <div className="p-3 bg-stone-50 dark:bg-white/5 rounded-2xl text-stone-400">
-                                                        <MapPin size={18} />
+                                                    <div className="p-2.5 bg-stone-50 dark:bg-white/5 rounded-2xl text-stone-400 border border-stone-100 dark:border-white/5">
+                                                        <MapPin size={16} />
                                                     </div>
                                                     <div>
-                                                        <h4 className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Shipping Address</h4>
-                                                        <p className="text-xs text-luxury-black dark:text-stone-300 font-medium leading-relaxed">
-                                                            123 Nguyen Hue St, District 1<br />Ho Chi Minh City, VN
+                                                        <h4 className="text-[8px] font-bold text-stone-400 uppercase tracking-widest mb-1">Destination</h4>
+                                                        <p className="text-[10px] text-stone-500 dark:text-stone-300 font-medium leading-relaxed uppercase tracking-tight line-clamp-2">
+                                                            {order.shippingAddress}
                                                         </p>
                                                     </div>
                                                 </div>
-                                                <div className="flex items-start gap-4">
-                                                    <div className="p-3 bg-stone-50 dark:bg-white/5 rounded-2xl text-stone-400">
-                                                        <Calendar size={18} />
-                                                    </div>
-                                                    <div>
-                                                        <h4 className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Latest Update</h4>
-                                                        <p className="text-xs text-luxury-black dark:text-stone-300 font-bold tracking-widest italic">
-                                                            {order.statusDesc}
-                                                        </p>
-                                                    </div>
+                                                <div className="flex items-end justify-end">
+                                                    <button className="text-[10px] font-bold uppercase tracking-widest text-luxury-black dark:text-white flex items-center gap-2 hover:text-gold transition-colors group">
+                                                        View Full Manifest <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                                                    </button>
                                                 </div>
                                             </div>
-                                        </div>
-
-                                        <div className="mt-12 flex flex-wrap gap-4">
-                                            <button className="px-8 py-4 bg-luxury-black dark:bg-gold text-white rounded-full font-bold tracking-widest uppercase text-[10px] flex items-center gap-3 hover:bg-stone-800 dark:hover:bg-gold/80 transition-all shadow-xl cursor-pointer">
-                                                Track Shipment <ArrowRight size={14} />
-                                            </button>
-                                            <button className="px-8 py-4 border border-stone-200 dark:border-white/10 text-stone-400 hover:text-luxury-black dark:hover:text-white rounded-full font-bold tracking-widest uppercase text-[10px] flex items-center gap-3 transition-all cursor-pointer">
-                                                Order Details <ChevronRight size={14} />
-                                            </button>
                                         </div>
                                     </div>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
-
-                    <footer className="mt-20 pt-10 border-t border-stone-100 dark:border-white/5 text-center">
-                        <button className="text-[10px] font-bold uppercase tracking-[.3em] text-stone-400 hover:text-gold transition-colors cursor-pointer">
-                            View Archival Order Manifests
-                        </button>
-                    </footer>
+                                </motion.div>
+                            );
+                        })
+                    )}
                 </div>
-            </main>
-        </div>
+
+                <footer className="mt-10 pt-10 border-t border-stone-100 dark:border-white/5 text-center">
+                    <p className="text-[8px] font-bold uppercase tracking-[.4em] text-stone-400">
+                        Aura AI Neural Commerce Engine v2.0
+                    </p>
+                </footer>
+            </div>
+        </AuthGuard>
     );
 }

@@ -351,8 +351,8 @@ export default function AdminProducts() {
                     <button
                       onClick={() => handleToggleVisibility(p.id, p.isActive)}
                       className={`transition-colors ${p.isActive
-                          ? 'text-muted-foreground hover:text-orange-500'
-                          : 'text-muted-foreground hover:text-green-500'
+                        ? 'text-muted-foreground hover:text-orange-500'
+                        : 'text-muted-foreground hover:text-green-500'
                         }`}
                       title={p.isActive ? 'Hide product' : 'Show product'}
                     >
