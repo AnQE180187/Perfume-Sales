@@ -41,4 +41,12 @@ export class OrdersController {
   async getById(@Param('id') id: string) {
     return this.ordersService.getOrderById(id);
   }
+
+  @Post('admin/:id/status')
+  async updateStatus(
+    @Param('id') id: string,
+    @Body() dto: { status?: any; paymentStatus?: any },
+  ) {
+    return this.ordersService.updateStatus(id, dto.status, dto.paymentStatus);
+  }
 }
