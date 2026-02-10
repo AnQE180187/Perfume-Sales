@@ -1,10 +1,10 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/product_card.dart';
 import '../providers/wishlist_provider.dart';
-import '../../product/models/product.dart';
 
 class WishlistScreen extends ConsumerWidget {
   const WishlistScreen({super.key});
@@ -14,36 +14,45 @@ class WishlistScreen extends ConsumerWidget {
     final wishlist = ref.watch(wishlistProvider);
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: AppTheme.ivoryBackground,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
         title: Text(
-          'WISHLIST',
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            letterSpacing: 4,
-            fontSize: 12,
+          'Wishlist',
+          style: GoogleFonts.playfairDisplay(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: AppTheme.deepCharcoal,
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 18),
+          icon: const Icon(Icons.arrow_back, color: AppTheme.deepCharcoal),
           onPressed: () => context.pop(),
         ),
       ),
       body: wishlist.isNotEmpty
           ? GridView.builder(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                childAspectRatio: 0.65,
+                childAspectRatio: 0.62,
                 crossAxisSpacing: 16,
-                mainAxisSpacing: 24,
+                mainAxisSpacing: 16,
               ),
               itemCount: wishlist.length,
               itemBuilder: (context, index) {
                 final product = wishlist[index];
-                return _WishlistProductCard(product: product);
+                return ProductCard(
+                  product: product,
+                  variant: ProductCardVariant.grid,
+                  isFavorite: true,
+                  onTap: () => context.push('/product/${product.id}'),
+                  onFavoriteToggle: () {
+                    ref.read(wishlistProvider.notifier).toggle(product);
+                  },
+                );
               },
             )
           : _buildEmptyState(context),
@@ -52,144 +61,47 @@ class WishlistScreen extends ConsumerWidget {
 
   Widget _buildEmptyState(BuildContext context) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.favorite_border,
-            size: 48,
-            color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.3),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'YOUR WISHLIST IS EMPTY',
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              letterSpacing: 2,
-              fontSize: 12,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Discover scents that speak to your soul',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.6),
-            ),
-          ),
-          const SizedBox(height: 32),
-          OutlinedButton(
-            onPressed: () => context.go('/home'),
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-              side: BorderSide(color: AppTheme.champagneGold, width: 0.5),
-            ),
-            child: Text(
-              'EXPLORE COLLECTION',
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(fontSize: 10),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _WishlistProductCard extends ConsumerWidget {
-  final Product product;
-
-  const _WishlistProductCard({required this.product});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return GestureDetector(
-      onTap: () => context.push('/products/${product.id}'),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
-            width: 0.5,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 40),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Expanded(
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  ClipRRect(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                    child: Image.network(
-                      product.imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: Theme.of(context).scaffoldBackgroundColor,
-                        child: const Icon(Icons.image_not_supported),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: GestureDetector(
-                      onTap: () {
-                        ref.read(wishlistProvider.notifier).toggle(product);
-                      },
-                      child: ClipOval(
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-                          child: Container(
-                            padding: const EdgeInsets.all(6),
-                            color: Colors.black.withValues(alpha: 0.2),
-                            child: const Icon(
-                              Icons.favorite,
-                              size: 16,
-                              color: AppTheme.champagneGold,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+            Icon(
+              Icons.favorite_border,
+              size: 64,
+              color: AppTheme.mutedSilver.withValues(alpha: 0.3),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Your wishlist is waiting\nfor a scent you love.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.playfairDisplay(
+                fontSize: 20,
+                fontWeight: FontWeight.w400,
+                height: 1.4,
+                color: AppTheme.deepCharcoal.withValues(alpha: 0.7),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    product.brand.toUpperCase(),
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      fontSize: 8,
-                      color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    product.name,
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(fontSize: 12),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '\$${product.price.toStringAsFixed(0)}',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppTheme.accentGold,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
+            const SizedBox(height: 40),
+            OutlinedButton(
+              onPressed: () => context.go('/explore'),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                side: BorderSide(
+                  color: AppTheme.accentGold.withValues(alpha: 0.5),
+                  width: 1,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                ),
+              ),
+              child: Text(
+                'Explore fragrances',
+                style: GoogleFonts.montserrat(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.accentGold,
+                ),
               ),
             ),
           ],

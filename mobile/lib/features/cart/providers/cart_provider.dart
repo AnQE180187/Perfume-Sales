@@ -39,7 +39,41 @@ class CartState {
 }
 
 class CartNotifier extends StateNotifier<CartState> {
-  CartNotifier() : super(CartState());
+  CartNotifier() : super(CartState(items: _mockItems));
+
+  // Mock data for testing
+  static final List<CartItem> _mockItems = [
+    CartItem(
+      id: '1',
+      productId: 'p1',
+      productName: 'Elysium Essence',
+      productImage: 'https://images.unsplash.com/photo-1541643600914-78b084683601?w=400',
+      price: 120.00,
+      quantity: 1,
+      size: '100ml',
+      variant: 'Oud & Bergamot',
+    ),
+    CartItem(
+      id: '2',
+      productId: 'p2',
+      productName: 'Night Shade',
+      productImage: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=400',
+      price: 85.00,
+      quantity: 1,
+      size: '50ml',
+      variant: 'AI Formulation #4',
+    ),
+    CartItem(
+      id: '3',
+      productId: 'p3',
+      productName: 'Solar Flare',
+      productImage: 'https://images.unsplash.com/photo-1588405748880-12d1d2a59db9?w=400',
+      price: 0.00, // Free sample
+      quantity: 1,
+      size: '2ml',
+      variant: 'Citrus & Amber',
+    ),
+  ];
 
   // Add item to cart
   void addItem(CartItem item) {

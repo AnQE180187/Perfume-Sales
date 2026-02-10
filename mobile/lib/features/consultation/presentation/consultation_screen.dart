@@ -1,171 +1,264 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
-import 'package:perfume_gpt_app/l10n/app_localizations.dart';
+import '../models/chat_message.dart';
+import '../models/product_recommendation.dart';
+import 'widgets/ai_message_bubble.dart';
+import 'widgets/user_message_bubble.dart';
+import 'widgets/suggestion_chip.dart';
 
-class ConsultationScreen extends StatelessWidget {
+class ConsultationScreen extends StatefulWidget {
   const ConsultationScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final brightness = Theme.of(context).brightness;
+  State<ConsultationScreen> createState() => _ConsultationScreenState();
+}
+
+class _ConsultationScreenState extends State<ConsultationScreen> {
+  final TextEditingController _messageController = TextEditingController();
+  final List<ChatMessage> _messages = [
+    ChatMessage(
+      isAI: true,
+      text: 'Good evening. I\'m your personal scent sommelier. How may I assist you in discovering your signature fragrance today?',
+      timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
+    ),
+  ];
+
+  @override
+  void dispose() {
+    _messageController.dispose();
+    super.dispose();
+  }
+
+  void _sendMessage() {
+    if (_messageController.text.trim().isEmpty) return;
     
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        title: Text(
-          l10n.neuralArchitect.toUpperCase(),
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            letterSpacing: 6,
-            fontSize: 12,
-          ),
-        ),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new, size: 18, color: Theme.of(context).primaryColor),
-          onPressed: () => Navigator.pop(context),
-        ),
+    setState(() {
+      _messages.add(ChatMessage(
+        isAI: false,
+        text: _messageController.text,
+        timestamp: DateTime.now(),
+      ));
+      _messageController.clear();
+      
+      // Simulate AI response
+      Future.delayed(const Duration(seconds: 1), () {
+        if (mounted) {
+          setState(() {
+            _messages.add(ChatMessage(
+              isAI: true,
+              text: 'An excellent choice. Woody notes provide a sophisticated depth perfect for the evening.',
+              timestamp: DateTime.now(),
+              productRecommendation: ProductRecommendation(
+                id: '7',
+                name: 'Oud Wood Intense',
+                brand: 'Tom Ford',
+                price: 295.00,
+                imageUrl: 'https://images.unsplash.com/photo-1619994737967-d3e5e9478c85?w=800',
+              ),
+            ));
+          });
+        }
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.9,
+      decoration: const BoxDecoration(
+        color: AppTheme.ivoryBackground,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      body: Container(
-        decoration: BoxDecoration(gradient: AppTheme.getLuxuryGradient(brightness)),
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
+      child: Column(
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppTheme.creamWhite,
+              border: Border(
+                bottom: BorderSide(color: AppTheme.softTaupe, width: 1),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppTheme.accentGold,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.auto_awesome_rounded,
+                    color: AppTheme.primaryDb,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Scent Sommelier',
+                        style: GoogleFonts.playfairDisplay(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.deepCharcoal,
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: const BoxDecoration(
+                              color: Colors.green,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'ONLINE',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 1,
+                              color: AppTheme.mutedSilver,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close, color: AppTheme.deepCharcoal),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+          ),
+
+          // Messages
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.all(20),
+              itemCount: _messages.length,
+              itemBuilder: (context, index) {
+                final message = _messages[index];
+                return message.isAI
+                    ? AiMessageBubble(message: message)
+                    : UserMessageBubble(message: message);
+              },
+            ),
+          ),
+
+          // Quick Suggestions
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
                 children: [
-                   _AIBubble(
-                    message: l10n.welcomeMessage,
+                  SuggestionChip(
+                    label: 'Surprise me',
+                    icon: Icons.casino_outlined,
+                    onTap: () {},
                   ),
-                  const _UserBubble(
-                    message: "I want a scent that captures the essence of a midnight library in London.",
+                  const SizedBox(width: 8),
+                  SuggestionChip(
+                    label: 'Under \$150',
+                    icon: Icons.attach_money,
+                    onTap: () {},
                   ),
-                  const _AIBubble(
-                    message: "A sophisticated choice. We should layer aged Parchment accords with hints of Smoky Lapsang Souchong and a heart of Antique Mahogany. Let me formulate this molecular profile for you...",
+                  const SizedBox(width: 8),
+                  SuggestionChip(
+                    label: 'Evening scents',
+                    icon: Icons.nightlight_outlined,
+                    onTap: () {},
                   ),
                 ],
               ),
             ),
-            
-            // Refined Chat Input
-            Padding(
-              padding: const EdgeInsets.fromLTRB(32, 0, 32, 120),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  border: Border.all(color: Theme.of(context).colorScheme.outline, width: 0.5),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        style: GoogleFonts.montserrat(color: Theme.of(context).colorScheme.onSurface, fontSize: 13),
-                        decoration: InputDecoration(
-                          hintText: l10n.describeVision.toUpperCase(),
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          filled: false,
-                          hintStyle: GoogleFonts.montserrat(
-                            color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.5), 
-                            fontSize: 11, 
-                            letterSpacing: 1,
-                          ),
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.auto_awesome, color: Theme.of(context).primaryColor, size: 20),
-                      onPressed: () {},
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _AIBubble extends StatelessWidget {
-  final String message;
-  const _AIBubble({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 40),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.webhook_rounded, color: Theme.of(context).primaryColor, size: 14),
-              const SizedBox(width: 8),
-              Text(
-                l10n.neuralArchitect.toUpperCase(),
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  fontSize: 9, 
-                  color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.5),
-                ),
-              ),
-            ],
           ),
-          const SizedBox(height: 16),
+
+          // Input
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              border: Border(left: BorderSide(color: Theme.of(context).primaryColor, width: 1)),
+              color: AppTheme.creamWhite,
+              border: Border(
+                top: BorderSide(color: AppTheme.softTaupe, width: 1),
+              ),
             ),
-            child: Text(
-              message,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                height: 1.6,
-                fontWeight: FontWeight.w300,
+            child: SafeArea(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppTheme.ivoryBackground,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: AppTheme.softTaupe, width: 1),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.mic_none,
+                            color: AppTheme.mutedSilver,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: TextField(
+                              controller: _messageController,
+                              decoration: InputDecoration(
+                                hintText: 'Describe your mood…',
+                                border: InputBorder.none,
+                                hintStyle: GoogleFonts.montserrat(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w400,
+                                  color: AppTheme.mutedSilver,
+                                ),
+                              ),
+                              style: GoogleFonts.montserrat(
+                                fontSize: 14,
+                                color: AppTheme.deepCharcoal,
+                              ),
+                              onSubmitted: (_) => _sendMessage(),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  GestureDetector(
+                    onTap: _sendMessage,
+                    child: Container(
+                      width: 48,
+                      height: 48,
+                      decoration: const BoxDecoration(
+                        color: AppTheme.accentGold,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.arrow_upward_rounded,
+                        color: AppTheme.primaryDb,
+                        size: 24,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _UserBubble extends StatelessWidget {
-  final String message;
-  const _UserBubble({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 40),
-      child: Align(
-        alignment: Alignment.centerRight,
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.7),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            border: Border.all(color: Theme.of(context).colorScheme.outline, width: 0.5),
-          ),
-          child: Text(
-            message,
-            textAlign: TextAlign.right,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).primaryColor,
-              letterSpacing: 0.5,
-              height: 1.5,
-            ),
-          ),
-        ),
       ),
     );
   }

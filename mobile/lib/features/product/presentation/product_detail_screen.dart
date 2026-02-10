@@ -1,206 +1,323 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../checkout/presentation/checkout_screen.dart';
-import 'package:perfume_gpt_app/l10n/app_localizations.dart';
+import '../../../core/routing/app_routes.dart';
+import '../../../core/widgets/floating_icon_button.dart';
+import '../../../core/widgets/product_size_selector.dart';
+import '../../../core/widgets/ai_scent_analysis_card.dart';
+import '../../../core/widgets/scent_structure_section.dart';
+import '../../../core/widgets/product_story_section.dart';
+import '../../../core/widgets/product_bottom_cta.dart';
+import '../providers/product_provider.dart';
 
-class ProductDetailScreen extends StatelessWidget {
-  const ProductDetailScreen({super.key});
+class ProductDetailScreen extends ConsumerStatefulWidget {
+  final String productId;
+
+  const ProductDetailScreen({super.key, required this.productId});
 
   @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: Stack(
-        children: [
-          CustomScrollView(
-            slivers: [
-              // Hero Image with Parallax-like effect
-              SliverAppBar(
-                expandedHeight: 520,
-                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                leading: IconButton(
-                  icon: Icon(Icons.arrow_back_ios_new, color: Theme.of(context).colorScheme.onSurface, size: 18),
-                  onPressed: () => Navigator.pop(context),
-                ),
-                flexibleSpace: FlexibleSpaceBar(
-                  background: Hero(
-                    tag: 'product_image',
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        Image.network(
-                          'https://images.unsplash.com/photo-1594035910387-fea47794261f?q=80&w=1000&auto=format&fit=crop',
-                          fit: BoxFit.cover,
-                        ),
-                        Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.transparent,
-                                Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.4),
-                                Theme.of(context).scaffoldBackgroundColor,
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l10n.luminaAtelier.toUpperCase(),
-                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          fontSize: 10,
-                          letterSpacing: 4,
-                          color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.5),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              'NOIR ÉLIXIR',
-                              style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: 42),
-                            ),
-                          ),
-                          Text(
-                            '\$280',
-                            style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                              fontSize: 28,
-                              color: AppTheme.champagneGold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 40),
-                      
-                      // Intensity Scale
-                      Text(l10n.intensity.toUpperCase(), style: Theme.of(context).textTheme.labelLarge?.copyWith(fontSize: 10)),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: List.generate(5, (index) => Container(
-                          width: 40,
-                          height: 2,
-                          margin: const EdgeInsets.only(right: 8),
-                          color: index < 4 ? Theme.of(context).primaryColor : Theme.of(context).colorScheme.outline,
-                        )),
-                      ),
-                      const SizedBox(height: 48),
-
-                      // AI INSIGHT
-                      Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surface,
-                          border: Border.all(color: Theme.of(context).colorScheme.outline, width: 0.5),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(Icons.auto_awesome, color: Theme.of(context).primaryColor, size: 16),
-                                const SizedBox(width: 8),
-                                Text(
-                                  l10n.neuralInsight.toUpperCase(),
-                                  style: Theme.of(context).textTheme.labelLarge?.copyWith(fontSize: 10),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'This formulation aligns with your preference for high molecular stability. The base notes of Oud and Tobacco trigger a 14% higher alpha-wave response based on your sensory profile.',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.6),
-                            ),
-                          ],
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 48),
-                      Text(l10n.scentProfile.toUpperCase(), style: Theme.of(context).textTheme.labelLarge?.copyWith(fontSize: 10)),
-                      const SizedBox(height: 24),
-                      _NoteRow(label: l10n.topNotes.toUpperCase(), items: 'Petitgrain, Calabrian Bergamot'),
-                      _NoteRow(label: l10n.heartNotes.toUpperCase(), items: 'Damask Rose, Pink Pepper'),
-                      _NoteRow(label: l10n.baseNotes.toUpperCase(), items: 'Oud, Tobacco, Molecular Musk'),
-                      
-                      const SizedBox(height: 48),
-                      Text(l10n.theStory.toUpperCase(), style: Theme.of(context).textTheme.labelLarge?.copyWith(fontSize: 10)),
-                      const SizedBox(height: 16),
-                      Text(
-                        'A nocturnal masterpiece. Noir Élixir captures the ephemeral moment when the moon illuminates a secret garden. It is a scent designed for those who navigate the world with quiet confidence.',
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: Theme.of(context).textTheme.bodyLarge?.color?.withValues(alpha: 0.7),
-                          height: 1.8,
-                        ),
-                      ),
-                      const SizedBox(height: 140),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          
-          // Fixed Bottom CTA
-          Positioned(
-            bottom: 30,
-            left: 32,
-            right: 32,
-            child: SizedBox(
-              height: 60,
-              child: ElevatedButton(
-                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const CheckoutScreen())),
-                child: Text(l10n.acquireScent.toUpperCase()),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  ConsumerState<ProductDetailScreen> createState() =>
+      _ProductDetailScreenState();
 }
 
-class _NoteRow extends StatelessWidget {
-  final String label;
-  final String items;
-  const _NoteRow({required this.label, required this.items});
+class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
+    with SingleTickerProviderStateMixin {
+  bool _isFavorite = false;
+  bool _isBookmarked = false;
+  bool _isAIAnalysisExpanded = true;
+  String _selectedSize = '100ml';
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+
+  // Size pricing map
+  final Map<String, double> _sizePricing = {
+    '10ml': 35.00,
+    '20ml': 65.00,
+    '50ml': 135.00,
+    '100ml': 295.00,
+  };
+
+  double get _currentPrice => _sizePricing[_selectedSize] ?? 295.00;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOut,
+    );
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 80,
-            child: Text(
-              label,
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(fontSize: 10, color: Theme.of(context).primaryColor),
-            ),
+    final productAsync = ref.watch(productDetailProvider(widget.productId));
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    return Scaffold(
+      backgroundColor: AppTheme.ivoryBackground,
+      body: productAsync.when(
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: AppTheme.accentGold),
+        ),
+        error: (e, _) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.error_outline,
+                size: 48,
+                color: AppTheme.mutedSilver,
+              ),
+              const SizedBox(height: 16),
+              Text('Failed to load product', style: GoogleFonts.montserrat()),
+            ],
           ),
-          Expanded(
-            child: Text(
-              items,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontSize: 14),
-            ),
-          ),
-        ],
+        ),
+        data: (product) {
+          return Stack(
+            children: [
+              CustomScrollView(
+                slivers: [
+                  // ================= HERO IMAGE =================
+                  SliverAppBar(
+                    expandedHeight: screenHeight * 0.55,
+                    pinned: false,
+                    elevation: 0,
+                    backgroundColor: Colors.transparent,
+                    leading: FloatingIconButton(
+                      icon: Icons.arrow_back,
+                      onTap: () => context.pop(),
+                    ),
+                    actions: [
+                      FloatingIconButton(
+                        icon: _isBookmarked
+                            ? Icons.bookmark
+                            : Icons.bookmark_border,
+                        onTap: () =>
+                            setState(() => _isBookmarked = !_isBookmarked),
+                        isActive: _isBookmarked,
+                      ),
+                      const SizedBox(width: 8),
+                      FloatingIconButton(
+                        icon: _isFavorite
+                            ? Icons.favorite
+                            : Icons.favorite_border,
+                        onTap: () => setState(() => _isFavorite = !_isFavorite),
+                        isActive: _isFavorite,
+                      ),
+                      const SizedBox(width: 16),
+                    ],
+                    flexibleSpace: FlexibleSpaceBar(
+                      background: FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: Hero(
+                          tag: 'product-${product.id}',
+                          child: ClipRRect(
+                            borderRadius: const BorderRadius.only(
+                              bottomLeft: Radius.circular(32),
+                              bottomRight: Radius.circular(32),
+                            ),
+                            child: Container(
+                              decoration: const BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Color(0xFFE8D5B7),
+                                    Color(0xFFF5F1ED),
+                                  ],
+                                ),
+                              ),
+                              child: Image.network(
+                                product.imageUrl,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => const Center(
+                                  child: Icon(
+                                    Icons.image_outlined,
+                                    size: 64,
+                                    color: AppTheme.mutedSilver,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // ================= FLOATING PRODUCT INFO CARD =================
+                  SliverToBoxAdapter(
+                    child: Transform.translate(
+                      offset: const Offset(0, -50),
+                      child: FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 16),
+                          padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(28),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.08),
+                                blurRadius: 40,
+                                offset: const Offset(0, 16),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // BRAND
+                              Text(
+                                product.brand.toUpperCase(),
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 10,
+                                  letterSpacing: 1.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppTheme.accentGold,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              // NAME
+                              Text(
+                                product.name,
+                                style: GoogleFonts.playfairDisplay(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w600,
+                                  height: 1.15,
+                                  color: AppTheme.deepCharcoal,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              // SUBTITLE
+                              Text(
+                                'Eau de Parfum',
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 12,
+                                  color: AppTheme.mutedSilver,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              // RATING
+                              if (product.rating != null)
+                                GestureDetector(
+                                  onTap: () {
+                                    context.push(
+                                      AppRoutes.reviewsWithProductId(
+                                        product.id,
+                                      ),
+                                    );
+                                  },
+                                  child: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.star,
+                                        size: 14,
+                                        color: AppTheme.accentGold,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        '${product.rating}',
+                                        style: GoogleFonts.montserrat(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppTheme.deepCharcoal,
+                                        ),
+                                      ),
+                                      if (product.reviews != null) ...[
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          '(${product.reviews} reviews)',
+                                          style: GoogleFonts.montserrat(
+                                            fontSize: 12,
+                                            color: AppTheme.mutedSilver,
+                                            decoration:
+                                                TextDecoration.underline,
+                                          ),
+                                        ),
+                                      ],
+                                      const Spacer(),
+                                      const Icon(
+                                        Icons.arrow_forward_ios,
+                                        size: 14,
+                                        color: AppTheme.mutedSilver,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // ================= SIZE SELECTOR =================
+                  SliverToBoxAdapter(
+                    child: ProductSizeSelector(
+                      selectedSize: _selectedSize,
+                      onSizeChanged: (size) =>
+                          setState(() => _selectedSize = size),
+                    ),
+                  ),
+
+                  // ================= AI SCENT ANALYSIS =================
+                  SliverToBoxAdapter(
+                    child: AIScentAnalysisCard(
+                      isExpanded: _isAIAnalysisExpanded,
+                      onToggle: () => setState(
+                        () => _isAIAnalysisExpanded = !_isAIAnalysisExpanded,
+                      ),
+                      notes: product.notes,
+                    ),
+                  ),
+
+                  // ================= SCENT STRUCTURE =================
+                  SliverToBoxAdapter(
+                    child: ScentStructureSection(notes: product.notes),
+                  ),
+
+                  // ================= THE STORY =================
+                  SliverToBoxAdapter(
+                    child: ProductStorySection(
+                      description: product.description,
+                      productId: product.id,
+                      productName: product.name,
+                      imageUrl: product.imageUrl,
+                    ),
+                  ),
+
+                  // ================= BOTTOM CTA =================
+                  SliverToBoxAdapter(
+                    child: ProductBottomCTA(
+                      selectedSize: _selectedSize,
+                      price: _currentPrice,
+                      productName: product.name,
+                    ),
+                  ),
+
+                  // Final padding
+                  const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                ],
+              ),
+            ],
+          );
+        },
       ),
     );
   }

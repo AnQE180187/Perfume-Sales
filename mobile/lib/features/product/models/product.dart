@@ -5,6 +5,7 @@ class Product {
   final double price;
   final String imageUrl;
   final String? description;
+  final String? story;
   final double? rating;
   final int? reviews;
   final List<String> notes;
@@ -20,6 +21,7 @@ class Product {
     required this.price,
     required this.imageUrl,
     this.description,
+    this.story,
     this.rating,
     this.reviews,
     this.notes = const [],
@@ -36,6 +38,7 @@ class Product {
     double? price,
     String? imageUrl,
     String? description,
+    String? story,
     double? rating,
     int? reviews,
     List<String>? notes,
@@ -51,6 +54,7 @@ class Product {
       price: price ?? this.price,
       imageUrl: imageUrl ?? this.imageUrl,
       description: description ?? this.description,
+      story: story ?? this.story,
       rating: rating ?? this.rating,
       reviews: reviews ?? this.reviews,
       notes: notes ?? this.notes,
@@ -87,15 +91,18 @@ class Product {
       price: (json['price'] as num).toDouble(),
       imageUrl: json['image_url'] as String,
       description: json['description'] as String?,
-      rating: json['rating'] != null ? (json['rating'] as num).toDouble() : null,
+      story: json['story'] as String?,
+      rating: json['rating'] != null
+          ? (json['rating'] as num).toDouble()
+          : null,
       reviews: json['reviews'] as int?,
-      notes: json['notes'] != null 
+      notes: json['notes'] != null
           ? List<String>.from(json['notes'] as List)
           : [],
       size: json['size'] as String?,
       variant: json['variant'] as String?,
       inStock: json['in_stock'] as bool? ?? true,
-      images: json['images'] != null 
+      images: json['images'] != null
           ? List<String>.from(json['images'] as List)
           : null,
     );

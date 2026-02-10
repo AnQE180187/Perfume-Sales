@@ -9,20 +9,35 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'core/theme/app_theme.dart';
 import 'core/routing/app_router.dart';
 import 'core/providers/settings_provider.dart';
+import 'core/config/app_config.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   final prefs = await SharedPreferences.getInstance();
 
-  // 1. Load biến môi trường
-  await dotenv.load(fileName: "assets/.env");
+  // ============================================
+  // DEVELOPMENT MODE - Mock Authentication
+  // ============================================
+  // Khi AppConfig.useMockAuth = true, app sẽ:
+  // - Không cần Supabase connection
+  // - Sử dụng mock user data
+  // - Cho phép phát triển UI mà không cần backend
+  
+  if (!AppConfig.useMockAuth) {
+    // PRODUCTION MODE - Real Supabase Authentication
+    // 1. Load biến môi trường
+    await dotenv.load(fileName: "assets/.env");
 
-  // 2. Khởi tạo Supabase
-  await Supabase.initialize(
-    url: dotenv.env['SUPABASE_URL']!,
-    anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
-  );
+    // 2. Khởi tạo Supabase
+    await Supabase.initialize(
+      url: dotenv.env['SUPABASE_URL']!,
+      anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
+    );
+  } else {
+    print('🚀 Running in DEVELOPMENT MODE with Mock Authentication');
+    print('📝 Set AppConfig.useMockAuth = false to use real Supabase');
+  }
 
   runApp(
     ProviderScope(

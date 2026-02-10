@@ -42,4 +42,7 @@ export const orderService = {
   getAdminById(id: string) {
     return api.get<Order>('/orders/admin/' + id).then((r) => r.data);
   },
+  updateStatus(id: string, dto: { status?: string; paymentStatus?: string }) {
+    return api.post<Order>(`/orders/admin/${id}/status`, dto).then((r) => r.data);
+  },
 };
