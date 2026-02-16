@@ -36,6 +36,7 @@ model User {
   reviews       Review[]
   sessions      Session[]
   preferences   UserScentPreference[]
+  loyaltyTransactions LoyaltyTransaction[]
 }
 
 model OAuthAccount {
@@ -369,6 +370,16 @@ model AuditLog {
 }
 
 
+
+model LoyaltyTransaction {
+  id        String   @id @default(cuid())
+  userId    String
+  orderId   String?
+  points    Int // Số điểm (+ hoặc -)
+  reason    String // EARNED_FROM_ORDER, REDEEMED_FOR_DISCOUNT, etc.
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
 
 enum UserRoleEnum {
   CUSTOMER

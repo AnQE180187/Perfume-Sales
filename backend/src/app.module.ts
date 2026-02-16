@@ -12,6 +12,7 @@ import { CatalogModule } from './catalog/catalog.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { PaymentsModule } from './payments/payments.module';
 import { PromotionsModule } from './promotions/promotions.module';
+import { LoyaltyModule } from './loyalty/loyalty.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { PromotionsModule } from './promotions/promotions.module';
     CloudinaryModule,
     PaymentsModule,
     PromotionsModule,
+    LoyaltyModule,
   ],
   controllers: [AppController],
   providers: [AppService],

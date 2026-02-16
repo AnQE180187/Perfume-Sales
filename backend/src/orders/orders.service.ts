@@ -6,12 +6,14 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { PromotionsService } from '../promotions/promotions.service';
+import { LoyaltyService } from '../loyalty/loyalty.service';
 
 @Injectable()
 export class OrdersService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly promotionsService: PromotionsService
+    private readonly promotionsService: PromotionsService,
+    private readonly loyaltyService: LoyaltyService
   ) { }
 
   async createFromCart(userId: string, dto: CreateOrderDto) {
@@ -52,7 +54,15 @@ export class OrdersService {
       }
     }
 
-    const finalAmount = totalAmount - discountAmount;
+    const finalAmountBeforeLoyalty = totalAmount - discountAmount;
+    let loyaltyDiscount = 0;
+    if (dto.redeemPoints) {
+      const { discountAmount: lpDiscount } = await this.loyaltyService.redeemPoints(userId, dto.redeemPoints);
+      loyaltyDiscount = lpDiscount;
+    }
+
+    const finalAmount = Math.max(0, finalAmountBeforeLoyalty - loyaltyDiscount);
+    const actualDiscountAmount = discountAmount + loyaltyDiscount;
 
     const order = await this.prisma.$transaction(async (tx) => {
       const created = await tx.order.create({
@@ -60,7 +70,7 @@ export class OrdersService {
           code: `ORD-${Date.now()}`,
           userId,
           totalAmount,
-          discountAmount,
+          discountAmount: actualDiscountAmount,
           finalAmount,
           shippingAddress: dto.shippingAddress,
           phone: dto.phone,
@@ -194,12 +204,18 @@ export class OrdersService {
   }
 
   async updateStatus(id: string, status?: any, paymentStatus?: any) {
-    return this.prisma.order.update({
+    const updated = await this.prisma.order.update({
       where: { id },
       data: {
         ...(status && { status }),
         ...(paymentStatus && { paymentStatus }),
       },
     });
+
+    if (status === 'COMPLETED' && updated.userId) {
+      await this.loyaltyService.earnPoints(updated.userId, updated.finalAmount, updated.id);
+    }
+
+    return updated;
   }
 }
