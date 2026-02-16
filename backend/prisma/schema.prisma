@@ -283,26 +283,28 @@ model Shipment {
 }
 
 model PromotionCode {
-  id            Int                   @id @default(autoincrement())
-  code          String                @unique
-  usedCount     Int                   @default(0)
-  amountOff     Int?
-  description   String?
-  discountType  PromotionDiscountType
-  endsAt        DateTime
-  isActive      Boolean               @default(true)
-  minOrderValue Int?
-  percentageOff Int?
-  startsAt      DateTime
-  usageLimit    Int?
-  appliedOrders AppliedPromotion[]
+  id              String                @id @default(cuid())
+  code            String                @unique
+  description     String?
+  discountType    PromotionDiscountType
+  discountValue   Int                   // Giá trị giảm (số tiền hoặc %)
+  minOrderAmount  Int?                  // Giá trị đơn hàng tối thiểu
+  maxDiscount     Int?                  // Giảm tối đa (đối với PERCENTAGE)
+  usageLimit      Int?                  // Số lần sử dụng tối đa
+  usedCount       Int                   @default(0)
+  startDate       DateTime
+  endDate         DateTime
+  isActive        Boolean               @default(true)
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  appliedOrders   AppliedPromotion[]
 }
 
 model AppliedPromotion {
-  id              Int           @id @default(autoincrement())
+  id              String        @id @default(cuid())
   orderId         String
   discountAmount  Int
-  promotionCodeId Int
+  promotionCodeId String
   order           Order         @relation(fields: [orderId], references: [id])
   promotionCode   PromotionCode @relation(fields: [promotionCodeId], references: [id])
 }
@@ -420,7 +422,7 @@ enum ShipmentStatus {
 
 enum PromotionDiscountType {
   PERCENTAGE
-  FIXED
+  FIXED_AMOUNT
 }
 
 enum NotificationChannel {
