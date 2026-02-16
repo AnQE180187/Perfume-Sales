@@ -10,21 +10,26 @@ export class LoyaltyService {
     private readonly REDEEM_VALUE = 500; // 1 point = 500đ discount (100 pts = 50,000đ)
 
     async getLoyaltyInfo(userId: string) {
-        const user = await this.prisma.user.findUnique({
-            where: { id: userId },
-            select: { loyaltyPoints: true },
-        });
+        try {
+            const user = await this.prisma.user.findUnique({
+                where: { id: userId },
+                select: { loyaltyPoints: true },
+            });
 
-        const history = await this.prisma.loyaltyTransaction.findMany({
-            where: { userId },
-            orderBy: { createdAt: 'desc' },
-            take: 20,
-        });
+            const history = await this.prisma.loyaltyTransaction.findMany({
+                where: { userId },
+                orderBy: { createdAt: 'desc' },
+                take: 20,
+            });
 
-        return {
-            points: user?.loyaltyPoints || 0,
-            history,
-        };
+            return {
+                points: user?.loyaltyPoints || 0,
+                history,
+            };
+        } catch (error) {
+            console.error('Error in getLoyaltyInfo:', error);
+            throw error;
+        }
     }
 
     async earnPoints(userId: string, amount: number, orderId: string) {

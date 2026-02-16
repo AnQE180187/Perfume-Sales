@@ -9,11 +9,11 @@ export class LoyaltyController {
 
     @Get('status')
     async getStatus(@Request() req) {
-        return this.loyaltyService.getLoyaltyInfo(req.user.id);
+        return this.loyaltyService.getLoyaltyInfo(req.user.userId);
     }
 
     @Post('redeem')
     async redeem(@Request() req, @Body('points') points: number) {
-        return this.loyaltyService.redeemPoints(req.user.id, points);
+        return this.loyaltyService.redeemPoints(req.user.userId, points);
     }
 }
