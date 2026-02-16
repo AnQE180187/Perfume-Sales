@@ -13,6 +13,7 @@ import { cartService } from '@/services/cart.service';
 import { orderService } from '@/services/order.service';
 import { paymentService, type PayOSPaymentResponse } from '@/services/payment.service';
 import { promotionService, type PromotionValidationResponse } from '@/services/promotion.service';
+import { loyaltyService } from '@/services/loyalty.service';
 
 type PaymentMethod = 'COD' | 'ONLINE' | null;
 
@@ -76,6 +77,11 @@ export default function CheckoutPage() {
     const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
     const [couponError, setCouponError] = useState<string | null>(null);
 
+    // Loyalty states
+    const [loyaltyInfo, setLoyaltyInfo] = useState({ points: 0 });
+    const [usePoints, setUsePoints] = useState(false);
+    const [pointsToUse, setPointsToUse] = useState(0);
+
     useEffect(() => {
         if (!isAuthenticated) {
             router.replace('/login');
@@ -85,11 +91,14 @@ export default function CheckoutPage() {
             setCartItems(c.items);
             setLoading(false);
         }).catch(() => setLoading(false));
+
+        loyaltyService.getStatus().then(setLoyaltyInfo);
     }, [isAuthenticated, router]);
 
     const subtotal = cartItems.reduce((acc, i) => acc + i.variant.price * i.quantity, 0);
-    const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
-    const total = subtotal - discountAmount;
+    const couponDiscount = appliedCoupon ? appliedCoupon.discountAmount : 0;
+    const loyaltyDiscount = usePoints ? pointsToUse * 500 : 0; // matching REDEEM_VALUE in backend
+    const total = Math.max(0, subtotal - couponDiscount - loyaltyDiscount);
 
     const handleApplyCoupon = async () => {
         if (!couponCode.trim()) return;
@@ -125,7 +134,8 @@ export default function CheckoutPage() {
             const order = await orderService.create({
                 shippingAddress: shippingAddress.trim(),
                 phone: phone.trim(),
-                promotionCode: appliedCoupon?.code
+                promotionCode: appliedCoupon?.code,
+                redeemPoints: usePoints ? pointsToUse : undefined
             });
             setOrderId(order.id);
             return order.id;
@@ -451,6 +461,52 @@ export default function CheckoutPage() {
                                             <Tag size={12} /> Áp dụng thành công: Giảm {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(appliedCoupon.discountAmount)}
                                         </p>
                                     )}
+
+                                    {loyaltyInfo.points >= 100 && (
+                                        <div className="mt-8 pt-6 border-t border-stone-100 dark:border-white/5">
+                                            <label className="flex items-center gap-4 cursor-pointer group">
+                                                <div className="relative">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={usePoints}
+                                                        onChange={(e) => {
+                                                            setUsePoints(e.target.checked);
+                                                            if (e.target.checked) setPointsToUse(Math.min(loyaltyInfo.points, Math.floor((subtotal - couponDiscount) / 500)));
+                                                        }}
+                                                        className="sr-only"
+                                                    />
+                                                    <div className={`w-10 h-6 rounded-full transition-colors ${usePoints ? 'bg-gold' : 'bg-stone-200 dark:bg-zinc-800'}`} />
+                                                    <div className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform ${usePoints ? 'translate-x-4' : ''}`} />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="text-[10px] font-bold uppercase tracking-widest text-luxury-black dark:text-white">
+                                                        Dùng điểm tích lũy
+                                                    </p>
+                                                    <p className="text-[8px] text-stone-400 uppercase tracking-tighter">
+                                                        Bạn có {loyaltyInfo.points} điểm (Tương đương {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(loyaltyInfo.points * 500)})
+                                                    </p>
+                                                </div>
+                                            </label>
+
+                                            {usePoints && (
+                                                <motion.div
+                                                    initial={{ height: 0, opacity: 0 }}
+                                                    animate={{ height: 'auto', opacity: 1 }}
+                                                    className="mt-4 pl-14"
+                                                >
+                                                    <div className="flex items-center gap-4">
+                                                        <input
+                                                            type="number"
+                                                            value={pointsToUse}
+                                                            onChange={(e) => setPointsToUse(Math.min(loyaltyInfo.points, Number(e.target.value)))}
+                                                            className="w-24 h-10 bg-stone-50 dark:bg-zinc-950 border border-stone-100 dark:border-white/5 rounded-xl px-4 text-xs font-bold outline-none border-gold"
+                                                        />
+                                                        <span className="text-[10px] text-stone-400 uppercase font-bold">Giảm {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(pointsToUse * 500)}</span>
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="space-y-6 pt-12 border-t border-stone-100 dark:border-white/5">
@@ -463,9 +519,17 @@ export default function CheckoutPage() {
                                         </div>
                                         {appliedCoupon && (
                                             <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-green-500">
-                                                <span>Giảm giá</span>
+                                                <span>Coupon giảm giá</span>
                                                 <span className="">
-                                                    -{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(discountAmount)}
+                                                    -{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(couponDiscount)}
+                                                </span>
+                                            </div>
+                                        )}
+                                        {usePoints && loyaltyDiscount > 0 && (
+                                            <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-gold text-amber-500">
+                                                <span>Điểm tích lũy</span>
+                                                <span className="">
+                                                    -{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(loyaltyDiscount)}
                                                 </span>
                                             </div>
                                         )}

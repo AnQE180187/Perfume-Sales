@@ -26,7 +26,7 @@ export type OrderListResponse = {
 };
 
 export const orderService = {
-  create(dto: { shippingAddress?: string; phone?: string; promotionCode?: string }) {
+  create(dto: { shippingAddress?: string; phone?: string; promotionCode?: string; redeemPoints?: number }) {
     return api.post<Order>('/orders', dto).then((r) => r.data);
   },
   listMy() {

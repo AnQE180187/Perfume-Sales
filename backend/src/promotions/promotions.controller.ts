@@ -12,7 +12,7 @@ export class PromotionsController {
     @Post('validate')
     @UseGuards(JwtAuthGuard)
     async validate(@Body() dto: ValidatePromotionDto, @Request() req) {
-        return this.promotionsService.validate(dto, req.user.id);
+        return this.promotionsService.validate(dto, req.user.userId);
     }
 
     @Post()
