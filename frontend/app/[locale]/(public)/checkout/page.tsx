@@ -6,12 +6,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import QRCode from 'qrcode';
 import {
     ArrowLeft, ArrowRight, CreditCard, Wallet, QrCode,
-    MapPin, Phone, Loader2, Download
+    MapPin, Phone, Loader2, Download, Tag, Check, X
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { cartService } from '@/services/cart.service';
 import { orderService } from '@/services/order.service';
-import { paymentService, PayOSPaymentResponse } from '@/services/payment.service';
+import { paymentService, type PayOSPaymentResponse } from '@/services/payment.service';
+import { promotionService, type PromotionValidationResponse } from '@/services/promotion.service';
 
 type PaymentMethod = 'COD' | 'ONLINE' | null;
 
@@ -69,6 +70,12 @@ export default function CheckoutPage() {
     const [orderId, setOrderId] = useState<string | null>(null);
     const [paymentData, setPaymentData] = useState<PayOSPaymentResponse | null>(null);
 
+    // Promotion states
+    const [couponCode, setCouponCode] = useState('');
+    const [appliedCoupon, setAppliedCoupon] = useState<PromotionValidationResponse | null>(null);
+    const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+    const [couponError, setCouponError] = useState<string | null>(null);
+
     useEffect(() => {
         if (!isAuthenticated) {
             router.replace('/login');
@@ -81,7 +88,29 @@ export default function CheckoutPage() {
     }, [isAuthenticated, router]);
 
     const subtotal = cartItems.reduce((acc, i) => acc + i.variant.price * i.quantity, 0);
-    const total = subtotal;
+    const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
+    const total = subtotal - discountAmount;
+
+    const handleApplyCoupon = async () => {
+        if (!couponCode.trim()) return;
+        setIsApplyingCoupon(true);
+        setCouponError(null);
+        try {
+            const result = await promotionService.validate(couponCode.trim(), subtotal);
+            setAppliedCoupon(result);
+        } catch (e: any) {
+            setCouponError(e.response?.data?.message || 'Mã giảm giá không hợp lệ');
+            setAppliedCoupon(null);
+        } finally {
+            setIsApplyingCoupon(false);
+        }
+    };
+
+    const handleRemoveCoupon = () => {
+        setAppliedCoupon(null);
+        setCouponCode('');
+        setCouponError(null);
+    };
 
     const handleCreateOrderIfNeeded = async (): Promise<string | null> => {
         if (orderId) return orderId;
@@ -96,6 +125,7 @@ export default function CheckoutPage() {
             const order = await orderService.create({
                 shippingAddress: shippingAddress.trim(),
                 phone: phone.trim(),
+                promotionCode: appliedCoupon?.code
             });
             setOrderId(order.id);
             return order.id;
@@ -375,6 +405,54 @@ export default function CheckoutPage() {
                                     )}
                                 </div>
 
+                                {/* Coupon Section */}
+                                <div className="mt-8 pt-8 border-t border-stone-100 dark:border-white/5">
+                                    <div className="flex gap-3">
+                                        <div className="relative flex-1">
+                                            <input
+                                                type="text"
+                                                value={couponCode}
+                                                onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                                                placeholder="MÃ GIẢM GIÁ"
+                                                disabled={!!appliedCoupon || isApplyingCoupon}
+                                                className="w-full h-14 bg-stone-50 dark:bg-zinc-900 border border-stone-100 dark:border-white/5 rounded-2xl px-6 text-xs font-bold tracking-[.3em] uppercase focus:ring-0 focus:border-gold transition-all disabled:opacity-50"
+                                            />
+                                            {appliedCoupon && (
+                                                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-green-500">
+                                                    <Check size={20} />
+                                                </div>
+                                            )}
+                                        </div>
+                                        {appliedCoupon ? (
+                                            <button
+                                                onClick={handleRemoveCoupon}
+                                                className="h-14 aspect-square bg-stone-100 dark:bg-white/5 rounded-2xl flex items-center justify-center text-stone-400 hover:text-red-500 transition-colors"
+                                            >
+                                                <X size={20} />
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={handleApplyCoupon}
+                                                disabled={!couponCode || isApplyingCoupon}
+                                                className="px-8 bg-luxury-black dark:bg-white text-white dark:text-luxury-black rounded-2xl text-[10px] font-bold tracking-[.3em] uppercase hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 flex items-center gap-3"
+                                            >
+                                                {isApplyingCoupon ? <Loader2 className="animate-spin" size={16} /> : <Tag size={16} />}
+                                                Áp dụng
+                                            </button>
+                                        )}
+                                    </div>
+                                    {couponError && (
+                                        <p className="mt-4 text-[10px] font-bold text-red-500 uppercase tracking-widest leading-relaxed">
+                                            {couponError}
+                                        </p>
+                                    )}
+                                    {appliedCoupon && (
+                                        <p className="mt-4 text-[10px] font-bold text-green-500 uppercase tracking-widest leading-relaxed flex items-center gap-2">
+                                            <Tag size={12} /> Áp dụng thành công: Giảm {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(appliedCoupon.discountAmount)}
+                                        </p>
+                                    )}
+                                </div>
+
                                 <div className="space-y-6 pt-12 border-t border-stone-100 dark:border-white/5">
                                     <div className="space-y-4">
                                         <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-stone-400">
@@ -383,6 +461,14 @@ export default function CheckoutPage() {
                                                 {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(subtotal)}
                                             </span>
                                         </div>
+                                        {appliedCoupon && (
+                                            <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-green-500">
+                                                <span>Giảm giá</span>
+                                                <span className="">
+                                                    -{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(discountAmount)}
+                                                </span>
+                                            </div>
+                                        )}
                                         <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-stone-400">
                                             <span>Phí vận chuyển</span>
                                             <span className="text-gold">Miễn phí</span>

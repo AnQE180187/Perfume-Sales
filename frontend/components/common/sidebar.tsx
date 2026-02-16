@@ -56,14 +56,14 @@ export const Sidebar = () => {
             { icon: Users, label: navT('admin.users'), href: '/dashboard/admin/users' },
             { icon: ShieldCheck, label: navT('admin.rbac'), href: '/dashboard/admin/rbac' },
             { icon: Package, label: navT('admin.products'), href: '/dashboard/admin/products' },
-            { icon: FolderTree, label: 'Catalog', href: '/dashboard/admin/catalog' },
+            { icon: Tag, label: navT('admin.promotions'), href: '/dashboard/admin/marketing/promotions' },
             { icon: Receipt, label: commonT('orders'), href: '/dashboard/admin/orders' },
             { icon: BarChart3, label: navT('admin.analytics'), href: '/dashboard/admin/analytics' },
             { icon: Mail, label: navT('admin.marketing'), href: '/dashboard/admin/marketing' },
             { icon: Settings2, label: commonT('settings'), href: '/dashboard/admin/settings' },
         ];
 
-        if (role === 'ADMIN') return [...publicPages, ...shared, ...admin];
+        if (role === 'ADMIN') return [...publicPages.filter(p => p.href !== '/collection'), ...shared, ...admin];
         if (role === 'STAFF') return [...publicPages, ...shared, ...staff];
         return [...publicPages, ...shared, ...customer];
     };

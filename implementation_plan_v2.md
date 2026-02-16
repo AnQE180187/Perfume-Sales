@@ -1,74 +1,52 @@
-# Kế hoạch chi tiết triển khai theo nhánh (Branch-by-Branch Plan)
+# Kế hoạch triển khai (Implementation Plan) - V2
 
-Dưới đây là lộ trình cụ thể cho từng nhánh tính năng. Chúng ta sẽ làm lần lượt, xong nhánh này mới chuyển sang nhánh kia để đảm bảo tính ổn định.
-
----
-
-## 1. Nhánh: `feat/product-variants`
-**Mục tiêu:** Chuyển đổi từ sản phẩm đơn lẻ sang sản phẩm có nhiều định dạng (5ml, 10ml, 50ml, 100ml).
-
-### Bước 1: Database & Core logic (Backend)
-- [ ] **Prisma:**
-    - Thêm model `ProductVariant` { id, productId, name, price, stock, sku }.
-    - Cập nhật `CartItem`: đổi `productId` thành `variantId` (quan trọng!).
-    - Cập nhật `OrderItem`: đổi `productId` thành `variantId`.
-- [ ] **DTOs:**
-    - Hoàn thiện `create-product-variant.dto.ts`.
-    - Cập nhật `create-product.dto.ts` để nhận list `variants`.
-- [ ] **Services:**
-    - `ProductsService`: Logic tạo Product kèm mảng Variants (dùng transaction).
-    - `CartService`: Chỉnh sửa logic `addItem` để nhận diện theo Biến thể.
-    - `OrdersService`: Lấy giá từ Biến thể khi tính tổng tiền.
-
-### Bước 2: Giao diện (Frontend)
-- [ ] **Admin Dashboard:**
-    - Nâng cấp form thêm sản phẩm: Thay vì 1 giá/1 kho, cho phép nhấn "+" để thêm các dòng Biến thể.
-- [ ] **Product Page:**
-    - Thêm bộ chọn Size (Size Selector).
-    - Logic: Khi click vào size 10ml -> Giá hiển thị tự động nhảy theo giá của 10ml.
+Hệ thống: Giảm giá (Discounts) & Điểm thưởng (Loyalty Points)
 
 ---
 
-## 2. Nhánh: `feat/discount-system`
-**Mục tiêu:** Vận hành hệ thống mã giảm giá (Coupon).
-
-### Bước 1: API & Logic xử lý (Backend)
-- [ ] **PromotionsService:**
-    - Viết hàm `validate(code, currentOrderValue)`: kiểm tra ngày, số lượng, điều kiện giá tối thiểu.
-- [ ] **Orders integration:**
-    - Cập nhật `Order.create`: Nếu có mã, tính toán `discountAmount` và update `finalAmount`.
-- [ ] **Admin Controller:**
-    - Viết các API CRUD cho `PromotionCode`.
-
-### Bước 2: Trải nghiệm người dùng (Frontend)
-- [ ] **Checkout Page:**
-    - Thêm khu vực "Apply Coupon". Hiển thị chi tiết số tiền được giảm ngay sau khi áp dụng thành công.
-- [ ] **Admin Promotions:**
-    - Xây dựng màn hình quản lý mã giảm giá (danh sách mã, thống kê đã dùng bao nhiêu lần).
+## 1. Nhánh: `feat/product-variants-refactor` [DONE ✅]
 
 ---
 
-## 3. Nhánh: `feat/loyalty-points`
-**Mục tiêu:** Kích thích mua hàng qua tích điểm và tiêu điểm.
-
-### Bước 1: Quy trình tích/tiêu (Backend)
-- [ ] **Cơ chế Tích điểm (Earning):**
-    - Hook vào sự kiện Order chuyển sang trạng thái `COMPLETED`.
-    - Tính điểm: `finalAmount * 0.01` (1%). Cộng vào `User.loyaltyPoints`.
-- [ ] **Cơ chế Tiêu điểm (Redeeming):**
-    - Cập nhật API Checkout: cho phép user chọn `usePoints`.
-    - Trừ điểm tương ứng với số tiền được giảm.
-
-### Bước 2: Hiển thị & Tương tác (Frontend)
-- [ ] **User Profile:**
-    - Thiết kế Widget "Aura Points" hiển thị số điểm hiện có và lịch sử tích điểm.
-- [ ] **Checkout Integration:**
-    - Thêm Checkbox: "Sử dụng [X] điểm Aura để giảm [Y] VNĐ cho đơn hàng này?".
+## 2. Nhánh: `feat/discount-systems` [DONE ✅]
+- [x] Backend: CẬP NHẬT schema (PromotionCode, AppliedPromotion)
+- [x] Backend: Viết Service/Controller cho Promotions (Validate, List, Create, Delete)
+- [x] Backend: Tích hợp logic giảm giá vào `OrdersService`
+- [x] Frontend: Service tích hợp API `validate`
+- [x] Frontend: Giao diện nhập Coupon trên trang Checkout (Aura Aesthetics)
 
 ---
 
-## 🛠 Cách thực hiện (Dành cho Dev):
-1.  **Tạo nhánh:** `git checkout -b feat/product-variants`
-2.  **Làm theo từng checklist** ở trên.
-3.  **Kiểm tra (Test):** Đảm bảo luồng "Add to cart -> Checkout" vẫn chạy đúng với cấu trúc dữ liệu mới.
-4.  **Merge:** Gộp vào `main` và tiếp tục nhánh tiếp theo.
+## 3. Nhánh: `feat/loyalty-points` (TIẾP THEO 🚀)
+**Mục tiêu:** Tích lũy điểm khi mua hàng và đổi điểm thành voucher/giảm giá.
+
+### Bước 1: Database (Backend)
+- [ ] **Prisma:** Thêm model `LoyaltyTransaction`:
+    ```prisma
+    model LoyaltyTransaction {
+      id          String    @id @default(cuid())
+      userId      String
+      orderId     String?
+      points      Int       // Số điểm (+ hoặc -)
+      reason      String    // EARNED_FROM_ORDER, REDEEMED_FOR_DISCOUNT, etc.
+      createdAt   DateTime  @default(now())
+      user        User      @relation(fields: [userId], references: [id])
+    }
+    ```
+- [ ] **User Model:** Thêm trường `loyaltyPoints Int @default(0)`
+
+### Bước 2: Logic tích điểm (Backend)
+- [ ] **OrdersService:** Khi đơn hàng hoàn thành (`status: COMPLETED`), cộng điểm dựa trên tỉ lệ (ví dụ: 10,000đ = 1 điểm).
+- [ ] **LoyaltyService:** Hàm đổi điểm (ví dụ: 100 điểm = 50,000đ giảm giá).
+
+### Bước 3: Giao diện (Frontend)
+- [ ] **Profile/Dashboard:** Hiển thị số dư điểm và lịch sử giao dịch điểm.
+- [ ] **Checkout:** Thêm checkbox "Dùng XXX điểm để giảm giá ZZZ VNĐ".
+
+---
+
+## 4. Nhánh: `feat/admin-dash-promo`
+**Mục tiêu:** Quản lý mã giảm giá tập trung cho Admin.
+
+- [ ] UI/UX nâng cao để tạo mã (chọn loại giảm giá, ngày hết hạn, v.v.)
+- [ ] Thống kê hiệu quả của từng mã (đã dùng bao nhiêu lần).

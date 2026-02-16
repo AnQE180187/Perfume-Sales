@@ -53,7 +53,8 @@
             "products": "Catalog Management",
             "analytics": "System Intelligence",
             "logs": "Audit & AI Logs",
-            "marketing": "Campaign Manager"
+            "marketing": "Campaign Manager",
+            "promotions": "Promotion Registry"
         }
     },
     "hero": {
