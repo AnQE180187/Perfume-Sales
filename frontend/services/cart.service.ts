@@ -3,13 +3,17 @@ import api from '@/lib/axios';
 export type CartItem = {
   id: number;
   cartId: string;
-  productId: string;
+  variantId: string;
   quantity: number;
-  product: {
+  variant: {
     id: string;
     name: string;
     price: number;
-    images?: { id: number; url: string; order: number }[];
+    product: {
+      id: string;
+      name: string;
+      images?: { id: number; url: string; order: number }[];
+    };
   };
 };
 
@@ -23,8 +27,8 @@ export const cartService = {
   getCart() {
     return api.get<Cart>('/cart').then((r) => r.data);
   },
-  addItem(productId: string, quantity: number) {
-    return api.post<Cart>('/cart/items', { productId, quantity }).then((r) => r.data);
+  addItem(variantId: string, quantity: number) {
+    return api.post<Cart>('/cart/items', { variantId, quantity }).then((r) => r.data);
   },
   updateItem(itemId: number, quantity: number) {
     return api.patch<Cart>('/cart/items/' + itemId, { quantity }).then((r) => r.data);
