@@ -35,10 +35,10 @@ export class PaymentsController {
     const orderCode = parseInt(order.code.replace(/\D/g, '')) || Date.now();
 
     return this.paymentsService.createPayOSPaymentLink(
-      order.id,
+      (order as any).id,
       orderCode,
-      order.finalAmount,
-      order.items,
+      (order as any).finalAmount,
+      (order as any).items,
     );
   }
 

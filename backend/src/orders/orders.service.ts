@@ -15,7 +15,11 @@ export class OrdersService {
       where: { userId },
       include: {
         items: {
-          include: { product: true },
+          include: {
+            variant: {
+              include: { product: true },
+            },
+          },
         },
       },
     });
@@ -25,7 +29,7 @@ export class OrdersService {
     }
 
     const totalAmount = cart.items.reduce(
-      (sum, item) => sum + item.quantity * item.product.price,
+      (sum, item) => sum + item.quantity * item.variant.price,
       0,
     );
 
@@ -41,10 +45,10 @@ export class OrdersService {
           phone: dto.phone,
           items: {
             create: cart.items.map((item) => ({
-              productId: item.productId,
-              unitPrice: item.product.price,
+              variantId: item.variantId,
+              unitPrice: item.variant.price,
               quantity: item.quantity,
-              totalPrice: item.quantity * item.product.price,
+              totalPrice: item.quantity * item.variant.price,
             })),
           },
         },
@@ -65,7 +69,7 @@ export class OrdersService {
     return this.prisma.order.findMany({
       where: { userId },
       include: {
-        items: { include: { product: true } },
+        items: { include: { variant: { include: { product: true } } } },
         user: true,
       },
       orderBy: { createdAt: 'desc' },
@@ -76,7 +80,7 @@ export class OrdersService {
     const [orders, total] = await Promise.all([
       this.prisma.order.findMany({
         include: {
-          items: { include: { product: true } },
+          items: { include: { variant: { include: { product: true } } } },
           user: true,
         },
         orderBy: { createdAt: 'desc' },
@@ -99,9 +103,7 @@ export class OrdersService {
     const order = await this.prisma.order.findFirst({
       where: { id: orderId, userId },
       include: {
-        items: {
-          include: { product: true },
-        },
+        items: { include: { variant: { include: { product: true } } } },
         user: true,
       },
     });
@@ -117,9 +119,7 @@ export class OrdersService {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
       include: {
-        items: {
-          include: { product: true },
-        },
+        items: { include: { variant: { include: { product: true } } } },
         user: true,
       },
     });

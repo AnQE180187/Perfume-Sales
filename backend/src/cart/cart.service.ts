@@ -5,7 +5,7 @@ import { UpdateCartItemDto } from './dto/update-cart-item.dto';
 
 @Injectable()
 export class CartService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async getCart(userId: string) {
     let cart = await this.prisma.cart.findFirst({
@@ -13,9 +13,15 @@ export class CartService {
       include: {
         items: {
           include: {
-            product: {
+            variant: {
               include: {
-                images: true,
+                product: {
+                  include: {
+                    images: {
+                      orderBy: { order: 'asc' },
+                    },
+                  },
+                },
               },
             },
           },
@@ -31,9 +37,15 @@ export class CartService {
         include: {
           items: {
             include: {
-              product: {
+              variant: {
                 include: {
-                  images: true,
+                  product: {
+                    include: {
+                      images: {
+                        orderBy: { order: 'asc' },
+                      },
+                    },
+                  },
                 },
               },
             },
@@ -49,7 +61,7 @@ export class CartService {
     const cart = await this.getCart(userId);
 
     const existing = await this.prisma.cartItem.findFirst({
-      where: { cartId: cart.id, productId: dto.productId },
+      where: { cartId: cart.id, variantId: dto.variantId },
     });
 
     if (existing) {
@@ -61,7 +73,7 @@ export class CartService {
     await this.prisma.cartItem.create({
       data: {
         cartId: cart.id,
-        productId: dto.productId,
+        variantId: dto.variantId,
         quantity: dto.quantity,
       },
     });

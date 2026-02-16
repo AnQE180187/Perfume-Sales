@@ -60,7 +60,7 @@ export default function CheckoutPage() {
     const router = useRouter();
     const { isAuthenticated } = useAuth();
     const [step, setStep] = useState(1);
-    const [cartItems, setCartItems] = useState<{ id: number; product: { name: string; price: number; images?: { url: string }[] }; quantity: number }[]>([]);
+    const [cartItems, setCartItems] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [shippingAddress, setShippingAddress] = useState('');
@@ -80,7 +80,7 @@ export default function CheckoutPage() {
         }).catch(() => setLoading(false));
     }, [isAuthenticated, router]);
 
-    const subtotal = cartItems.reduce((acc, i) => acc + i.product.price * i.quantity, 0);
+    const subtotal = cartItems.reduce((acc, i) => acc + i.variant.price * i.quantity, 0);
     const total = subtotal;
 
     const handleCreateOrderIfNeeded = async (): Promise<string | null> => {
@@ -340,19 +340,24 @@ export default function CheckoutPage() {
                                         cartItems.map((item) => (
                                             <div key={item.id} className="flex gap-6 group">
                                                 <div className="relative w-24 h-32 rounded-2xl overflow-hidden bg-stone-50 dark:bg-zinc-800 flex-shrink-0 border border-stone-100 dark:border-white/5">
-                                                    {item.product.images?.[0]?.url ? (
-                                                        <img src={item.product.images[0].url} alt={item.product.name} className="w-full h-full object-cover" />
+                                                    {item.variant.product.images?.[0]?.url ? (
+                                                        <img src={item.variant.product.images[0].url} alt={item.variant.product.name} className="w-full h-full object-cover" />
                                                     ) : (
                                                         <div className="w-full h-full flex items-center justify-center text-stone-500">—</div>
                                                     )}
                                                 </div>
                                                 <div className="flex-1">
                                                     <div className="flex justify-between items-start mb-2">
-                                                        <h4 className="text-sm font-bold text-luxury-black dark:text-white uppercase tracking-wider">
-                                                            {item.product.name}
-                                                        </h4>
+                                                        <div>
+                                                            <h4 className="text-sm font-bold text-luxury-black dark:text-white uppercase tracking-wider">
+                                                                {item.variant.product.name}
+                                                            </h4>
+                                                            <p className="text-[10px] text-gold uppercase tracking-widest font-bold">
+                                                                {item.variant.name}
+                                                            </p>
+                                                        </div>
                                                         <span className="text-sm font-medium text-luxury-black dark:text-white">
-                                                            {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.product.price * item.quantity)}
+                                                            {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.variant.price * item.quantity)}
                                                         </span>
                                                     </div>
                                                     <p className="text-[10px] text-stone-400 uppercase tracking-widest italic mb-6">

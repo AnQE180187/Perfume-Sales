@@ -41,7 +41,8 @@ export class ProductsService {
           images: {
             orderBy: { order: 'asc' },
           },
-          inventory: true,
+          variants: true,
+          notes: { include: { note: true } },
         },
         orderBy: { createdAt: 'desc' },
       }),
@@ -87,6 +88,10 @@ export class ProductsService {
           images: {
             orderBy: { order: 'asc' },
           },
+          variants: {
+            where: { isActive: true },
+          },
+          notes: { include: { note: true } },
         },
         orderBy: { createdAt: 'desc' },
       }),
@@ -110,8 +115,15 @@ export class ProductsService {
         images: {
           orderBy: { order: 'asc' },
         },
+        variants: {
+          where: { isActive: true },
+        },
         reviews: true,
-        notes: true,
+        notes: {
+          include: {
+            note: true,
+          },
+        },
       },
     });
 
@@ -126,25 +138,19 @@ export class ProductsService {
 
   create(dto: CreateProductDto) {
     return this.prisma.$transaction(async (tx) => {
-      const { stock, inventory, ...productData } = dto;
+      const { variants, ...productData } = dto;
       const product = await tx.product.create({
         data: {
           ...productData,
-          currency: dto.currency ?? 'VND',
           isActive: dto.isActive ?? true,
+          variants: {
+            create: variants,
+          },
+        },
+        include: {
+          variants: true,
         },
       });
-
-      // Use inventory object if provided, otherwise use stock field
-      const quantity = inventory?.quantity ?? stock;
-      if (quantity !== undefined && quantity > 0) {
-        await tx.inventory.create({
-          data: {
-            productId: product.id,
-            quantity: quantity,
-          },
-        });
-      }
 
       return product;
     });
@@ -152,29 +158,16 @@ export class ProductsService {
 
   update(id: string, dto: UpdateProductDto) {
     return this.prisma.$transaction(async (tx) => {
-      const { stock, inventory, ...productData } = dto;
+      const { variants, ...productData } = dto;
 
       const product = await tx.product.update({
         where: { id },
-        data: productData,
+        data: {
+          ...productData,
+          // Note: Full variant sync can be complex, for now we just update basic fields. 
+          // Management of variants (add/remove) can be handled by a separate logic if needed.
+        },
       });
-
-      // Use inventory object if provided, otherwise use stock field
-      const quantity = inventory?.quantity ?? stock;
-      if (quantity !== undefined) {
-        await tx.inventory.upsert({
-          where: {
-            productId: id,
-          },
-          update: {
-            quantity: quantity,
-          },
-          create: {
-            productId: id,
-            quantity: quantity,
-          },
-        });
-      }
 
       return product;
     });

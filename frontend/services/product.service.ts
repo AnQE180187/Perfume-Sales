@@ -4,6 +4,15 @@ import { env } from '@/lib/env';
 // Public: GET /products, GET /products/:id
 // Admin: GET/POST/PATCH/DELETE /admin/products, POST/DELETE /admin/products/:id/images
 
+export type ProductVariant = {
+  id: string;
+  name: string;
+  sku?: string | null;
+  price: number;
+  stock: number;
+  isActive: boolean;
+};
+
 export type Product = {
   id: string;
   name: string;
@@ -15,13 +24,12 @@ export type Product = {
   gender?: string | null;
   longevity?: string | null;
   concentration?: string | null;
-  price: number;
-  currency: string;
   isActive: boolean;
   brand?: { id: number; name: string };
   category?: { id: number; name: string } | null;
   images?: { id: number; url: string; order: number; publicId?: string }[];
-  inventory?: { quantity: number } | null;
+  variants?: ProductVariant[];
+  notes?: { note: { name: string; type: 'TOP' | 'MIDDLE' | 'BASE' } }[];
 };
 
 export type ProductListRes = {
@@ -45,10 +53,8 @@ interface IProductService {
     gender?: string;
     longevity?: string;
     concentration?: string;
-    price: number;
-    currency?: string;
     isActive?: boolean;
-    stock?: number;
+    variants: Omit<ProductVariant, 'id' | 'isActive'>[];
   }): Promise<Product>;
   adminUpdate(id: string, dto: Partial<Parameters<IProductService['adminCreate']>[0]>): Promise<Product>;
   adminDelete(id: string): Promise<{ success: boolean }>;
@@ -80,10 +86,8 @@ export const productService: IProductService = {
     gender?: string;
     longevity?: string;
     concentration?: string;
-    price: number;
-    currency?: string;
     isActive?: boolean;
-    stock?: number;
+    variants: Omit<ProductVariant, 'id' | 'isActive'>[];
   }) {
     return api.post<Product>('/admin/products', dto).then((r) => r.data);
   },
