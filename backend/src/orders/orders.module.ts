@@ -11,4 +11,4 @@ import { LoyaltyModule } from '../loyalty/loyalty.module';
   providers: [OrdersService],
   exports: [OrdersService],
 })
-export class OrdersModule { }
+export class OrdersModule {}

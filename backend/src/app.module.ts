@@ -13,6 +13,8 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { PaymentsModule } from './payments/payments.module';
 import { PromotionsModule } from './promotions/promotions.module';
 import { LoyaltyModule } from './loyalty/loyalty.module';
+import { StaffPosModule } from './staff-pos/staff-pos.module';
+import { StaffInventoryModule } from './staff-inventory/staff-inventory.module';
 
 @Module({
   imports: [
@@ -30,8 +32,10 @@ import { LoyaltyModule } from './loyalty/loyalty.module';
     PaymentsModule,
     PromotionsModule,
     LoyaltyModule,
+    StaffPosModule,
+    StaffInventoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

@@ -20,16 +20,16 @@ export class PaymentsController {
   constructor(
     private readonly paymentsService: PaymentsService,
     private readonly ordersService: OrdersService,
-  ) { }
+  ) {}
 
   @Post('create-payment')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
-  async createPayment(
-    @Req() req: any,
-    @Body() body: { orderId: string },
-  ) {
-    const order = await this.ordersService.getMyOrderById(req.user.userId, body.orderId);
+  async createPayment(@Req() req: any, @Body() body: { orderId: string }) {
+    const order = await this.ordersService.getMyOrderById(
+      req.user.userId,
+      body.orderId,
+    );
 
     // Generate order code (unique number) from order code string
     const orderCode = parseInt(order.code.replace(/\D/g, '')) || Date.now();
@@ -133,7 +133,10 @@ export class PaymentsController {
   @Get('order/:orderId')
   @UseGuards(JwtAuthGuard)
   async getPaymentByOrder(@Req() req: any, @Param('orderId') orderId: string) {
-    const order = await this.ordersService.getMyOrderById(req.user.userId, orderId);
+    const order = await this.ordersService.getMyOrderById(
+      req.user.userId,
+      orderId,
+    );
     return this.paymentsService.getPaymentByOrderId(order.id);
   }
 }

@@ -9,4 +9,4 @@ import { PrismaModule } from '../prisma/prisma.module';
   controllers: [LoyaltyController],
   exports: [LoyaltyService],
 })
-export class LoyaltyModule { }
+export class LoyaltyModule {}
