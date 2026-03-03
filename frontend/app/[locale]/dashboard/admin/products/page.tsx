@@ -33,6 +33,15 @@ export default function AdminProducts() {
   const [brands, setBrands] = useState<{ id: number; name: string }[]>([]);
   const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
   const [scentFamilies, setScentFamilies] = useState<{ id: number; name: string }[]>([]);
+  const [useVariants, setUseVariants] = useState(true);
+  const [variants, setVariants] = useState<Array<{ size: number; priceOffset: number; stock: number }>>([
+    { size: 5, priceOffset: 0, stock: 0 },
+    { size: 10, priceOffset: 50000, stock: 0 },
+    { size: 20, priceOffset: 150000, stock: 0 },
+    { size: 30, priceOffset: 200000, stock: 0 },
+    { size: 50, priceOffset: 350000, stock: 0 },
+    { size: 100, priceOffset: 600000, stock: 0 },
+  ]);
 
   const [form, setForm] = useState({
     name: '',
@@ -153,6 +162,15 @@ export default function AdminProducts() {
       isActive: true,
       stock: 0,
     });
+    setUseVariants(true);
+    setVariants([
+      { size: 5, priceOffset: 0, stock: 0 },
+      { size: 10, priceOffset: 50000, stock: 0 },
+      { size: 20, priceOffset: 150000, stock: 0 },
+      { size: 30, priceOffset: 200000, stock: 0 },
+      { size: 50, priceOffset: 350000, stock: 0 },
+      { size: 100, priceOffset: 600000, stock: 0 },
+    ]);
     setShowModal(true);
   };
 
@@ -231,7 +249,32 @@ export default function AdminProducts() {
           await productService.adminUploadImages(editId, imageFiles.map((x) => x.file));
         }
       } else {
-        const product = await productService.adminCreate(toDto());
+        let product;
+        if (useVariants) {
+          // Tạo sản phẩm với variants
+          product = await productService.adminCreateWithVariants({
+            name: form.name.trim(),
+            slug: form.slug.trim(),
+            brandId: form.brandId,
+            categoryId: form.categoryId === '' ? null : form.categoryId,
+            scentFamilyId: form.scentFamilyId === '' ? null : form.scentFamilyId,
+            description: form.description || undefined,
+            gender: form.gender || undefined,
+            longevity: form.longevity || undefined,
+            concentration: form.concentration || undefined,
+            price: form.price,
+            currency: form.currency,
+            variants: variants.map(v => ({
+              size: v.size,
+              unit: 'ml',
+              priceOffset: v.priceOffset,
+              stock: v.stock || 0,
+            })),
+          });
+        } else {
+          // Tạo sản phẩm không có variants
+          product = await productService.adminCreate(toDto());
+        }
         if (imageFiles.length > 0) {
           await productService.adminUploadImages(product.id, imageFiles.map((x) => x.file));
         }
@@ -498,6 +541,75 @@ export default function AdminProducts() {
                       />
                     </div>
                   </div>
+                  {/* Variants Management */}
+                  {!editId && (
+                    <div className="border-t border-border pt-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <label className="block text-[10px] uppercase tracking-widest text-muted-foreground">
+                          Perfume Sizes (Variants)
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => setUseVariants(!useVariants)}
+                          className="text-xs bg-secondary/30 hover:bg-secondary/50 px-3 py-1 rounded-full transition-colors"
+                        >
+                          {useVariants ? 'Enabled' : 'Disabled'}
+                        </button>
+                      </div>
+                      {useVariants && (
+                        <div className="space-y-3 bg-secondary/10 p-4 rounded-xl">
+                          {variants.map((v, idx) => (
+                            <div key={idx} className="grid grid-cols-3 gap-3 items-end">
+                              <div>
+                                <label className="text-[8px] uppercase text-muted-foreground block mb-1">Size (ml)</label>
+                                <input
+                                  type="number"
+                                  min={1}
+                                  value={v.size}
+                                  onChange={(e) => setVariants(prev => {
+                                    const n = [...prev];
+                                    n[idx].size = Number(e.target.value) || 0;
+                                    return n;
+                                  })}
+                                  className="w-full bg-secondary/20 border border-border rounded-lg py-2 px-3 outline-none focus:border-gold text-sm"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-[8px] uppercase text-muted-foreground block mb-1">Price Offset (VND)</label>
+                                <input
+                                  type="number"
+                                  value={v.priceOffset}
+                                  onChange={(e) => setVariants(prev => {
+                                    const n = [...prev];
+                                    n[idx].priceOffset = Number(e.target.value) || 0;
+                                    return n;
+                                  })}
+                                  className="w-full bg-secondary/20 border border-border rounded-lg py-2 px-3 outline-none focus:border-gold text-sm"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-[8px] uppercase text-muted-foreground block mb-1">Stock</label>
+                                <input
+                                  type="number"
+                                  min={0}
+                                  value={v.stock}
+                                  onChange={(e) => setVariants(prev => {
+                                    const n = [...prev];
+                                    n[idx].stock = Number(e.target.value) || 0;
+                                    return n;
+                                  })}
+                                  className="w-full bg-secondary/20 border border-border rounded-lg py-2 px-3 outline-none focus:border-gold text-sm"
+                                />
+                              </div>
+                            </div>
+                          ))}
+                          <p className="text-[8px] text-muted-foreground mt-2">
+                            Final price = Base Price ({form.price.toLocaleString()} VND) + Offset
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
                   {/* Images (max 10) */}
                   <div>
                     <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">

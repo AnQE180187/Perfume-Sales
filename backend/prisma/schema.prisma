@@ -168,11 +168,30 @@ model Product {
   scentFamily      ScentFamily?        @relation(fields: [scentFamilyId], references: [id])
   notes            ProductScentNote[]
   images           ProductImage[]
+  variants         ProductVariant[]
   inventory        Inventory?
   orderItems       OrderItem[]
   cartItems        CartItem[]
   reviews          Review[]
   reviewSummary    ReviewSummary?
+}
+
+model ProductVariant {
+  id          String      @id @default(cuid())
+  productId   String
+  size        Int         // dung tích (5, 10, 20, 30, 50, 100 ml)
+  unit        String      @default("ml")
+  priceOffset Int         @default(0)  // giá tăng/giảm so với base price
+  sku         String?     @unique      // Stock Keeping Unit
+  stock       Int         @default(0)
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  product     Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, size])
+  @@index([productId])
 }
 
 model ProductImage {

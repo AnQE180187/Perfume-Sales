@@ -21,6 +21,7 @@ export type Product = {
   brand?: { id: number; name: string };
   category?: { id: number; name: string } | null;
   images?: { id: number; url: string; order: number; publicId?: string }[];
+  variants?: { id: string; size: number; unit: string; priceOffset: number; stock: number; isActive: boolean }[];
   inventory?: { quantity: number } | null;
 };
 
@@ -49,6 +50,20 @@ interface IProductService {
     currency?: string;
     isActive?: boolean;
     stock?: number;
+  }): Promise<Product>;
+  adminCreateWithVariants(dto: {
+    name: string;
+    slug: string;
+    brandId: number;
+    categoryId?: number | null;
+    scentFamilyId?: number | null;
+    description?: string;
+    gender?: string;
+    longevity?: string;
+    concentration?: string;
+    price: number;
+    currency?: string;
+    variants?: { size: number; unit?: string; priceOffset?: number; stock?: number }[];
   }): Promise<Product>;
   adminUpdate(id: string, dto: Partial<Parameters<IProductService['adminCreate']>[0]>): Promise<Product>;
   adminDelete(id: string): Promise<{ success: boolean }>;
@@ -86,6 +101,22 @@ export const productService: IProductService = {
     stock?: number;
   }) {
     return api.post<Product>('/admin/products', dto).then((r) => r.data);
+  },
+  adminCreateWithVariants(dto: {
+    name: string;
+    slug: string;
+    brandId: number;
+    categoryId?: number | null;
+    scentFamilyId?: number | null;
+    description?: string;
+    gender?: string;
+    longevity?: string;
+    concentration?: string;
+    price: number;
+    currency?: string;
+    variants?: { size: number; unit?: string; priceOffset?: number; stock?: number }[];
+  }) {
+    return api.post<Product>('/admin/products/with-variants', dto).then((r) => r.data);
   },
   adminUpdate(id: string, dto: Partial<Parameters<IProductService['adminCreate']>[0]>) {
     return api.patch<Product>('/admin/products/' + id, dto).then((r) => r.data);

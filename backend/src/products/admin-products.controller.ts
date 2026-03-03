@@ -16,6 +16,7 @@ import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { UploadImagesDto } from './dto/upload-images.dto';
+import { CreateProductWithVariantsDto } from './dto/product-variant.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
@@ -35,6 +36,11 @@ export class AdminProductsController {
   @Post()
   create(@Body() dto: CreateProductDto) {
     return this.productsService.create(dto);
+  }
+
+  @Post('with-variants')
+  createWithVariants(@Body() dto: CreateProductWithVariantsDto) {
+    return this.productsService.createWithVariants(dto);
   }
 
   @Get(':id')

@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { QueryProductsDto } from './dto/query-products.dto';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { CreateProductWithVariantsDto } from './dto/product-variant.dto';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Injectable()
@@ -40,6 +41,10 @@ export class ProductsService {
           category: true,
           images: {
             orderBy: { order: 'asc' },
+          },
+          variants: {
+            where: { isActive: true },
+            orderBy: { size: 'asc' },
           },
           inventory: true,
         },
@@ -87,6 +92,10 @@ export class ProductsService {
           images: {
             orderBy: { order: 'asc' },
           },
+          variants: {
+            where: { isActive: true },
+            orderBy: { size: 'asc' },
+          },
         },
         orderBy: { createdAt: 'desc' },
       }),
@@ -109,6 +118,10 @@ export class ProductsService {
         category: true,
         images: {
           orderBy: { order: 'asc' },
+        },
+        variants: {
+          where: { isActive: true },
+          orderBy: { size: 'asc' },
         },
         reviews: true,
         notes: true,
@@ -147,6 +160,72 @@ export class ProductsService {
       }
 
       return product;
+    });
+  }
+
+  // Tạo sản phẩm với variants (dung tích)
+  async createWithVariants(dto: CreateProductWithVariantsDto) {
+    return this.prisma.$transaction(async (tx) => {
+      // Tạo sản phẩm
+      const product = await tx.product.create({
+        data: {
+          name: dto.name,
+          slug: dto.slug,
+          brandId: dto.brandId,
+          categoryId: dto.categoryId,
+          scentFamilyId: dto.scentFamilyId,
+          description: dto.description,
+          gender: dto.gender,
+          longevity: dto.longevity,
+          concentration: dto.concentration,
+          price: dto.price,
+          currency: dto.currency ?? 'VND',
+          isActive: true,
+        },
+      });
+
+      // Tạo variants (dung tích)
+      const variants = dto.variants ?? [
+        { size: 5, unit: 'ml', priceOffset: 0 },
+        { size: 10, unit: 'ml', priceOffset: 50000 },
+        { size: 20, unit: 'ml', priceOffset: 150000 },
+        { size: 30, unit: 'ml', priceOffset: 200000 },
+        { size: 50, unit: 'ml', priceOffset: 350000 },
+        { size: 100, unit: 'ml', priceOffset: 600000 },
+      ];
+
+      for (const variant of variants) {
+        await tx.productVariant.create({
+          data: {
+            productId: product.id,
+            size: variant.size,
+            unit: variant.unit ?? 'ml',
+            priceOffset: variant.priceOffset ?? 0,
+            sku: variant.sku ?? `${product.id}-${variant.size}ml`,
+            stock: variant.stock ?? 0,
+            isActive: true,
+          },
+        });
+      }
+
+      // Tạo inventory record
+      await tx.inventory.create({
+        data: {
+          productId: product.id,
+          quantity: 0,
+        },
+      });
+
+      // Lấy sản phẩm với variants
+      return tx.product.findUnique({
+        where: { id: product.id },
+        include: {
+          brand: true,
+          category: true,
+          variants: true,
+          images: true,
+        },
+      });
     });
   }
 
