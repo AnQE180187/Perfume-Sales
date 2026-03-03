@@ -13,8 +13,8 @@ export class OrdersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly promotionsService: PromotionsService,
-    private readonly loyaltyService: LoyaltyService
-  ) { }
+    private readonly loyaltyService: LoyaltyService,
+  ) {}
 
   async createFromCart(userId: string, dto: CreateOrderDto) {
     const cart = await this.prisma.cart.findFirst({
@@ -44,10 +44,13 @@ export class OrdersService {
 
     if (dto.promotionCode) {
       try {
-        promoData = await this.promotionsService.validate({
-          code: dto.promotionCode,
-          amount: totalAmount,
-        }, userId);
+        promoData = await this.promotionsService.validate(
+          {
+            code: dto.promotionCode,
+            amount: totalAmount,
+          },
+          userId,
+        );
         discountAmount = promoData.discountAmount;
       } catch (e) {
         throw e;
@@ -57,7 +60,8 @@ export class OrdersService {
     const finalAmountBeforeLoyalty = totalAmount - discountAmount;
     let loyaltyDiscount = 0;
     if (dto.redeemPoints) {
-      const { discountAmount: lpDiscount } = await this.loyaltyService.redeemPoints(userId, dto.redeemPoints);
+      const { discountAmount: lpDiscount } =
+        await this.loyaltyService.redeemPoints(userId, dto.redeemPoints);
       loyaltyDiscount = lpDiscount;
     }
 
@@ -82,25 +86,27 @@ export class OrdersService {
               totalPrice: item.quantity * item.variant.price,
             })),
           },
-          promotions: promoData ? {
-            create: {
-              promotionCodeId: promoData.promoId,
-              discountAmount: promoData.discountAmount,
-            }
-          } : undefined
+          promotions: promoData
+            ? {
+                create: {
+                  promotionCodeId: promoData.promoId,
+                  discountAmount: promoData.discountAmount,
+                },
+              }
+            : undefined,
         },
         include: {
           items: true,
           promotions: {
-            include: { promotionCode: true }
-          }
+            include: { promotionCode: true },
+          },
         },
       });
 
       if (promoData) {
         await tx.promotionCode.update({
           where: { id: promoData.promoId },
-          data: { usedCount: { increment: 1 } }
+          data: { usedCount: { increment: 1 } },
         });
       }
 
@@ -115,16 +121,19 @@ export class OrdersService {
   async listMyOrders(userId: string) {
     const orders = await this.prisma.order.findMany({
       where: { userId },
-      include: { items: { include: { variant: { include: { product: true } } } }, promotions: true },
+      include: {
+        items: { include: { variant: { include: { product: true } } } },
+        promotions: true,
+      },
       orderBy: { createdAt: 'desc' },
     });
 
-    return orders.map(order => ({
+    return orders.map((order) => ({
       ...order,
-      items: order.items.map(item => ({
+      items: order.items.map((item) => ({
         ...item,
-        product: item.variant.product
-      }))
+        product: item.variant.product,
+      })),
     }));
   }
 
@@ -136,19 +145,19 @@ export class OrdersService {
         include: {
           items: { include: { variant: { include: { product: true } } } },
           user: true,
-          promotions: { include: { promotionCode: true } }
+          promotions: { include: { promotionCode: true } },
         },
         orderBy: { createdAt: 'desc' },
       }),
       this.prisma.order.count(),
     ]);
 
-    const data = rawData.map(order => ({
+    const data = rawData.map((order) => ({
       ...order,
-      items: order.items.map(item => ({
+      items: order.items.map((item) => ({
         ...item,
-        product: item.variant.product
-      }))
+        product: item.variant.product,
+      })),
     }));
 
     return {
@@ -165,19 +174,19 @@ export class OrdersService {
       where: { id, userId },
       include: {
         items: {
-          include: { variant: { include: { product: true } } }
+          include: { variant: { include: { product: true } } },
         },
-        promotions: { include: { promotionCode: true } }
+        promotions: { include: { promotionCode: true } },
       },
     });
     if (!order) throw new NotFoundException('Order not found');
 
     return {
       ...order,
-      items: order.items.map(item => ({
+      items: order.items.map((item) => ({
         ...item,
-        product: item.variant.product
-      }))
+        product: item.variant.product,
+      })),
     };
   }
 
@@ -186,20 +195,20 @@ export class OrdersService {
       where: { id },
       include: {
         items: {
-          include: { variant: { include: { product: true } } }
+          include: { variant: { include: { product: true } } },
         },
         user: true,
-        promotions: { include: { promotionCode: true } }
+        promotions: { include: { promotionCode: true } },
       },
     });
     if (!order) throw new NotFoundException('Order not found');
 
     return {
       ...order,
-      items: order.items.map(item => ({
+      items: order.items.map((item) => ({
         ...item,
-        product: item.variant.product
-      }))
+        product: item.variant.product,
+      })),
     };
   }
 
@@ -213,7 +222,11 @@ export class OrdersService {
     });
 
     if (status === 'COMPLETED' && updated.userId) {
-      await this.loyaltyService.earnPoints(updated.userId, updated.finalAmount, updated.id);
+      await this.loyaltyService.earnPoints(
+        updated.userId,
+        updated.finalAmount,
+        updated.id,
+      );
     }
 
     return updated;
