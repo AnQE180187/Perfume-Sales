@@ -55,4 +55,10 @@ export class StaffPosController {
     const user = req.user as { userId: string };
     return this.staffPosService.payCash(user.userId, orderId);
   }
+
+  @Post('orders/:id/pay/qr')
+  payQr(@Req() req: any, @Param('id') orderId: string) {
+    const user = req.user as { userId: string };
+    return this.staffPosService.createQrPayment(user.userId, orderId);
+  }
 }

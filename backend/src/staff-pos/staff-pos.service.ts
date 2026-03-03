@@ -11,10 +11,14 @@ import {
   OrderStatus,
   OrderChannel,
 } from '@prisma/client';
+import { PaymentsService } from '../payments/payments.service';
 
 @Injectable()
 export class StaffPosService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly paymentsService: PaymentsService,
+  ) {}
 
   async searchProducts(query: string) {
     const where: any = {};
@@ -221,5 +225,23 @@ export class StaffPosService {
     });
 
     return refreshed;
+  }
+
+  async createQrPayment(staffUserId: string, orderId: string) {
+    const order = await this.getStaffOrderOrThrow(staffUserId, orderId);
+
+    if (order.items.length === 0) {
+      throw new BadRequestException('Order has no items');
+    }
+
+    const numericCode = parseInt(order.code.replace(/\D/g, ''), 10);
+    const orderCode = Number.isFinite(numericCode) ? numericCode : Date.now();
+
+    return this.paymentsService.createPayOSPaymentLink(
+      order.id,
+      orderCode,
+      order.finalAmount,
+      order.items,
+    );
   }
 }

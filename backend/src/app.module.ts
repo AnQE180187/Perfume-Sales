@@ -15,6 +15,7 @@ import { PromotionsModule } from './promotions/promotions.module';
 import { LoyaltyModule } from './loyalty/loyalty.module';
 import { StaffPosModule } from './staff-pos/staff-pos.module';
 import { StaffInventoryModule } from './staff-inventory/staff-inventory.module';
+import { StaffOrdersModule } from './staff-orders/staff-orders.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { StaffInventoryModule } from './staff-inventory/staff-inventory.module';
     LoyaltyModule,
     StaffPosModule,
     StaffInventoryModule,
+    StaffOrdersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

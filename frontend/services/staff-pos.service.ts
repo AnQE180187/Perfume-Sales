@@ -1,5 +1,6 @@
 import api from '@/lib/axios';
 import type { Product, ProductVariant } from './product.service';
+import type { PayOSPaymentResponse } from './payment.service';
 
 export type PosOrderItem = {
   id: number;
@@ -53,6 +54,12 @@ export const staffPosService = {
   payCash(orderId: string): Promise<PosOrder> {
     return api
       .post<PosOrder>(`/staff/pos/orders/${orderId}/pay/cash`)
+      .then((r) => r.data);
+  },
+
+  createQrPayment(orderId: string): Promise<PayOSPaymentResponse> {
+    return api
+      .post<PayOSPaymentResponse>(`/staff/pos/orders/${orderId}/pay/qr`)
       .then((r) => r.data);
   },
 };

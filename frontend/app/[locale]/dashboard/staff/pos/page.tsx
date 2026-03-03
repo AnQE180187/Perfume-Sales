@@ -1,15 +1,16 @@
 'use client';
 
 import { AuthGuard } from '@/components/auth/auth-guard';
-import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
-import { Search, ShoppingCart, CreditCard, Plus, Minus, Receipt } from 'lucide-react';
+import { Search, ShoppingCart, CreditCard, Plus, Minus, Receipt, QrCode } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { staffPosService, type PosOrder } from '@/services/staff-pos.service';
 import type { Product } from '@/services/product.service';
+import type { PayOSPaymentResponse } from '@/services/payment.service';
+
+type PaymentMethod = 'CASH' | 'QR';
 
 export default function PosPage() {
-    const navT = useTranslations('navigation');
     const [products, setProducts] = useState<Product[]>([]);
     const [search, setSearch] = useState('');
     const [loadingProducts, setLoadingProducts] = useState(false);
@@ -17,6 +18,8 @@ export default function PosPage() {
     const [creatingOrder, setCreatingOrder] = useState(false);
     const [paying, setPaying] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('CASH');
+    const [qrPayment, setQrPayment] = useState<PayOSPaymentResponse | null>(null);
 
     const subtotal = order?.items?.reduce((acc, item) => acc + item.totalPrice, 0) ?? 0;
 
@@ -98,6 +101,20 @@ export default function PosPage() {
         }
     };
 
+    const handleCreateQrPayment = async () => {
+        if (!order || !order.items.length) return;
+        setPaying(true);
+        setError(null);
+        try {
+            const payment = await staffPosService.createQrPayment(order.id);
+            setQrPayment(payment);
+        } catch (e: any) {
+            setError(e.message || 'Failed to create QR payment');
+        } finally {
+            setPaying(false);
+        }
+    };
+
     return (
         <AuthGuard allowedRoles={['staff', 'admin']}>
             <div className="flex h-[calc(100vh-80px)] overflow-hidden">
@@ -122,12 +139,10 @@ export default function PosPage() {
                         ) : products.length === 0 ? (
                             <div className="col-span-full text-center text-muted-foreground text-sm">No products found.</div>
                         ) : (
-                            products.map((p) => {
-                                const v = p.variants?.[0];
-                                if (!v) return null;
-                                return (
+                            products.flatMap((p) =>
+                                (p.variants ?? []).map((v) => (
                                     <motion.div
-                                        key={p.id}
+                                        key={v.id}
                                         whileHover={{ y: -5 }}
                                         className="glass p-5 rounded-[2rem] border-border hover:border-gold/30 cursor-pointer group transition-all"
                                     >
@@ -140,6 +155,9 @@ export default function PosPage() {
                                         <h3 className="font-heading text-sm mb-1 line-clamp-1 uppercase tracking-tight">
                                             {p.name}
                                         </h3>
+                                        <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mb-1">
+                                            {p.brand?.name ?? '—'}
+                                        </p>
                                         <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mb-2">
                                             {v.name}
                                         </p>
@@ -156,8 +174,8 @@ export default function PosPage() {
                                             </button>
                                         </div>
                                     </motion.div>
-                                );
-                            })
+                                ))
+                            )
                         )}
                     </div>
                 </div>
@@ -234,7 +252,33 @@ export default function PosPage() {
                             </span>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4 mt-8">
+                        <div className="mt-6 flex gap-2 text-[9px] font-heading uppercase tracking-[0.2em]">
+                            <button
+                                type="button"
+                                onClick={() => setPaymentMethod('CASH')}
+                                className={`flex-1 py-2 rounded-full border ${
+                                    paymentMethod === 'CASH'
+                                        ? 'border-gold bg-gold/10 text-gold'
+                                        : 'border-border text-muted-foreground'
+                                }`}
+                            >
+                                Cash
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setPaymentMethod('QR')}
+                                className={`flex-1 py-2 rounded-full border flex items-center justify-center gap-1 ${
+                                    paymentMethod === 'QR'
+                                        ? 'border-gold bg-gold/10 text-gold'
+                                        : 'border-border text-muted-foreground'
+                                }`}
+                            >
+                                <QrCode className="w-3 h-3" />
+                                QR Pay
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 mt-6">
                             <button
                                 className="py-4 glass border-border rounded-2xl font-heading text-[9px] uppercase tracking-[0.2em] hover:border-gold/50 transition-all flex flex-col items-center gap-2"
                                 disabled
@@ -242,15 +286,42 @@ export default function PosPage() {
                                 <Receipt className="w-4 h-4 text-gold" />
                                 Hold
                             </button>
-                            <button
-                                onClick={handlePayCash}
-                                disabled={!order || !order.items.length || paying}
-                                className="py-4 bg-gold text-primary-foreground font-heading font-bold rounded-2xl text-[9px] uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-gold/20 flex flex-col items-center gap-2 disabled:opacity-50"
-                            >
-                                <CreditCard className="w-4 h-4" />
-                                {paying ? 'Processing…' : 'Charge Cash'}
-                            </button>
+                            {paymentMethod === 'CASH' ? (
+                                <button
+                                    onClick={handlePayCash}
+                                    disabled={!order || !order.items.length || paying}
+                                    className="py-4 bg-gold text-primary-foreground font-heading font-bold rounded-2xl text-[9px] uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-gold/20 flex flex-col items-center gap-2 disabled:opacity-50"
+                                >
+                                    <CreditCard className="w-4 h-4" />
+                                    {paying ? 'Processing…' : 'Charge Cash'}
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={handleCreateQrPayment}
+                                    disabled={!order || !order.items.length || paying}
+                                    className="py-4 bg-gold text-primary-foreground font-heading font-bold rounded-2xl text-[9px] uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-gold/20 flex flex-col items-center gap-2 disabled:opacity-50"
+                                >
+                                    <QrCode className="w-4 h-4" />
+                                    {paying ? 'Generating…' : qrPayment ? 'Show QR Again' : 'Generate QR'}
+                                </button>
+                            )}
                         </div>
+
+                        {paymentMethod === 'QR' && qrPayment && (
+                            <div className="mt-6 space-y-2 text-[10px]">
+                                <p className="font-heading uppercase tracking-[0.2em] text-muted-foreground">
+                                    Scan QR in your banking app or open PayOS checkout:
+                                </p>
+                                <a
+                                    href={qrPayment.checkoutUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center justify-center px-4 py-2 rounded-full border border-gold text-gold text-[9px] font-heading uppercase tracking-[0.2em] hover:bg-gold/10"
+                                >
+                                    Open PayOS Checkout
+                                </a>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
