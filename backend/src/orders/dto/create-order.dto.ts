@@ -8,4 +8,11 @@ export class CreateOrderDto {
   @IsOptional()
   @IsString()
   phone?: string;
+
+  @IsOptional()
+  @IsString()
+  promotionCode?: string;
+
+  @IsOptional()
+  redeemPoints?: number;
 }

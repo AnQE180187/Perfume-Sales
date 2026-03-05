@@ -5,17 +5,27 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { PromotionsService } from '../promotions/promotions.service';
+import { LoyaltyService } from '../loyalty/loyalty.service';
 
 @Injectable()
 export class OrdersService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly promotionsService: PromotionsService,
+    private readonly loyaltyService: LoyaltyService,
+  ) {}
 
   async createFromCart(userId: string, dto: CreateOrderDto) {
     const cart = await this.prisma.cart.findFirst({
       where: { userId },
       include: {
         items: {
-          include: { product: true },
+          include: {
+            variant: {
+              include: { product: true },
+            },
+          },
         },
       },
     });
@@ -25,9 +35,38 @@ export class OrdersService {
     }
 
     const totalAmount = cart.items.reduce(
-      (sum, item) => sum + item.quantity * item.product.price,
+      (sum, item) => sum + item.quantity * item.variant.price,
       0,
     );
+
+    let discountAmount = 0;
+    let promoData: any = null;
+
+    if (dto.promotionCode) {
+      try {
+        promoData = await this.promotionsService.validate(
+          {
+            code: dto.promotionCode,
+            amount: totalAmount,
+          },
+          userId,
+        );
+        discountAmount = promoData.discountAmount;
+      } catch (e) {
+        throw e;
+      }
+    }
+
+    const finalAmountBeforeLoyalty = totalAmount - discountAmount;
+    let loyaltyDiscount = 0;
+    if (dto.redeemPoints) {
+      const { discountAmount: lpDiscount } =
+        await this.loyaltyService.redeemPoints(userId, dto.redeemPoints);
+      loyaltyDiscount = lpDiscount;
+    }
+
+    const finalAmount = Math.max(0, finalAmountBeforeLoyalty - loyaltyDiscount);
+    const actualDiscountAmount = discountAmount + loyaltyDiscount;
 
     const order = await this.prisma.$transaction(async (tx) => {
       const created = await tx.order.create({
@@ -35,23 +74,41 @@ export class OrdersService {
           code: `ORD-${Date.now()}`,
           userId,
           totalAmount,
-          discountAmount: 0,
-          finalAmount: totalAmount,
+          discountAmount: actualDiscountAmount,
+          finalAmount,
           shippingAddress: dto.shippingAddress,
           phone: dto.phone,
           items: {
             create: cart.items.map((item) => ({
-              productId: item.productId,
-              unitPrice: item.product.price,
+              variantId: item.variantId,
+              unitPrice: item.variant.price,
               quantity: item.quantity,
-              totalPrice: item.quantity * item.product.price,
+              totalPrice: item.quantity * item.variant.price,
             })),
           },
+          promotions: promoData
+            ? {
+                create: {
+                  promotionCodeId: promoData.promoId,
+                  discountAmount: promoData.discountAmount,
+                },
+              }
+            : undefined,
         },
         include: {
           items: true,
+          promotions: {
+            include: { promotionCode: true },
+          },
         },
       });
+
+      if (promoData) {
+        await tx.promotionCode.update({
+          where: { id: promoData.promoId },
+          data: { usedCount: { increment: 1 } },
+        });
+      }
 
       await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
 
@@ -61,33 +118,50 @@ export class OrdersService {
     return order;
   }
 
-  listMyOrders(userId: string) {
-    return this.prisma.order.findMany({
+  async listMyOrders(userId: string) {
+    const orders = await this.prisma.order.findMany({
       where: { userId },
       include: {
-        items: { include: { product: true } },
-        user: true,
+        items: { include: { variant: { include: { product: true } } } },
+        promotions: true,
       },
       orderBy: { createdAt: 'desc' },
     });
+
+    return orders.map((order) => ({
+      ...order,
+      items: order.items.map((item) => ({
+        ...item,
+        product: item.variant.product,
+      })),
+    }));
   }
 
   async listAllOrders(skip: number, take: number) {
-    const [orders, total] = await Promise.all([
+    const [rawData, total] = await Promise.all([
       this.prisma.order.findMany({
-        include: {
-          items: { include: { product: true } },
-          user: true,
-        },
-        orderBy: { createdAt: 'desc' },
         skip,
         take,
+        include: {
+          items: { include: { variant: { include: { product: true } } } },
+          user: true,
+          promotions: { include: { promotionCode: true } },
+        },
+        orderBy: { createdAt: 'desc' },
       }),
       this.prisma.order.count(),
     ]);
 
+    const data = rawData.map((order) => ({
+      ...order,
+      items: order.items.map((item) => ({
+        ...item,
+        product: item.variant.product,
+      })),
+    }));
+
     return {
-      data: orders,
+      data,
       total,
       skip,
       take,
@@ -95,57 +169,66 @@ export class OrdersService {
     };
   }
 
-  async getMyOrderById(userId: string, orderId: string) {
+  async getMyOrderById(userId: string, id: string) {
     const order = await this.prisma.order.findFirst({
-      where: { id: orderId, userId },
+      where: { id, userId },
       include: {
         items: {
-          include: { product: true },
+          include: { variant: { include: { product: true } } },
         },
-        user: true,
+        promotions: { include: { promotionCode: true } },
       },
     });
+    if (!order) throw new NotFoundException('Order not found');
 
-    if (!order) {
-      throw new NotFoundException('Order not found');
-    }
-
-    return order;
+    return {
+      ...order,
+      items: order.items.map((item) => ({
+        ...item,
+        product: item.variant.product,
+      })),
+    };
   }
 
-  async getOrderById(orderId: string) {
+  async getOrderById(id: string) {
     const order = await this.prisma.order.findUnique({
-      where: { id: orderId },
+      where: { id },
       include: {
         items: {
-          include: { product: true },
+          include: { variant: { include: { product: true } } },
         },
         user: true,
+        promotions: { include: { promotionCode: true } },
       },
     });
+    if (!order) throw new NotFoundException('Order not found');
 
-    if (!order) {
-      throw new NotFoundException('Order not found');
-    }
-
-    return order;
+    return {
+      ...order,
+      items: order.items.map((item) => ({
+        ...item,
+        product: item.variant.product,
+      })),
+    };
   }
 
-  async updateStatus(orderId: string, status?: any, paymentStatus?: any) {
-    const order = await this.prisma.order.findUnique({
-      where: { id: orderId },
-    });
-
-    if (!order) {
-      throw new NotFoundException('Order not found');
-    }
-
-    return this.prisma.order.update({
-      where: { id: orderId },
+  async updateStatus(id: string, status?: any, paymentStatus?: any) {
+    const updated = await this.prisma.order.update({
+      where: { id },
       data: {
-        status: status ?? order.status,
-        paymentStatus: paymentStatus ?? order.paymentStatus,
+        ...(status && { status }),
+        ...(paymentStatus && { paymentStatus }),
       },
     });
+
+    if (status === 'COMPLETED' && updated.userId) {
+      await this.loyaltyService.earnPoints(
+        updated.userId,
+        updated.finalAmount,
+        updated.id,
+      );
+    }
+
+    return updated;
   }
 }

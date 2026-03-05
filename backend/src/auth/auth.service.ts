@@ -27,7 +27,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-  ) { }
+  ) {}
 
   async register(dto: RegisterDto) {
     const existing = await this.prisma.user.findFirst({
@@ -121,13 +121,16 @@ export class AuthService {
     // await this.emailService.sendPasswordReset(user.email, resetLink);
 
     console.log(`Password reset token for ${user.email}: ${resetToken}`);
-    console.log(`Reset link: ${this.configService.get('FRONTEND_URL')}/reset-password?token=${resetToken}`);
+    console.log(
+      `Reset link: ${this.configService.get('FRONTEND_URL')}/reset-password?token=${resetToken}`,
+    );
 
     return {
       success: true,
       message: 'If the email exists, a reset link has been sent',
       // For development only - remove in production
-      resetToken: process.env.NODE_ENV === 'development' ? resetToken : undefined,
+      resetToken:
+        process.env.NODE_ENV === 'development' ? resetToken : undefined,
     };
   }
 
@@ -176,7 +179,10 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
 
-    const passwordValid = await bcrypt.compare(dto.oldPassword, user.passwordHash);
+    const passwordValid = await bcrypt.compare(
+      dto.oldPassword,
+      user.passwordHash,
+    );
     if (!passwordValid) {
       throw new UnauthorizedException('Current password is incorrect');
     }
@@ -205,7 +211,7 @@ export class AuthService {
     accessToken?: string;
   }) {
     // Check if user exists with this OAuth account
-    let oauthAccount = await this.prisma.oAuthAccount.findUnique({
+    const oauthAccount = await this.prisma.oAuthAccount.findUnique({
       where: {
         provider_providerAccountId: {
           provider: profile.provider,
@@ -251,7 +257,9 @@ export class AuthService {
       user = await this.prisma.user.create({
         data: {
           email: profile.email,
-          fullName: profile.fullName || `${profile.firstName || ''} ${profile.lastName || ''}`.trim(),
+          fullName:
+            profile.fullName ||
+            `${profile.firstName || ''} ${profile.lastName || ''}`.trim(),
           avatarUrl: profile.avatarUrl,
           role: UserRoleEnum.CUSTOMER,
           accounts: {

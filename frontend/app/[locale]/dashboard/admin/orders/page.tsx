@@ -146,7 +146,7 @@ export default function AdminOrders() {
         printWindow.document.close();
     };
 
-    const filteredOrders = orders.filter(o =>
+    const filteredOrders = (orders || []).filter(o =>
         o.code.toLowerCase().includes(search.toLowerCase()) ||
         o.user?.name?.toLowerCase().includes(search.toLowerCase()) ||
         o.phone?.includes(search)

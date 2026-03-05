@@ -1,5 +1,6 @@
 import { AuthGuard } from '@/components/auth/auth-guard';
-import { Mail, Zap, TrendingUp, Users } from 'lucide-react';
+import { Mail, Zap, TrendingUp, Users, Tag } from 'lucide-react';
+import Link from 'next/link';
 
 export default function AdminMarketing() {
     return (
@@ -47,15 +48,28 @@ export default function AdminMarketing() {
                             ))}
                         </div>
                     </div>
-                    <div className="glass rounded-[2.5rem] border-border p-8">
-                        <h2 className="font-heading text-lg uppercase tracking-widest mb-6">Suggestions</h2>
-                        <div className="space-y-6">
-                            <p className="text-xs text-muted-foreground font-body leading-relaxed">
-                                AI suggests launching a targeting campaign for <span className="text-gold">Floral Notes</span> based on recent member searches.
+                    <div className="space-y-8">
+                        <div className="glass rounded-[2.5rem] border-border p-8">
+                            <h2 className="font-heading text-lg uppercase tracking-widest mb-6">Promotions</h2>
+                            <p className="text-xs text-muted-foreground font-body leading-relaxed mb-6">
+                                Manage your coupon registry, seasonal incentives, and loyalty-linked rewards.
                             </p>
-                            <button className="w-full py-4 glass border-gold/20 text-gold font-heading text-[10px] uppercase tracking-widest hover:bg-gold/5 transition-all rounded-2xl">
-                                Generate Strategy
-                            </button>
+                            <Link href="/dashboard/admin/marketing/promotions" className="w-full py-4 glass border-gold/20 text-gold font-heading text-[10px] uppercase tracking-widest hover:bg-gold/5 transition-all rounded-2xl flex items-center justify-center gap-3">
+                                <Tag size={14} />
+                                Manage Coupons
+                            </Link>
+                        </div>
+
+                        <div className="glass rounded-[2.5rem] border-border p-8">
+                            <h2 className="font-heading text-lg uppercase tracking-widest mb-6">Suggestions</h2>
+                            <div className="space-y-6">
+                                <p className="text-xs text-muted-foreground font-body leading-relaxed">
+                                    AI suggests launching a targeting campaign for <span className="text-gold">Floral Notes</span> based on recent member searches.
+                                </p>
+                                <button className="w-full py-4 glass border-gold/20 text-gold font-heading text-[10px] uppercase tracking-widest hover:bg-gold/5 transition-all rounded-2xl">
+                                    Generate Strategy
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

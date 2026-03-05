@@ -6,12 +6,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import QRCode from 'qrcode';
 import {
     ArrowLeft, ArrowRight, CreditCard, Wallet, QrCode,
-    MapPin, Phone, Loader2, Download
+    MapPin, Phone, Loader2, Download, Tag, Check, X
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { cartService } from '@/services/cart.service';
 import { orderService } from '@/services/order.service';
-import { paymentService, PayOSPaymentResponse } from '@/services/payment.service';
+import { paymentService, type PayOSPaymentResponse } from '@/services/payment.service';
+import { promotionService, type PromotionValidationResponse } from '@/services/promotion.service';
+import { loyaltyService } from '@/services/loyalty.service';
 
 type PaymentMethod = 'COD' | 'ONLINE' | null;
 
@@ -60,7 +62,7 @@ export default function CheckoutPage() {
     const router = useRouter();
     const { isAuthenticated } = useAuth();
     const [step, setStep] = useState(1);
-    const [cartItems, setCartItems] = useState<{ id: number; product: { name: string; price: number; images?: { url: string }[] }; quantity: number }[]>([]);
+    const [cartItems, setCartItems] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [shippingAddress, setShippingAddress] = useState('');
@@ -68,6 +70,17 @@ export default function CheckoutPage() {
     const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(null);
     const [orderId, setOrderId] = useState<string | null>(null);
     const [paymentData, setPaymentData] = useState<PayOSPaymentResponse | null>(null);
+
+    // Promotion states
+    const [couponCode, setCouponCode] = useState('');
+    const [appliedCoupon, setAppliedCoupon] = useState<PromotionValidationResponse | null>(null);
+    const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+    const [couponError, setCouponError] = useState<string | null>(null);
+
+    // Loyalty states
+    const [loyaltyInfo, setLoyaltyInfo] = useState({ points: 0 });
+    const [usePoints, setUsePoints] = useState(false);
+    const [pointsToUse, setPointsToUse] = useState(0);
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -78,10 +91,35 @@ export default function CheckoutPage() {
             setCartItems(c.items);
             setLoading(false);
         }).catch(() => setLoading(false));
+
+        loyaltyService.getStatus().then(setLoyaltyInfo);
     }, [isAuthenticated, router]);
 
-    const subtotal = cartItems.reduce((acc, i) => acc + i.product.price * i.quantity, 0);
-    const total = subtotal;
+    const subtotal = cartItems.reduce((acc, i) => acc + i.variant.price * i.quantity, 0);
+    const couponDiscount = appliedCoupon ? appliedCoupon.discountAmount : 0;
+    const loyaltyDiscount = usePoints ? pointsToUse * 500 : 0; // matching REDEEM_VALUE in backend
+    const total = Math.max(0, subtotal - couponDiscount - loyaltyDiscount);
+
+    const handleApplyCoupon = async () => {
+        if (!couponCode.trim()) return;
+        setIsApplyingCoupon(true);
+        setCouponError(null);
+        try {
+            const result = await promotionService.validate(couponCode.trim(), subtotal);
+            setAppliedCoupon(result);
+        } catch (e: any) {
+            setCouponError(e.response?.data?.message || 'Mã giảm giá không hợp lệ');
+            setAppliedCoupon(null);
+        } finally {
+            setIsApplyingCoupon(false);
+        }
+    };
+
+    const handleRemoveCoupon = () => {
+        setAppliedCoupon(null);
+        setCouponCode('');
+        setCouponError(null);
+    };
 
     const handleCreateOrderIfNeeded = async (): Promise<string | null> => {
         if (orderId) return orderId;
@@ -96,6 +134,8 @@ export default function CheckoutPage() {
             const order = await orderService.create({
                 shippingAddress: shippingAddress.trim(),
                 phone: phone.trim(),
+                promotionCode: appliedCoupon?.code,
+                redeemPoints: usePoints ? pointsToUse : undefined
             });
             setOrderId(order.id);
             return order.id;
@@ -340,19 +380,24 @@ export default function CheckoutPage() {
                                         cartItems.map((item) => (
                                             <div key={item.id} className="flex gap-6 group">
                                                 <div className="relative w-24 h-32 rounded-2xl overflow-hidden bg-stone-50 dark:bg-zinc-800 flex-shrink-0 border border-stone-100 dark:border-white/5">
-                                                    {item.product.images?.[0]?.url ? (
-                                                        <img src={item.product.images[0].url} alt={item.product.name} className="w-full h-full object-cover" />
+                                                    {item.variant.product.images?.[0]?.url ? (
+                                                        <img src={item.variant.product.images[0].url} alt={item.variant.product.name} className="w-full h-full object-cover" />
                                                     ) : (
                                                         <div className="w-full h-full flex items-center justify-center text-stone-500">—</div>
                                                     )}
                                                 </div>
                                                 <div className="flex-1">
                                                     <div className="flex justify-between items-start mb-2">
-                                                        <h4 className="text-sm font-bold text-luxury-black dark:text-white uppercase tracking-wider">
-                                                            {item.product.name}
-                                                        </h4>
+                                                        <div>
+                                                            <h4 className="text-sm font-bold text-luxury-black dark:text-white uppercase tracking-wider">
+                                                                {item.variant.product.name}
+                                                            </h4>
+                                                            <p className="text-[10px] text-gold uppercase tracking-widest font-bold">
+                                                                {item.variant.name}
+                                                            </p>
+                                                        </div>
                                                         <span className="text-sm font-medium text-luxury-black dark:text-white">
-                                                            {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.product.price * item.quantity)}
+                                                            {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.variant.price * item.quantity)}
                                                         </span>
                                                     </div>
                                                     <p className="text-[10px] text-stone-400 uppercase tracking-widest italic mb-6">
@@ -370,6 +415,100 @@ export default function CheckoutPage() {
                                     )}
                                 </div>
 
+                                {/* Coupon Section */}
+                                <div className="mt-8 pt-8 border-t border-stone-100 dark:border-white/5">
+                                    <div className="flex gap-3">
+                                        <div className="relative flex-1">
+                                            <input
+                                                type="text"
+                                                value={couponCode}
+                                                onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                                                placeholder="MÃ GIẢM GIÁ"
+                                                disabled={!!appliedCoupon || isApplyingCoupon}
+                                                className="w-full h-14 bg-stone-50 dark:bg-zinc-900 border border-stone-100 dark:border-white/5 rounded-2xl px-6 text-xs font-bold tracking-[.3em] uppercase focus:ring-0 focus:border-gold transition-all disabled:opacity-50"
+                                            />
+                                            {appliedCoupon && (
+                                                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-green-500">
+                                                    <Check size={20} />
+                                                </div>
+                                            )}
+                                        </div>
+                                        {appliedCoupon ? (
+                                            <button
+                                                onClick={handleRemoveCoupon}
+                                                className="h-14 aspect-square bg-stone-100 dark:bg-white/5 rounded-2xl flex items-center justify-center text-stone-400 hover:text-red-500 transition-colors"
+                                            >
+                                                <X size={20} />
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={handleApplyCoupon}
+                                                disabled={!couponCode || isApplyingCoupon}
+                                                className="px-8 bg-luxury-black dark:bg-white text-white dark:text-luxury-black rounded-2xl text-[10px] font-bold tracking-[.3em] uppercase hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 flex items-center gap-3"
+                                            >
+                                                {isApplyingCoupon ? <Loader2 className="animate-spin" size={16} /> : <Tag size={16} />}
+                                                Áp dụng
+                                            </button>
+                                        )}
+                                    </div>
+                                    {couponError && (
+                                        <p className="mt-4 text-[10px] font-bold text-red-500 uppercase tracking-widest leading-relaxed">
+                                            {couponError}
+                                        </p>
+                                    )}
+                                    {appliedCoupon && (
+                                        <p className="mt-4 text-[10px] font-bold text-green-500 uppercase tracking-widest leading-relaxed flex items-center gap-2">
+                                            <Tag size={12} /> Áp dụng thành công: Giảm {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(appliedCoupon.discountAmount)}
+                                        </p>
+                                    )}
+
+                                    {loyaltyInfo.points >= 100 && (
+                                        <div className="mt-8 pt-6 border-t border-stone-100 dark:border-white/5">
+                                            <label className="flex items-center gap-4 cursor-pointer group">
+                                                <div className="relative">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={usePoints}
+                                                        onChange={(e) => {
+                                                            setUsePoints(e.target.checked);
+                                                            if (e.target.checked) setPointsToUse(Math.min(loyaltyInfo.points, Math.floor((subtotal - couponDiscount) / 500)));
+                                                        }}
+                                                        className="sr-only"
+                                                    />
+                                                    <div className={`w-10 h-6 rounded-full transition-colors ${usePoints ? 'bg-gold' : 'bg-stone-200 dark:bg-zinc-800'}`} />
+                                                    <div className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform ${usePoints ? 'translate-x-4' : ''}`} />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="text-[10px] font-bold uppercase tracking-widest text-luxury-black dark:text-white">
+                                                        Dùng điểm tích lũy
+                                                    </p>
+                                                    <p className="text-[8px] text-stone-400 uppercase tracking-tighter">
+                                                        Bạn có {loyaltyInfo.points} điểm (Tương đương {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(loyaltyInfo.points * 500)})
+                                                    </p>
+                                                </div>
+                                            </label>
+
+                                            {usePoints && (
+                                                <motion.div
+                                                    initial={{ height: 0, opacity: 0 }}
+                                                    animate={{ height: 'auto', opacity: 1 }}
+                                                    className="mt-4 pl-14"
+                                                >
+                                                    <div className="flex items-center gap-4">
+                                                        <input
+                                                            type="number"
+                                                            value={pointsToUse}
+                                                            onChange={(e) => setPointsToUse(Math.min(loyaltyInfo.points, Number(e.target.value)))}
+                                                            className="w-24 h-10 bg-stone-50 dark:bg-zinc-950 border border-stone-100 dark:border-white/5 rounded-xl px-4 text-xs font-bold outline-none border-gold"
+                                                        />
+                                                        <span className="text-[10px] text-stone-400 uppercase font-bold">Giảm {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(pointsToUse * 500)}</span>
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+
                                 <div className="space-y-6 pt-12 border-t border-stone-100 dark:border-white/5">
                                     <div className="space-y-4">
                                         <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-stone-400">
@@ -378,6 +517,22 @@ export default function CheckoutPage() {
                                                 {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(subtotal)}
                                             </span>
                                         </div>
+                                        {appliedCoupon && (
+                                            <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-green-500">
+                                                <span>Coupon giảm giá</span>
+                                                <span className="">
+                                                    -{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(couponDiscount)}
+                                                </span>
+                                            </div>
+                                        )}
+                                        {usePoints && loyaltyDiscount > 0 && (
+                                            <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-gold text-amber-500">
+                                                <span>Điểm tích lũy</span>
+                                                <span className="">
+                                                    -{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(loyaltyDiscount)}
+                                                </span>
+                                            </div>
+                                        )}
                                         <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-stone-400">
                                             <span>Phí vận chuyển</span>
                                             <span className="text-gold">Miễn phí</span>

@@ -52,22 +52,22 @@ export default function CartPage() {
     }
   };
 
-    if (!isAuthenticated) {
-        return (
-            <div className="min-h-screen bg-stone-50 dark:bg-zinc-950 transition-colors">
-                <main className="container mx-auto px-6 py-32 text-center">
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-stone-50 dark:bg-zinc-950 transition-colors">
+        <main className="container mx-auto px-6 py-32 text-center">
           <h1 className="text-4xl md:text-5xl font-serif text-luxury-black dark:text-white mb-6">Your Collection</h1>
           <p className="text-stone-500 dark:text-stone-400 mb-8">Please sign in to view your cart.</p>
           <Link href="/login" className="inline-block bg-gold text-white px-8 py-4 rounded-full font-bold tracking-widest uppercase">
             Sign In
           </Link>
-                </main>
-            </div>
-        );
-    }
+        </main>
+      </div>
+    );
+  }
 
-    const items = cart?.items ?? [];
-  const subtotal = items.reduce((acc, i) => acc + i.product.price * i.quantity, 0);
+  const items = cart?.items ?? [];
+  const subtotal = items.reduce((acc, i) => acc + i.variant.price * i.quantity, 0);
 
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-zinc-950 transition-colors">
@@ -95,15 +95,16 @@ export default function CartPage() {
                   className="flex flex-col sm:flex-row gap-8 p-8 glass bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-stone-100 dark:border-white/10 shadow-sm items-center transition-colors"
                 >
                   <div className="relative w-32 h-32 rounded-2xl overflow-hidden bg-stone-100 dark:bg-stone-800 flex-shrink-0 transition-colors">
-                    {item.product.images?.[0]?.url ? (
-                      <img src={item.product.images[0].url} alt={item.product.name} className="w-full h-full object-cover" />
+                    {item.variant.product.images?.[0]?.url ? (
+                      <img src={item.variant.product.images[0].url} alt={item.variant.product.name} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-stone-400">—</div>
                     )}
                   </div>
                   <div className="flex-1 text-center sm:text-left">
-                    <h3 className="text-xl font-serif text-luxury-black dark:text-white mb-1 transition-colors">{item.product.name}</h3>
-                    <p className="text-sm text-stone-400 mb-4">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.product.price)} each</p>
+                    <h3 className="text-xl font-serif text-luxury-black dark:text-white mb-1 transition-colors">{item.variant.product.name}</h3>
+                    <p className="text-[10px] text-gold uppercase tracking-[0.2em] font-bold mb-2">{item.variant.name}</p>
+                    <p className="text-sm text-stone-400 mb-4">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.variant.price)} each</p>
                     <div className="flex items-center justify-center sm:justify-start gap-6">
                       <div className="flex items-center gap-4 bg-stone-50 dark:bg-stone-800 px-4 py-2 rounded-full border border-stone-100 dark:border-white/10 transition-colors">
                         <button onClick={() => updateQty(item, -1)} className="text-stone-400 hover:text-luxury-black dark:hover:text-white text-xs font-bold">
@@ -120,7 +121,7 @@ export default function CartPage() {
                     </div>
                   </div>
                   <div className="text-xl font-medium text-luxury-black dark:text-stone-100 transition-colors">
-                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.product.price * item.quantity)}
+                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.variant.price * item.quantity)}
                   </div>
                 </motion.div>
               ))}

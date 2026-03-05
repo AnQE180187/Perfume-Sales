@@ -104,8 +104,8 @@ export default function CollectionPage() {
                                 key={cat}
                                 onClick={() => setActiveCategory(cat)}
                                 className={`text-[10px] font-bold tracking-[.3em] uppercase transition-all whitespace-nowrap cursor-pointer ${activeCategory === cat
-                                        ? 'text-gold'
-                                        : 'text-stone-400 hover:text-luxury-black dark:hover:text-white'
+                                    ? 'text-gold'
+                                    : 'text-stone-400 hover:text-luxury-black dark:hover:text-white'
                                     }`}
                             >
                                 {cat}
@@ -144,68 +144,72 @@ export default function CollectionPage() {
                     {loading ? (
                         <div className="col-span-full py-20 text-center text-stone-400 text-sm uppercase tracking-widest">Loading…</div>
                     ) : (
-                    filteredProducts.map((product, i) => (
-                        <motion.div
-                            key={product.id}
-                            initial={{ opacity: 0, y: 30 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.8, delay: i * 0.1 }}
-                            className="group"
-                        >
-                            <Link href={`/collection/${product.id}`}>
-                                <div className="relative aspect-[3/4] bg-stone-50 dark:bg-zinc-900 rounded-[3.5rem] overflow-hidden mb-10 border border-stone-100 dark:border-white/5 shadow-sm group-hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.1)] group-hover:-translate-y-4 transition-all duration-700 ease-out">
-                                    {product.images?.[0]?.url ? (
-                                        <img
-                                            src={product.images[0].url}
-                                            alt={product.name}
-                                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110"
-                                        />
-                                    ) : (
-                                        <Image
-                                            src="/luxury_perfume_hero_cinematic.png"
-                                            alt={product.name}
-                                            fill
-                                            className="object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110"
-                                        />
-                                    )}
-                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-500" />
-
-                                    {/* Category Badge */}
-                                    <div className="absolute top-10 left-10">
-                                        <span className="glass px-5 py-2 rounded-full text-[9px] font-bold tracking-[.3em] uppercase text-white shadow-xl">
-                                            {product.category?.name ?? '—'}
-                                        </span>
-                                    </div>
-
-                                    {/* Quick Add */}
-                                    <div className="absolute bottom-10 left-10 right-10 translate-y-8 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700">
-                                        <button
-                                            onClick={(e) => handleAddToCart(e, product.id)}
-                                            className="w-full glass py-4 rounded-full text-[10px] font-bold tracking-[.3em] uppercase text-white hover:bg-white hover:text-luxury-black transition-all flex items-center justify-center gap-3 shadow-2xl cursor-pointer"
-                                        >
-                                            <ShoppingBag size={14} /> Add to Cart
-                                        </button>
-                                    </div>
-                                </div>
-                            </Link>
-
-                            <div className="text-center">
+                        filteredProducts.map((product, i) => (
+                            <motion.div
+                                key={product.id}
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.8, delay: i * 0.1 }}
+                                className="group"
+                            >
                                 <Link href={`/collection/${product.id}`}>
-                                    <h3 className="text-3xl font-serif text-luxury-black dark:text-white mb-2 group-hover:italic transition-all duration-500">
-                                        {product.name}
-                                    </h3>
+                                    <div className="relative aspect-[3/4] bg-stone-50 dark:bg-zinc-900 rounded-[3.5rem] overflow-hidden mb-10 border border-stone-100 dark:border-white/5 shadow-sm group-hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.1)] group-hover:-translate-y-4 transition-all duration-700 ease-out">
+                                        {product.images?.[0]?.url ? (
+                                            <img
+                                                src={product.images[0].url}
+                                                alt={product.name}
+                                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110"
+                                            />
+                                        ) : (
+                                            <Image
+                                                src="/luxury_perfume_hero_cinematic.png"
+                                                alt={product.name}
+                                                fill
+                                                className="object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110"
+                                            />
+                                        )}
+                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-500" />
+
+                                        {/* Category Badge */}
+                                        <div className="absolute top-10 left-10">
+                                            <span className="glass px-5 py-2 rounded-full text-[9px] font-bold tracking-[.3em] uppercase text-white shadow-xl">
+                                                {product.category?.name ?? '—'}
+                                            </span>
+                                        </div>
+
+                                        {/* Quick Add shifted to View Details */}
+                                        <div className="absolute bottom-10 left-10 right-10 translate-y-8 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700">
+                                            <div className="w-full glass py-4 rounded-full text-[10px] font-bold tracking-[.3em] uppercase text-white hover:bg-white hover:text-luxury-black transition-all flex items-center justify-center gap-3 shadow-2xl">
+                                                View Options
+                                            </div>
+                                        </div>
+                                    </div>
                                 </Link>
-                                <p className="text-[10px] text-stone-500 dark:text-stone-400 font-bold uppercase tracking-[.4em] mb-4 transition-colors font-serif italic">
-                                    {product.brand?.name ?? '—'}
-                                </p>
-                                <div className="w-8 h-px bg-stone-100 dark:bg-gold/20 mx-auto mb-6 transition-colors" />
-                                <span className="text-xl font-serif italic text-luxury-black dark:text-white transition-colors tracking-widest">
-                                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: product.currency || 'VND' }).format(product.price)}
-                                </span>
-                            </div>
-                        </motion.div>
-                    ))
+
+                                <div className="text-center">
+                                    <Link href={`/collection/${product.id}`}>
+                                        <h3 className="text-3xl font-serif text-luxury-black dark:text-white mb-2 group-hover:italic transition-all duration-500">
+                                            {product.name}
+                                        </h3>
+                                    </Link>
+                                    <p className="text-[10px] text-stone-500 dark:text-stone-400 font-bold uppercase tracking-[.4em] mb-4 transition-colors font-serif italic">
+                                        {product.brand?.name ?? '—'}
+                                    </p>
+                                    <div className="w-8 h-px bg-stone-100 dark:bg-gold/20 mx-auto mb-6 transition-colors" />
+                                    <span className="text-xl font-serif italic text-luxury-black dark:text-white transition-colors tracking-widest">
+                                        {(() => {
+                                            if (!product.variants?.length) return '—';
+                                            const prices = product.variants.map(v => v.price);
+                                            const min = Math.min(...prices);
+                                            const max = Math.max(...prices);
+                                            const fmt = (n: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n);
+                                            return min === max ? fmt(min) : `${fmt(min)} - ${fmt(max)}`;
+                                        })()}
+                                    </span>
+                                </div>
+                            </motion.div>
+                        ))
                     )}
                 </div>
             </section>
