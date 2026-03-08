@@ -26,13 +26,17 @@ model User {
   gender        String?
   loyaltyPoints Int                   @default(0)
   role          UserRoleEnum          @default(CUSTOMER)
+  resetPasswordToken   String?               @unique
+  resetPasswordExpires DateTime?
+  emailVerified        Boolean               @default(false)
+  emailVerificationToken   String?               @unique
+  emailVerificationExpires DateTime?
   aiRequestLogs AiRequestLog[]
   auditLogs     AuditLog[]
   carts         Cart[]
   notifications Notification[]
   accounts      OAuthAccount[]
-  orders        Order[]               @relation("CustomerOrders")
-  staffOrders   Order[]               @relation("StaffOrders")
+  orders        Order[]
   quizResults   QuizResult[]
   reviews       Review[]
   sessions      Session[]
@@ -272,7 +276,6 @@ model Order {
   finalAmount     Int
   status          OrderStatus          @default(PENDING)
   paymentStatus   PaymentStatus        @default(PENDING)
-  channel         OrderChannel         @default(ONLINE)
   shippingAddress String?
   phone           String?
   createdAt       DateTime             @default(now())
