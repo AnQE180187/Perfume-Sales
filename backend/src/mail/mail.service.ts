@@ -65,4 +65,23 @@ export class MailService {
     `;
         return this.sendMail(email, 'Reset Your Password - Perfume Sales', html);
     }
+
+    async sendVerificationMail(email: string, verificationLink: string) {
+        const html = `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #333;">Verify Your Email</h2>
+        <p>Welcome to Perfume Sales! Please verify your email by clicking the link below.</p>
+        <div style="margin: 30px 0;">
+          <a href="${verificationLink}" 
+             style="background-color: #000; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">
+            Verify Email
+          </a>
+        </div>
+        <p>This link is valid for 24 hours.</p>
+        <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;" />
+        <p style="font-size: 12px; color: #999;">Perfume Sales House - Archival Essences</p>
+      </div>
+    `;
+        return this.sendMail(email, 'Verify Your Email - Perfume Sales', html);
+    }
 }

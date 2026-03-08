@@ -43,6 +43,9 @@ export class AuthService {
     const userCount = await this.prisma.user.count();
     const role = userCount === 0 ? UserRoleEnum.ADMIN : UserRoleEnum.CUSTOMER;
 
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationExpires = new Date(Date.now() + 24 * 3600000); // 24 hours
+
     const user = await this.prisma.user.create({
       data: {
         email: dto.email,
@@ -50,10 +53,20 @@ export class AuthService {
         passwordHash,
         fullName: dto.fullName,
         role,
+        emailVerificationToken: verificationToken,
+        emailVerificationExpires: verificationExpires,
       },
     });
 
-    return this.generateTokens(user.id, user.email, user.role);
+    const frontendUrl = this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
+    const verificationLink = `${frontendUrl}/vi/verify-email?token=${verificationToken}`;
+
+    await this.mailService.sendVerificationMail(user.email, verificationLink);
+
+    return {
+      success: true,
+      message: 'Registration successful. Please check your email to verify your account.',
+    };
   }
 
   async login(dto: LoginDto) {
@@ -67,6 +80,10 @@ export class AuthService {
 
     if (!user.isActive) {
       throw new UnauthorizedException('Account is deactivated');
+    }
+
+    if (!user.emailVerified) {
+      throw new ForbiddenException('Please verify your email to log in');
     }
 
     const passwordValid = await bcrypt.compare(dto.password, user.passwordHash);
@@ -121,7 +138,7 @@ export class AuthService {
 
     // Send email with reset link
     const frontendUrl = this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
-    const resetLink = `${frontendUrl}/reset-password?token=${resetToken}`;
+    const resetLink = `${frontendUrl}/vi/reset-password?token=${resetToken}`;
 
     await this.mailService.sendPasswordResetMail(user.email, resetLink);
 
@@ -160,6 +177,30 @@ export class AuthService {
     return {
       success: true,
       message: 'Password has been reset successfully',
+    };
+  }
+
+  async verifyEmail(token: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { emailVerificationToken: token },
+    });
+
+    if (!user || (user.emailVerificationExpires && user.emailVerificationExpires < new Date())) {
+      throw new BadRequestException('Invalid or expired verification token');
+    }
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        emailVerified: true,
+        emailVerificationToken: null,
+        emailVerificationExpires: null,
+      },
+    });
+
+    return {
+      success: true,
+      message: 'Email verified successfully. You can now log in.',
     };
   }
 
