@@ -5,7 +5,8 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Lock, Eye, EyeOff, Sparkles } from 'lucide-react';
 import { Header } from '@/components/common/header';
 import { authService } from '@/services/auth.service';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import { useRouter } from '@/lib/i18n';
 import { useEffect } from 'react';
 
 export default function ResetPasswordPage() {
