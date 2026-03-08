@@ -10,7 +10,7 @@ export class ProductsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly cloudinaryService: CloudinaryService,
-  ) { }
+  ) {}
 
   async list(query: QueryProductsDto) {
     const { search, skip = 0, take = 20, brandId, categoryId } = query;
@@ -164,7 +164,7 @@ export class ProductsService {
         where: { id },
         data: {
           ...productData,
-          // Note: Full variant sync can be complex, for now we just update basic fields. 
+          // Note: Full variant sync can be complex, for now we just update basic fields.
           // Management of variants (add/remove) can be handled by a separate logic if needed.
         },
       });
@@ -243,10 +243,7 @@ export class ProductsService {
     });
   }
 
-  async deleteImage(
-    productId: string,
-    imageId: string,
-  ) {
+  async deleteImage(productId: string, imageId: string) {
     const image = await this.prisma.productImage.findFirst({
       where: {
         id: Number(imageId),

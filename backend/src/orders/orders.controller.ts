@@ -15,7 +15,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 @Controller('orders')
 @UseGuards(JwtAuthGuard)
 export class OrdersController {
-  constructor(private readonly ordersService: OrdersService) { }
+  constructor(private readonly ordersService: OrdersService) {}
 
   @Post()
   async create(@Req() req: any, @Body() dto: CreateOrderDto) {

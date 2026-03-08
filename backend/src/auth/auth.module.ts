@@ -13,4 +13,4 @@ import { FacebookStrategy } from './facebook.strategy';
   providers: [AuthService, JwtStrategy, GoogleStrategy, FacebookStrategy],
   exports: [AuthService],
 })
-export class AuthModule { }
+export class AuthModule {}

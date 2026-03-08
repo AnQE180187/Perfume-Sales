@@ -1,4 +1,9 @@
-import { Injectable, BadRequestException, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { PaymentProvider, PaymentStatus } from '@prisma/client';
@@ -19,7 +24,9 @@ export class PaymentsService {
     const checksumKey = this.config.get<string>('PAYOS_CHECKSUM_KEY');
 
     if (!clientId || !apiKey || !checksumKey) {
-      throw new InternalServerErrorException('PayOS credentials not configured');
+      throw new InternalServerErrorException(
+        'PayOS credentials not configured',
+      );
     }
 
     this.payos = new PayOS({
@@ -68,14 +75,16 @@ export class PaymentsService {
       const response = await this.payos.paymentRequests.create(paymentData);
 
       // PayOS qrCode is raw data, convert to proper format if needed
-      let qrCodeValue = response.qrCode || '';
+      const qrCodeValue = response.qrCode || '';
 
       // If qrCode is raw QRIP data (starts with 00020101), encode it as SVG or data URL
       if (qrCodeValue && qrCodeValue.startsWith('00020101')) {
         // This is raw QRIP data, need to generate QR code image
         // For now, return the raw data and let frontend handle it
         // Or you can use a library to generate SVG
-        console.warn('QR code in raw QRIP format, may need additional processing');
+        console.warn(
+          'QR code in raw QRIP format, may need additional processing',
+        );
       }
 
       // Create payment record in database
@@ -119,7 +128,9 @@ export class PaymentsService {
       const { code, orderCode, amount } = webhookBody;
 
       if (!orderCode) {
-        throw new BadRequestException('Invalid webhook data: missing orderCode');
+        throw new BadRequestException(
+          'Invalid webhook data: missing orderCode',
+        );
       }
 
       // Find payment by transactionId (orderCode)
@@ -129,8 +140,8 @@ export class PaymentsService {
         },
         include: {
           order: {
-            include: { items: true }
-          }
+            include: { items: true },
+          },
         },
       });
 
@@ -147,7 +158,8 @@ export class PaymentsService {
 
       // Determine payment status based on PayOS response code
       // PayOS code '00' means success
-      const paymentStatus = code === '00' ? PaymentStatus.PAID : PaymentStatus.FAILED;
+      const paymentStatus =
+        code === '00' ? PaymentStatus.PAID : PaymentStatus.FAILED;
 
       // Update payment and order in transaction
       await this.prisma.$transaction(async (tx) => {
@@ -184,11 +196,15 @@ export class PaymentsService {
         }
       });
 
-      console.log(`Payment ${payment.id} processed successfully with status: ${paymentStatus}`);
+      console.log(
+        `Payment ${payment.id} processed successfully with status: ${paymentStatus}`,
+      );
       return { success: true, message: 'Payment processed' };
     } catch (error: any) {
       console.error('Webhook handling error:', error);
-      throw new BadRequestException(error.message || 'Webhook verification failed');
+      throw new BadRequestException(
+        error.message || 'Webhook verification failed',
+      );
     }
   }
 
@@ -197,8 +213,8 @@ export class PaymentsService {
       where: { id: paymentId },
       include: {
         order: {
-          include: { items: true }
-        }
+          include: { items: true },
+        },
       },
     });
 
@@ -214,8 +230,8 @@ export class PaymentsService {
       where: { orderId },
       include: {
         order: {
-          include: { items: true }
-        }
+          include: { items: true },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -223,4 +239,3 @@ export class PaymentsService {
     return payment;
   }
 }
-

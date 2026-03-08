@@ -12,7 +12,8 @@ import {
     Package,
     Receipt,
     Tag,
-    Users
+    Users,
+    FolderTree
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -77,6 +78,7 @@ export default function AdminDashboard() {
                 <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {[
                         { label: "Products", desc: "Manage collection", icon: Package, href: "/dashboard/admin/products" },
+                        { label: "Catalog", desc: "Brands, categories, scents", icon: FolderTree, href: "/dashboard/admin/catalog" },
                         { label: "Orders", desc: "Fulfillment registry", icon: Receipt, href: "/dashboard/admin/orders" },
                         { label: "Discounts", desc: "Campaign rewards", icon: Tag, href: "/dashboard/admin/marketing/promotions" },
                         { label: "Users", desc: "Member accounts", icon: Users, href: "/dashboard/admin/users" }
