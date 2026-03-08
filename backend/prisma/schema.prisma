@@ -26,6 +26,9 @@ model User {
   gender        String?
   loyaltyPoints Int                   @default(0)
   role          UserRoleEnum          @default(CUSTOMER)
+  resetPasswordToken   String?               @unique
+  resetPasswordExpires DateTime?
+
   aiRequestLogs AiRequestLog[]
   auditLogs     AuditLog[]
   carts         Cart[]
