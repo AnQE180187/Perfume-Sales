@@ -26,12 +26,8 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-<<<<<<< HEAD
     private readonly mailService: MailService,
   ) { }
-=======
-  ) {}
->>>>>>> main
 
   async register(dto: RegisterDto) {
     const existing = await this.prisma.user.findFirst({
@@ -127,14 +123,7 @@ export class AuthService {
     const frontendUrl = this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
     const resetLink = `${frontendUrl}/reset-password?token=${resetToken}`;
 
-<<<<<<< HEAD
     await this.mailService.sendPasswordResetMail(user.email, resetLink);
-=======
-    console.log(`Password reset token for ${user.email}: ${resetToken}`);
-    console.log(
-      `Reset link: ${this.configService.get('FRONTEND_URL')}/reset-password?token=${resetToken}`,
-    );
->>>>>>> main
 
     return {
       success: true,
