@@ -6,7 +6,7 @@ import {
     MessageSquare, BrainCircuit, Heart, History, Coins, Tag,
     Monitor, Box, ClipboardList, BarChart3, ShieldCheck,
     Globe, Mail, FileText, Settings2, Smartphone, Receipt, FolderTree,
-    Sparkles, Zap
+    Sparkles, Zap, Store, Warehouse
 } from 'lucide-react';
 import { Link, usePathname } from '@/lib/i18n';
 import { useAuth } from '@/hooks/use-auth';
@@ -55,6 +55,8 @@ export const Sidebar = () => {
         const admin = [
             { icon: Users, label: navT('admin.users'), href: '/dashboard/admin/users' },
             { icon: ShieldCheck, label: navT('admin.rbac'), href: '/dashboard/admin/rbac' },
+            { icon: Store, label: 'Quầy / Cửa hàng', href: '/dashboard/admin/stores' },
+            { icon: Warehouse, label: 'Tồn kho theo quầy', href: '/dashboard/admin/stores/stock' },
             { icon: Package, label: navT('admin.products'), href: '/dashboard/admin/products' },
             { icon: FolderTree, label: 'Catalog', href: '/dashboard/admin/catalog' },
             { icon: Tag, label: navT('admin.promotions'), href: '/dashboard/admin/marketing/promotions' },
