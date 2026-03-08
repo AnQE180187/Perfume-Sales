@@ -13,6 +13,7 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { PaymentsModule } from './payments/payments.module';
 import { PromotionsModule } from './promotions/promotions.module';
 import { LoyaltyModule } from './loyalty/loyalty.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -30,7 +31,9 @@ import { LoyaltyModule } from './loyalty/loyalty.module';
     PaymentsModule,
     PromotionsModule,
     LoyaltyModule,
+    MailModule,
   ],
+
   controllers: [AppController],
   providers: [AppService],
 })

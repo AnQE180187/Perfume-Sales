@@ -5,22 +5,29 @@ import { motion } from 'framer-motion';
 import { ArrowRight, ArrowLeft, Mail } from 'lucide-react';
 import { Link } from '@/lib/i18n';
 import Image from 'next/image';
+import { authService } from '@/services/auth.service';
 
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState('');
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
+        setError(null);
 
-        // Simulate API call
-        setTimeout(() => {
+        try {
+            await authService.forgotPassword(email);
             setIsSubmitted(true);
+        } catch (err: any) {
+            setError(err.response?.data?.message || err.message || 'Failed to send reset link');
+        } finally {
             setIsLoading(false);
-        }, 1000);
+        }
     };
+
 
     return (
         <div className="min-h-screen bg-stone-50 dark:bg-zinc-950 flex items-center justify-center p-6 transition-colors">
@@ -74,6 +81,11 @@ export default function ForgotPasswordPage() {
 
                         {!isSubmitted ? (
                             <form onSubmit={handleSubmit} className="space-y-8">
+                                {error && (
+                                    <div className="p-4 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-500/20 rounded-2xl text-red-500 text-xs font-bold tracking-widest uppercase">
+                                        {error}
+                                    </div>
+                                )}
                                 <div className="space-y-6">
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2">

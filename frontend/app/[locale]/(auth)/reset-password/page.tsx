@@ -4,8 +4,15 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Lock, Eye, EyeOff, Sparkles } from 'lucide-react';
 import { Header } from '@/components/common/header';
+import { authService } from '@/services/auth.service';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function ResetPasswordPage() {
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const token = searchParams.get('token');
+
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -14,8 +21,19 @@ export default function ResetPasswordPage() {
     const [error, setError] = useState<string | null>(null);
     const [status, setStatus] = useState<"idle" | "success">("idle");
 
+    useEffect(() => {
+        if (!token) {
+            setError("Missing or invalid reset token");
+        }
+    }, [token]);
+
     const handleUpdatePassword = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!token) {
+            setError("Invalid token session");
+            return;
+        }
+
         setError(null);
 
         if (password !== confirmPassword) {
@@ -26,16 +44,19 @@ export default function ResetPasswordPage() {
         setIsLoading(true);
 
         try {
-            // Simulation
+            await authService.resetPassword({ token, newPassword: password });
+            setStatus("success");
+            // Automatically redirect after 3 seconds
             setTimeout(() => {
-                setStatus("success");
-                setIsLoading(false);
-            }, 2000);
+                router.push('/login');
+            }, 3000);
         } catch (err: any) {
-            setError(err.message);
+            setError(err.response?.data?.message || err.message || 'Failed to update password');
+        } finally {
             setIsLoading(false);
         }
     };
+
 
     return (
         <div className="min-h-screen bg-stone-50 dark:bg-zinc-950 transition-colors flex flex-col">
