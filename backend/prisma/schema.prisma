@@ -42,6 +42,8 @@ model User {
   sessions      Session[]
   preferences   UserScentPreference[]
   loyaltyTransactions LoyaltyTransaction[]
+  staffInventoryLogs  InventoryLog[]      @relation("StaffInventoryLogs")
+  stores              UserStore[]
 }
 
 model OAuthAccount {
@@ -167,10 +169,55 @@ model ProductVariant {
   updatedAt DateTime @updatedAt
 
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  cartItems CartItem[]
-  orderItems OrderItem[]
+  cartItems   CartItem[]
+  orderItems  OrderItem[]
+  inventoryLogs InventoryLog[]
+  storeStocks StoreStock[]
 
   @@index([productId])
+}
+
+/// Quầy / cửa hàng (nhiều quầy, mỗi quầy có tồn riêng)
+model Store {
+  id        String   @id @default(cuid())
+  name      String
+  code      String?  @unique
+  address   String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users       UserStore[]
+  orders      Order[]
+  storeStocks StoreStock[]
+  inventoryLogs InventoryLog[]
+}
+
+/// Gán nhân viên (STAFF) vào quầy – staff chỉ xem/sửa tồn quầy mình
+model UserStore {
+  userId    String
+  storeId   String
+  assignedAt DateTime @default(now())
+
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  store     Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@id([userId, storeId])
+  @@index([storeId])
+}
+
+/// Tồn theo quầy: mỗi quầy có số lượng riêng từng variant
+model StoreStock {
+  storeId   String
+  variantId String
+  quantity  Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  store     Store          @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@id([storeId, variantId])
+  @@index([variantId])
 }
 
 
@@ -222,6 +269,8 @@ model Order {
   id              String               @id @default(cuid())
   code            String               @unique
   userId          String?
+  staffId         String?
+  storeId         String?
   totalAmount     Int
   discountAmount  Int                  @default(0)
   finalAmount     Int
@@ -232,11 +281,15 @@ model Order {
   createdAt       DateTime             @default(now())
   updatedAt       DateTime             @updatedAt
   promotions      AppliedPromotion[]
-  user            User?                @relation(fields: [userId], references: [id])
+  user            User?                @relation("CustomerOrders", fields: [userId], references: [id])
+  staff           User?                @relation("StaffOrders", fields: [staffId], references: [id])
+  store           Store?               @relation(fields: [storeId], references: [id])
   items           OrderItem[]
   statusHistory   OrderStatusHistory[]
   payments        Payment[]
   shipments       Shipment[]
+
+  @@index([storeId])
 }
 
 model OrderItem {
@@ -420,6 +473,36 @@ enum PaymentProvider {
   COD
   PAYOS
   VIETQR
+}
+
+enum OrderChannel {
+  ONLINE
+  POS
+}
+
+model InventoryLog {
+  id        Int             @id @default(autoincrement())
+  variantId String
+  staffId   String?
+  storeId   String?
+  type      InventoryLogType
+  quantity  Int
+  reason    String?
+  createdAt DateTime        @default(now())
+
+  variant   ProductVariant  @relation(fields: [variantId], references: [id])
+  staff     User?           @relation("StaffInventoryLogs", fields: [staffId], references: [id])
+  store     Store?          @relation(fields: [storeId], references: [id])
+
+  @@index([variantId])
+  @@index([staffId])
+  @@index([storeId])
+}
+
+enum InventoryLogType {
+  IMPORT
+  ADJUST
+  SALE_POS
 }
 
 enum ShippingProvider {

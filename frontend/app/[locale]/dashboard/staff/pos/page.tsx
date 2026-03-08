@@ -1,16 +1,19 @@
 'use client';
 
 import { AuthGuard } from '@/components/auth/auth-guard';
-import { useEffect, useState } from 'react';
-import { Search, ShoppingCart, CreditCard, Plus, Minus, Receipt, QrCode } from 'lucide-react';
+import { useEffect, useState, useCallback } from 'react';
+import { Search, ShoppingCart, CreditCard, Plus, Minus, Receipt, QrCode, Store } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { staffPosService, type PosOrder } from '@/services/staff-pos.service';
+import { storesService, type Store as StoreType } from '@/services/stores.service';
 import type { Product } from '@/services/product.service';
 import type { PayOSPaymentResponse } from '@/services/payment.service';
 
 type PaymentMethod = 'CASH' | 'QR';
 
 export default function PosPage() {
+    const [myStores, setMyStores] = useState<StoreType[]>([]);
+    const [selectedStoreId, setSelectedStoreId] = useState<string>('');
     const [products, setProducts] = useState<Product[]>([]);
     const [search, setSearch] = useState('');
     const [loadingProducts, setLoadingProducts] = useState(false);
@@ -22,6 +25,20 @@ export default function PosPage() {
     const [qrPayment, setQrPayment] = useState<PayOSPaymentResponse | null>(null);
 
     const subtotal = order?.items?.reduce((acc, item) => acc + item.totalPrice, 0) ?? 0;
+
+    const loadMyStores = useCallback(async () => {
+        try {
+            const list = await storesService.getMyStores();
+            setMyStores(list);
+            if (list.length && !selectedStoreId) setSelectedStoreId(list[0].id);
+        } catch {
+            // optional
+        }
+    }, []);
+
+    useEffect(() => {
+        void loadMyStores();
+    }, [loadMyStores]);
 
     const loadProducts = async (term: string) => {
         setLoadingProducts(true);
@@ -37,7 +54,6 @@ export default function PosPage() {
     };
 
     useEffect(() => {
-        // initial load
         loadProducts('');
     }, []);
 
@@ -46,7 +62,7 @@ export default function PosPage() {
         setCreatingOrder(true);
         setError(null);
         try {
-            const created = await staffPosService.createDraft();
+            const created = await staffPosService.createDraft(selectedStoreId || undefined);
             setOrder(created);
             return created;
         } catch (e: any) {
@@ -120,16 +136,35 @@ export default function PosPage() {
             <div className="flex h-[calc(100vh-80px)] overflow-hidden">
                 {/* Catalog Area */}
                 <div className="flex-1 flex flex-col border-r border-border min-w-0">
-                    <header className="p-8 border-b border-border flex justify-between items-center bg-secondary/10 shrink-0">
-                        <div className="relative w-full max-w-lg">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                            <input
-                                type="text"
-                                value={search}
-                                onChange={handleSearchChange}
-                                placeholder="Search products, batches or scan barcode..."
-                                className="w-full bg-background border border-border rounded-full py-3.5 pl-12 pr-4 text-sm focus:border-gold/50 outline-none transition-all shadow-sm"
-                            />
+                    <header className="p-8 border-b border-border flex flex-wrap justify-between items-center gap-4 bg-secondary/10 shrink-0">
+                        <div className="flex items-center gap-4 flex-1 min-w-0">
+                            <div className="flex items-center gap-2 shrink-0">
+                                <Store className="w-4 h-4 text-gold" />
+                                <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Quầy:</label>
+                                <select
+                                    value={order?.storeId ?? selectedStoreId}
+                                    onChange={(e) => {
+                                        if (!order) setSelectedStoreId(e.target.value);
+                                    }}
+                                    disabled={!!order}
+                                    className="rounded-lg border border-border bg-background px-3 py-2 text-xs font-heading uppercase tracking-wider focus:border-gold/60 disabled:opacity-70"
+                                >
+                                    <option value="">-- Chọn quầy --</option>
+                                    {myStores.map((s) => (
+                                        <option key={s.id} value={s.id}>{s.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="relative flex-1 max-w-lg min-w-0">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                <input
+                                    type="text"
+                                    value={search}
+                                    onChange={handleSearchChange}
+                                    placeholder="Search products, batches or scan barcode..."
+                                    className="w-full bg-background border border-border rounded-full py-3.5 pl-12 pr-4 text-sm focus:border-gold/50 outline-none transition-all shadow-sm"
+                                />
+                            </div>
                         </div>
                     </header>
 

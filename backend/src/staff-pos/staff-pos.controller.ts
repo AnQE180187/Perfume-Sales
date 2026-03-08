@@ -26,9 +26,16 @@ export class StaffPosController {
   }
 
   @Post('orders')
-  createDraftOrder(@Req() req: any) {
-    const user = req.user as { userId: string };
-    return this.staffPosService.createDraftOrder(user.userId);
+  createDraftOrder(
+    @Req() req: any,
+    @Body() body: { storeId?: string },
+  ) {
+    const user = req.user as { userId: string; role: string };
+    return this.staffPosService.createDraftOrder(
+      user.userId,
+      body?.storeId ?? null,
+      user.role,
+    );
   }
 
   @Patch('orders/:id/items')

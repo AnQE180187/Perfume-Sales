@@ -18,6 +18,7 @@ export type PosOrder = {
   id: string;
   code: string;
   staffId?: string | null;
+  storeId?: string | null;
   totalAmount: number;
   discountAmount: number;
   finalAmount: number;
@@ -25,6 +26,7 @@ export type PosOrder = {
   paymentStatus: string;
   channel: string;
   items: PosOrderItem[];
+  store?: { id: string; name: string; code?: string | null } | null;
 };
 
 export const staffPosService = {
@@ -34,8 +36,10 @@ export const staffPosService = {
       .then((r) => r.data);
   },
 
-  createDraft(): Promise<PosOrder> {
-    return api.post<PosOrder>('/staff/pos/orders').then((r) => r.data);
+  createDraft(storeId?: string): Promise<PosOrder> {
+    return api
+      .post<PosOrder>('/staff/pos/orders', { storeId: storeId ?? undefined })
+      .then((r) => r.data);
   },
 
   upsertItem(

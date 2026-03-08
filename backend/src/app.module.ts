@@ -18,6 +18,7 @@ import { MailModule } from './mail/mail.module';
 import { StaffPosModule } from './staff-pos/staff-pos.module';
 import { StaffInventoryModule } from './staff-inventory/staff-inventory.module';
 import { StaffOrdersModule } from './staff-orders/staff-orders.module';
+import { StoresModule } from './stores/stores.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { StaffOrdersModule } from './staff-orders/staff-orders.module';
     StaffPosModule,
     StaffInventoryModule,
     StaffOrdersModule,
+    StoresModule,
   ],
 
   controllers: [AppController],

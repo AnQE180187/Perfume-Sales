@@ -10,6 +10,7 @@ export type StaffInventoryVariant = {
 };
 
 export type StaffInventoryOverview = {
+  storeId?: string;
   stats: {
     totalUnits: number;
     lowStockCount: number;
@@ -43,28 +44,47 @@ export type StaffInventoryLog = {
 };
 
 export const staffInventoryService = {
-  getOverview(): Promise<StaffInventoryOverview> {
-    return api.get<StaffInventoryOverview>('/staff/inventory').then((r) => r.data);
+  getOverview(storeId: string): Promise<StaffInventoryOverview> {
+    return api
+      .get<StaffInventoryOverview>('/staff/inventory', { params: { storeId } })
+      .then((r) => r.data);
   },
-  importStock(variantId: string, quantity: number, reason?: string): Promise<StaffInventoryOverview> {
+  importStock(
+    storeId: string,
+    variantId: string,
+    quantity: number,
+    reason?: string,
+  ): Promise<StaffInventoryOverview> {
     return api
       .post<StaffInventoryOverview>('/staff/inventory/import', {
+        storeId,
         variantId,
         quantity,
         reason,
       })
       .then((r) => r.data);
   },
-  adjustStock(variantId: string, delta: number, reason: string): Promise<StaffInventoryOverview> {
+  adjustStock(
+    storeId: string,
+    variantId: string,
+    delta: number,
+    reason: string,
+  ): Promise<StaffInventoryOverview> {
     return api
       .post<StaffInventoryOverview>('/staff/inventory/adjust', {
+        storeId,
         variantId,
         delta,
         reason,
       })
       .then((r) => r.data);
   },
-  getLogs(params?: { variantId?: string; from?: string; to?: string }): Promise<StaffInventoryLog[]> {
+  getLogs(params?: {
+    storeId?: string;
+    variantId?: string;
+    from?: string;
+    to?: string;
+  }): Promise<StaffInventoryLog[]> {
     return api
       .get<StaffInventoryLog[]>('/staff/inventory/logs', { params })
       .then((r) => r.data);

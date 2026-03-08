@@ -11,13 +11,16 @@ import {
   OrderStatus,
   OrderChannel,
 } from '@prisma/client';
+import { InventoryLogType } from '@prisma/client';
 import { PaymentsService } from '../payments/payments.service';
+import { StoresService } from '../stores/stores.service';
 
 @Injectable()
 export class StaffPosService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly paymentsService: PaymentsService,
+    private readonly storesService: StoresService,
   ) {}
 
   async searchProducts(query: string) {
@@ -52,11 +55,15 @@ export class StaffPosService {
     return products;
   }
 
-  async createDraftOrder(staffUserId: string) {
+  async createDraftOrder(staffUserId: string, storeId: string | null, role: string) {
+    if (storeId) {
+      await this.storesService.ensureStaffCanAccessStore(staffUserId, storeId, role);
+    }
     const order = await this.prisma.order.create({
       data: {
         code: `POS-${Date.now()}`,
         staffId: staffUserId,
+        storeId: storeId ?? undefined,
         channel: OrderChannel.POS,
         totalAmount: 0,
         discountAmount: 0,
@@ -66,6 +73,7 @@ export class StaffPosService {
       },
       include: {
         items: true,
+        store: true,
       },
     });
 
@@ -79,6 +87,7 @@ export class StaffPosService {
         items: {
           include: { variant: { include: { product: true } } },
         },
+        store: true,
       },
     });
 
@@ -113,13 +122,21 @@ export class StaffPosService {
     });
     if (!variant) throw new NotFoundException('Variant not found');
 
+    let availableStock = variant.stock;
+    if (order.storeId) {
+      const storeStock = await this.prisma.storeStock.findUnique({
+        where: { storeId_variantId: { storeId: order.storeId, variantId } },
+      });
+      availableStock = storeStock?.quantity ?? 0;
+    }
+
     if (quantity === 0) {
       await this.prisma.orderItem.deleteMany({
         where: { orderId: order.id, variantId },
       });
     } else {
-      if (quantity > variant.stock) {
-        throw new BadRequestException('Quantity exceeds stock');
+      if (quantity > availableStock) {
+        throw new BadRequestException('Quantity exceeds store stock');
       }
 
       const existing = order.items.find((i) => i.variantId === variantId);
@@ -168,6 +185,7 @@ export class StaffPosService {
         items: {
           include: { variant: { include: { product: true } } },
         },
+        store: true,
       },
     });
 
@@ -182,19 +200,42 @@ export class StaffPosService {
     }
 
     await this.prisma.$transaction(async (tx) => {
-      // Deduct stock
-      for (const item of order.items) {
-        await tx.productVariant.update({
-          where: { id: item.variantId },
-          data: {
-            stock: {
-              decrement: item.quantity,
+      if (order.storeId) {
+        for (const item of order.items) {
+          const current = await tx.storeStock.findUnique({
+            where: { storeId_variantId: { storeId: order.storeId, variantId: item.variantId } },
+          });
+          const qty = current?.quantity ?? 0;
+          if (qty < item.quantity) {
+            throw new BadRequestException(
+              `Insufficient store stock for variant ${item.variantId}`,
+            );
+          }
+          await tx.storeStock.upsert({
+            where: { storeId_variantId: { storeId: order.storeId, variantId: item.variantId } },
+            create: { storeId: order.storeId, variantId: item.variantId, quantity: -item.quantity },
+            update: { quantity: { decrement: item.quantity }, updatedAt: new Date() },
+          });
+          await tx.inventoryLog.create({
+            data: {
+              variantId: item.variantId,
+              staffId: staffUserId,
+              storeId: order.storeId,
+              type: InventoryLogType.SALE_POS,
+              quantity: -item.quantity,
+              reason: `POS order ${order.code}`,
             },
-          },
-        });
+          });
+        }
+      } else {
+        for (const item of order.items) {
+          await tx.productVariant.update({
+            where: { id: item.variantId },
+            data: { stock: { decrement: item.quantity } },
+          });
+        }
       }
 
-      // Create payment record
       await tx.payment.create({
         data: {
           orderId: order.id,
@@ -204,7 +245,6 @@ export class StaffPosService {
         },
       });
 
-      // Update order status
       await tx.order.update({
         where: { id: order.id },
         data: {
@@ -221,6 +261,7 @@ export class StaffPosService {
           include: { variant: { include: { product: true } } },
         },
         payments: true,
+        store: true,
       },
     });
 
