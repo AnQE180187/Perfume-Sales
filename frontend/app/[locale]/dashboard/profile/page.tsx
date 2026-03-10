@@ -2,8 +2,9 @@
 
 import { AuthGuard } from '@/components/auth/auth-guard';
 import { userService } from '@/services/user.service';
+import { authService } from '@/services/auth.service';
 import { useAuthStore } from '@/store/auth.store';
-import { User, Mail, Shield, Edit2, Loader2 } from 'lucide-react';
+import { User, Mail, Shield, Edit2, Loader2, CheckCircle, Send } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 type ProfileData = {
@@ -22,6 +23,7 @@ type ProfileData = {
   budgetMax?: number | null;
   loyaltyPoints?: number;
   createdAt?: string;
+  emailVerified?: boolean;
 };
 
 export default function ProfilePage() {
@@ -31,6 +33,8 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
+  const [sendingVerify, setSendingVerify] = useState(false);
+  const [verifyMsg, setVerifyMsg] = useState<string | null>(null);
   const [form, setForm] = useState({
     fullName: '',
     gender: '',
@@ -68,6 +72,19 @@ export default function ProfilePage() {
   useEffect(() => {
     loadProfile();
   }, []);
+
+  const handleResendVerification = async () => {
+    setSendingVerify(true);
+    setVerifyMsg(null);
+    try {
+      const res = await authService.resendVerificationEmail();
+      setVerifyMsg(res.message ?? 'Đã gửi email.');
+    } catch (e) {
+      setVerifyMsg((e as Error).message);
+    } finally {
+      setSendingVerify(false);
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -152,6 +169,36 @@ export default function ProfilePage() {
                 <Shield className="w-4 h-4 text-emerald-500" />
                 <span>Tài khoản được bảo vệ</span>
               </div>
+            </div>
+
+            <div className="glass p-8 rounded-[2.5rem] border-border space-y-4">
+              <h3 className="font-heading text-[10px] uppercase tracking-widest text-muted-foreground mb-4">
+                Xác thực email
+              </h3>
+              {data?.emailVerified ? (
+                <div className="flex items-center gap-4 text-xs font-body text-emerald-500">
+                  <CheckCircle className="w-4 h-4" />
+                  <span>Email đã được xác thực</span>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-xs text-muted-foreground">
+                    Email chưa xác thực. (Tùy chọn – không ảnh hưởng sử dụng)
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleResendVerification}
+                    disabled={sendingVerify}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gold text-gold text-[10px] font-heading uppercase tracking-widest hover:bg-gold/10 disabled:opacity-50"
+                  >
+                    {sendingVerify ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
+                    Gửi email xác thực
+                  </button>
+                  {verifyMsg && (
+                    <p className="text-[10px] text-muted-foreground">{verifyMsg}</p>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 

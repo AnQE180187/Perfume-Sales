@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useRouter } from '@/lib/i18n';
 import { motion, AnimatePresence } from 'framer-motion';
 import QRCode from 'qrcode';
 import {
-    ArrowLeft, ArrowRight, CreditCard, Wallet, QrCode,
-    MapPin, Phone, Loader2, Download, Tag, Check, X
+    ArrowLeft, ArrowRight, CreditCard, Wallet,
+    MapPin, Phone, Loader2, Download, Tag, Check, X, User
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { cartService } from '@/services/cart.service';
@@ -14,6 +14,13 @@ import { orderService } from '@/services/order.service';
 import { paymentService, type PayOSPaymentResponse } from '@/services/payment.service';
 import { promotionService, type PromotionValidationResponse } from '@/services/promotion.service';
 import { loyaltyService } from '@/services/loyalty.service';
+import {
+    ghnService,
+    type GHNProvince,
+    type GHNDistrict,
+    type GHNWard,
+    type GHNService,
+} from '@/services/ghn.service';
 
 type PaymentMethod = 'COD' | 'ONLINE' | null;
 
@@ -66,10 +73,25 @@ export default function CheckoutPage() {
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [shippingAddress, setShippingAddress] = useState('');
+    const [recipientName, setRecipientName] = useState('');
     const [phone, setPhone] = useState('');
     const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(null);
     const [orderId, setOrderId] = useState<string | null>(null);
     const [paymentData, setPaymentData] = useState<PayOSPaymentResponse | null>(null);
+
+    // GHN address & shipping
+    const [ghnEnabled, setGhnEnabled] = useState(false);
+    const [provinces, setProvinces] = useState<GHNProvince[]>([]);
+    const [districts, setDistricts] = useState<GHNDistrict[]>([]);
+    const [wards, setWards] = useState<GHNWard[]>([]);
+    const [services, setServices] = useState<GHNService[]>([]);
+    const [provinceId, setProvinceId] = useState<number | null>(null);
+    const [districtId, setDistrictId] = useState<number | null>(null);
+    const [wardCode, setWardCode] = useState<string>('');
+    const [selectedServiceId, setSelectedServiceId] = useState<number | null>(null);
+    const [shippingFee, setShippingFee] = useState(0);
+    const [loadingFee, setLoadingFee] = useState(false);
+    const [feeError, setFeeError] = useState<string | null>(null);
 
     // Promotion states
     const [couponCode, setCouponCode] = useState('');
@@ -93,12 +115,85 @@ export default function CheckoutPage() {
         }).catch(() => setLoading(false));
 
         loyaltyService.getStatus().then(setLoyaltyInfo);
+
+        ghnService.isConfigured().then((r) => {
+            if (r.configured) {
+                setGhnEnabled(true);
+                ghnService.getProvinces().then(setProvinces).catch(() => setProvinces([]));
+            }
+        }).catch(() => {});
     }, [isAuthenticated, router]);
+
+    useEffect(() => {
+        if (!provinceId) {
+            setDistricts([]);
+            setDistrictId(null);
+            return;
+        }
+        ghnService.getDistricts(provinceId).then(setDistricts).catch(() => setDistricts([]));
+        setDistrictId(null);
+        setWardCode('');
+        setWards([]);
+        setServices([]);
+        setSelectedServiceId(null);
+        setShippingFee(0);
+    }, [provinceId]);
+
+    useEffect(() => {
+        if (!districtId) {
+            setWards([]);
+            setWardCode('');
+            setServices([]);
+            setSelectedServiceId(null);
+            setShippingFee(0);
+            return;
+        }
+        ghnService.getWards(districtId).then(setWards).catch(() => setWards([]));
+        ghnService.getServices(districtId).then((s) => {
+            setServices(s);
+            if (s.length > 0) setSelectedServiceId(s[0].service_id);
+            else setSelectedServiceId(null);
+        }).catch(() => setServices([]));
+        setWardCode('');
+        setShippingFee(0);
+    }, [districtId]);
+
+    const calculateFee = useCallback(async () => {
+        if (!districtId || !wardCode || !selectedServiceId) return;
+        setLoadingFee(true);
+        setFeeError(null);
+        try {
+            const res = await ghnService.calculateFee({
+                toDistrictId: districtId,
+                toWardCode: wardCode,
+                serviceId: selectedServiceId,
+                weight: 500,
+            });
+            setShippingFee(res.total ?? 0);
+        } catch (e: any) {
+            setFeeError(e.message || 'Không thể tính phí');
+            setShippingFee(0);
+        } finally {
+            setLoadingFee(false);
+        }
+    }, [districtId, wardCode, selectedServiceId]);
+
+    useEffect(() => {
+        if (districtId && wardCode && selectedServiceId) {
+            calculateFee();
+        } else {
+            setShippingFee(0);
+        }
+    }, [districtId, wardCode, selectedServiceId, calculateFee]);
 
     const subtotal = cartItems.reduce((acc, i) => acc + i.variant.price * i.quantity, 0);
     const couponDiscount = appliedCoupon ? appliedCoupon.discountAmount : 0;
     const loyaltyDiscount = usePoints ? pointsToUse * 500 : 0; // matching REDEEM_VALUE in backend
-    const total = Math.max(0, subtotal - couponDiscount - loyaltyDiscount);
+    const total = Math.max(0, subtotal - couponDiscount - loyaltyDiscount + shippingFee);
+
+    const canProceedStep1 = ghnEnabled
+        ? Boolean(recipientName.trim() && phone.trim() && shippingAddress.trim() && provinceId && districtId && wardCode && selectedServiceId)
+        : Boolean(shippingAddress.trim() && phone.trim());
 
     const handleApplyCoupon = async () => {
         if (!couponCode.trim()) return;
@@ -121,11 +216,11 @@ export default function CheckoutPage() {
         setCouponError(null);
     };
 
-    const handleCreateOrderIfNeeded = async (): Promise<string | null> => {
+    const handleCreateOrderIfNeeded = async (method: PaymentMethod): Promise<string | null> => {
         if (orderId) return orderId;
 
-        if (!shippingAddress.trim() || !phone.trim()) {
-            alert('Vui lòng nhập đầy đủ địa chỉ và số điện thoại');
+        if (!canProceedStep1) {
+            alert('Vui lòng nhập đầy đủ thông tin giao hàng');
             return null;
         }
 
@@ -133,14 +228,25 @@ export default function CheckoutPage() {
         try {
             const order = await orderService.create({
                 shippingAddress: shippingAddress.trim(),
+                recipientName: recipientName.trim() || undefined,
                 phone: phone.trim(),
                 promotionCode: appliedCoupon?.code,
-                redeemPoints: usePoints ? pointsToUse : undefined
+                redeemPoints: usePoints ? pointsToUse : undefined,
+                paymentMethod: method ?? undefined,
+                ...(ghnEnabled && provinceId && districtId && wardCode && selectedServiceId
+                    ? {
+                        shippingProvinceId: provinceId,
+                        shippingDistrictId: districtId,
+                        shippingWardCode: wardCode,
+                        shippingServiceId: selectedServiceId,
+                        shippingFee,
+                    }
+                    : {}),
             });
             setOrderId(order.id);
             return order.id;
         } catch (e: any) {
-            alert(e.message || 'Có lỗi xảy ra khi tạo đơn hàng');
+            alert(e.response?.data?.message || e.message || 'Có lỗi xảy ra khi tạo đơn hàng');
             return null;
         } finally {
             setSubmitting(false);
@@ -149,7 +255,7 @@ export default function CheckoutPage() {
 
     const handlePaymentMethodSelect = async (method: PaymentMethod) => {
         setPaymentMethod(method);
-        const currentOrderId = await handleCreateOrderIfNeeded();
+        const currentOrderId = await handleCreateOrderIfNeeded(method);
         if (!currentOrderId) return;
 
         if (method === 'COD') {
@@ -198,20 +304,112 @@ export default function CheckoutPage() {
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         exit={{ opacity: 0, y: -20 }}
-                                        className="space-y-12"
+                                        className="space-y-10"
                                     >
+                                        {ghnEnabled && (
+                                            <div className="space-y-3">
+                                                <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2 flex items-center gap-2">
+                                                    <User size={14} />
+                                                    Họ tên người nhận *
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={recipientName}
+                                                    onChange={(e) => setRecipientName(e.target.value)}
+                                                    className="w-full bg-white dark:bg-zinc-900 border border-stone-100 dark:border-white/10 rounded-[2rem] p-6 outline-none focus:border-gold transition-all text-sm text-luxury-black dark:text-white"
+                                                    placeholder="Nguyễn Văn A"
+                                                />
+                                            </div>
+                                        )}
+
+                                        {ghnEnabled && (
+                                            <>
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2">Tỉnh/TP *</label>
+                                                        <select
+                                                            value={provinceId ?? ''}
+                                                            onChange={(e) => setProvinceId(e.target.value ? Number(e.target.value) : null)}
+                                                            className="w-full bg-white dark:bg-zinc-900 border border-stone-100 dark:border-white/10 rounded-[2rem] px-5 py-4 outline-none focus:border-gold text-sm text-luxury-black dark:text-white"
+                                                        >
+                                                            <option value="">Chọn tỉnh/thành phố</option>
+                                                            {provinces.map((p) => (
+                                                                <option key={p.ProvinceID} value={p.ProvinceID}>{p.ProvinceName}</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2">Quận/Huyện *</label>
+                                                        <select
+                                                            value={districtId ?? ''}
+                                                            onChange={(e) => setDistrictId(e.target.value ? Number(e.target.value) : null)}
+                                                            disabled={!provinceId}
+                                                            className="w-full bg-white dark:bg-zinc-900 border border-stone-100 dark:border-white/10 rounded-[2rem] px-5 py-4 outline-none focus:border-gold text-sm text-luxury-black dark:text-white disabled:opacity-50"
+                                                        >
+                                                            <option value="">Chọn quận/huyện</option>
+                                                            {districts.map((d) => (
+                                                                <option key={d.DistrictID} value={d.DistrictID}>{d.DistrictName}</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2">Phường/Xã *</label>
+                                                        <select
+                                                            value={wardCode}
+                                                            onChange={(e) => setWardCode(e.target.value)}
+                                                            disabled={!districtId}
+                                                            className="w-full bg-white dark:bg-zinc-900 border border-stone-100 dark:border-white/10 rounded-[2rem] px-5 py-4 outline-none focus:border-gold text-sm text-luxury-black dark:text-white disabled:opacity-50"
+                                                        >
+                                                            <option value="">Chọn phường/xã</option>
+                                                            {wards.map((w) => (
+                                                                <option key={w.WardCode} value={w.WardCode}>{w.WardName}</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                {services.length > 1 && (
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2">Dịch vụ vận chuyển</label>
+                                                        <select
+                                                            value={selectedServiceId ?? ''}
+                                                            onChange={(e) => setSelectedServiceId(e.target.value ? Number(e.target.value) : null)}
+                                                            className="w-full bg-white dark:bg-zinc-900 border border-stone-100 dark:border-white/10 rounded-[2rem] px-5 py-4 outline-none focus:border-gold text-sm text-luxury-black dark:text-white"
+                                                        >
+                                                            {services.map((s) => (
+                                                                <option key={s.service_id} value={s.service_id}>{s.short_name}</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                )}
+
+                                                {(wardCode && selectedServiceId) && (
+                                                    <div className="flex items-center gap-3 py-2">
+                                                        {loadingFee ? (
+                                                            <Loader2 size={18} className="animate-spin text-gold" />
+                                                        ) : feeError ? (
+                                                            <span className="text-[10px] text-red-500 font-bold uppercase">{feeError}</span>
+                                                        ) : (
+                                                            <span className="text-[10px] font-bold uppercase text-gold tracking-widest">
+                                                                Phí vận chuyển: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(shippingFee)}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </>
+                                        )}
+
                                         <div className="space-y-3">
                                             <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2 flex items-center gap-2">
                                                 <MapPin size={14} />
-                                                Địa chỉ giao hàng *
+                                                {ghnEnabled ? 'Số nhà, tên đường *' : 'Địa chỉ giao hàng *'}
                                             </label>
                                             <input
                                                 type="text"
                                                 value={shippingAddress}
                                                 onChange={(e) => setShippingAddress(e.target.value)}
                                                 className="w-full bg-white dark:bg-zinc-900 border border-stone-100 dark:border-white/10 rounded-[2rem] p-6 outline-none focus:border-gold transition-all text-sm text-luxury-black dark:text-white"
-                                                placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố"
-                                                required
+                                                placeholder={ghnEnabled ? 'Số 1, đường ABC, ...' : 'Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố'}
                                             />
                                         </div>
 
@@ -226,13 +424,12 @@ export default function CheckoutPage() {
                                                 onChange={(e) => setPhone(e.target.value)}
                                                 className="w-full bg-white dark:bg-zinc-900 border border-stone-100 dark:border-white/10 rounded-[2rem] p-6 outline-none focus:border-gold transition-all text-sm text-luxury-black dark:text-white"
                                                 placeholder="0901234567"
-                                                required
                                             />
                                         </div>
 
                                         <button
                                             onClick={() => setStep(2)}
-                                            disabled={!shippingAddress.trim() || !phone.trim()}
+                                            disabled={!canProceedStep1}
                                             className="w-full py-6 bg-luxury-black dark:bg-gold text-white rounded-full font-bold tracking-[.4em] uppercase text-[10px] shadow-2xl hover:bg-stone-800 dark:hover:bg-gold/80 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             Tiếp tục đến thanh toán
@@ -535,7 +732,11 @@ export default function CheckoutPage() {
                                         )}
                                         <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-stone-400">
                                             <span>Phí vận chuyển</span>
-                                            <span className="text-gold">Miễn phí</span>
+                                            <span className={shippingFee > 0 ? 'text-luxury-black dark:text-white' : 'text-gold'}>
+                                                {ghnEnabled && shippingFee > 0
+                                                    ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(shippingFee)
+                                                    : 'Miễn phí'}
+                                            </span>
                                         </div>
                                     </div>
 

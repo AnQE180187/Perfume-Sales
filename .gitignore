@@ -12,7 +12,8 @@
 .env.*.local
 *.env
 !.env.example
-
+error.txt
+assets/
 # API Keys & Secrets
 **/secrets/
 **/credentials/

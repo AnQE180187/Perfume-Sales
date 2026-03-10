@@ -36,7 +36,8 @@ model User {
   carts         Cart[]
   notifications Notification[]
   accounts      OAuthAccount[]
-  orders        Order[]
+  customerOrders Order[] @relation("CustomerOrders")
+  staffOrders    Order[] @relation("StaffOrders")
   quizResults   QuizResult[]
   reviews       Review[]
   sessions      Session[]
@@ -266,20 +267,27 @@ model CartItem {
 
 
 model Order {
-  id              String               @id @default(cuid())
-  code            String               @unique
-  userId          String?
-  staffId         String?
-  storeId         String?
-  totalAmount     Int
-  discountAmount  Int                  @default(0)
-  finalAmount     Int
-  status          OrderStatus          @default(PENDING)
-  paymentStatus   PaymentStatus        @default(PENDING)
-  shippingAddress String?
-  phone           String?
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
+  id                  String               @id @default(cuid())
+  code                String               @unique
+  userId              String?
+  staffId             String?
+  storeId             String?
+  totalAmount         Int
+  discountAmount      Int                  @default(0)
+  finalAmount         Int
+  status              OrderStatus          @default(PENDING)
+  paymentStatus       PaymentStatus        @default(PENDING)
+  channel             OrderChannel         @default(ONLINE)
+  shippingAddress     String?
+  shippingProvinceId  Int?
+  shippingDistrictId  Int?
+  shippingWardCode    String?
+  shippingFee         Int                  @default(0)
+  shippingServiceId   Int?
+  recipientName       String?
+  phone               String?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
   promotions      AppliedPromotion[]
   user            User?                @relation("CustomerOrders", fields: [userId], references: [id])
   staff           User?                @relation("StaffOrders", fields: [staffId], references: [id])
@@ -328,17 +336,20 @@ model Payment {
 }
 
 model Shipment {
-  id              String           @id @default(cuid())
-  orderId         String
-  provider        ShippingProvider
-  trackingCode    String?
-  fee             Int?
-  status          ShipmentStatus   @default(PENDING)
-  address         String?
-  rawProviderData String?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  order           Order            @relation(fields: [orderId], references: [id])
+  id               String           @id @default(cuid())
+  orderId          String
+  provider         ShippingProvider
+  trackingCode     String?
+  ghnOrderCode     String?          // GHN order_code
+  fee              Int?
+  status           ShipmentStatus   @default(PENDING)
+  address          String?
+  rawProviderData  String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  order            Order            @relation(fields: [orderId], references: [id])
+
+  @@index([ghnOrderCode])
 }
 
 model PromotionCode {

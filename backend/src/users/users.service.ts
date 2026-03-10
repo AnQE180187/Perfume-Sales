@@ -27,6 +27,7 @@ export class UsersService {
         budgetMax: true,
         loyaltyPoints: true,
         createdAt: true,
+        emailVerified: true,
       },
     });
   }
@@ -61,6 +62,7 @@ export class UsersService {
         budgetMax: true,
         loyaltyPoints: true,
         createdAt: true,
+        emailVerified: true,
       },
     });
   }

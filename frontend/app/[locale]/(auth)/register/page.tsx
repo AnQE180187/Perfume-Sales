@@ -117,10 +117,10 @@ export default function RegisterPage() {
                                         <Sparkles className="text-gold" size={48} />
                                     </div>
                                     <h1 className="text-4xl font-serif text-luxury-black dark:text-white mb-2 transition-colors">
-                                        Verification Sent
+                                        Đăng ký thành công
                                     </h1>
                                     <p className="text-stone-500 text-sm leading-relaxed max-w-xs mx-auto italic">
-                                        Welcome to the House. We've sent an encrypted link to <span className="text-luxury-black dark:text-white font-bold">{formData.email}</span>. Please verify your email to activate your profile.
+                                        Tài khoản đã được tạo. Bạn có thể <span className="text-luxury-black dark:text-white font-bold">đăng nhập ngay</span>. Xác thực email (tùy chọn) có thể làm sau trong trang Hồ sơ.
                                     </p>
                                     <div className="pt-8">
                                         <Link
