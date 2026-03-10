@@ -19,6 +19,10 @@ export const authService = {
         const { data } = await api.post<{ success: boolean; message: string }>('/auth/verify-email', { token });
         return data;
     },
+    async resendVerificationEmail() {
+        const { data } = await api.post<{ success: boolean; message: string }>('/auth/resend-verification');
+        return data;
+    },
     async refresh(refreshToken: string) {
         const { data } = await api.post<{ accessToken: string; refreshToken: string }>('/auth/refresh', { refreshToken });
         return data;

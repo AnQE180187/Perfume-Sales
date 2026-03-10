@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useCallback } from 'react';
+import { Link } from '@/lib/i18n';
 import { motion } from 'framer-motion';
 import {
     MapPin,
@@ -127,9 +128,12 @@ export default function CustomerOrdersPage() {
                                                     </div>
                                                 </div>
                                                 <div className="flex items-end justify-end">
-                                                    <button className="text-[10px] font-bold uppercase tracking-widest text-luxury-black dark:text-white flex items-center gap-2 hover:text-gold transition-colors group">
-                                                        View Full Manifest <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                                                    </button>
+                                                    <Link
+                                                        href={`/dashboard/customer/orders/${order.id}`}
+                                                        className="text-[10px] font-bold uppercase tracking-widest text-luxury-black dark:text-white flex items-center gap-2 hover:text-gold transition-colors group"
+                                                    >
+                                                        Xem chi tiết & theo dõi <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                                                    </Link>
                                                 </div>
                                             </div>
                                         </div>

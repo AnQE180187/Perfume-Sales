@@ -7,6 +7,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { PromotionsService } from '../promotions/promotions.service';
 import { LoyaltyService } from '../loyalty/loyalty.service';
+import { ShippingService } from '../shipping/shipping.service';
 
 @Injectable()
 export class OrdersService {
@@ -14,6 +15,7 @@ export class OrdersService {
     private readonly prisma: PrismaService,
     private readonly promotionsService: PromotionsService,
     private readonly loyaltyService: LoyaltyService,
+    private readonly shippingService: ShippingService,
   ) {}
 
   async createFromCart(userId: string, dto: CreateOrderDto) {
@@ -65,7 +67,8 @@ export class OrdersService {
       loyaltyDiscount = lpDiscount;
     }
 
-    const finalAmount = Math.max(0, finalAmountBeforeLoyalty - loyaltyDiscount);
+    const shippingFee = dto.shippingFee ?? 0;
+    const finalAmount = Math.max(0, finalAmountBeforeLoyalty - loyaltyDiscount + shippingFee);
     const actualDiscountAmount = discountAmount + loyaltyDiscount;
 
     const order = await this.prisma.$transaction(async (tx) => {
@@ -77,6 +80,12 @@ export class OrdersService {
           discountAmount: actualDiscountAmount,
           finalAmount,
           shippingAddress: dto.shippingAddress,
+          shippingProvinceId: dto.shippingProvinceId,
+          shippingDistrictId: dto.shippingDistrictId,
+          shippingWardCode: dto.shippingWardCode,
+          shippingFee,
+          shippingServiceId: dto.shippingServiceId,
+          recipientName: dto.recipientName,
           phone: dto.phone,
           items: {
             create: cart.items.map((item) => ({
@@ -114,6 +123,14 @@ export class OrdersService {
 
       return created;
     });
+
+    if (dto.paymentMethod === 'COD' && order.shippingDistrictId && order.shippingWardCode) {
+      try {
+        await this.shippingService.createGhnShipment(order.id);
+      } catch (e) {
+        console.warn('GHN shipment creation failed:', e?.message);
+      }
+    }
 
     return order;
   }

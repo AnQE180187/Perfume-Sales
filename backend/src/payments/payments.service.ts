@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { PaymentProvider, PaymentStatus } from '@prisma/client';
 import { PayOS } from '@payos/node';
+import { ShippingService } from '../shipping/shipping.service';
 
 @Injectable()
 export class PaymentsService {
@@ -18,6 +19,7 @@ export class PaymentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
+    private readonly shippingService: ShippingService,
   ) {
     const clientId = this.config.get<string>('PAYOS_CLIENT_ID');
     const apiKey = this.config.get<string>('PAYOS_API_KEY');
@@ -195,6 +197,14 @@ export class PaymentsService {
           });
         }
       });
+
+      if (paymentStatus === PaymentStatus.PAID) {
+        try {
+          await this.shippingService.createGhnShipment(payment.orderId);
+        } catch (e) {
+          console.warn('GHN shipment creation failed:', e?.message);
+        }
+      }
 
       console.log(
         `Payment ${payment.id} processed successfully with status: ${paymentStatus}`,

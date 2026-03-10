@@ -66,6 +66,14 @@ export class AuthController {
     return this.authService.verifyEmail(token);
   }
 
+  @Post('resend-verification')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async resendVerification(@Req() req: any) {
+    const userId = req.user?.userId ?? req.user?.sub;
+    return this.authService.resendVerificationEmail(userId);
+  }
+
   @Post('change-password')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)

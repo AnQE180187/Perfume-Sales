@@ -65,7 +65,7 @@ export class AuthService {
 
     return {
       success: true,
-      message: 'Registration successful. Please check your email to verify your account.',
+      message: 'Đăng ký thành công. Bạn có thể đăng nhập ngay. Xác thực email (tùy chọn) có thể làm trong Hồ sơ.',
     };
   }
 
@@ -82,9 +82,10 @@ export class AuthService {
       throw new UnauthorizedException('Account is deactivated');
     }
 
-    if (!user.emailVerified) {
-      throw new ForbiddenException('Please verify your email to log in');
-    }
+    // Email verification không bắt buộc để đăng nhập (development)
+    // if (!user.emailVerified) {
+    //   throw new ForbiddenException('Please verify your email to log in');
+    // }
 
     const passwordValid = await bcrypt.compare(dto.password, user.passwordHash);
     if (!passwordValid) {
@@ -177,6 +178,36 @@ export class AuthService {
     return {
       success: true,
       message: 'Password has been reset successfully',
+    };
+  }
+
+  async resendVerificationEmail(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!user) throw new NotFoundException('User not found');
+    if (user.emailVerified) {
+      return { success: true, message: 'Email đã được xác thực rồi.' };
+    }
+
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationExpires = new Date(Date.now() + 24 * 3600000);
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        emailVerificationToken: verificationToken,
+        emailVerificationExpires: verificationExpires,
+      },
+    });
+
+    const frontendUrl = this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
+    const verificationLink = `${frontendUrl}/vi/verify-email?token=${verificationToken}`;
+    await this.mailService.sendVerificationMail(user.email, verificationLink);
+
+    return {
+      success: true,
+      message: 'Đã gửi email xác thực. Kiểm tra hộp thư của bạn.',
     };
   }
 
