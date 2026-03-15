@@ -58,6 +58,13 @@ export class AuthService {
       },
     });
 
+    // Migrate guest loyalty points: if the user registered with a phone number,
+    // find all LoyaltyTransactions tracked by that phone (from POS guest purchases)
+    // and link them to the new user account.
+    if (dto.phone) {
+      await this.migrateGuestLoyalty(user.id, dto.phone);
+    }
+
     const frontendUrl = this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
     const verificationLink = `${frontendUrl}/vi/verify-email?token=${verificationToken}`;
 
@@ -370,6 +377,48 @@ export class AuthService {
     }
 
     return user;
+  }
+
+  /**
+   * Migrate guest loyalty points to a newly registered user.
+   * Finds all LoyaltyTransactions with matching phone that have no userId,
+   * sums their points, adds them to the user's loyaltyPoints, and links
+   * the transactions to the user.
+   */
+  private async migrateGuestLoyalty(userId: string, phone: string) {
+    const guestTransactions = await this.prisma.loyaltyTransaction.findMany({
+      where: { phone, userId: null },
+    });
+
+    if (guestTransactions.length === 0) return;
+
+    const totalPoints = guestTransactions.reduce((sum, t) => sum + t.points, 0);
+
+    await this.prisma.$transaction(async (tx) => {
+      // Link all guest transactions to the new user
+      await tx.loyaltyTransaction.updateMany({
+        where: { phone, userId: null },
+        data: { userId },
+      });
+
+      // Add total points to user's balance
+      if (totalPoints > 0) {
+        await tx.user.update({
+          where: { id: userId },
+          data: { loyaltyPoints: { increment: totalPoints } },
+        });
+      }
+
+      // Create a migration log transaction
+      await tx.loyaltyTransaction.create({
+        data: {
+          userId,
+          phone,
+          points: 0,
+          reason: `MIGRATED_TO_USER (${guestTransactions.length} transactions, ${totalPoints} points)`,
+        },
+      });
+    });
   }
 
   private async generateTokens(userId: string, email: string, role: string) {
