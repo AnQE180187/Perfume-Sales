@@ -20,7 +20,7 @@ export const userService = {
         const { data } = await api.get('/users/me');
         return data;
     },
-    async updateProfile(payload: { fullName?: string; gender?: string; dateOfBirth?: string; address?: string; city?: string; country?: string; avatarUrl?: string; budgetMin?: number; budgetMax?: number }) {
+    async updateProfile(payload: { fullName?: string; phone?: string; gender?: string; dateOfBirth?: string; address?: string; city?: string; country?: string; avatarUrl?: string; budgetMin?: number; budgetMax?: number }) {
         const { data } = await api.patch('/users/me', payload);
         return data;
     },
