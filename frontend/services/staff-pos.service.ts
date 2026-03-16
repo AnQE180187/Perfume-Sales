@@ -19,6 +19,8 @@ export type PosOrder = {
   code: string;
   staffId?: string | null;
   storeId?: string | null;
+  userId?: string | null;
+  phone?: string | null;
   totalAmount: number;
   discountAmount: number;
   finalAmount: number;
@@ -27,18 +29,49 @@ export type PosOrder = {
   channel: string;
   items: PosOrderItem[];
   store?: { id: string; name: string; code?: string | null } | null;
+  user?: {
+    id: string;
+    fullName?: string | null;
+    phone?: string | null;
+    loyaltyPoints?: number;
+  } | null;
 };
 
 export const staffPosService = {
-  searchProducts(q: string) {
+  searchProducts(q: string, storeId?: string) {
     return api
-      .get<Product[]>('/staff/pos/products', { params: { q } })
+      .get<Product[]>('/staff/pos/products', { params: { q, storeId } })
       .then((r) => r.data);
   },
 
-  createDraft(storeId?: string): Promise<PosOrder> {
+  lookupLoyalty(phone: string): Promise<{
+    registered: boolean;
+    userId: string | null;
+    fullName: string | null;
+    phone: string;
+    email: string | null;
+    loyaltyPoints: number;
+    transactionCount?: number;
+  }> {
     return api
-      .post<PosOrder>('/staff/pos/orders', { storeId: storeId ?? undefined })
+      .get('/staff/pos/loyalty', { params: { phone } })
+      .then((r) => r.data);
+  },
+
+  createDraft(storeId?: string, customerPhone?: string): Promise<PosOrder> {
+    return api
+      .post<PosOrder>('/staff/pos/orders', {
+        storeId: storeId ?? undefined,
+        customerPhone: customerPhone ?? undefined,
+      })
+      .then((r) => r.data);
+  },
+
+  setCustomer(orderId: string, customerPhone: string): Promise<PosOrder> {
+    return api
+      .patch<PosOrder>(`/staff/pos/orders/${orderId}/customer`, {
+        customerPhone,
+      })
       .then((r) => r.data);
   },
 
@@ -66,5 +99,31 @@ export const staffPosService = {
       .post<PayOSPaymentResponse>(`/staff/pos/orders/${orderId}/pay/qr`)
       .then((r) => r.data);
   },
-};
 
+  getOrder(orderId: string): Promise<PosOrder> {
+    return api
+      .get<PosOrder>(`/staff/pos/orders/${orderId}`)
+      .then((r) => r.data);
+  },
+
+  aiConsult(body: {
+    gender?: string;
+    occasion?: string;
+    budget?: number;
+    notes?: string;
+  }): Promise<{
+    recommendations: {
+      productId: string;
+      productName: string;
+      variantId?: string;
+      variantName?: string;
+      price: number;
+      reason: string;
+    }[];
+    rawResponse: string;
+  }> {
+    return api
+      .post('/staff/pos/ai-consult', body)
+      .then((r) => r.data);
+  },
+};

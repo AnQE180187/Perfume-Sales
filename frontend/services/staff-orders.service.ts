@@ -11,6 +11,11 @@ export type StaffPosOrderItem = {
     id: string;
     name: string;
   };
+  variant?: {
+    id: string;
+    name: string;
+    product?: { id: string; name: string };
+  };
 };
 
 export type StaffPosOrder = {
@@ -25,6 +30,11 @@ export type StaffPosOrder = {
   channel: string;
   createdAt: string;
   items: StaffPosOrderItem[];
+  staff?: { id: string; fullName?: string | null; email: string } | null;
+  user?: { id: string; fullName?: string | null; email: string; phone?: string | null } | null;
+  store?: { id: string; name: string; code?: string | null } | null;
+  payments?: { id: string; provider: string; amount: number; status: string; createdAt: string }[];
+  statusHistory?: { id: number; status: string; note?: string | null; createdAt: string }[];
 };
 
 export type StaffPosOrderListRes = {
@@ -36,10 +46,15 @@ export type StaffPosOrderListRes = {
 };
 
 export const staffOrdersService = {
-  list(params?: { skip?: number; take?: number }): Promise<StaffPosOrderListRes> {
+  list(params?: { skip?: number; take?: number; search?: string }): Promise<StaffPosOrderListRes> {
     return api
       .get<StaffPosOrderListRes>('/staff/orders', { params })
       .then((r) => r.data);
   },
-};
 
+  getDetail(orderId: string): Promise<StaffPosOrder> {
+    return api
+      .get<StaffPosOrder>(`/staff/orders/${orderId}`)
+      .then((r) => r.data);
+  },
+};
