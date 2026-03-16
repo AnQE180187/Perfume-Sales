@@ -41,7 +41,16 @@ export default function PosPage() {
     const qrPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
     // Customer / Loyalty
     const [customerPhone, setCustomerPhone] = useState('');
-    const [customerLookupDone, setCustomerLookupDone] = useState(false);
+    const [loyaltyInfo, setLoyaltyInfo] = useState<{
+        registered: boolean;
+        userId: string | null;
+        fullName: string | null;
+        phone: string;
+        email: string | null;
+        loyaltyPoints: number;
+        transactionCount?: number;
+    } | null>(null);
+    const [lookingUpCustomer, setLookingUpCustomer] = useState(false);
     // AI Panel
     const [showAiPanel, setShowAiPanel] = useState(false);
     const [aiGender, setAiGender] = useState('');
@@ -119,7 +128,6 @@ export default function PosPage() {
                 customerPhone || undefined,
             );
             setOrder(created);
-            if (created.user) setCustomerLookupDone(true);
             return created;
         } catch (e: any) {
             setError(e.message || 'Failed to create draft order');
@@ -224,24 +232,29 @@ export default function PosPage() {
         setError(null);
         setStockWarning(null);
         setCustomerPhone('');
-        setCustomerLookupDone(false);
+        setLoyaltyInfo(null);
         // Reload products for current store
         if (selectedStoreId) loadProducts('', selectedStoreId);
     };
 
     const handleSetCustomer = async () => {
         if (!customerPhone.trim()) return;
+        setLookingUpCustomer(true);
+        setError(null);
         try {
+            // Lookup loyalty info (registered user or guest)
+            const info = await staffPosService.lookupLoyalty(customerPhone.trim());
+            setLoyaltyInfo(info);
+
+            // If order exists, attach customer phone to it
             if (order) {
                 const updated = await staffPosService.setCustomer(order.id, customerPhone.trim());
                 setOrder(updated);
-                setCustomerLookupDone(true);
-            } else {
-                setCustomerLookupDone(true);
             }
-            setError(null);
         } catch (e: any) {
             setError(e?.response?.data?.message || e.message || 'Lỗi tra cứu khách hàng');
+        } finally {
+            setLookingUpCustomer(false);
         }
     };
 
@@ -472,36 +485,53 @@ export default function PosPage() {
                                 <input
                                     type="tel"
                                     value={customerPhone}
-                                    onChange={e => { setCustomerPhone(e.target.value); setCustomerLookupDone(false); }}
+                                    onChange={e => { setCustomerPhone(e.target.value); setLoyaltyInfo(null); }}
                                     placeholder="Nhập SĐT khách hàng…"
                                     disabled={isOrderCompleted}
                                     className="flex-1 bg-background border border-border rounded-xl py-2 px-3 text-xs outline-none focus:border-gold/50 transition-all"
                                 />
                                 <button
                                     onClick={handleSetCustomer}
-                                    disabled={!customerPhone.trim() || isOrderCompleted}
-                                    className="px-3 py-2 rounded-xl bg-gold/10 text-gold text-[9px] font-heading uppercase tracking-widest hover:bg-gold/20 disabled:opacity-50 transition-all"
+                                    disabled={!customerPhone.trim() || isOrderCompleted || lookingUpCustomer}
+                                    className="px-3 py-2 rounded-xl bg-gold/10 text-gold text-[9px] font-heading uppercase tracking-widest hover:bg-gold/20 disabled:opacity-50 transition-all flex items-center gap-1"
                                 >
+                                    {lookingUpCustomer ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
                                     Tra cứu
                                 </button>
                             </div>
                         )}
-                        {(order?.user || customerLookupDone) && (
+                        {loyaltyInfo && (
                             <div className="glass rounded-xl p-3 border-border flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-gold/10 flex items-center justify-center">
-                                    <User className="w-4 h-4 text-gold" />
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${loyaltyInfo.registered ? 'bg-gold/10' : 'bg-blue-500/10'}`}>
+                                    <User className={`w-4 h-4 ${loyaltyInfo.registered ? 'text-gold' : 'text-blue-500'}`} />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    {order?.user ? (
+                                    {loyaltyInfo.registered ? (
                                         <>
-                                            <p className="font-heading text-xs uppercase tracking-widest truncate">{order.user.fullName ?? order.user.phone}</p>
+                                            <div className="flex items-center gap-2">
+                                                <p className="font-heading text-xs uppercase tracking-widest truncate">{loyaltyInfo.fullName ?? loyaltyInfo.phone}</p>
+                                                <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 text-[8px] font-heading uppercase">Thành viên</span>
+                                            </div>
                                             <div className="flex items-center gap-1 mt-0.5">
                                                 <Award className="w-3 h-3 text-amber-500" />
-                                                <span className="text-[10px] text-amber-500 font-heading">{order.user.loyaltyPoints ?? 0} điểm</span>
+                                                <span className="text-[10px] text-amber-500 font-heading">{loyaltyInfo.loyaltyPoints} điểm tích lũy</span>
                                             </div>
                                         </>
                                     ) : (
-                                        <p className="text-[10px] text-muted-foreground">Khách vãng lai — SĐT: {customerPhone}</p>
+                                        <>
+                                            <div className="flex items-center gap-2">
+                                                <p className="font-heading text-xs uppercase tracking-widest">Khách vãng lai</p>
+                                                <span className="px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-500 text-[8px] font-heading uppercase">Chưa đăng ký</span>
+                                            </div>
+                                            {loyaltyInfo.loyaltyPoints > 0 ? (
+                                                <div className="flex items-center gap-1 mt-0.5">
+                                                    <Award className="w-3 h-3 text-amber-500" />
+                                                    <span className="text-[10px] text-amber-500 font-heading">{loyaltyInfo.loyaltyPoints} điểm đang chờ</span>
+                                                </div>
+                                            ) : (
+                                                <p className="text-[9px] text-muted-foreground mt-0.5">Điểm sẽ được tích khi thanh toán. Đăng ký tài khoản để sử dụng.</p>
+                                            )}
+                                        </>
                                     )}
                                 </div>
                             </div>
@@ -612,15 +642,27 @@ export default function PosPage() {
                                     <p className="text-xs text-muted-foreground uppercase tracking-widest">Order {completedOrder.code}</p>
                                 </div>
                                 {/* Customer info on receipt */}
-                                {completedOrder.user && (
+                                {(completedOrder.user || loyaltyInfo) && (
                                     <div className="glass rounded-xl p-3 border-border flex items-center gap-3 mb-4">
-                                        <User className="w-4 h-4 text-gold" />
+                                        <User className={`w-4 h-4 ${completedOrder.user ? 'text-gold' : 'text-blue-500'}`} />
                                         <div>
-                                            <p className="font-heading text-[10px] uppercase tracking-widest">{completedOrder.user.fullName ?? completedOrder.user.phone}</p>
-                                            <div className="flex items-center gap-1">
-                                                <Award className="w-3 h-3 text-amber-500" />
-                                                <span className="text-[10px] text-amber-500 font-heading">+{Math.floor(completedOrder.finalAmount / 10000)} điểm tích lũy</span>
-                                            </div>
+                                            {completedOrder.user ? (
+                                                <>
+                                                    <p className="font-heading text-[10px] uppercase tracking-widest">{completedOrder.user.fullName ?? completedOrder.user.phone}</p>
+                                                    <div className="flex items-center gap-1">
+                                                        <Award className="w-3 h-3 text-amber-500" />
+                                                        <span className="text-[10px] text-amber-500 font-heading">+{Math.floor(completedOrder.finalAmount / 10000)} điểm tích lũy</span>
+                                                    </div>
+                                                </>
+                                            ) : loyaltyInfo && !loyaltyInfo.registered ? (
+                                                <>
+                                                    <p className="font-heading text-[10px] uppercase tracking-widest">Khách vãng lai — {loyaltyInfo.phone}</p>
+                                                    <div className="flex items-center gap-1">
+                                                        <Award className="w-3 h-3 text-amber-500" />
+                                                        <span className="text-[10px] text-amber-500 font-heading">+{Math.floor(completedOrder.finalAmount / 10000)} điểm (đăng ký để sử dụng)</span>
+                                                    </div>
+                                                </>
+                                            ) : null}
                                         </div>
                                     </div>
                                 )}

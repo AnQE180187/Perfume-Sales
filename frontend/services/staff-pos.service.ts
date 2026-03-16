@@ -44,6 +44,20 @@ export const staffPosService = {
       .then((r) => r.data);
   },
 
+  lookupLoyalty(phone: string): Promise<{
+    registered: boolean;
+    userId: string | null;
+    fullName: string | null;
+    phone: string;
+    email: string | null;
+    loyaltyPoints: number;
+    transactionCount?: number;
+  }> {
+    return api
+      .get('/staff/pos/loyalty', { params: { phone } })
+      .then((r) => r.data);
+  },
+
   createDraft(storeId?: string, customerPhone?: string): Promise<PosOrder> {
     return api
       .post<PosOrder>('/staff/pos/orders', {
