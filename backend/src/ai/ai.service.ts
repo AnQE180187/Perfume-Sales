@@ -124,11 +124,11 @@ export class AiService {
 
     const productsStr = products.length > 0
       ? products
-          .map(
-            (p) =>
-              `ID: ${p.id}, Tên: ${p.name}, Giá: ${p.price}, Giới tính: ${p.gender}, Mùi hương: ${p.scentFamily?.name}, Ghi chú: ${p.notes?.map((n: any) => n.note.name).join(', ')}`,
-          )
-          .join('\n')
+        .map(
+          (p) =>
+            `ID: ${p.id}, Tên: ${p.name}, Giá: ${p.price}, Giới tính: ${p.gender}, Mùi hương: ${p.scentFamily?.name}, Ghi chú: ${p.notes?.map((n: any) => n.note.name).join(', ')}`,
+        )
+        .join('\n')
       : 'Không có sản phẩm phù hợp trong database.';
 
     return `Bạn là chuyên gia tư vấn nước hoa của PerfumeGPT.
@@ -276,14 +276,14 @@ Hãy trả lời bằng tiếng Việt, tập trung vào:
       if (match) {
         try {
           return JSON.parse(match[1].trim());
-        } catch {}
+        } catch { }
       }
       // Try find JSON in text
       const jsonMatch = raw.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         try {
           return JSON.parse(jsonMatch[0]);
-        } catch {}
+        } catch { }
       }
       return null;
     }
@@ -325,7 +325,7 @@ Hãy trả lời bằng tiếng Việt, tập trung vào:
     const parsed = this.extractJson(raw) ?? {};
     console.log('Parsed:', parsed); // Debug log
 
-const text: string = parsed.text ?? raw;
+    const text: string = parsed.text ?? raw;
     const recommendations: AiProductRecommendation[] | undefined = Array.isArray(
       parsed.recommendations,
     )

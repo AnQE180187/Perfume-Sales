@@ -148,10 +148,10 @@ export default function ChatPage() {
                 {messages.map((msg) => (
                   <div key={msg.id} className={`flex ${msg.senderType === 'USER' ? 'justify-end' : 'justify-start'}`}>
                     <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${msg.senderType === 'USER'
-                        ? 'bg-blue-500 text-white'
-                        : msg.senderType === 'AI'
-                          ? 'bg-green-500 text-white'
-                          : 'bg-gray-200'
+                      ? 'bg-blue-500 text-white'
+                      : msg.senderType === 'AI'
+                        ? 'bg-green-500 text-white'
+                        : 'bg-gray-200'
                       }`}>
                       {msg.type === 'TEXT' && (
                         <p>{(msg.content as any)?.text}</p>
