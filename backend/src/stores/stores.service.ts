@@ -9,6 +9,8 @@ import { UserRoleEnum } from '@prisma/client';
 import { InventoryLogType } from '@prisma/client';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
+import { BatchImportDto } from './dto/batch-import.dto';
+import { BatchTransferDto } from './dto/batch-transfer.dto';
 
 @Injectable()
 export class StoresService {
@@ -351,5 +353,203 @@ export class StoresService {
       });
     });
     return this.getStockOverview();
+  }
+
+  // ---------- Session-based batch inventory ----------
+
+  async batchImportStock(dto: BatchImportDto, userId: string, role: string) {
+    await this.ensureStaffCanAccessStore(userId, dto.storeId, role);
+
+    const items = (dto.items ?? [])
+      .map((it) => ({
+        variantId: it.variantId,
+        quantity: Number(it.quantity),
+      }))
+      .filter((it) => it.variantId && Number.isFinite(it.quantity) && it.quantity > 0);
+
+    if (items.length === 0) {
+      // Avoid 400s for empty/unfinished UI inputs; treat as no-op.
+      return this.getStockOverview(dto.storeId);
+    }
+
+    // Validate variants exist first (single query)
+    const variants = await this.prisma.productVariant.findMany({
+      where: { id: { in: items.map((i) => i.variantId) } },
+      select: { id: true },
+    });
+    const existing = new Set(variants.map((v) => v.id));
+    const missing = items.filter((i) => !existing.has(i.variantId)).map((i) => i.variantId);
+    if (missing.length) {
+      throw new BadRequestException(`Variant not found: ${missing.join(', ')}`);
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      for (const it of items) {
+        await tx.storeStock.upsert({
+          where: { storeId_variantId: { storeId: dto.storeId, variantId: it.variantId } },
+          create: { storeId: dto.storeId, variantId: it.variantId, quantity: it.quantity },
+          update: { quantity: { increment: it.quantity }, updatedAt: new Date() },
+        });
+        await tx.inventoryLog.create({
+          data: {
+            variantId: it.variantId,
+            staffId: userId,
+            storeId: dto.storeId,
+            type: InventoryLogType.IMPORT,
+            quantity: it.quantity,
+            reason: dto.reason ?? 'Batch import',
+          },
+        });
+      }
+    });
+
+    return this.getStockOverview(dto.storeId);
+  }
+
+  async batchTransferStock(dto: BatchTransferDto, userId: string, role: string) {
+    if (dto.fromStoreId === dto.toStoreId) {
+      throw new BadRequestException('From and to store must be different');
+    }
+
+    await Promise.all([
+      this.ensureStaffCanAccessStore(userId, dto.fromStoreId, role),
+      this.ensureStaffCanAccessStore(userId, dto.toStoreId, role),
+    ]);
+
+    const items = (dto.items ?? [])
+      .map((it) => ({
+        variantId: it.variantId,
+        quantity: Number(it.quantity),
+      }))
+      .filter((it) => it.variantId && Number.isFinite(it.quantity) && it.quantity > 0);
+
+    if (items.length === 0) {
+      return this.getStockOverview();
+    }
+
+    // Validate all variants exist
+    const variants = await this.prisma.productVariant.findMany({
+      where: { id: { in: items.map((i) => i.variantId) } },
+      select: { id: true },
+    });
+    const existing = new Set(variants.map((v) => v.id));
+    const missing = items.filter((i) => !existing.has(i.variantId)).map((i) => i.variantId);
+    if (missing.length) {
+      throw new BadRequestException(`Variant not found: ${missing.join(', ')}`);
+    }
+
+    // Check availability for all items at source before transferring
+    const sourceStocks = await this.prisma.storeStock.findMany({
+      where: {
+        storeId: dto.fromStoreId,
+        variantId: { in: items.map((i) => i.variantId) },
+      },
+      select: { variantId: true, quantity: true },
+    });
+    const stockByVariant = new Map(sourceStocks.map((s) => [s.variantId, s.quantity]));
+    const insufficient: string[] = [];
+    for (const it of items) {
+      const available = stockByVariant.get(it.variantId) ?? 0;
+      if (available < it.quantity) {
+        insufficient.push(`${it.variantId} (available ${available}, requested ${it.quantity})`);
+      }
+    }
+    if (insufficient.length) {
+      throw new BadRequestException(
+        `Insufficient stock at source store for: ${insufficient.join('; ')}`,
+      );
+    }
+
+    const [fromStore, toStore] = await Promise.all([
+      this.prisma.store.findUnique({ where: { id: dto.fromStoreId } }),
+      this.prisma.store.findUnique({ where: { id: dto.toStoreId } }),
+    ]);
+    if (!fromStore) throw new NotFoundException('From store not found');
+    if (!toStore) throw new NotFoundException('To store not found');
+
+    await this.prisma.$transaction(async (tx) => {
+      for (const it of items) {
+        await tx.storeStock.update({
+          where: {
+            storeId_variantId: { storeId: dto.fromStoreId, variantId: it.variantId },
+          },
+          data: { quantity: { decrement: it.quantity }, updatedAt: new Date() },
+        });
+        await tx.storeStock.upsert({
+          where: {
+            storeId_variantId: { storeId: dto.toStoreId, variantId: it.variantId },
+          },
+          create: { storeId: dto.toStoreId, variantId: it.variantId, quantity: it.quantity },
+          update: { quantity: { increment: it.quantity }, updatedAt: new Date() },
+        });
+        await tx.inventoryLog.create({
+          data: {
+            variantId: it.variantId,
+            staffId: userId,
+            storeId: dto.fromStoreId,
+            type: InventoryLogType.ADJUST,
+            quantity: -it.quantity,
+            reason: dto.reason ?? `Batch transfer to store ${toStore.name}`,
+          },
+        });
+        await tx.inventoryLog.create({
+          data: {
+            variantId: it.variantId,
+            staffId: userId,
+            storeId: dto.toStoreId,
+            type: InventoryLogType.IMPORT,
+            quantity: it.quantity,
+            reason: dto.reason ?? `Batch transfer from store ${fromStore.name}`,
+          },
+        });
+      }
+    });
+
+    return this.getStockOverview();
+  }
+
+  async lookupLoyaltyByPhone(phone: string) {
+    const normalized = (phone ?? '').trim();
+    if (!normalized) {
+      throw new BadRequestException('Phone is required');
+    }
+
+    const user = await this.prisma.user.findFirst({
+      where: { phone: normalized },
+      select: {
+        id: true,
+        fullName: true,
+        phone: true,
+        email: true,
+        loyaltyPoints: true,
+      },
+    });
+
+    if (user) {
+      return {
+        registered: true,
+        userId: user.id,
+        fullName: user.fullName,
+        phone: user.phone,
+        email: user.email,
+        loyaltyPoints: user.loyaltyPoints,
+      };
+    }
+
+    const guestTransactions = await this.prisma.loyaltyTransaction.findMany({
+      where: { phone: normalized, userId: null },
+      select: { points: true },
+    });
+    const guestPoints = guestTransactions.reduce((sum, t) => sum + t.points, 0);
+
+    return {
+      registered: false,
+      userId: null,
+      fullName: null,
+      phone: normalized,
+      email: null,
+      loyaltyPoints: guestPoints,
+      transactionCount: guestTransactions.length,
+    };
   }
 }

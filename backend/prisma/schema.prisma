@@ -45,6 +45,8 @@ model User {
   loyaltyTransactions LoyaltyTransaction[]
   staffInventoryLogs  InventoryLog[]      @relation("StaffInventoryLogs")
   stores              UserStore[]
+  chatParticipants    ConversationParticipant[]
+  sentMessages        Message[]
 }
 
 model OAuthAccount {
@@ -454,10 +456,77 @@ model LoyaltyTransaction {
   @@index([userId])
 }
 
+/// Chat & conversations
+model Conversation {
+  id        String             @id @default(cuid())
+  type      ConversationType
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  participants ConversationParticipant[]
+  messages     Message[]
+}
+
+model ConversationParticipant {
+  id             String        @id @default(cuid())
+  conversationId String
+  userId         String?
+  role           ConversationParticipantRole
+  joinedAt       DateTime      @default(now())
+
+  conversation   Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([userId])
+}
+
+model Message {
+  id             String        @id @default(cuid())
+  conversationId String
+  senderId       String?
+  senderType     SenderType
+  content        Json
+  type           MessageType
+  createdAt      DateTime      @default(now())
+
+  conversation   Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User?         @relation(fields: [senderId], references: [id], onDelete: SetNull)
+
+  @@index([conversationId, createdAt])
+  @@index([senderId])
+}
+
 enum UserRoleEnum {
   CUSTOMER
   STAFF
   ADMIN
+}
+
+enum ConversationType {
+  CUSTOMER_ADMIN
+  CUSTOMER_AI
+  ADMIN_STAFF
+  ADMIN_AI
+}
+
+enum ConversationParticipantRole {
+  CUSTOMER
+  ADMIN
+  STAFF
+  AI
+}
+
+enum SenderType {
+  USER
+  AI
+}
+
+enum MessageType {
+  TEXT
+  PRODUCT_CARD
+  SYSTEM
+  AI_RECOMMENDATION
 }
 
 enum ScentNoteType {

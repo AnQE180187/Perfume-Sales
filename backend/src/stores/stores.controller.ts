@@ -16,6 +16,8 @@ import { RolesGuard } from '../auth/roles.guard';
 import { StoresService } from './stores.service';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
+import { BatchImportDto } from './dto/batch-import.dto';
+import { BatchTransferDto } from './dto/batch-transfer.dto';
 
 @Controller('stores')
 export class StoresController {
@@ -70,6 +72,14 @@ export class StoresController {
     );
   }
 
+  @Post('stock/batch-import')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('STAFF', 'ADMIN')
+  batchImportStock(@Req() req: any, @Body() dto: BatchImportDto) {
+    const user = req.user as { userId: string; role: string };
+    return this.storesService.batchImportStock(dto, user.userId, user.role);
+  }
+
   @Post('stock/transfer')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
@@ -93,6 +103,21 @@ export class StoresController {
       user.userId,
       body.reason,
     );
+  }
+
+  @Post('stock/batch-transfer')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('STAFF', 'ADMIN')
+  batchTransferStock(@Req() req: any, @Body() dto: BatchTransferDto) {
+    const user = req.user as { userId: string; role: string };
+    return this.storesService.batchTransferStock(dto, user.userId, user.role);
+  }
+
+  @Get('loyalty/lookup')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('STAFF', 'ADMIN')
+  lookupLoyalty(@Query('phone') phone: string) {
+    return this.storesService.lookupLoyaltyByPhone(phone);
   }
 
   @Get(':id')

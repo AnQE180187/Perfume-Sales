@@ -19,6 +19,7 @@ import { StaffPosModule } from './staff-pos/staff-pos.module';
 import { StaffInventoryModule } from './staff-inventory/staff-inventory.module';
 import { StaffOrdersModule } from './staff-orders/staff-orders.module';
 import { StoresModule } from './stores/stores.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { StoresModule } from './stores/stores.module';
     StaffInventoryModule,
     StaffOrdersModule,
     StoresModule,
+    ChatModule,
   ],
 
   controllers: [AppController],

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@/hooks/use-auth';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Mail, Lock, User, Globe, Facebook, Eye, EyeOff, Sparkles } from 'lucide-react';
+import { ArrowRight, Mail, Lock, User, Globe, Facebook, Eye, EyeOff, Sparkles, Phone } from 'lucide-react';
 import { Link } from '@/lib/i18n';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -182,6 +182,24 @@ export default function RegisterPage() {
                                                     required
                                                     className="w-full bg-stone-50 dark:bg-white/5 border border-stone-100 dark:border-white/10 rounded-2xl px-14 py-4 outline-none focus:border-gold transition-all text-sm text-luxury-black dark:text-white"
                                                     placeholder="alexander@auraai.com"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* Phone Number */}
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2">
+                                                Phone Number (Optional)
+                                            </label>
+                                            <div className="relative">
+                                                <Phone className="absolute left-6 top-1/2 -translate-y-1/2 text-stone-300" size={18} />
+                                                <input
+                                                    name="phone"
+                                                    value={formData.phone}
+                                                    onChange={handleInputChange}
+                                                    type="tel"
+                                                    className="w-full bg-stone-50 dark:bg-white/5 border border-stone-100 dark:border-white/10 rounded-2xl px-14 py-4 outline-none focus:border-gold transition-all text-sm text-luxury-black dark:text-white"
+                                                    placeholder="+84 901 234 567"
                                                 />
                                             </div>
                                         </div>
