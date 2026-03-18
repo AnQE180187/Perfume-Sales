@@ -663,8 +663,8 @@ enum NotificationChannel {
   IN_APP
 }
 
-enum ReactionType {
-  HELPFUL
-  NOT_HELPFUL
-}
+enum ReactionType {                                                                      
+  HELPFUL                                                                               
+  NOT_HELPFUL                                                                            
+}  
 
