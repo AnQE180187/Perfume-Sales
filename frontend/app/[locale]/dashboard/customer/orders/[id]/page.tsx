@@ -8,8 +8,9 @@ import { shippingService, type Shipment } from '@/services/shipping.service';
 import { AuthGuard } from '@/components/auth/auth-guard';
 import {
     Package, ArrowLeft, Loader2, MapPin, Phone, Calendar,
-    Truck, ExternalLink,
+    Truck, ExternalLink, Star,
 } from 'lucide-react';
+import ReviewForm from '@/components/review/review-form';
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
     PENDING: { label: 'Chờ xác nhận', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
@@ -29,17 +30,27 @@ export default function CustomerOrderDetailPage() {
     const [order, setOrder] = useState<Order | null>(null);
     const [shipments, setShipments] = useState<Shipment[]>([]);
     const [loading, setLoading] = useState(true);
+    const [reviewingItemId, setReviewingItemId] = useState<number | null>(null);
 
-    useEffect(() => {
+    const fetchOrder = async () => {
         if (orderId) {
-            Promise.all([
-                orderService.getById(orderId),
-                shippingService.getByOrderId(orderId).catch(() => []),
-            ]).then(([o, s]) => {
+            try {
+                const [o, s] = await Promise.all([
+                    orderService.getById(orderId),
+                    shippingService.getByOrderId(orderId).catch(() => []),
+                ]);
                 setOrder(o);
                 setShipments(s);
-            }).catch(() => setOrder(null)).finally(() => setLoading(false));
+            } catch (err) {
+                setOrder(null);
+            } finally {
+                setLoading(false);
+            }
         }
+    };
+
+    useEffect(() => {
+        fetchOrder();
     }, [orderId]);
 
     if (loading) {
@@ -96,18 +107,52 @@ export default function CustomerOrderDetailPage() {
                             {order.items && order.items.length > 0 ? (
                                 <div className="space-y-6">
                                     {order.items.map((item: any) => (
-                                        <div key={item.id || item.productId} className="flex justify-between items-center py-4 border-b border-stone-100 dark:border-white/5 last:border-0">
-                                            <div>
-                                                <p className="font-bold text-luxury-black dark:text-white">
-                                                    {item.product?.name}
-                                                </p>
-                                                <p className="text-[10px] text-stone-400 uppercase">
-                                                    × {item.quantity} — {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.unitPrice)}
-                                                </p>
+                                        <div key={item.id} className="py-4 border-b border-stone-100 dark:border-white/5 last:border-0">
+                                            <div className="flex justify-between items-center mb-4">
+                                                <div>
+                                                    <p className="font-bold text-luxury-black dark:text-white">
+                                                        {item.product?.name}
+                                                    </p>
+                                                    <p className="text-[10px] text-stone-400 uppercase">
+                                                        × {item.quantity} — {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.unitPrice)}
+                                                    </p>
+                                                </div>
+                                                <div className="flex flex-col items-end gap-2">
+                                                    <span className="font-bold text-luxury-black dark:text-white">
+                                                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.totalPrice)}
+                                                    </span>
+                                                    {order.status === 'COMPLETED' && !item.review && (
+                                                        <button
+                                                            onClick={() => setReviewingItemId(reviewingItemId === item.id ? null : item.id)}
+                                                            className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-gold hover:text-gold/80"
+                                                        >
+                                                            <Star size={12} className={reviewingItemId === item.id ? 'fill-gold' : ''} />
+                                                            {reviewingItemId === item.id ? 'Đang viết' : 'Viết đánh giá'}
+                                                        </button>
+                                                    )}
+                                                    {item.review && (
+                                                        <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-500 flex items-center gap-1">
+                                                            <Star size={12} className="fill-emerald-500" />
+                                                            Đã đánh giá
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <span className="font-bold text-luxury-black dark:text-white">
-                                                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.totalPrice)}
-                                            </span>
+
+                                            {reviewingItemId === item.id && (
+                                                <div className="mt-4 animate-in slide-in-from-top-2 duration-300">
+                                                    <ReviewForm
+                                                        productId={item.product?.id || ''}
+                                                        orderItemId={item.id}
+                                                        productName={item.product?.name || ''}
+                                                        onCancel={() => setReviewingItemId(null)}
+                                                        onSuccess={() => {
+                                                            setReviewingItemId(null);
+                                                            fetchOrder();
+                                                        }}
+                                                    />
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
