@@ -30,6 +30,8 @@
     "@nestjs/mapped-types": "^2.0.6",
     "@nestjs/passport": "^11.0.0",
     "@nestjs/platform-express": "^11.1.12",
+    "@nestjs/platform-socket.io": "^11.1.17",
+    "@nestjs/websockets": "^11.1.17",
     "@payos/node": "^2.0.4",
     "@prisma/client": "^6.1.0",
     "@types/multer": "^2.0.0",
@@ -48,7 +50,8 @@
     "passport-google-oauth20": "^2.0.0",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "socket.io": "^4.8.3"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

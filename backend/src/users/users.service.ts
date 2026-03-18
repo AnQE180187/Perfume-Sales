@@ -37,6 +37,7 @@ export class UsersService {
       where: { id: userId },
       data: {
         fullName: dto.fullName,
+        phone: dto.phone,
         gender: dto.gender,
         dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : undefined,
         address: dto.address,

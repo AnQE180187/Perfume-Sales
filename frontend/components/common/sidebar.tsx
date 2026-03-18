@@ -32,10 +32,10 @@ export const Sidebar = () => {
         const shared = [
             { icon: LayoutDashboard, label: commonT('dashboard'), href: `/dashboard/${role.toLowerCase()}` },
             { icon: User, label: commonT('profile'), href: '/dashboard/profile' },
+            { icon: MessageSquare, label: 'Chat', href: '/dashboard/chat' },
         ];
 
         const customer = [
-            { icon: MessageSquare, label: navT('customer.ai_chat'), href: '/dashboard/customer/ai-chat' },
             { icon: BrainCircuit, label: navT('customer.quiz'), href: '/dashboard/customer/quiz' },
 
 

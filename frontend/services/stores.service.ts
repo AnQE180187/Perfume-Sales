@@ -85,6 +85,14 @@ export const storesService = {
     return api.post<StockOverview>('/stores/stock/import', data).then((r) => r.data);
   },
 
+  batchImportStock(data: {
+    storeId: string;
+    reason?: string;
+    items: { variantId: string; quantity: number | string }[];
+  }): Promise<StockOverview> {
+    return api.post<StockOverview>('/stores/stock/batch-import', data).then((r) => r.data);
+  },
+
   transferStock(data: {
     fromStoreId: string;
     toStoreId: string;
@@ -93,5 +101,14 @@ export const storesService = {
     reason?: string;
   }): Promise<StockOverview> {
     return api.post<StockOverview>('/stores/stock/transfer', data).then((r) => r.data);
+  },
+
+  batchTransferStock(data: {
+    fromStoreId: string;
+    toStoreId: string;
+    reason?: string;
+    items: { variantId: string; quantity: number | string }[];
+  }): Promise<StockOverview> {
+    return api.post<StockOverview>('/stores/stock/batch-transfer', data).then((r) => r.data);
   },
 };

@@ -16,6 +16,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: NEXT_PUBLIC_API_URL
-        value: https://perfume-sales-backend.onrender.com
-      - key: NEXT_PUBLIC_BASE_URL
+        # Must include /api/v1 because frontend axios baseURL uses it directly
+        value: https://perfume-sales-backend.onrender.com/api/v1
+      - key: NEXT_PUBLIC_APP_URL
         value: https://perfume-sales.onrender.com

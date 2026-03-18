@@ -4,7 +4,7 @@ import { AuthGuard } from '@/components/auth/auth-guard';
 import { userService } from '@/services/user.service';
 import { authService } from '@/services/auth.service';
 import { useAuthStore } from '@/store/auth.store';
-import { User, Mail, Shield, Edit2, Loader2, CheckCircle, Send } from 'lucide-react';
+import { User, Mail, Shield, Edit2, Loader2, CheckCircle, Send, Phone } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 type ProfileData = {
@@ -37,6 +37,7 @@ export default function ProfilePage() {
   const [verifyMsg, setVerifyMsg] = useState<string | null>(null);
   const [form, setForm] = useState({
     fullName: '',
+    phone: '',
     gender: '',
     dateOfBirth: '',
     address: '',
@@ -54,6 +55,7 @@ export default function ProfilePage() {
       setData(me);
       setForm({
         fullName: me.fullName ?? '',
+        phone: me.phone ?? '',
         gender: me.gender ?? '',
         dateOfBirth: me.dateOfBirth ? me.dateOfBirth.slice(0, 10) : '',
         address: me.address ?? '',
@@ -92,6 +94,7 @@ export default function ProfilePage() {
     try {
       const updated = await userService.updateProfile({
         fullName: form.fullName || undefined,
+        phone: form.phone || undefined,
         gender: form.gender || undefined,
         dateOfBirth: form.dateOfBirth || undefined,
         address: form.address || undefined,
@@ -250,6 +253,25 @@ export default function ProfilePage() {
                   ) : (
                     <p className="font-body text-sm border-b border-border/50 pb-2">
                       {data?.fullName || '—'}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-heading">
+                    Số điện thoại
+                  </label>
+                  {editing ? (
+                    <input
+                      type="tel"
+                      value={form.phone}
+                      onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm"
+                      placeholder="+84 901 234 567"
+                    />
+                  ) : (
+                    <p className="font-body text-sm border-b border-border/50 pb-2 flex items-center gap-2">
+                      <Phone className="w-3 h-3 text-muted-foreground" />
+                      {data?.phone || '—'}
                     </p>
                   )}
                 </div>

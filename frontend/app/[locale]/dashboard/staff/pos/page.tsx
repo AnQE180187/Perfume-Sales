@@ -171,11 +171,12 @@ export default function PosPage() {
         }
     };
 
-    const handleChangeQuantity = async (variantId: string, delta: number) => {
+    const handleChangeQuantity = async (variantId: string, deltaOrValue: number, isAbsolute = false) => {
         if (!order) return;
         const item = order.items.find(i => i.variantId === variantId);
         const currentQty = item?.quantity ?? 0;
-        const nextQty = Math.max(0, currentQty + delta);
+        const nextQty = isAbsolute ? Math.max(0, deltaOrValue) : Math.max(0, currentQty + deltaOrValue);
+
         try {
             const updated = await staffPosService.upsertItem(order.id, variantId, nextQty);
             setOrder(updated);
