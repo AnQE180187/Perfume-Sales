@@ -312,6 +312,7 @@ model OrderItem {
 
   order      Order          @relation(fields: [orderId], references: [id])
   variant    ProductVariant @relation(fields: [variantId], references: [id])
+  review     Review?
 }
 
 
@@ -383,23 +384,71 @@ model AppliedPromotion {
 
 /// Reviews & AI summarization
 model Review {
-  id        Int      @id @default(autoincrement())
+  id            String   @id @default(cuid())
+  userId        String
+  productId     String
+  orderItemId   Int      @unique
+
+  rating        Int
+  content       String?
+
+  isVerified    Boolean  @default(true)
+  isHidden      Boolean  @default(false)
+  isPinned      Boolean  @default(false)
+  flagged       Boolean  @default(false)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  product       Product         @relation(fields: [productId], references: [id])
+  user          User            @relation(fields: [userId], references: [id])
+  orderItem     OrderItem       @relation(fields: [orderItemId], references: [id])
+  images        ReviewImage[]
+  reactions     ReviewReaction[]
+  reports       ReviewReport[]
+}
+
+model ReviewImage {
+  id        String @id @default(cuid())
+  reviewId  String
+  imageUrl  String
+
+  review    Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+}
+
+model ReviewReaction {
+  id        String       @id @default(cuid())
+  reviewId  String
   userId    String
-  productId String
-  rating    Int
-  title     String?
-  content   String?
+  type      ReactionType
+
+  review    Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@unique([reviewId, userId])
+}
+
+model ReviewReport {
+  id        String   @id @default(cuid())
+  reviewId  String
+  userId    String
+  reason    String
   createdAt DateTime @default(now())
-  product   Product  @relation(fields: [productId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
+
+  review    Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
 }
 
 model ReviewSummary {
-  productId String   @id
-  summary   String
-  sentiment String?
-  updatedAt DateTime @updatedAt
-  product   Product  @relation(fields: [productId], references: [id])
+  id         String @id @default(cuid())
+  productId  String @unique
+
+  summary    String
+  pros       String?
+  cons       String?
+  keywords   String?
+  sentiment  String?
+
+  updatedAt  DateTime @updatedAt
+  product    Product  @relation(fields: [productId], references: [id])
 }
 
 /// Notifications
@@ -613,3 +662,9 @@ enum NotificationChannel {
   SMS
   IN_APP
 }
+
+enum ReactionType {                                                                      
+  HELPFUL                                                                               
+  NOT_HELPFUL                                                                            
+}  
+

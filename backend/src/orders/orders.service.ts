@@ -139,7 +139,7 @@ export class OrdersService {
     const orders = await this.prisma.order.findMany({
       where: { userId },
       include: {
-        items: { include: { variant: { include: { product: true } } } },
+        items: { include: { variant: { include: { product: true } }, review: true } },
         promotions: true,
       },
       orderBy: { createdAt: 'desc' },
@@ -160,7 +160,7 @@ export class OrdersService {
         skip,
         take,
         include: {
-          items: { include: { variant: { include: { product: true } } } },
+          items: { include: { variant: { include: { product: true } }, review: true } },
           user: true,
           promotions: { include: { promotionCode: true } },
         },
@@ -191,7 +191,7 @@ export class OrdersService {
       where: { id, userId },
       include: {
         items: {
-          include: { variant: { include: { product: true } } },
+          include: { variant: { include: { product: true } }, review: true },
         },
         promotions: { include: { promotionCode: true } },
       },
@@ -212,7 +212,7 @@ export class OrdersService {
       where: { id },
       include: {
         items: {
-          include: { variant: { include: { product: true } } },
+          include: { variant: { include: { product: true } }, review: true },
         },
         user: true,
         promotions: { include: { promotionCode: true } },

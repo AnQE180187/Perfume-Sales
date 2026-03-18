@@ -20,6 +20,8 @@ import { StaffInventoryModule } from './staff-inventory/staff-inventory.module';
 import { StaffOrdersModule } from './staff-orders/staff-orders.module';
 import { StoresModule } from './stores/stores.module';
 import { ChatModule } from './chat/chat.module';
+import { ReviewsModule } from './reviews/reviews.module';
+import { AiModule } from './ai/ai.module';
 
 @Module({
   imports: [
@@ -43,6 +45,8 @@ import { ChatModule } from './chat/chat.module';
     StaffOrdersModule,
     StoresModule,
     ChatModule,
+    ReviewsModule,
+    AiModule,
   ],
 
   controllers: [AppController],

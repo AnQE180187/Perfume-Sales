@@ -59,6 +59,7 @@ export const Sidebar = () => {
             { icon: Warehouse, label: 'Tồn kho theo quầy', href: '/dashboard/admin/stores/stock' },
             { icon: Package, label: navT('admin.products'), href: '/dashboard/admin/products' },
             { icon: FolderTree, label: 'Catalog', href: '/dashboard/admin/catalog' },
+            { icon: MessageSquare, label: 'Reviews', href: '/dashboard/admin/reviews' },
             { icon: Tag, label: navT('admin.promotions'), href: '/dashboard/admin/marketing/promotions' },
             { icon: Receipt, label: commonT('orders'), href: '/dashboard/admin/orders' },
             { icon: BarChart3, label: navT('admin.analytics'), href: '/dashboard/admin/analytics' },
