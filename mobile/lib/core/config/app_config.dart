@@ -32,7 +32,7 @@ class AppConfig {
   };
 
   // ── API ───────────────────────────────────────────────────────────
-  static const bool useRealAPI = false;
+  static const bool useRealAPI = true;
 
   // ── Logging ───────────────────────────────────────────────────────
   static const bool enableDebugLogs = true;

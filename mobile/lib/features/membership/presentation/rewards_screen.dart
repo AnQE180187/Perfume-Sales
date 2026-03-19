@@ -20,7 +20,11 @@ class RewardsScreen extends StatelessWidget {
               expandedHeight: 200,
               backgroundColor: Colors.transparent,
               leading: IconButton(
-                icon: Icon(Icons.arrow_back_ios_new, size: 18, color: Theme.of(context).primaryColor),
+                icon: Icon(
+                  Icons.arrow_back_ios_new,
+                  size: 18,
+                  color: Theme.of(context).primaryColor,
+                ),
                 onPressed: () => Navigator.pop(context),
               ),
               flexibleSpace: FlexibleSpaceBar(
@@ -30,11 +34,15 @@ class RewardsScreen extends StatelessWidget {
                     children: [
                       Text(
                         'EVELYN\'S PASS',
-                        style: TextStyle(letterSpacing: 8, color: Theme.of(context).primaryColor, fontSize: 12),
+                        style: TextStyle(
+                          letterSpacing: 8,
+                          color: Theme.of(context).primaryColor,
+                          fontSize: 12,
+                        ),
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        'Diamond Member',
+                        'Thành viên Kim Cương',
                         style: Theme.of(context).textTheme.displayLarge,
                       ),
                     ],
@@ -42,7 +50,7 @@ class RewardsScreen extends StatelessWidget {
                 ),
               ),
             ),
-            
+
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               sliver: SliverToBoxAdapter(
@@ -56,18 +64,20 @@ class RewardsScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Points: 8,500', 
+                            'Điểm: 8,500',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: Theme.of(context).colorScheme.onSurface,
-                            )
+                            ),
                           ),
                           Text(
-                            'Next Tier: 10,000', 
+                            'Mốc tiếp theo: 10,000',
                             style: TextStyle(
-                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4), 
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withValues(alpha: 0.4),
                               fontSize: 12,
-                            )
+                            ),
                           ),
                         ],
                       ),
@@ -75,30 +85,44 @@ class RewardsScreen extends StatelessWidget {
                       LinearProgressIndicator(
                         value: 0.85,
                         backgroundColor: Theme.of(context).colorScheme.outline,
-                        valueColor: AlwaysStoppedAnimation(Theme.of(context).primaryColor),
+                        valueColor: AlwaysStoppedAnimation(
+                          Theme.of(context).primaryColor,
+                        ),
                       ),
                     ],
                   ),
                 ),
               ),
             ),
-            
+
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.all(30.0),
                 child: Text(
-                  'EXCLUSIVE PRIVILEGES',
+                  'ĐẶC QUYỀN RIÊNG',
                   style: Theme.of(context).textTheme.labelLarge,
                 ),
               ),
             ),
-            
+
             SliverList(
               delegate: SliverChildListDelegate([
-                const PrivilegeTile(title: "Early Access: Grasse Batch #042", icon: Icons.lock_open),
-                const PrivilegeTile(title: "Personal Concierge Service", icon: Icons.person_search),
-                const PrivilegeTile(title: "Complimentary Molecule Stability Test", icon: Icons.biotech),
-                const PrivilegeTile(title: "Invitations to Private Atelier Events", icon: Icons.celebration),
+                const PrivilegeTile(
+                  title: "Quyền truy cập sớm: Lô Grasse #042",
+                  icon: Icons.lock_open,
+                ),
+                const PrivilegeTile(
+                  title: "Dịch vụ tư vấn cá nhân",
+                  icon: Icons.person_search,
+                ),
+                const PrivilegeTile(
+                  title: "Kiểm tra độ bền phân tử miễn phí",
+                  icon: Icons.biotech,
+                ),
+                const PrivilegeTile(
+                  title: "Thư mời sự kiện atelier riêng tư",
+                  icon: Icons.celebration,
+                ),
               ]),
             ),
           ],
@@ -127,11 +151,11 @@ class PrivilegeTile extends StatelessWidget {
             Icon(icon, color: Theme.of(context).primaryColor, size: 20),
             const SizedBox(width: 20),
             Text(
-              title, 
+              title,
               style: TextStyle(
                 fontSize: 14,
                 color: Theme.of(context).colorScheme.onSurface,
-              )
+              ),
             ),
           ],
         ),

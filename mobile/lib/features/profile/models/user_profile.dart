@@ -22,13 +22,13 @@ class UserProfile {
   });
 
   String get memberSinceText {
-    return 'Member since ${memberSince.year}';
+    return 'Thành viên từ ${memberSince.year}';
   }
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     final id = (json['id'] ?? json['_id'] ?? '') as String;
     final name =
-        (json['full_name'] ?? json['fullName'] ?? json['name'] ?? 'User')
+        (json['full_name'] ?? json['fullName'] ?? json['name'] ?? 'Người dùng')
             as String;
     final email = (json['email'] ?? '') as String;
     final avatarUrl = (json['avatar_url'] ?? json['avatarUrl']) as String?;

@@ -45,7 +45,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Social login is not available in current API.'),
+        content: Text(
+          'Đăng nhập mạng xã hội hiện chưa được hỗ trợ với API hiện tại.',
+        ),
       ),
     );
   }
@@ -66,7 +68,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     if (password != confirmPassword) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password confirmation does not match.')),
+        const SnackBar(content: Text('Mật khẩu xác nhận không khớp.')),
       );
       return;
     }
@@ -123,7 +125,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
                           // Title
                           Text(
-                            'Create Your\nAccount',
+                            'Tạo\nTài khoản',
                             textAlign: TextAlign.center,
                             style: GoogleFonts.playfairDisplay(
                               fontSize: 36,
@@ -137,7 +139,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
                           // Subtitle
                           Text(
-                            'Join our exclusive scent circle',
+                            'Gia nhập cộng đồng mùi hương tuyển chọn',
                             textAlign: TextAlign.center,
                             style: GoogleFonts.montserrat(
                               fontSize: 14,
@@ -209,7 +211,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                       ),
                                     )
                                   : Text(
-                                      'Create Account',
+                                      'Tạo tài khoản',
                                       style: GoogleFonts.montserrat(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
@@ -235,7 +237,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                   horizontal: 16,
                                 ),
                                 child: Text(
-                                  'OR CONTINUE WITH',
+                                  'HOẶC TIẾP TỤC VỚI',
                                   style: GoogleFonts.montserrat(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w400,
@@ -283,11 +285,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                 color: const Color(0xFF999999),
                               ),
                               children: [
-                                const TextSpan(
-                                  text: 'Already have an account? ',
-                                ),
+                                const TextSpan(text: 'Đã có tài khoản? '),
                                 TextSpan(
-                                  text: 'Sign In',
+                                  text: 'Đăng nhập',
                                   style: GoogleFonts.montserrat(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w500,
@@ -415,7 +415,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         color: const Color(0xFF1A1A1A),
       ),
       decoration: InputDecoration(
-        hintText: 'Password',
+        hintText: 'Mật khẩu',
         hintStyle: GoogleFonts.montserrat(
           fontSize: 14,
           fontWeight: FontWeight.w400,
@@ -473,7 +473,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         color: const Color(0xFF1A1A1A),
       ),
       decoration: InputDecoration(
-        hintText: 'Confirm Password',
+        hintText: 'Xác nhận mật khẩu',
         hintStyle: GoogleFonts.montserrat(
           fontSize: 14,
           fontWeight: FontWeight.w400,
@@ -551,9 +551,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   color: const Color(0xFF666666),
                 ),
                 children: [
-                  const TextSpan(text: 'I agree to the '),
+                  const TextSpan(text: 'Tôi đồng ý với '),
                   TextSpan(
-                    text: 'Terms of Service',
+                    text: 'Điều khoản dịch vụ',
                     style: GoogleFonts.montserrat(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
@@ -561,9 +561,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       decoration: TextDecoration.underline,
                     ),
                   ),
-                  const TextSpan(text: ' and '),
+                  const TextSpan(text: ' và '),
                   TextSpan(
-                    text: 'Privacy Policy',
+                    text: 'Chính sách bảo mật',
                     style: GoogleFonts.montserrat(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,

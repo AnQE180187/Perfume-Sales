@@ -11,19 +11,17 @@ class ProductApiService {
 
   /// GET /products
   Future<List<dynamic>> getProducts({
-    int? page,
-    int? limit,
-    String? category,
-    String? brand,
-    String? sortBy,
+    int? skip,
+    int? take,
+    int? categoryId,
+    int? brandId,
     String? search,
   }) async {
     final queryParams = <String, dynamic>{
-      if (page != null) 'page': page,
-      if (limit != null) 'limit': limit,
-      if (category != null) 'category': category,
-      if (brand != null) 'brand': brand,
-      if (sortBy != null) 'sortBy': sortBy,
+      if (skip != null) 'skip': skip,
+      if (take != null) 'take': take,
+      if (categoryId != null) 'categoryId': categoryId,
+      if (brandId != null) 'brandId': brandId,
       if (search != null) 'search': search,
     };
 
@@ -32,9 +30,11 @@ class ProductApiService {
       queryParameters: queryParams,
     );
 
-    // Backend may return { data: [...], meta: {...} } or plain [...]
+    // Backend supports { items: [...], total, skip, take }.
+    // Keep compatibility with legacy envelopes as fallback.
     final body = response.data;
     if (body is List) return body;
+    if (body is Map && body.containsKey('items')) return body['items'] as List;
     if (body is Map && body.containsKey('data')) return body['data'] as List;
     return [];
   }

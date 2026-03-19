@@ -3,9 +3,9 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_theme.dart';
 
 /// Profile Header Section
-/// 
+///
 /// Top bar with back button, title, and edit action.
-/// 
+///
 /// Why this is a section:
 /// - Separates header logic from profile content
 /// - Makes it easy to customize header behavior per screen
@@ -46,7 +46,7 @@ class ProfileHeaderSection extends StatelessWidget {
           Expanded(
             child: Center(
               child: Text(
-                'My Profile',
+                'Hồ sơ của tôi',
                 style: GoogleFonts.playfairDisplay(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,

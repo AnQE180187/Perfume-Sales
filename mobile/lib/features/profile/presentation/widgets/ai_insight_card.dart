@@ -4,10 +4,10 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/luxury_button.dart';
 
 /// AI Insight Card - Olfactory Signature
-/// 
+///
 /// Reusable card displaying user's AI-generated scent preferences.
 /// Can be used on Profile, Home, or Onboarding screens.
-/// 
+///
 /// Why this is extracted:
 /// - Reusable across multiple screens
 /// - Separates AI insight presentation from profile logic
@@ -45,14 +45,10 @@ class AiInsightCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.auto_awesome,
-                color: AppTheme.accentGold,
-                size: 15,
-              ),
+              Icon(Icons.auto_awesome, color: AppTheme.accentGold, size: 15),
               const SizedBox(width: 5),
               Text(
-                'AI ANALYSIS',
+                'PHÂN TÍCH AI',
                 style: GoogleFonts.montserrat(
                   fontSize: 9,
                   fontWeight: FontWeight.w700,
@@ -64,7 +60,7 @@ class AiInsightCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            'Your Olfactory Signature',
+            'Dấu ấn mùi hương của bạn',
             style: GoogleFonts.playfairDisplay(
               fontSize: 19,
               fontWeight: FontWeight.w600,
@@ -74,7 +70,7 @@ class AiInsightCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            'Based on your recent activity',
+            'Dựa trên hoạt động gần đây của bạn',
             style: GoogleFonts.montserrat(
               fontSize: 11,
               fontWeight: FontWeight.w400,
@@ -87,7 +83,10 @@ class AiInsightCard extends StatelessWidget {
             runSpacing: 7,
             children: olfactoryTags.map((tag) {
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 13,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(18),
@@ -109,7 +108,7 @@ class AiInsightCard extends StatelessWidget {
           ),
           const SizedBox(height: 18),
           LuxuryButton(
-            text: 'Find my next scent',
+            text: 'Tìm mùi hương tiếp theo',
             onPressed: onFindNextScent,
             trailingIcon: Icons.arrow_forward,
             height: 44,
@@ -124,7 +123,7 @@ class AiInsightCard extends StatelessWidget {
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
               child: Text(
-                'View my scent profile',
+                'Xem hồ sơ mùi hương',
                 style: GoogleFonts.montserrat(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,

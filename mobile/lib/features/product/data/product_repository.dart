@@ -15,19 +15,17 @@ class ProductRepository {
 
   /// Fetch all products, optionally filtered.
   Future<List<Product>> getProducts({
-    int? page,
-    int? limit,
-    String? category,
-    String? brand,
-    String? sortBy,
+    int? skip,
+    int? take,
+    int? categoryId,
+    int? brandId,
     String? search,
   }) async {
     final rawList = await _apiService.getProducts(
-      page: page,
-      limit: limit,
-      category: category,
-      brand: brand,
-      sortBy: sortBy,
+      skip: skip,
+      take: take,
+      categoryId: categoryId,
+      brandId: brandId,
       search: search,
     );
     return rawList

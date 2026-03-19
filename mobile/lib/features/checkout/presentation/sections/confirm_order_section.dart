@@ -42,22 +42,19 @@ class ConfirmOrderSection extends StatelessWidget {
       child: Column(
         children: [
           _PriceRow(
-            label: 'SUBTOTAL',
+            label: 'TIỀN HÀNG',
             value: '\$${subtotal.toStringAsFixed(2)}',
           ),
           const SizedBox(height: 8),
           _PriceRow(
-            label: 'SHIPPING',
+            label: 'GIAO HÀNG',
             value: shippingCost == 0
-                ? 'COMPLIMENTARY'
+                ? 'MIỄN PHÍ'
                 : '\$${shippingCost.toStringAsFixed(2)}',
             valueColor: shippingCost == 0 ? AppTheme.accentGold : null,
           ),
           const SizedBox(height: 8),
-          _PriceRow(
-            label: 'TAX',
-            value: '\$${tax.toStringAsFixed(2)}',
-          ),
+          _PriceRow(label: 'THUẾ', value: '\$${tax.toStringAsFixed(2)}'),
           const SizedBox(height: 12),
           Divider(
             color: AppTheme.softTaupe.withValues(alpha: 0.5),
@@ -68,7 +65,7 @@ class ConfirmOrderSection extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'TOTAL',
+                'TỔNG CỘNG',
                 style: GoogleFonts.montserrat(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
@@ -88,14 +85,14 @@ class ConfirmOrderSection extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           LuxuryButton(
-            text: 'Confirm Order - \$${totalAmount.toStringAsFixed(2)}',
+            text: 'Xác nhận đơn hàng - \$${totalAmount.toStringAsFixed(2)}',
             onPressed: canConfirm && !isSubmitting ? onConfirm : null,
             isLoading: isSubmitting,
             height: 52,
           ),
           const SizedBox(height: 12),
           Text(
-            'You won\'t be charged until payment is confirmed',
+            'Bạn sẽ chỉ bị trừ tiền sau khi thanh toán được xác nhận',
             textAlign: TextAlign.center,
             style: GoogleFonts.montserrat(
               fontSize: 11,
@@ -114,7 +111,7 @@ class ConfirmOrderSection extends StatelessWidget {
               ),
               const SizedBox(width: 6),
               Text(
-                'Secure checkout powered by Stripe',
+                'Thanh toán bảo mật qua Stripe',
                 style: GoogleFonts.montserrat(
                   fontSize: 10,
                   fontWeight: FontWeight.w400,
@@ -135,11 +132,7 @@ class _PriceRow extends StatelessWidget {
   final String value;
   final Color? valueColor;
 
-  const _PriceRow({
-    required this.label,
-    required this.value,
-    this.valueColor,
-  });
+  const _PriceRow({required this.label, required this.value, this.valueColor});
 
   @override
   Widget build(BuildContext context) {

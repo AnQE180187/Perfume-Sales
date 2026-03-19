@@ -10,18 +10,18 @@ enum PaymentMethodType {
       case PaymentMethodType.momo:
         return 'Momo';
       case PaymentMethodType.cod:
-        return 'Cash on Delivery';
+        return 'Thanh toán khi nhận hàng';
     }
   }
 
   String get description {
     switch (this) {
       case PaymentMethodType.vnpay:
-        return 'Pay with VNPay e-wallet';
+        return 'Thanh toán bằng ví điện tử VNPay';
       case PaymentMethodType.momo:
-        return 'Pay with Momo e-wallet';
+        return 'Thanh toán bằng ví điện tử Momo';
       case PaymentMethodType.cod:
-        return 'Pay when you receive';
+        return 'Thanh toán khi nhận sản phẩm';
     }
   }
 
@@ -94,15 +94,15 @@ enum PaymentStatus {
   String get displayName {
     switch (this) {
       case PaymentStatus.pending:
-        return 'Pending';
+        return 'Chờ xử lý';
       case PaymentStatus.processing:
-        return 'Processing';
+        return 'Đang xử lý';
       case PaymentStatus.success:
-        return 'Success';
+        return 'Thành công';
       case PaymentStatus.failed:
-        return 'Failed';
+        return 'Thất bại';
       case PaymentStatus.cancelled:
-        return 'Cancelled';
+        return 'Đã hủy';
     }
   }
 }

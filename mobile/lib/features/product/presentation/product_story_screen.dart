@@ -34,7 +34,7 @@ class ProductStoryScreen extends StatelessWidget {
             flexibleSpace: FlexibleSpaceBar(
               centerTitle: true,
               title: Text(
-                'The Story Behind the Scent',
+                'Câu chuyện phía sau mùi hương',
                 style: GoogleFonts.playfairDisplay(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
@@ -51,16 +51,16 @@ class ProductStoryScreen extends StatelessWidget {
                 _HeroImage(imageUrl: imageUrl),
                 const SizedBox(height: 50),
                 _StorySection(
-                  label: 'THE INSPIRATION',
+                  label: 'NGUỒN CẢM HỨNG',
                   children: [
                     _DropCapParagraph(
                       text:
-                          'It began in a rainy garden in Kyoto. The scent of wet earth mixed with blooming jasmine created a moment of pure stillness that we knew had to be captured. We sought to bottle not just the fragrance, but the profound silence of that afternoon, where time seemed to suspend itself among the moss-covered stones.',
+                          'Mọi thứ bắt đầu trong một khu vườn mưa ở Kyoto. Mùi đất ẩm quyện cùng hương hoa nhài đang nở tạo nên một khoảnh khắc tĩnh lặng tuyệt đối mà chúng tôi biết mình phải lưu giữ. Chúng tôi không chỉ muốn đóng chai một mùi hương, mà muốn cất lại sự tĩnh sâu của buổi chiều hôm ấy, khi thời gian như ngừng trôi giữa những phiến đá phủ rêu.',
                     ),
                     const SizedBox(height: 20),
                     _BodyText(
                       text:
-                          'The journey took us across continents, searching for a jasmine absolute that could replicate that specific, dewy freshness without becoming overpowering. It is a delicate balance of nature and memory.',
+                          'Hành trình ấy đưa chúng tôi đi qua nhiều châu lục để tìm ra tinh chất hoa nhài có thể tái hiện đúng sự tươi mát đẫm sương ấy mà không trở nên quá nồng. Đó là sự cân bằng mong manh giữa thiên nhiên và ký ức.',
                     ),
                   ],
                 ),
@@ -68,27 +68,29 @@ class ProductStoryScreen extends StatelessWidget {
                 _Divider(),
                 const SizedBox(height: 50),
                 _StorySection(
-                  label: 'CRAFTSMANSHIP',
+                  label: 'NGHỆ THUẬT CHẾ TÁC',
                   children: [
                     _BodyText(
                       text:
-                          'Our master perfumers employ the ancient technique of enfleurage, a painstaking process rarely used in modern perfumery due to its labor-intensive nature. Petal by petal, the essence is coaxed gently, preserving the soul of the flower in its purest form.',
+                          'Những nhà chế tác hương bậc thầy của chúng tôi sử dụng kỹ thuật enfleurage cổ điển, một quy trình công phu hiếm khi còn được áp dụng trong ngành nước hoa hiện đại vì đòi hỏi rất nhiều thời gian và sự tỉ mỉ. Từng cánh hoa được nâng niu chiết xuất để giữ lại linh hồn của bông hoa ở trạng thái tinh khiết nhất.',
                     ),
                     const SizedBox(height: 20),
                     _BodyText(
                       text:
-                          'This dedication to slow craft ensures that every bottle contains the depth, warmth and complexity that synthetic compounds simply cannot replicate. It is a testament to patience and the pursuit of perfection.',
+                          'Sự tận tâm với lối chế tác chậm rãi này bảo đảm rằng mỗi chai nước hoa đều chứa chiều sâu, độ ấm và sự phức hợp mà các hợp chất tổng hợp khó có thể tái tạo. Đó là minh chứng cho sự kiên nhẫn và khát vọng theo đuổi sự hoàn mỹ.',
                     ),
                   ],
                 ),
                 const SizedBox(height: 50),
                 _EditorialImage(
-                  imageUrl: 'https://images.unsplash.com/photo-1615634260167-c8cdede054de',
-                  caption: 'Hand-picked jasmine at dawn',
+                  imageUrl:
+                      'https://images.unsplash.com/photo-1615634260167-c8cdede054de',
+                  caption: 'Hoa nhài được hái thủ công lúc bình minh',
                 ),
                 const SizedBox(height: 50),
                 _QuoteBlock(
-                  quote: 'A perfume is a story in odors, sometimes a poetry of memory.',
+                  quote:
+                      'Nước hoa là một câu chuyện được kể bằng hương thơm, đôi khi là thi ca của ký ức.',
                   author: 'Jean-Claude Ellena',
                 ),
                 const SizedBox(height: 60),
@@ -148,10 +150,7 @@ class _StorySection extends StatelessWidget {
   final String label;
   final List<Widget> children;
 
-  const _StorySection({
-    required this.label,
-    required this.children,
-  });
+  const _StorySection({required this.label, required this.children});
 
   @override
   Widget build(BuildContext context) {
@@ -284,10 +283,7 @@ class _EditorialImage extends StatelessWidget {
   final String imageUrl;
   final String caption;
 
-  const _EditorialImage({
-    required this.imageUrl,
-    required this.caption,
-  });
+  const _EditorialImage({required this.imageUrl, required this.caption});
 
   @override
   Widget build(BuildContext context) {
@@ -334,10 +330,7 @@ class _QuoteBlock extends StatelessWidget {
   final String quote;
   final String author;
 
-  const _QuoteBlock({
-    required this.quote,
-    required this.author,
-  });
+  const _QuoteBlock({required this.quote, required this.author});
 
   @override
   Widget build(BuildContext context) {
@@ -385,7 +378,7 @@ class _FooterActions extends StatelessWidget {
       child: Column(
         children: [
           LuxuryButton(
-            text: 'Back to Product',
+            text: 'Quay lại sản phẩm',
             onPressed: () => Navigator.pop(context),
           ),
           const SizedBox(height: 16),
@@ -394,7 +387,7 @@ class _FooterActions extends StatelessWidget {
               // Navigate to scent notes
             },
             child: Text(
-              'EXPLORE THE SCENT NOTES',
+              'KHÁM PHÁ TẦNG HƯƠNG',
               style: GoogleFonts.montserrat(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,

@@ -82,7 +82,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                 color: AppTheme.mutedSilver,
               ),
               const SizedBox(height: 16),
-              Text('Failed to load product', style: GoogleFonts.montserrat()),
+              Text('Không thể tải sản phẩm', style: GoogleFonts.montserrat()),
             ],
           ),
         ),
@@ -206,7 +206,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                               const SizedBox(height: 4),
                               // SUBTITLE
                               Text(
-                                'Eau de Parfum',
+                                'Nước hoa Eau de Parfum',
                                 style: GoogleFonts.montserrat(
                                   fontSize: 12,
                                   color: AppTheme.mutedSilver,
@@ -220,6 +220,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                                     context.push(
                                       AppRoutes.reviewsWithProductId(
                                         product.id,
+                                        productName: product.name,
                                       ),
                                     );
                                   },
@@ -242,7 +243,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                                       if (product.reviews != null) ...[
                                         const SizedBox(width: 6),
                                         Text(
-                                          '(${product.reviews} reviews)',
+                                          '(${product.reviews} đánh giá)',
                                           style: GoogleFonts.montserrat(
                                             fontSize: 12,
                                             color: AppTheme.mutedSilver,

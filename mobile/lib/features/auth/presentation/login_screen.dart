@@ -30,7 +30,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Social login is not available in current API.'),
+        content: Text(
+          'Đăng nhập mạng xã hội hiện chưa được hỗ trợ với API hiện tại.',
+        ),
       ),
     );
   }
@@ -81,7 +83,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                       // Title
                       Text(
-                        'Welcome to\nPerfumeGPT',
+                        'Chào mừng đến với\nPerfumeGPT',
                         textAlign: TextAlign.center,
                         style: GoogleFonts.playfairDisplay(
                           fontSize: 36,
@@ -95,7 +97,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                       // Subtitle
                       Text(
-                        'Your personal AI scent concierge',
+                        'Trợ lý mùi hương AI dành riêng cho bạn',
                         textAlign: TextAlign.center,
                         style: GoogleFonts.montserrat(
                           fontSize: 14,
@@ -148,7 +150,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   ),
                                 )
                               : Text(
-                                  'Continue →',
+                                  'Tiếp tục →',
                                   style: GoogleFonts.montserrat(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
@@ -172,7 +174,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Text(
-                              'OR CONTINUE WITH',
+                              'HOẶC TIẾP TỤC VỚI',
                               style: GoogleFonts.montserrat(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w400,
@@ -221,10 +223,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                           children: [
                             const TextSpan(
-                              text: 'By continuing, you agree to our ',
+                              text: 'Khi tiếp tục, bạn đồng ý với ',
                             ),
                             TextSpan(
-                              text: 'Terms of Service',
+                              text: 'Điều khoản dịch vụ',
                               style: GoogleFonts.montserrat(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w300,
@@ -232,9 +234,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 decoration: TextDecoration.underline,
                               ),
                             ),
-                            const TextSpan(text: ' and '),
+                            const TextSpan(text: ' và '),
                             TextSpan(
-                              text: 'Privacy Policy',
+                              text: 'Chính sách bảo mật',
                               style: GoogleFonts.montserrat(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w300,
@@ -309,7 +311,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 alignment: Alignment.center,
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 child: Text(
-                  'Sign In',
+                  'Đăng nhập',
                   style: GoogleFonts.montserrat(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -332,7 +334,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 alignment: Alignment.center,
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 child: Text(
-                  'Create Account',
+                  'Tạo tài khoản',
                   style: GoogleFonts.montserrat(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -359,7 +361,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         color: const Color(0xFF1A1A1A),
       ),
       decoration: InputDecoration(
-        hintText: 'Email Address',
+        hintText: 'Địa chỉ email',
         hintStyle: GoogleFonts.montserrat(
           fontSize: 14,
           fontWeight: FontWeight.w400,
@@ -403,7 +405,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         color: const Color(0xFF1A1A1A),
       ),
       decoration: InputDecoration(
-        hintText: 'Password',
+        hintText: 'Mật khẩu',
         hintStyle: GoogleFonts.montserrat(
           fontSize: 14,
           fontWeight: FontWeight.w400,

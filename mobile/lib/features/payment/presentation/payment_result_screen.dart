@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:perfume_gpt_app/l10n/app_localizations.dart';
 
-
 class PaymentResultScreen extends StatelessWidget {
   final bool success;
   final String message;
@@ -40,7 +39,9 @@ class PaymentResultScreen extends StatelessWidget {
                 child: Icon(
                   success ? Icons.check_circle_outline : Icons.error_outline,
                   size: 64,
-                  color: success ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                  color: success
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFFEF4444),
                 ),
               ),
               const SizedBox(height: 40),
@@ -48,7 +49,9 @@ class PaymentResultScreen extends StatelessWidget {
               // Title
               Text(
                 success ? l10n.paymentSuccess : l10n.paymentFailed,
-                style: Theme.of(context).textTheme.displayMedium?.copyWith(fontSize: 28),
+                style: Theme.of(
+                  context,
+                ).textTheme.displayMedium?.copyWith(fontSize: 28),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
@@ -56,7 +59,9 @@ class PaymentResultScreen extends StatelessWidget {
               // Message
               Text(
                 message,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontSize: 14),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyLarge?.copyWith(fontSize: 14),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 40),
@@ -79,30 +84,40 @@ class PaymentResultScreen extends StatelessWidget {
                       children: [
                         Text(
                           l10n.orderNumber.toUpperCase(),
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 10),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodyMedium?.copyWith(fontSize: 10),
                         ),
                         Text(
                           orderId,
-                          style: Theme.of(context).textTheme.labelLarge?.copyWith(fontSize: 12),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.labelLarge?.copyWith(fontSize: 12),
                         ),
                       ],
                     ),
                     if (success) ...[
                       const SizedBox(height: 16),
-                      Divider(color: Theme.of(context).colorScheme.outline, thickness: 0.5),
+                      Divider(
+                        color: Theme.of(context).colorScheme.outline,
+                        thickness: 0.5,
+                      ),
                       const SizedBox(height: 16),
                       Row(
                         children: [
                           Icon(
                             Icons.info_outline,
                             size: 16,
-                            color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.5),
+                            color: Theme.of(context).textTheme.bodyMedium?.color
+                                ?.withValues(alpha: 0.5),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'You can track your order in Order History',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 11),
+                              'Bạn có thể theo dõi đơn hàng trong mục Lịch sử đơn hàng',
+                              style: Theme.of(
+                                context,
+                              ).textTheme.bodyMedium?.copyWith(fontSize: 11),
                             ),
                           ),
                         ],
@@ -134,7 +149,10 @@ class PaymentResultScreen extends StatelessWidget {
                       context.go('/home');
                     },
                     style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: Theme.of(context).primaryColor, width: 0.5),
+                      side: BorderSide(
+                        color: Theme.of(context).primaryColor,
+                        width: 0.5,
+                      ),
                     ),
                     child: Text(l10n.returnToAtelier),
                   ),
@@ -160,7 +178,10 @@ class PaymentResultScreen extends StatelessWidget {
                       context.go('/home');
                     },
                     style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: Theme.of(context).primaryColor, width: 0.5),
+                      side: BorderSide(
+                        color: Theme.of(context).primaryColor,
+                        width: 0.5,
+                      ),
                     ),
                     child: Text(l10n.returnToAtelier),
                   ),

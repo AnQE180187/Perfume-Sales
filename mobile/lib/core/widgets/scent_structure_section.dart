@@ -5,19 +5,16 @@ import '../theme/app_theme.dart';
 class ScentStructureSection extends StatelessWidget {
   final List<String> notes;
 
-  const ScentStructureSection({
-    super.key,
-    required this.notes,
-  });
+  const ScentStructureSection({super.key, required this.notes});
 
   static const double _iconSize = 52;
   static const double _lineBottomOffset = 78;
 
   @override
   Widget build(BuildContext context) {
-    final topNote = notes.isNotEmpty ? notes[0] : 'Citrus';
-    final heartNote = notes.length > 1 ? notes[1] : 'Rose';
-    final baseNote = notes.length > 2 ? notes[2] : 'Sandalwood';
+    final topNote = notes.isNotEmpty ? notes[0] : 'Cam chanh';
+    final heartNote = notes.length > 1 ? notes[1] : 'Hoa hồng';
+    final baseNote = notes.length > 2 ? notes[2] : 'Gỗ đàn hương';
 
     return Transform.translate(
       offset: const Offset(0, -30),
@@ -30,7 +27,7 @@ class ScentStructureSection extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Scent Structure',
+                  'Cấu trúc mùi hương',
                   style: GoogleFonts.playfairDisplay(
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
@@ -38,7 +35,7 @@ class ScentStructureSection extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'VIEW ALL',
+                  'XEM TẤT CẢ',
                   style: GoogleFonts.montserrat(
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
@@ -55,9 +52,9 @@ class ScentStructureSection extends StatelessWidget {
                 children: [
                   _ScentLayer(
                     icon: Icons.spa_outlined,
-                    label: 'TOP',
+                    label: 'HƯƠNG ĐẦU',
                     note: topNote,
-                    descriptor: 'Fresh & Light',
+                    descriptor: 'Tươi sáng và nhẹ nhàng',
                     isActive: false,
                     iconSize: _iconSize,
                   ),
@@ -73,9 +70,9 @@ class ScentStructureSection extends StatelessWidget {
                   ),
                   _ScentLayer(
                     icon: Icons.local_florist,
-                    label: 'HEART',
+                    label: 'HƯƠNG GIỮA',
                     note: heartNote,
-                    descriptor: 'Rich & Complex',
+                    descriptor: 'Đậm đà và đa tầng',
                     isActive: true,
                     iconSize: _iconSize,
                   ),
@@ -91,9 +88,9 @@ class ScentStructureSection extends StatelessWidget {
                   ),
                   _ScentLayer(
                     icon: Icons.water_drop_outlined,
-                    label: 'BASE',
+                    label: 'HƯƠNG CUỐI',
                     note: baseNote,
-                    descriptor: 'Deep & Lasting',
+                    descriptor: 'Sâu lắng và bền lâu',
                     isActive: false,
                     iconSize: _iconSize,
                   ),

@@ -22,23 +22,27 @@ class _MenuItem {
 }
 
 const _primaryItems = [
-  _MenuItem(icon: Icons.spa_outlined, label: 'My Scent Profile'),
+  _MenuItem(icon: Icons.spa_outlined, label: 'Hồ sơ mùi hương'),
   _MenuItem(
     icon: Icons.local_florist_outlined,
-    label: 'Fragrance Library',
+    label: 'Thư viện nước hoa',
     route: '/explore',
   ),
-  _MenuItem(icon: Icons.diamond_outlined, label: 'Exclusive Collections'),
+  _MenuItem(icon: Icons.diamond_outlined, label: 'Bộ sưu tập độc quyền'),
 ];
 
 const _secondaryItems = [
-  _MenuItem(icon: Icons.book_outlined, label: 'Scent Journal'),
-  _MenuItem(icon: Icons.support_agent_outlined, label: 'Concierge Support'),
+  _MenuItem(icon: Icons.book_outlined, label: 'Nhật ký mùi hương'),
+  _MenuItem(icon: Icons.support_agent_outlined, label: 'Hỗ trợ tư vấn'),
 ];
 
 const _utilityItems = [
-  _MenuItem(icon: Icons.settings_outlined, label: 'Settings'),
-  _MenuItem(icon: Icons.logout_rounded, label: 'Logout', isDestructive: true),
+  _MenuItem(icon: Icons.settings_outlined, label: 'Cài đặt'),
+  _MenuItem(
+    icon: Icons.logout_rounded,
+    label: 'Đăng xuất',
+    isDestructive: true,
+  ),
 ];
 
 // ─── Luxury Drawer ───────────────────────────────────────────────────────────
@@ -97,7 +101,7 @@ class LuxuryDrawer extends ConsumerWidget {
                       ),
                       const SizedBox(width: 10),
                       Text(
-                        'Search your scents...',
+                        'Tìm kiếm mùi hương...',
                         style: GoogleFonts.montserrat(
                           fontSize: 13,
                           fontWeight: FontWeight.w400,
@@ -223,7 +227,7 @@ class _UserProfileHeader extends StatelessWidget {
         profile?['full_name'] ?? profile?['fullName'] ?? profile?['name'];
     final name = nameValue is String && nameValue.trim().isNotEmpty
         ? nameValue.trim()
-        : 'Guest';
+        : 'Khách';
 
     final avatarValue = profile?['avatar_url'] ?? profile?['avatarUrl'];
     final avatarUrl = avatarValue is String && avatarValue.trim().isNotEmpty
@@ -241,13 +245,13 @@ class _UserProfileHeader extends StatelessWidget {
 
     String tierLabel;
     if (loyaltyPoints >= 5000) {
-      tierLabel = 'PLATINUM MEMBER';
+      tierLabel = 'THÀNH VIÊN BẠCH KIM';
     } else if (loyaltyPoints >= 1000) {
-      tierLabel = 'GOLD MEMBER';
+      tierLabel = 'THÀNH VIÊN VÀNG';
     } else if (loyaltyPoints >= 300) {
-      tierLabel = 'SILVER MEMBER';
+      tierLabel = 'THÀNH VIÊN BẠC';
     } else {
-      tierLabel = 'MEMBER';
+      tierLabel = 'THÀNH VIÊN';
     }
 
     return Column(

@@ -22,7 +22,6 @@ class ThemeModeNotifier extends StateNotifier<ThemeMode> {
     return ThemeMode.light;
   }
 
-
   void toggleTheme() {
     if (state == ThemeMode.dark) {
       setThemeMode(ThemeMode.light);
@@ -37,7 +36,9 @@ class ThemeModeNotifier extends StateNotifier<ThemeMode> {
   }
 }
 
-final themeModeProvider = StateNotifierProvider<ThemeModeNotifier, ThemeMode>((ref) {
+final themeModeProvider = StateNotifierProvider<ThemeModeNotifier, ThemeMode>((
+  ref,
+) {
   final prefs = ref.watch(sharedPreferencesProvider);
   return ThemeModeNotifier(prefs);
 });
@@ -48,9 +49,7 @@ class LocaleNotifier extends StateNotifier<Locale> {
   LocaleNotifier(this._prefs) : super(_loadLocale(_prefs));
 
   static Locale _loadLocale(SharedPreferences prefs) {
-    final languageCode = prefs.getString(_localeKey);
-    if (languageCode == 'vi') return const Locale('vi');
-    return const Locale('en');
+    return const Locale('vi');
   }
 
   void setLocale(Locale locale) {

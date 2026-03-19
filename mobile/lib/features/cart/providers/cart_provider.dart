@@ -47,7 +47,8 @@ class CartNotifier extends StateNotifier<CartState> {
       id: '1',
       productId: 'p1',
       productName: 'Elysium Essence',
-      productImage: 'https://images.unsplash.com/photo-1541643600914-78b084683601?w=400',
+      productImage:
+          'https://images.unsplash.com/photo-1541643600914-78b084683601?w=400',
       price: 120.00,
       quantity: 1,
       size: '100ml',
@@ -57,7 +58,8 @@ class CartNotifier extends StateNotifier<CartState> {
       id: '2',
       productId: 'p2',
       productName: 'Night Shade',
-      productImage: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=400',
+      productImage:
+          'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=400',
       price: 85.00,
       quantity: 1,
       size: '50ml',
@@ -67,7 +69,8 @@ class CartNotifier extends StateNotifier<CartState> {
       id: '3',
       productId: 'p3',
       productName: 'Solar Flare',
-      productImage: 'https://images.unsplash.com/photo-1588405748880-12d1d2a59db9?w=400',
+      productImage:
+          'https://images.unsplash.com/photo-1588405748880-12d1d2a59db9?w=400',
       price: 0.00, // Free sample
       quantity: 1,
       size: '2ml',
@@ -113,7 +116,9 @@ class CartNotifier extends StateNotifier<CartState> {
 
   // Remove item from cart
   void removeItem(String itemId) {
-    final updatedItems = state.items.where((item) => item.id != itemId).toList();
+    final updatedItems = state.items
+        .where((item) => item.id != itemId)
+        .toList();
     state = state.copyWith(items: updatedItems);
   }
 
@@ -146,23 +151,17 @@ class CartNotifier extends StateNotifier<CartState> {
       } else {
         state = state.copyWith(
           isLoading: false,
-          error: 'Invalid promo code',
+          error: 'Mã khuyến mãi không hợp lệ',
         );
       }
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
   // Remove promo code
   void removePromoCode() {
-    state = state.copyWith(
-      promoCode: null,
-      promoDiscount: 0.0,
-    );
+    state = state.copyWith(promoCode: null, promoDiscount: 0.0);
   }
 }
 

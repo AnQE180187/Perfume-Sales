@@ -6,10 +6,14 @@ import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/onboarding/providers/onboarding_provider.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/cart/presentation/cart_screen.dart';
+import '../../features/checkout/presentation/checkout_screen.dart';
+import '../../features/checkout/presentation/order_success_screen.dart';
 import '../../features/orders/presentation/orders_screen.dart';
 import '../../features/orders/presentation/order_detail_screen.dart';
 import '../../features/payment/presentation/payment_method_screen.dart';
 import '../../features/payment/presentation/payment_result_screen.dart';
+import '../../features/profile/presentation/screens/profile_payment_methods_screen.dart';
+import '../../features/profile/presentation/screens/shipping_addresses_screen.dart';
 import '../../features/search/presentation/search_screen.dart';
 import '../../features/wishlist/presentation/wishlist_screen.dart';
 import '../../features/product/presentation/explore_screen.dart';
@@ -66,6 +70,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/home', builder: (context, state) => const MainShell()),
       GoRoute(path: '/cart', builder: (context, state) => const CartScreen()),
       GoRoute(
+        path: '/checkout',
+        builder: (context, state) => const CheckoutScreen(),
+      ),
+      GoRoute(
+        path: '/order-success',
+        builder: (context, state) => const OrderSuccessScreen(),
+      ),
+      GoRoute(
         path: '/orders',
         builder: (context, state) => const OrdersScreen(),
       ),
@@ -75,6 +87,14 @@ final routerProvider = Provider<GoRouter>((ref) {
           final orderId = state.pathParameters['id']!;
           return OrderDetailScreen(orderId: orderId);
         },
+      ),
+      GoRoute(
+        path: '/shipping-addresses',
+        builder: (context, state) => const ShippingAddressesScreen(),
+      ),
+      GoRoute(
+        path: '/profile-payment-methods',
+        builder: (context, state) => const ProfilePaymentMethodsScreen(),
       ),
       GoRoute(
         path: '/payment',
@@ -122,6 +142,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/product/:id/reviews',
         builder: (context, state) {
           final productId = state.pathParameters['id']!;
+          final productName = state.uri.queryParameters['name'] ?? 'Product';
+          return ReviewsScreen(productId: productId, productName: productName);
+        },
+      ),
+      GoRoute(
+        path: '/reviews',
+        builder: (context, state) {
+          final productId = state.uri.queryParameters['productId'] ?? '';
           final productName = state.uri.queryParameters['name'] ?? 'Product';
           return ReviewsScreen(productId: productId, productName: productName);
         },

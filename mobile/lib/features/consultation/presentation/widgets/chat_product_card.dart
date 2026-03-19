@@ -7,10 +7,7 @@ import '../../models/product_recommendation.dart';
 class ChatProductCard extends StatelessWidget {
   final ProductRecommendation product;
 
-  const ChatProductCard({
-    super.key,
-    required this.product,
-  });
+  const ChatProductCard({super.key, required this.product});
 
   @override
   Widget build(BuildContext context) {
@@ -29,11 +26,15 @@ class ChatProductCard extends StatelessWidget {
               width: 100,
               height: 100,
               decoration: const BoxDecoration(
-                borderRadius: BorderRadius.horizontal(left: Radius.circular(12)),
+                borderRadius: BorderRadius.horizontal(
+                  left: Radius.circular(12),
+                ),
                 color: Color(0xFFF5F1ED),
               ),
               child: ClipRRect(
-                borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
+                borderRadius: const BorderRadius.horizontal(
+                  left: Radius.circular(12),
+                ),
                 child: Image.network(
                   product.imageUrl,
                   fit: BoxFit.cover,
@@ -49,7 +50,7 @@ class ChatProductCard extends StatelessWidget {
                 ),
               ),
             ),
-            
+
             // Product Info
             Expanded(
               child: Padding(
@@ -68,7 +69,7 @@ class ChatProductCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    
+
                     // Product Name
                     Text(
                       product.name,
@@ -81,7 +82,7 @@ class ChatProductCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 8),
-                    
+
                     // Price and CTA
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -95,13 +96,16 @@ class ChatProductCard extends StatelessWidget {
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
                             color: AppTheme.accentGold,
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Text(
-                            'VIEW',
+                            'XEM',
                             style: GoogleFonts.montserrat(
                               fontSize: 10,
                               fontWeight: FontWeight.w700,

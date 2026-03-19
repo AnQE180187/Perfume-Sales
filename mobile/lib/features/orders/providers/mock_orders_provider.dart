@@ -1,15 +1,15 @@
 import '../models/order.dart';
 
 /// Mock Orders Provider
-/// 
+///
 /// Provides realistic mock order data for UI development
 /// when Supabase backend is not available.
-/// 
+///
 /// Enable via: AppConfig.useMockOrders = true
 class MockOrdersProvider {
   static List<Order> getMockOrders() {
     final now = DateTime.now();
-    
+
     return [
       // ACTIVE ORDER 1 - Out for Delivery
       Order(
@@ -21,7 +21,8 @@ class MockOrdersProvider {
           OrderItem(
             productId: 'prod_1',
             productName: 'Midnight Oud',
-            productImage: 'https://images.unsplash.com/photo-1541544181051-e46607bc22a4?w=400',
+            productImage:
+                'https://images.unsplash.com/photo-1541544181051-e46607bc22a4?w=400',
             price: 145.00,
             quantity: 1,
             size: '50ml',
@@ -31,7 +32,7 @@ class MockOrdersProvider {
           OrderTimeline(
             status: OrderStatus.outForDelivery,
             timestamp: now,
-            note: 'Out for delivery',
+            note: 'Đơn hàng đang được giao',
           ),
         ],
         subtotal: 145.00,
@@ -41,9 +42,9 @@ class MockOrdersProvider {
         shippingAddress: '123 Main St, New York, NY 10001',
         trackingNumber: 'TRK123456789',
         shippingProvider: 'GHN',
-        paymentMethod: 'Cash on Delivery',
+        paymentMethod: 'Thanh toán khi nhận hàng',
       ),
-      
+
       // ACTIVE ORDER 2 - Shipped
       Order(
         id: '2',
@@ -54,7 +55,8 @@ class MockOrdersProvider {
           OrderItem(
             productId: 'prod_2',
             productName: 'AI Essence No. 5',
-            productImage: 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=400',
+            productImage:
+                'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=400',
             price: 185.00,
             quantity: 1,
             size: '100ml',
@@ -64,7 +66,7 @@ class MockOrdersProvider {
           OrderTimeline(
             status: OrderStatus.shipped,
             timestamp: now.subtract(const Duration(days: 1)),
-            note: 'Package shipped',
+            note: 'Kiện hàng đã được gửi đi',
           ),
         ],
         subtotal: 185.00,
@@ -74,9 +76,9 @@ class MockOrdersProvider {
         shippingAddress: '456 Park Ave, Los Angeles, CA 90001',
         trackingNumber: 'TRK987654321',
         shippingProvider: 'GHTK',
-        paymentMethod: 'Cash on Delivery',
+        paymentMethod: 'Thanh toán khi nhận hàng',
       ),
-      
+
       // COMPLETED ORDER 1 - Delivered (NOT reviewed)
       Order(
         id: '3',
@@ -87,7 +89,8 @@ class MockOrdersProvider {
           OrderItem(
             productId: 'prod_3',
             productName: 'Rose Lumière',
-            productImage: 'https://images.unsplash.com/photo-1594035910387-fea47794261f?w=400',
+            productImage:
+                'https://images.unsplash.com/photo-1594035910387-fea47794261f?w=400',
             price: 165.00,
             quantity: 1,
             size: '75ml',
@@ -97,7 +100,7 @@ class MockOrdersProvider {
           OrderTimeline(
             status: OrderStatus.delivered,
             timestamp: now.subtract(const Duration(days: 3)),
-            note: 'Successfully delivered',
+            note: 'Đơn hàng đã được giao thành công',
           ),
         ],
         subtotal: 165.00,
@@ -107,9 +110,9 @@ class MockOrdersProvider {
         shippingAddress: '789 Ocean Blvd, Miami, FL 33101',
         trackingNumber: 'TRK111222333',
         shippingProvider: 'GHN',
-        paymentMethod: 'Credit Card',
+        paymentMethod: 'Thẻ ngân hàng',
       ),
-      
+
       // COMPLETED ORDER 2 - Delivered (REVIEWED)
       Order(
         id: '4',
@@ -120,7 +123,8 @@ class MockOrdersProvider {
           OrderItem(
             productId: 'prod_4',
             productName: 'Citrus Bloom',
-            productImage: 'https://images.unsplash.com/photo-1615634260167-c8cdede054de?w=400',
+            productImage:
+                'https://images.unsplash.com/photo-1615634260167-c8cdede054de?w=400',
             price: 135.00,
             quantity: 1,
             size: '50ml',
@@ -130,7 +134,7 @@ class MockOrdersProvider {
           OrderTimeline(
             status: OrderStatus.delivered,
             timestamp: now.subtract(const Duration(days: 8)),
-            note: 'Successfully delivered',
+            note: 'Đơn hàng đã được giao thành công',
           ),
         ],
         subtotal: 135.00,
@@ -142,7 +146,7 @@ class MockOrdersProvider {
         shippingProvider: 'GHTK',
         paymentMethod: 'PayPal',
       ),
-      
+
       // COMPLETED ORDER 3 - Cancelled
       Order(
         id: '5',
@@ -153,7 +157,8 @@ class MockOrdersProvider {
           OrderItem(
             productId: 'prod_5',
             productName: 'Floral Musk',
-            productImage: 'https://images.unsplash.com/photo-1587017539504-67cfbddac569?w=400',
+            productImage:
+                'https://images.unsplash.com/photo-1587017539504-67cfbddac569?w=400',
             price: 155.00,
             quantity: 1,
             size: '30ml',
@@ -163,7 +168,7 @@ class MockOrdersProvider {
           OrderTimeline(
             status: OrderStatus.cancelled,
             timestamp: now.subtract(const Duration(days: 14)),
-            note: 'Order cancelled by customer',
+            note: 'Đơn hàng đã bị hủy theo yêu cầu của khách',
           ),
         ],
         subtotal: 155.00,
@@ -173,29 +178,35 @@ class MockOrdersProvider {
         shippingAddress: '999 Sunset Blvd, Los Angeles, CA 90028',
         trackingNumber: null,
         shippingProvider: null,
-        paymentMethod: 'Credit Card',
+        paymentMethod: 'Thẻ ngân hàng',
       ),
     ];
   }
-  
+
   /// Simulate network delay for realistic UX
   static Future<List<Order>> getMockOrdersAsync() async {
     await Future.delayed(const Duration(milliseconds: 400));
     return getMockOrders();
   }
-  
+
   /// Get orders filtered by status
   static List<Order> getActiveOrders() {
-    return getMockOrders().where((order) => 
-      order.status == OrderStatus.shipped || 
-      order.status == OrderStatus.outForDelivery
-    ).toList();
+    return getMockOrders()
+        .where(
+          (order) =>
+              order.status == OrderStatus.shipped ||
+              order.status == OrderStatus.outForDelivery,
+        )
+        .toList();
   }
-  
+
   static List<Order> getCompletedOrders() {
-    return getMockOrders().where((order) => 
-      order.status == OrderStatus.delivered || 
-      order.status == OrderStatus.cancelled
-    ).toList();
+    return getMockOrders()
+        .where(
+          (order) =>
+              order.status == OrderStatus.delivered ||
+              order.status == OrderStatus.cancelled,
+        )
+        .toList();
   }
 }

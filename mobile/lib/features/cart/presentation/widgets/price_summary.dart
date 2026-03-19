@@ -5,21 +5,22 @@ import '../../providers/cart_provider.dart';
 class PriceSummary extends StatelessWidget {
   final CartState cartState;
 
-  const PriceSummary({
-    super.key,
-    required this.cartState,
-  });
+  const PriceSummary({super.key, required this.cartState});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        _buildPriceRow(context, 'Subtotal', '\$${cartState.subtotal.toStringAsFixed(2)}'),
+        _buildPriceRow(
+          context,
+          'Tạm tính',
+          '\$${cartState.subtotal.toStringAsFixed(2)}',
+        ),
         if (cartState.promoDiscount > 0) ...[
           const SizedBox(height: 12),
           _buildPriceRow(
             context,
-            'Discount',
+            'Giảm giá',
             '-\$${cartState.discount.toStringAsFixed(2)}',
             isDiscount: true,
           ),
@@ -31,8 +32,10 @@ class PriceSummary extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'TOTAL',
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(fontSize: 14),
+              'TỔNG CỘNG',
+              style: Theme.of(
+                context,
+              ).textTheme.labelLarge?.copyWith(fontSize: 14),
             ),
             Text(
               '\$${cartState.total.toStringAsFixed(2)}',
@@ -47,7 +50,12 @@ class PriceSummary extends StatelessWidget {
     );
   }
 
-  Widget _buildPriceRow(BuildContext context, String label, String value, {bool isDiscount = false}) {
+  Widget _buildPriceRow(
+    BuildContext context,
+    String label,
+    String value, {
+    bool isDiscount = false,
+  }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [

@@ -53,6 +53,8 @@ class ProductBottomCTA extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         '\$${price.toStringAsFixed(2)}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.montserrat(
                           fontSize: 22,
                           fontWeight: FontWeight.w700,
@@ -62,40 +64,55 @@ class ProductBottomCTA extends StatelessWidget {
                     ],
                   ),
                 ),
-                _AnimatedButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('$productName added to bag'),
-                        behavior: SnackBarBehavior.floating,
+              ],
+            ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(
+                  child: _AnimatedButton(
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Đã thêm $productName vào giỏ hàng'),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    },
+                    isPrimary: true,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        'Thêm vào giỏ',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    );
-                  },
-                  isPrimary: true,
-                  child: Text(
-                    'Add to Bag',
-                    style: GoogleFonts.montserrat(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
                 const SizedBox(width: 10),
-                _AnimatedButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Proceeding to checkout'),
-                        behavior: SnackBarBehavior.floating,
+                Expanded(
+                  child: _AnimatedButton(
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Đang chuyển sang thanh toán'),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    },
+                    isPrimary: false,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        'Mua ngay',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    );
-                  },
-                  isPrimary: false,
-                  child: Text(
-                    'Buy',
-                    style: GoogleFonts.montserrat(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
@@ -103,7 +120,7 @@ class ProductBottomCTA extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Text(
-              'Free returns within 14 days',
+              'Miễn phí đổi trả trong 14 ngày',
               style: GoogleFonts.montserrat(
                 fontSize: 10,
                 color: AppTheme.mutedSilver,
@@ -172,7 +189,7 @@ class _AnimatedButtonState extends State<_AnimatedButton>
                   backgroundColor: AppTheme.accentGold,
                   foregroundColor: Colors.white,
                   elevation: 0,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -187,7 +204,7 @@ class _AnimatedButtonState extends State<_AnimatedButton>
                 },
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppTheme.accentGold,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
                   side: const BorderSide(
                     color: AppTheme.accentGold,
                     width: 1.5,

@@ -17,10 +17,7 @@ void showClearCartModal(
 class ClearCartModal extends StatelessWidget {
   final VoidCallback onClearConfirmed;
 
-  const ClearCartModal({
-    super.key,
-    required this.onClearConfirmed,
-  });
+  const ClearCartModal({super.key, required this.onClearConfirmed});
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +41,7 @@ class ClearCartModal extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            
+
             // Icon
             Container(
               width: 64,
@@ -60,10 +57,10 @@ class ClearCartModal extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            
+
             // Title
             Text(
-              'Clear your cart?',
+              'Xóa toàn bộ giỏ hàng?',
               style: GoogleFonts.cormorantGaramond(
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
@@ -71,10 +68,10 @@ class ClearCartModal extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            
+
             // Subtitle
             Text(
-              'This will remove all items from your selection.',
+              'Thao tác này sẽ xóa tất cả sản phẩm bạn đã chọn.',
               textAlign: TextAlign.center,
               style: GoogleFonts.montserrat(
                 fontSize: 14,
@@ -83,7 +80,7 @@ class ClearCartModal extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 32),
-            
+
             // Keep Items Button
             SizedBox(
               width: double.infinity,
@@ -91,13 +88,16 @@ class ClearCartModal extends StatelessWidget {
               child: OutlinedButton(
                 onPressed: () => Navigator.pop(context),
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: AppTheme.accentGold, width: 1.5),
+                  side: const BorderSide(
+                    color: AppTheme.accentGold,
+                    width: 1.5,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(26),
                   ),
                 ),
                 child: Text(
-                  'Keep items',
+                  'Giữ lại sản phẩm',
                   style: GoogleFonts.montserrat(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -107,7 +107,7 @@ class ClearCartModal extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            
+
             // Clear All Button
             SizedBox(
               width: double.infinity,
@@ -120,7 +120,7 @@ class ClearCartModal extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  'Clear all',
+                  'Xóa tất cả',
                   style: GoogleFonts.montserrat(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,

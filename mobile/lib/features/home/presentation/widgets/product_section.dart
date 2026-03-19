@@ -32,13 +32,11 @@ class ProductSection extends StatelessWidget {
         productsAsync.when(
           loading: () => const SizedBox(
             height: 200,
-            child: Center(
-              child: CircularProgressIndicator(),
-            ),
+            child: Center(child: CircularProgressIndicator()),
           ),
           error: (error, stack) => const SizedBox(
             height: 200,
-            child: Center(child: Text('Failed to load')),
+            child: Center(child: Text('Không thể tải dữ liệu')),
           ),
           data: (products) => SizedBox(
             height: 300,
@@ -51,7 +49,7 @@ class ProductSection extends StatelessWidget {
                 return ProductCard(
                   product: product,
                   variant: ProductCardVariant.featured,
-                  badge: 'AI CURATED',
+                  badge: 'AI TUYỂN CHỌN',
                   onTap: () => context.push('/product/${product.id}'),
                 );
               },

@@ -1,5 +1,5 @@
 /// Centralized Route Definitions
-/// 
+///
 /// Single source of truth for all app routes.
 /// Eliminates hardcoded route strings and ensures consistency.
 class AppRoutes {
@@ -59,13 +59,15 @@ class AppRoutes {
   // ============================================
   // PROFILE & SETTINGS
   // ============================================
+  static const String shippingAddresses = '/shipping-addresses';
+  static const String profilePaymentMethods = '/profile-payment-methods';
   static const String rewards = '/rewards';
   static const String quiz = '/quiz';
 
   // ============================================
   // HELPER METHODS
   // ============================================
-  
+
   /// Build product detail route with ID
   static String productDetailWithId(String productId) {
     return '/product?id=$productId';
@@ -82,7 +84,10 @@ class AppRoutes {
   }
 
   /// Build reviews route with product ID
-  static String reviewsWithProductId(String productId) {
-    return '/reviews?productId=$productId';
+  static String reviewsWithProductId(String productId, {String? productName}) {
+    final encodedName = productName == null
+        ? ''
+        : '?name=${Uri.encodeComponent(productName)}';
+    return '/product/$productId/reviews$encodedName';
   }
 }
