@@ -13,9 +13,10 @@ class HomeScreen extends ConsumerWidget {
     final personalizedProducts = ref.watch(personalizedProductsProvider);
     final recommendedProducts = ref.watch(recommendedProductsProvider);
 
-    return Scaffold(
-      backgroundColor: AppTheme.ivoryBackground,
-      body: SafeArea(
+    return Container(
+      color: AppTheme.ivoryBackground,
+      child: SafeArea(
+        bottom: false,
         child: CustomScrollView(
           slivers: [
             // Header with Search

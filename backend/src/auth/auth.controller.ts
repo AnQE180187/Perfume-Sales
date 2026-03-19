@@ -63,14 +63,17 @@ export class AuthController {
   @Post('change-password')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
-  async changePassword(@Req() req: any, @Body() dto: ChangePasswordDto) {
-    return this.authService.changePassword(req.user.sub, dto);
+  async changePassword(
+    @Req() req: Request & { user: { userId: string } },
+    @Body() dto: ChangePasswordDto,
+  ) {
+    return this.authService.changePassword(req.user.userId, dto);
   }
 
   @Get('profile')
   @UseGuards(JwtAuthGuard)
-  async getProfile(@Req() req: any) {
-    return this.authService.getProfile(req.user.sub);
+  async getProfile(@Req() req: Request & { user: { userId: string } }) {
+    return this.authService.getProfile(req.user.userId);
   }
 
   // Google OAuth

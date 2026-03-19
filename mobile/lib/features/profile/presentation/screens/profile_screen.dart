@@ -10,13 +10,13 @@ import '../sections/olfactory_signature_section.dart';
 import '../sections/account_actions_section.dart';
 
 /// Profile Screen - Refactored
-/// 
+///
 /// Architecture:
 /// - Screen orchestrates layout and navigation only
 /// - Presentation logic delegated to sections
 /// - Reusable widgets for common patterns
 /// - State-driven UI from profileProvider
-/// 
+///
 /// Why this refactor improves maintainability:
 /// 1. Single Responsibility: Each section manages its own UI
 /// 2. Reusability: Widgets can be used across app
@@ -47,7 +47,7 @@ class ProfileScreen extends ConsumerWidget {
                   onBack: () => _handleBack(context),
                   onEdit: () => _handleEdit(context, ref),
                 ),
-                
+
                 // User identity
                 UserIdentitySection(profile: profile),
 
@@ -56,7 +56,8 @@ class ProfileScreen extends ConsumerWidget {
                   OlfactorySignatureSection(
                     olfactoryTags: profile.olfactoryTags,
                     onFindNextScent: () => _handleFindNextScent(context, ref),
-                    onViewScentProfile: () => _handleViewScentProfile(context, ref),
+                    onViewScentProfile: () =>
+                        _handleViewScentProfile(context, ref),
                   ),
 
                 // Account actions
@@ -69,9 +70,7 @@ class ProfileScreen extends ConsumerWidget {
                 ),
 
                 // Logout
-                LogoutSection(
-                  onLogout: () => _handleLogout(context, ref),
-                ),
+                LogoutSection(onLogout: () => _handleLogout(context, ref)),
 
                 // Bottom spacing for nav bar
                 const SizedBox(height: 100),
@@ -105,9 +104,9 @@ class ProfileScreen extends ConsumerWidget {
 
   void _handleEdit(BuildContext context, WidgetRef ref) {
     // TODO: Navigate to edit profile screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Edit profile coming soon')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Edit profile coming soon')));
   }
 
   void _handleFindNextScent(BuildContext context, WidgetRef ref) {
@@ -117,9 +116,9 @@ class ProfileScreen extends ConsumerWidget {
 
   void _handleViewScentProfile(BuildContext context, WidgetRef ref) {
     // TODO: Navigate to full scent profile screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Scent profile coming soon')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Scent profile coming soon')));
   }
 
   void _handleMyOrders(BuildContext context) {
@@ -143,9 +142,9 @@ class ProfileScreen extends ConsumerWidget {
 
   void _handleAiPreferences(BuildContext context) {
     // TODO: Navigate to AI preferences screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('AI preferences coming soon')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('AI preferences coming soon')));
   }
 
   Future<void> _handleLogout(BuildContext context, WidgetRef ref) async {
@@ -185,11 +184,7 @@ class ProfileScreen extends ConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.person_outline,
-            size: 64,
-            color: AppTheme.mutedSilver,
-          ),
+          Icon(Icons.person_outline, size: 64, color: AppTheme.mutedSilver),
           const SizedBox(height: 16),
           Text(
             'Please log in to view your profile',
@@ -219,11 +214,7 @@ class ProfileScreen extends ConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.error_outline,
-            size: 64,
-            color: AppTheme.mutedSilver,
-          ),
+          Icon(Icons.error_outline, size: 64, color: AppTheme.mutedSilver),
           const SizedBox(height: 16),
           Text('Error loading profile: $error'),
         ],

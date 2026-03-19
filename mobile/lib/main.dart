@@ -13,7 +13,15 @@ import 'core/config/app_config.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
+  // Load environment variables before any provider/widget can touch EnvConfig.
+  try {
+    await dotenv.load(fileName: '.env');
+  } catch (_) {
+    // Fallback for current project asset layout.
+    await dotenv.load(fileName: 'assets/.env');
+  }
+
   final prefs = await SharedPreferences.getInstance();
 
   // ============================================
@@ -23,27 +31,19 @@ Future<void> main() async {
   // - Không cần Supabase connection
   // - Sử dụng mock user data
   // - Cho phép phát triển UI mà không cần backend
-  
-  if (!AppConfig.useMockAuth) {
-    // PRODUCTION MODE - Real Supabase Authentication
-    // 1. Load biến môi trường
-    await dotenv.load(fileName: "assets/.env");
 
-    // 2. Khởi tạo Supabase
+  if (!AppConfig.useMockAuth) {
+    // Optional: keep Supabase bootstrap for features still relying on it.
+    // Dotenv is already loaded above.
     await Supabase.initialize(
       url: dotenv.env['SUPABASE_URL']!,
       anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
     );
-  } else {
-    print('🚀 Running in DEVELOPMENT MODE with Mock Authentication');
-    print('📝 Set AppConfig.useMockAuth = false to use real Supabase');
   }
 
   runApp(
     ProviderScope(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(prefs),
-      ],
+      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
       child: const MyApp(),
     ),
   );
@@ -61,12 +61,12 @@ class MyApp extends ConsumerWidget {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'Lumina',
-      
+
       // Theme
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
-      
+
       // Localization
       locale: locale,
       localizationsDelegates: const [
@@ -75,11 +75,8 @@ class MyApp extends ConsumerWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: const [
-        Locale('en'),
-        Locale('vi'),
-      ],
-      
+      supportedLocales: const [Locale('en'), Locale('vi')],
+
       routerConfig: router,
     );
   }

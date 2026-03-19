@@ -1,4 +1,3 @@
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/login_screen.dart';
@@ -19,14 +18,15 @@ import '../../features/product/presentation/reviews_screen.dart';
 import '../widgets/main_shell.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authStateProvider);
+  final isLoggedIn = ref.watch(authStateProvider);
   final hasSeenOnboarding = ref.watch(onboardingProvider);
 
   return GoRouter(
     initialLocation: '/',
     redirect: (context, state) {
-      final isLoggedIn = authState.value?.session != null;
-      final isAuthRoute = state.matchedLocation == '/login' || state.matchedLocation == '/register';
+      final isAuthRoute =
+          state.matchedLocation == '/login' ||
+          state.matchedLocation == '/register';
       final isOnboardingRoute = state.matchedLocation == '/onboarding';
 
       // 1. Force Onboarding if not seen
@@ -53,30 +53,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      GoRoute(
-        path: '/',
-        builder: (context, state) => const MainShell(),
-      ),
+      GoRoute(path: '/', builder: (context, state) => const MainShell()),
       GoRoute(
         path: '/onboarding',
         builder: (context, state) => const OnboardingScreen(),
       ),
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginScreen(),
-      ),
+      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterScreen(),
       ),
-      GoRoute(
-        path: '/home',
-        builder: (context, state) => const MainShell(),
-      ),
-      GoRoute(
-        path: '/cart',
-        builder: (context, state) => const CartScreen(),
-      ),
+      GoRoute(path: '/home', builder: (context, state) => const MainShell()),
+      GoRoute(path: '/cart', builder: (context, state) => const CartScreen()),
       GoRoute(
         path: '/orders',
         builder: (context, state) => const OrdersScreen(),
@@ -135,10 +123,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final productId = state.pathParameters['id']!;
           final productName = state.uri.queryParameters['name'] ?? 'Product';
-          return ReviewsScreen(
-            productId: productId,
-            productName: productName,
-          );
+          return ReviewsScreen(productId: productId, productName: productName);
         },
       ),
     ],
