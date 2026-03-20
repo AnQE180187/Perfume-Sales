@@ -34,13 +34,16 @@ class PaymentMethodScreen extends ConsumerWidget {
         centerTitle: true,
         title: Text(
           l10n.selectPaymentMethod,
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            letterSpacing: 6,
-            fontSize: 12,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.labelLarge?.copyWith(letterSpacing: 6, fontSize: 12),
         ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new, size: 18, color: Theme.of(context).primaryColor),
+          icon: Icon(
+            Icons.arrow_back_ios_new,
+            size: 18,
+            color: Theme.of(context).primaryColor,
+          ),
           onPressed: () => context.pop(),
         ),
       ),
@@ -63,26 +66,37 @@ class PaymentMethodScreen extends ConsumerWidget {
               children: [
                 Text(
                   l10n.orderNumber.toUpperCase(),
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 10),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontSize: 10),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   orderId,
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(fontSize: 12),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.labelLarge?.copyWith(fontSize: 12),
                 ),
                 const SizedBox(height: 16),
-                Divider(color: Theme.of(context).colorScheme.outline, thickness: 0.5),
+                Divider(
+                  color: Theme.of(context).colorScheme.outline,
+                  thickness: 0.5,
+                ),
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       l10n.total.toUpperCase(),
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 12),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(fontSize: 12),
                     ),
                     Text(
                       '\$${amount.toStringAsFixed(2)}',
-                      style: Theme.of(context).textTheme.displayMedium?.copyWith(fontSize: 24),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.displayMedium?.copyWith(fontSize: 24),
                     ),
                   ],
                 ),
@@ -103,7 +117,9 @@ class PaymentMethodScreen extends ConsumerWidget {
                   method: method,
                   isSelected: isSelected,
                   onTap: () {
-                    ref.read(selectedPaymentMethodProvider.notifier).select(method);
+                    ref
+                        .read(selectedPaymentMethodProvider.notifier)
+                        .select(method);
                   },
                 );
               },
@@ -131,7 +147,11 @@ class PaymentMethodScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _processPayment(BuildContext context, WidgetRef ref, AppLocalizations l10n) async {
+  Future<void> _processPayment(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+  ) async {
     // Show loading
     showDialog(
       context: context,
@@ -162,12 +182,14 @@ class PaymentMethodScreen extends ConsumerWidget {
     );
 
     try {
-      final result = await ref.read(paymentActionsProvider).processPayment(
-        orderId: orderId,
-        amount: amount,
-        orderInfo: orderInfo,
-        shippingAddress: shippingAddress,
-      );
+      final result = await ref
+          .read(paymentActionsProvider)
+          .processPayment(
+            orderId: orderId,
+            amount: amount,
+            orderInfo: orderInfo,
+            shippingAddress: shippingAddress,
+          );
 
       if (!context.mounted) return;
       Navigator.pop(context); // Close loading
@@ -176,31 +198,37 @@ class PaymentMethodScreen extends ConsumerWidget {
         if (result.paymentUrl != null) {
           // TODO: Open payment URL in webview or external browser
           // For now, show success
-          context.push('/payment/result', extra: {
-            'success': true,
-            'message': result.message,
-            'orderId': orderId,
-          });
+          context.push(
+            '/payment/result',
+            extra: {
+              'success': true,
+              'message': result.message,
+              'orderId': orderId,
+            },
+          );
         } else {
           // COD success
-          context.push('/payment/result', extra: {
-            'success': true,
-            'message': result.message,
-            'orderId': orderId,
-          });
+          context.push(
+            '/payment/result',
+            extra: {
+              'success': true,
+              'message': result.message,
+              'orderId': orderId,
+            },
+          );
         }
       } else {
         // Show error
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result.message)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(result.message)));
       }
     } catch (e) {
       if (!context.mounted) return;
       Navigator.pop(context); // Close loading
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${l10n.paymentFailed}: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('${l10n.paymentFailed}: $e')));
     }
   }
 }
@@ -253,9 +281,7 @@ class _PaymentMethodCard extends StatelessWidget {
                       width: 0.5,
                     ),
                   ),
-                  child: Center(
-                    child: _getPaymentIcon(method.type),
-                  ),
+                  child: Center(child: _getPaymentIcon(method.type)),
                 ),
                 const SizedBox(width: 16),
 
@@ -274,7 +300,9 @@ class _PaymentMethodCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         _getPaymentDescription(l10n, method.type),
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 11),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodyMedium?.copyWith(fontSize: 11),
                       ),
                     ],
                   ),
@@ -351,11 +379,11 @@ class _PaymentMethodCard extends StatelessWidget {
   String _getPaymentDescription(AppLocalizations l10n, PaymentMethodType type) {
     switch (type) {
       case PaymentMethodType.vnpay:
-        return 'Pay with VNPay e-wallet';
+        return 'Thanh toán bằng ví điện tử VNPay';
       case PaymentMethodType.momo:
-        return 'Pay with Momo e-wallet';
+        return 'Thanh toán bằng ví điện tử MoMo';
       case PaymentMethodType.cod:
-        return 'Pay when you receive';
+        return 'Thanh toán khi nhận hàng';
     }
   }
 }

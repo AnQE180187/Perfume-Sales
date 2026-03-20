@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../auth/providers/auth_provider.dart';
 import '../../providers/profile_provider.dart';
@@ -10,13 +11,13 @@ import '../sections/olfactory_signature_section.dart';
 import '../sections/account_actions_section.dart';
 
 /// Profile Screen - Refactored
-/// 
+///
 /// Architecture:
 /// - Screen orchestrates layout and navigation only
 /// - Presentation logic delegated to sections
 /// - Reusable widgets for common patterns
 /// - State-driven UI from profileProvider
-/// 
+///
 /// Why this refactor improves maintainability:
 /// 1. Single Responsibility: Each section manages its own UI
 /// 2. Reusability: Widgets can be used across app
@@ -47,7 +48,7 @@ class ProfileScreen extends ConsumerWidget {
                   onBack: () => _handleBack(context),
                   onEdit: () => _handleEdit(context, ref),
                 ),
-                
+
                 // User identity
                 UserIdentitySection(profile: profile),
 
@@ -56,7 +57,8 @@ class ProfileScreen extends ConsumerWidget {
                   OlfactorySignatureSection(
                     olfactoryTags: profile.olfactoryTags,
                     onFindNextScent: () => _handleFindNextScent(context, ref),
-                    onViewScentProfile: () => _handleViewScentProfile(context, ref),
+                    onViewScentProfile: () =>
+                        _handleViewScentProfile(context, ref),
                   ),
 
                 // Account actions
@@ -65,13 +67,11 @@ class ProfileScreen extends ConsumerWidget {
                   onShippingAddresses: () => _handleShippingAddresses(context),
                   onPaymentMethods: () => _handlePaymentMethods(context),
                   onAiPreferences: () => _handleAiPreferences(context),
-                  activeShipmentsText: '2 active shipments',
+                  activeShipmentsText: '2 đơn đang giao',
                 ),
 
                 // Logout
-                LogoutSection(
-                  onLogout: () => _handleLogout(context, ref),
-                ),
+                LogoutSection(onLogout: () => _handleLogout(context, ref)),
 
                 // Bottom spacing for nav bar
                 const SizedBox(height: 100),
@@ -106,46 +106,40 @@ class ProfileScreen extends ConsumerWidget {
   void _handleEdit(BuildContext context, WidgetRef ref) {
     // TODO: Navigate to edit profile screen
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Edit profile coming soon')),
+      const SnackBar(content: Text('Tính năng chỉnh sửa hồ sơ sẽ sớm có mặt')),
     );
   }
 
   void _handleFindNextScent(BuildContext context, WidgetRef ref) {
     // Navigate to AI consultation using GoRouter
-    context.push('/consultation');
+    context.push(AppRoutes.aiConsultation);
   }
 
   void _handleViewScentProfile(BuildContext context, WidgetRef ref) {
     // TODO: Navigate to full scent profile screen
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Scent profile coming soon')),
+      const SnackBar(content: Text('Hồ sơ mùi hương chi tiết sẽ sớm có mặt')),
     );
   }
 
   void _handleMyOrders(BuildContext context) {
     // Navigate to orders using GoRouter
-    context.push('/orders');
+    context.push(AppRoutes.orders);
   }
 
   void _handleShippingAddresses(BuildContext context) {
-    // TODO: Navigate to shipping addresses screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Shipping addresses coming soon')),
-    );
+    context.push(AppRoutes.shippingAddresses);
   }
 
   void _handlePaymentMethods(BuildContext context) {
-    // TODO: Navigate to payment methods screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Payment methods coming soon')),
-    );
+    context.push(AppRoutes.profilePaymentMethods);
   }
 
   void _handleAiPreferences(BuildContext context) {
     // TODO: Navigate to AI preferences screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('AI preferences coming soon')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Tùy chọn AI sẽ sớm có mặt')));
   }
 
   Future<void> _handleLogout(BuildContext context, WidgetRef ref) async {
@@ -153,16 +147,16 @@ class ProfileScreen extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Log Out'),
-        content: const Text('Are you sure you want to log out?'),
+        title: const Text('Đăng xuất'),
+        content: const Text('Bạn có chắc muốn đăng xuất không?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: const Text('Hủy'),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Log Out'),
+            child: const Text('Đăng xuất'),
           ),
         ],
       ),
@@ -185,20 +179,16 @@ class ProfileScreen extends ConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.person_outline,
-            size: 64,
-            color: AppTheme.mutedSilver,
-          ),
+          Icon(Icons.person_outline, size: 64, color: AppTheme.mutedSilver),
           const SizedBox(height: 16),
           Text(
-            'Please log in to view your profile',
+            'Vui lòng đăng nhập để xem hồ sơ của bạn',
             style: Theme.of(context).textTheme.bodyLarge,
           ),
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: () => context.go('/login'),
-            child: const Text('Log In'),
+            child: const Text('Đăng nhập'),
           ),
         ],
       ),
@@ -219,13 +209,9 @@ class ProfileScreen extends ConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.error_outline,
-            size: 64,
-            color: AppTheme.mutedSilver,
-          ),
+          Icon(Icons.error_outline, size: 64, color: AppTheme.mutedSilver),
           const SizedBox(height: 16),
-          Text('Error loading profile: $error'),
+          Text('Lỗi khi tải hồ sơ: $error'),
         ],
       ),
     );

@@ -19,7 +19,8 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
   final List<ChatMessage> _messages = [
     ChatMessage(
       isAI: true,
-      text: 'Good evening. I\'m your personal scent sommelier. How may I assist you in discovering your signature fragrance today?',
+      text:
+          'Chào buổi tối. Tôi là chuyên gia mùi hương AI đồng hành cùng bạn. Hôm nay tôi có thể giúp bạn tìm ra mùi hương đặc trưng như thế nào?',
       timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
     ),
   ];
@@ -32,31 +33,37 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
 
   void _sendMessage() {
     if (_messageController.text.trim().isEmpty) return;
-    
+
     setState(() {
-      _messages.add(ChatMessage(
-        isAI: false,
-        text: _messageController.text,
-        timestamp: DateTime.now(),
-      ));
+      _messages.add(
+        ChatMessage(
+          isAI: false,
+          text: _messageController.text,
+          timestamp: DateTime.now(),
+        ),
+      );
       _messageController.clear();
-      
+
       // Simulate AI response
       Future.delayed(const Duration(seconds: 1), () {
         if (mounted) {
           setState(() {
-            _messages.add(ChatMessage(
-              isAI: true,
-              text: 'An excellent choice. Woody notes provide a sophisticated depth perfect for the evening.',
-              timestamp: DateTime.now(),
-              productRecommendation: ProductRecommendation(
-                id: '7',
-                name: 'Oud Wood Intense',
-                brand: 'Tom Ford',
-                price: 295.00,
-                imageUrl: 'https://images.unsplash.com/photo-1619994737967-d3e5e9478c85?w=800',
+            _messages.add(
+              ChatMessage(
+                isAI: true,
+                text:
+                    'Lựa chọn rất tinh tế. Các nốt hương gỗ mang lại chiều sâu sang trọng và đặc biệt phù hợp cho buổi tối.',
+                timestamp: DateTime.now(),
+                productRecommendation: ProductRecommendation(
+                  id: '7',
+                  name: 'Oud Wood Intense',
+                  brand: 'Tom Ford',
+                  price: 295.00,
+                  imageUrl:
+                      'https://images.unsplash.com/photo-1619994737967-d3e5e9478c85?w=800',
+                ),
               ),
-            ));
+            );
           });
         }
       });
@@ -103,7 +110,7 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Scent Sommelier',
+                        'Chuyên gia mùi hương',
                         style: GoogleFonts.playfairDisplay(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
@@ -122,7 +129,7 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            'ONLINE',
+                            'ĐANG HOẠT ĐỘNG',
                             style: GoogleFonts.montserrat(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
@@ -165,19 +172,19 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
               child: Row(
                 children: [
                   SuggestionChip(
-                    label: 'Surprise me',
+                    label: 'Gợi ý bất ngờ',
                     icon: Icons.casino_outlined,
                     onTap: () {},
                   ),
                   const SizedBox(width: 8),
                   SuggestionChip(
-                    label: 'Under \$150',
+                    label: 'Dưới \$150',
                     icon: Icons.attach_money,
                     onTap: () {},
                   ),
                   const SizedBox(width: 8),
                   SuggestionChip(
-                    label: 'Evening scents',
+                    label: 'Hương cho buổi tối',
                     icon: Icons.nightlight_outlined,
                     onTap: () {},
                   ),
@@ -200,7 +207,10 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
                 children: [
                   Expanded(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: AppTheme.ivoryBackground,
                         borderRadius: BorderRadius.circular(24),
@@ -218,7 +228,7 @@ class _ConsultationScreenState extends State<ConsultationScreen> {
                             child: TextField(
                               controller: _messageController,
                               decoration: InputDecoration(
-                                hintText: 'Describe your mood…',
+                                hintText: 'Mô tả tâm trạng của bạn...',
                                 border: InputBorder.none,
                                 hintStyle: GoogleFonts.montserrat(
                                   fontSize: 14,

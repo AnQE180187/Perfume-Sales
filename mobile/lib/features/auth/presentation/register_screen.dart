@@ -1,10 +1,11 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:perfume_gpt_app/l10n/app_localizations.dart';
+
 import '../providers/auth_provider.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -18,17 +19,37 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _fullNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _phoneController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+
   bool _showPassword = false;
+  bool _showConfirmPassword = false;
   bool _acceptedTerms = false;
+
+  static const _bg = Color(0xFF070B14);
+  static const _panel = Color(0xFF121723);
+  static const _field = Color(0xFF1A202D);
+  static const _line = Color(0xFF2B3242);
+  static const _gold = Color(0xFFD0AE66);
+  static const _muted = Color(0xFF9CA5B9);
 
   @override
   void dispose() {
     _fullNameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
-    _phoneController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  void _showSocialNotSupported() {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Đăng nhập mạng xã hội hiện chưa được hỗ trợ với API hiện tại.',
+        ),
+      ),
+    );
   }
 
   Future<void> _handleRegister() async {
@@ -36,12 +57,19 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final fullName = _fullNameController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
-    final phone = _phoneController.text.trim();
+    final confirmPassword = _confirmPasswordController.text.trim();
 
     if (fullName.isEmpty || email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(l10n.pleaseFillFields)));
+      return;
+    }
+
+    if (password != confirmPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Mật khẩu xác nhận không khớp.')),
+      );
       return;
     }
 
@@ -55,13 +83,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     try {
       await ref
           .read(authControllerProvider.notifier)
-          .register(
-            email: email,
-            password: password,
-            fullName: fullName,
-            phone: phone.isNotEmpty ? phone : null,
-          );
-
+          .register(email: email, password: password, fullName: fullName);
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -103,7 +125,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
                           // Title
                           Text(
-                            'Create Your\nAccount',
+                            'Tạo\nTài khoản',
                             textAlign: TextAlign.center,
                             style: GoogleFonts.playfairDisplay(
                               fontSize: 36,
@@ -117,7 +139,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
                           // Subtitle
                           Text(
-                            'Join our exclusive scent circle',
+                            'Gia nhập cộng đồng mùi hương tuyển chọn',
                             textAlign: TextAlign.center,
                             style: GoogleFonts.montserrat(
                               fontSize: 14,
@@ -153,13 +175,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
                           const SizedBox(height: 16),
 
-                          // Phone Input (Optional)
-                          _buildInputField(
-                            controller: _phoneController,
-                            hint: l10n.phoneOptional,
-                            icon: Icons.phone_android_outlined,
-                            keyboardType: TextInputType.phone,
-                          ),
+                          // Confirm Password Input
+                          _buildConfirmPasswordField(),
 
                           const SizedBox(height: 24),
 
@@ -194,7 +211,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                       ),
                                     )
                                   : Text(
-                                      'Create Account',
+                                      'Tạo tài khoản',
                                       style: GoogleFonts.montserrat(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
@@ -220,7 +237,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                   horizontal: 16,
                                 ),
                                 child: Text(
-                                  'OR CONTINUE WITH',
+                                  'HOẶC TIẾP TỤC VỚI',
                                   style: GoogleFonts.montserrat(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w400,
@@ -246,16 +263,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             children: [
                               _buildSocialButton(
                                 icon: FontAwesomeIcons.google,
-                                onPressed: () => ref
-                                    .read(authControllerProvider.notifier)
-                                    .signInWithGoogle(),
+                                onPressed: _showSocialNotSupported,
                               ),
                               const SizedBox(width: 20),
                               _buildSocialButton(
                                 icon: FontAwesomeIcons.facebookF,
-                                onPressed: () => ref
-                                    .read(authControllerProvider.notifier)
-                                    .signInWithFacebook(),
+                                onPressed: _showSocialNotSupported,
                               ),
                             ],
                           ),
@@ -272,11 +285,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                 color: const Color(0xFF999999),
                               ),
                               children: [
-                                const TextSpan(
-                                  text: 'Already have an account? ',
-                                ),
+                                const TextSpan(text: 'Đã có tài khoản? '),
                                 TextSpan(
-                                  text: 'Sign In',
+                                  text: 'Đăng nhập',
                                   style: GoogleFonts.montserrat(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w500,
@@ -404,7 +415,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         color: const Color(0xFF1A1A1A),
       ),
       decoration: InputDecoration(
-        hintText: 'Password',
+        hintText: 'Mật khẩu',
         hintStyle: GoogleFonts.montserrat(
           fontSize: 14,
           fontWeight: FontWeight.w400,
@@ -425,6 +436,65 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             padding: const EdgeInsets.only(right: 12),
             child: Icon(
               _showPassword
+                  ? Icons.visibility_off_outlined
+                  : Icons.visibility_outlined,
+              color: const Color(0xFFAAAAAA),
+              size: 20,
+            ),
+          ),
+        ),
+        suffixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 16),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(28),
+          borderSide: const BorderSide(color: Color(0xFFE8D5B7), width: 1),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(28),
+          borderSide: const BorderSide(color: Color(0xFFE8D5B7), width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(28),
+          borderSide: const BorderSide(color: Color(0xFFD4AF37), width: 1.5),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildConfirmPasswordField() {
+    return TextField(
+      controller: _confirmPasswordController,
+      obscureText: !_showConfirmPassword,
+      style: GoogleFonts.montserrat(
+        fontSize: 14,
+        fontWeight: FontWeight.w400,
+        color: const Color(0xFF1A1A1A),
+      ),
+      decoration: InputDecoration(
+        hintText: 'Xác nhận mật khẩu',
+        hintStyle: GoogleFonts.montserrat(
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+          color: const Color(0xFFCCCCCC),
+        ),
+        prefixIcon: Padding(
+          padding: const EdgeInsets.only(left: 16, right: 12),
+          child: Icon(
+            Icons.lock_outline,
+            color: const Color(0xFFD4AF37),
+            size: 20,
+          ),
+        ),
+        prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+        suffixIcon: GestureDetector(
+          onTap: () =>
+              setState(() => _showConfirmPassword = !_showConfirmPassword),
+          child: Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: Icon(
+              _showConfirmPassword
                   ? Icons.visibility_off_outlined
                   : Icons.visibility_outlined,
               color: const Color(0xFFAAAAAA),
@@ -481,9 +551,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   color: const Color(0xFF666666),
                 ),
                 children: [
-                  const TextSpan(text: 'I agree to the '),
+                  const TextSpan(text: 'Tôi đồng ý với '),
                   TextSpan(
-                    text: 'Terms of Service',
+                    text: 'Điều khoản dịch vụ',
                     style: GoogleFonts.montserrat(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
@@ -491,9 +561,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       decoration: TextDecoration.underline,
                     ),
                   ),
-                  const TextSpan(text: ' and '),
+                  const TextSpan(text: ' và '),
                   TextSpan(
-                    text: 'Privacy Policy',
+                    text: 'Chính sách bảo mật',
                     style: GoogleFonts.montserrat(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,

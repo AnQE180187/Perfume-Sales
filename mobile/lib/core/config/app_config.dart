@@ -1,24 +1,39 @@
 /// App Configuration
-/// 
-/// Chứa các cấu hình môi trường và feature flags
+///
+/// Chứa các cấu hình môi trường và feature flags.
+/// Gộp cả dev-bypass lẫn mock-data flags.
 class AppConfig {
-  /// Development Mode
-  /// Set = true để sử dụng mock data và bypass authentication
+  // ── Development Mode ──────────────────────────────────────────────
+  /// Master flag – bật để sử dụng mock data và bypass authentication
   static const bool isDevelopmentMode = true;
 
-  /// Mock Authentication
-  /// Set = true để sử dụng mock auth provider thay vì Supabase Auth
-  /// Hữu ích khi phát triển UI mà chưa setup Supabase
+  // ── Authentication ────────────────────────────────────────────────
+  /// Sử dụng mock auth provider thay vì Supabase Auth
   static const bool useMockAuth = true;
 
-  /// Mock Orders
-  /// Set = true để sử dụng mock order data thay vì Supabase
-  /// UI sẽ hoạt động bình thường với fake orders
+  /// Bypass hoàn toàn auth guard trong router
+  /// (cho phép vào mọi màn mà không cần đăng nhập)
+  static const bool bypassAuth = true;
+
+  // ── Onboarding ────────────────────────────────────────────────────
+  /// Bỏ qua màn onboarding khi phát triển UI
+  static const bool skipOnboarding = true;
+
+  // ── Mock Data ─────────────────────────────────────────────────────
+  /// Sử dụng mock order data thay vì Supabase
   static const bool useMockOrders = true;
 
-  /// API Configuration
-  static const bool useRealAPI = false;
+  /// Mock user cho development (khi bypassAuth / useMockAuth = true)
+  static const mockUser = {
+    'id': 'dev-user-123',
+    'email': 'dev@example.com',
+    'fullName': 'Developer User',
+    'role': 'CUSTOMER',
+  };
 
-  /// Logging
+  // ── API ───────────────────────────────────────────────────────────
+  static const bool useRealAPI = true;
+
+  // ── Logging ───────────────────────────────────────────────────────
   static const bool enableDebugLogs = true;
 }

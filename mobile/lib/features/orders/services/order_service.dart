@@ -8,7 +8,7 @@ class OrderService {
   Future<List<Order>> getUserOrders() async {
     try {
       final userId = _supabase.auth.currentUser?.id;
-      if (userId == null) throw Exception('User not authenticated');
+      if (userId == null) throw Exception('Người dùng chưa đăng nhập');
 
       final response = await _supabase
           .from('orders')
@@ -29,7 +29,7 @@ class OrderService {
 
       return (response as List).map((json) => _parseOrder(json)).toList();
     } catch (e) {
-      throw Exception('Failed to load orders: $e');
+      throw Exception('Không thể tải danh sách đơn hàng: $e');
     }
   }
 
@@ -55,7 +55,7 @@ class OrderService {
 
       return _parseOrder(response);
     } catch (e) {
-      throw Exception('Failed to load order: $e');
+      throw Exception('Không thể tải chi tiết đơn hàng: $e');
     }
   }
 
@@ -72,10 +72,10 @@ class OrderService {
         'order_id': orderId,
         'status': 'cancelled',
         'timestamp': DateTime.now().toIso8601String(),
-        'note': 'Order cancelled by customer',
+        'note': 'Đơn hàng đã bị hủy theo yêu cầu của khách',
       });
     } catch (e) {
-      throw Exception('Failed to cancel order: $e');
+      throw Exception('Không thể hủy đơn hàng: $e');
     }
   }
 
@@ -83,7 +83,7 @@ class OrderService {
   Future<String> reorder(String orderId) async {
     try {
       final order = await getOrderById(orderId);
-      
+
       // Create new order with same items
       final newOrderResponse = await _supabase
           .from('orders')
@@ -115,26 +115,31 @@ class OrderService {
 
       return newOrderId;
     } catch (e) {
-      throw Exception('Failed to reorder: $e');
+      throw Exception('Không thể đặt lại đơn hàng: $e');
     }
   }
 
   // Track shipment (GHN/GHTK integration)
-  Future<Map<String, dynamic>> trackShipment(String trackingNumber, String provider) async {
+  Future<Map<String, dynamic>> trackShipment(
+    String trackingNumber,
+    String provider,
+  ) async {
     try {
       // TODO: Integrate with actual GHN/GHTK API
       // For now, return mock data
       await Future.delayed(const Duration(seconds: 1));
-      
+
       return {
         'tracking_number': trackingNumber,
         'provider': provider,
         'status': 'in_transit',
-        'estimated_delivery': DateTime.now().add(const Duration(days: 2)).toIso8601String(),
-        'current_location': 'Distribution Center - Ho Chi Minh City',
+        'estimated_delivery': DateTime.now()
+            .add(const Duration(days: 2))
+            .toIso8601String(),
+        'current_location': 'Trung tâm phân phối - TP. Ho Chi Minh',
       };
     } catch (e) {
-      throw Exception('Failed to track shipment: $e');
+      throw Exception('Không thể theo dõi vận đơn: $e');
     }
   }
 

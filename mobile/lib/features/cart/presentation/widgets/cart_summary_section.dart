@@ -61,7 +61,7 @@ class CartSummarySection extends StatelessWidget {
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
-                          'Apply voucher',
+                          'Áp dụng ưu đãi',
                           style: GoogleFonts.montserrat(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
@@ -89,7 +89,7 @@ class CartSummarySection extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Total',
+                        'Tổng cộng',
                         style: GoogleFonts.montserrat(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
@@ -121,7 +121,7 @@ class CartSummarySection extends StatelessWidget {
               // 🟡 CTA
               Builder(
                 builder: (context) => LuxuryButton(
-                  text: 'Proceed to Checkout',
+                  text: 'Tiến hành thanh toán',
                   trailingIcon: Icons.arrow_forward,
                   height: 42,
                   onPressed: selectedItems.isEmpty

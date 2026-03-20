@@ -24,7 +24,7 @@ class OrderSummarySection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Order Summary',
+            'Tóm tắt đơn hàng',
             style: GoogleFonts.playfairDisplay(
               fontSize: 18,
               fontWeight: FontWeight.w600,
@@ -33,7 +33,7 @@ class OrderSummarySection extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            'FINAL REVIEW',
+            'KIỂM TRA LẦN CUỐI',
             style: GoogleFonts.montserrat(
               fontSize: 9,
               fontWeight: FontWeight.w600,
@@ -42,16 +42,18 @@ class OrderSummarySection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          ...visibleItems.map((item) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: _OrderItemRow(item: item),
-              )),
+          ...visibleItems.map(
+            (item) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _OrderItemRow(item: item),
+            ),
+          ),
           if (remainingCount > 0)
             Center(
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 child: Text(
-                  '+ $remainingCount more item${remainingCount > 1 ? 's' : ''}',
+                  '+ $remainingCount sản phẩm khác',
                   style: GoogleFonts.montserrat(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
@@ -135,7 +137,7 @@ class _OrderItemRow extends StatelessWidget {
             ),
             const SizedBox(height: 1),
             Text(
-              'Qty: ${item.quantity}',
+              'SL: ${item.quantity}',
               style: GoogleFonts.montserrat(
                 fontSize: 10,
                 fontWeight: FontWeight.w400,

@@ -20,7 +20,7 @@ class WishlistScreen extends ConsumerWidget {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          'Wishlist',
+          'Yêu thích',
           style: GoogleFonts.playfairDisplay(
             fontSize: 20,
             fontWeight: FontWeight.w600,
@@ -73,7 +73,7 @@ class WishlistScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              'Your wishlist is waiting\nfor a scent you love.',
+              'Danh sách yêu thích đang chờ\nmùi hương bạn thật sự yêu.',
               textAlign: TextAlign.center,
               style: GoogleFonts.playfairDisplay(
                 fontSize: 20,
@@ -86,7 +86,10 @@ class WishlistScreen extends ConsumerWidget {
             OutlinedButton(
               onPressed: () => context.go('/explore'),
               style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 14,
+                ),
                 side: BorderSide(
                   color: AppTheme.accentGold.withValues(alpha: 0.5),
                   width: 1,
@@ -96,7 +99,7 @@ class WishlistScreen extends ConsumerWidget {
                 ),
               ),
               child: Text(
-                'Explore fragrances',
+                'Khám phá nước hoa',
                 style: GoogleFonts.montserrat(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,

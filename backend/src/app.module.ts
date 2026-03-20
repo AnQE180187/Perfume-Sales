@@ -13,9 +13,15 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { PaymentsModule } from './payments/payments.module';
 import { PromotionsModule } from './promotions/promotions.module';
 import { LoyaltyModule } from './loyalty/loyalty.module';
+
+import { MailModule } from './mail/mail.module';
 import { StaffPosModule } from './staff-pos/staff-pos.module';
 import { StaffInventoryModule } from './staff-inventory/staff-inventory.module';
 import { StaffOrdersModule } from './staff-orders/staff-orders.module';
+import { StoresModule } from './stores/stores.module';
+import { ChatModule } from './chat/chat.module';
+import { ReviewsModule } from './reviews/reviews.module';
+import { AiModule } from './ai/ai.module';
 
 @Module({
   imports: [
@@ -33,11 +39,17 @@ import { StaffOrdersModule } from './staff-orders/staff-orders.module';
     PaymentsModule,
     PromotionsModule,
     LoyaltyModule,
+    MailModule,
     StaffPosModule,
     StaffInventoryModule,
     StaffOrdersModule,
+    StoresModule,
+    ChatModule,
+    ReviewsModule,
+    AiModule,
   ],
+
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

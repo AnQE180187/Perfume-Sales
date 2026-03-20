@@ -7,11 +7,7 @@ class ShippingAddressSection extends StatelessWidget {
   final CheckoutAddress? address;
   final VoidCallback? onChangeAddress;
 
-  const ShippingAddressSection({
-    super.key,
-    this.address,
-    this.onChangeAddress,
-  });
+  const ShippingAddressSection({super.key, this.address, this.onChangeAddress});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +20,7 @@ class ShippingAddressSection extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Shipping Address',
+                'Địa chỉ giao hàng',
                 style: GoogleFonts.playfairDisplay(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
@@ -39,7 +35,7 @@ class ShippingAddressSection extends StatelessWidget {
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
                 child: Text(
-                  'Change',
+                  'Thay đổi',
                   style: GoogleFonts.montserrat(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
@@ -80,7 +76,7 @@ class ShippingAddressSection extends StatelessWidget {
                         children: [
                           Flexible(
                             child: Text(
-                              address?.name ?? 'No address selected',
+                              address?.name ?? 'Chưa chọn địa chỉ',
                               style: GoogleFonts.montserrat(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,

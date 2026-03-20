@@ -23,7 +23,7 @@ import { Request, Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post('register')
   async register(@Body() dto: RegisterDto) {
@@ -60,17 +60,34 @@ export class AuthController {
     return this.authService.resetPassword(dto);
   }
 
+  @Post('verify-email')
+  @HttpCode(HttpStatus.OK)
+  async verifyEmail(@Body('token') token: string) {
+    return this.authService.verifyEmail(token);
+  }
+
+  @Post('resend-verification')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async resendVerification(@Req() req: any) {
+    const userId = req.user?.userId ?? req.user?.sub;
+    return this.authService.resendVerificationEmail(userId);
+  }
+
   @Post('change-password')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
-  async changePassword(@Req() req: any, @Body() dto: ChangePasswordDto) {
-    return this.authService.changePassword(req.user.sub, dto);
+  async changePassword(
+    @Req() req: Request & { user: { userId: string } },
+    @Body() dto: ChangePasswordDto,
+  ) {
+    return this.authService.changePassword(req.user.userId, dto);
   }
 
   @Get('profile')
   @UseGuards(JwtAuthGuard)
-  async getProfile(@Req() req: any) {
-    return this.authService.getProfile(req.user.sub);
+  async getProfile(@Req() req: Request & { user: { userId: string } }) {
+    return this.authService.getProfile(req.user.userId);
   }
 
   // Google OAuth
@@ -85,9 +102,13 @@ export class AuthController {
   async googleAuthCallback(@Req() req: Request, @Res() res: Response) {
     const tokens = await this.authService.validateOAuthUser(req.user as any);
 
+    // Detect locale from referer or default to 'en'
+    const referer = req.headers.referer || '';
+    const locale = referer.includes('/vi/') ? 'vi' : 'en';
+
     // Redirect to frontend with tokens
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    const redirectUrl = `${frontendUrl}/en/callback?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`;
+    const redirectUrl = `${frontendUrl}/${locale}/callback?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`;
 
     return res.redirect(redirectUrl);
   }
@@ -104,9 +125,13 @@ export class AuthController {
   async facebookAuthCallback(@Req() req: Request, @Res() res: Response) {
     const tokens = await this.authService.validateOAuthUser(req.user as any);
 
+    // Detect locale from referer or default to 'en'
+    const referer = req.headers.referer || '';
+    const locale = referer.includes('/vi/') ? 'vi' : 'en';
+
     // Redirect to frontend with tokens
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    const redirectUrl = `${frontendUrl}/en/callback?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`;
+    const redirectUrl = `${frontendUrl}/${locale}/callback?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`;
 
     return res.redirect(redirectUrl);
   }

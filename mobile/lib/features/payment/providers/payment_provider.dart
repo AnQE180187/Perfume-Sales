@@ -3,14 +3,20 @@ import '../models/payment_method.dart';
 import '../services/payment_service.dart';
 
 // Payment Service Provider
-final paymentServiceProvider = Provider<PaymentService>((ref) => PaymentService());
+final paymentServiceProvider = Provider<PaymentService>(
+  (ref) => PaymentService(),
+);
 
 // Available Payment Methods Provider
 final paymentMethodsProvider = Provider<List<PaymentMethod>>((ref) {
   return [
     PaymentMethod(type: PaymentMethodType.vnpay, isEnabled: true),
     PaymentMethod(type: PaymentMethodType.momo, isEnabled: true),
-    PaymentMethod(type: PaymentMethodType.cod, isDefault: true, isEnabled: true),
+    PaymentMethod(
+      type: PaymentMethodType.cod,
+      isDefault: true,
+      isEnabled: true,
+    ),
   ];
 });
 
@@ -29,8 +35,8 @@ class SelectedPaymentMethodNotifier extends StateNotifier<PaymentMethod?> {
 
 final selectedPaymentMethodProvider =
     StateNotifierProvider<SelectedPaymentMethodNotifier, PaymentMethod?>((ref) {
-  return SelectedPaymentMethodNotifier();
-});
+      return SelectedPaymentMethodNotifier();
+    });
 
 // Payment Actions Provider
 final paymentActionsProvider = Provider<PaymentActions>((ref) {
@@ -50,11 +56,11 @@ class PaymentActions {
     String? shippingAddress,
   }) async {
     final selectedMethod = ref.read(selectedPaymentMethodProvider);
-    
+
     if (selectedMethod == null) {
       return PaymentResult(
         success: false,
-        message: 'Please select a payment method',
+        message: 'Vui lòng chọn phương thức thanh toán',
       );
     }
 
@@ -71,7 +77,8 @@ class PaymentActions {
           return PaymentResult(
             success: response['success'] as bool? ?? false,
             paymentUrl: response['paymentUrl'] as String?,
-            message: response['message'] as String? ?? 'Redirecting to VNPay...',
+            message:
+                response['message'] as String? ?? 'Đang chuyển đến VNPay...',
           );
 
         case PaymentMethodType.momo:
@@ -83,7 +90,8 @@ class PaymentActions {
           return PaymentResult(
             success: response['success'] as bool? ?? false,
             paymentUrl: response['paymentUrl'] as String?,
-            message: response['message'] as String? ?? 'Redirecting to Momo...',
+            message:
+                response['message'] as String? ?? 'Đang chuyển đến MoMo...',
           );
 
         case PaymentMethodType.cod:
@@ -94,14 +102,13 @@ class PaymentActions {
           );
           return PaymentResult(
             success: response['success'] as bool? ?? false,
-            message: response['message'] as String? ?? 'COD order created',
+            message:
+                response['message'] as String? ??
+                'Đã tạo đơn thanh toán khi nhận hàng',
           );
       }
     } catch (e) {
-      return PaymentResult(
-        success: false,
-        message: 'Payment failed: $e',
-      );
+      return PaymentResult(success: false, message: 'Thanh toán thất bại: $e');
     }
   }
 
@@ -111,7 +118,7 @@ class PaymentActions {
     Map<String, dynamic> params,
   ) async {
     final service = ref.read(paymentServiceProvider);
-    
+
     try {
       final response = await service.verifyPaymentCallback(
         method: method,

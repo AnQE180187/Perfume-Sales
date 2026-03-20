@@ -11,42 +11,42 @@ enum OrderStatus {
   String get displayName {
     switch (this) {
       case OrderStatus.pending:
-        return 'Pending';
+        return 'Chờ xử lý';
       case OrderStatus.confirmed:
-        return 'Confirmed';
+        return 'Đã xác nhận';
       case OrderStatus.processing:
-        return 'Processing';
+        return 'Đang xử lý';
       case OrderStatus.shipped:
-        return 'Shipped';
+        return 'Đã gửi hàng';
       case OrderStatus.outForDelivery:
-        return 'Out for Delivery';
+        return 'Đang giao hàng';
       case OrderStatus.delivered:
-        return 'Delivered';
+        return 'Đã giao';
       case OrderStatus.cancelled:
-        return 'Cancelled';
+        return 'Đã hủy';
       case OrderStatus.refunded:
-        return 'Refunded';
+        return 'Đã hoàn tiền';
     }
   }
 
   String get description {
     switch (this) {
       case OrderStatus.pending:
-        return 'Your order is being processed';
+        return 'Đơn hàng của bạn đang được tiếp nhận';
       case OrderStatus.confirmed:
-        return 'Order confirmed and preparing';
+        return 'Đơn hàng đã được xác nhận và đang chuẩn bị';
       case OrderStatus.processing:
-        return 'Packaging your fragrance';
+        return 'Đang đóng gói đơn hàng của bạn';
       case OrderStatus.shipped:
-        return 'On the way to you';
+        return 'Đơn hàng đang trên đường đến bạn';
       case OrderStatus.outForDelivery:
-        return 'Arriving today';
+        return 'Dự kiến giao trong hôm nay';
       case OrderStatus.delivered:
-        return 'Successfully delivered';
+        return 'Đơn hàng đã được giao thành công';
       case OrderStatus.cancelled:
-        return 'Order cancelled';
+        return 'Đơn hàng đã bị hủy';
       case OrderStatus.refunded:
-        return 'Refund processed';
+        return 'Yêu cầu hoàn tiền đã được xử lý';
     }
   }
 }
@@ -98,11 +98,7 @@ class OrderTimeline {
   final DateTime timestamp;
   final String? note;
 
-  OrderTimeline({
-    required this.status,
-    required this.timestamp,
-    this.note,
-  });
+  OrderTimeline({required this.status, required this.timestamp, this.note});
 
   factory OrderTimeline.fromJson(Map<String, dynamic> json) {
     return OrderTimeline(
@@ -159,9 +155,13 @@ class Order {
 
   int get itemCount => items.fold(0, (sum, item) => sum + item.quantity);
 
-  bool get canCancel => status == OrderStatus.pending || status == OrderStatus.confirmed;
-  bool get canReorder => status == OrderStatus.delivered || status == OrderStatus.cancelled;
-  bool get canTrack => trackingNumber != null && (status == OrderStatus.shipped || status == OrderStatus.outForDelivery);
+  bool get canCancel =>
+      status == OrderStatus.pending || status == OrderStatus.confirmed;
+  bool get canReorder =>
+      status == OrderStatus.delivered || status == OrderStatus.cancelled;
+  bool get canTrack =>
+      trackingNumber != null &&
+      (status == OrderStatus.shipped || status == OrderStatus.outForDelivery);
 
   factory Order.fromJson(Map<String, dynamic> json) {
     return Order(
@@ -172,8 +172,12 @@ class Order {
         (e) => e.name == json['status'],
         orElse: () => OrderStatus.pending,
       ),
-      items: (json['items'] as List).map((item) => OrderItem.fromJson(item)).toList(),
-      timeline: (json['timeline'] as List).map((t) => OrderTimeline.fromJson(t)).toList(),
+      items: (json['items'] as List)
+          .map((item) => OrderItem.fromJson(item))
+          .toList(),
+      timeline: (json['timeline'] as List)
+          .map((t) => OrderTimeline.fromJson(t))
+          .toList(),
       subtotal: (json['subtotal'] as num).toDouble(),
       discount: (json['discount'] as num).toDouble(),
       shippingFee: (json['shipping_fee'] as num).toDouble(),

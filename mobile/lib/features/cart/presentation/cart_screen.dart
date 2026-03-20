@@ -22,7 +22,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   @override
   Widget build(BuildContext context) {
     final cartState = ref.watch(cartProvider);
-    
+
     // Initialize selected items
     if (_selectedItems.isEmpty && cartState.items.isNotEmpty) {
       _selectedItems.addAll(cartState.items.map((item) => item.id));
@@ -37,12 +37,15 @@ class _CartScreenState extends ConsumerState<CartScreen> {
               children: [
                 Expanded(
                   child: ListView(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     children: [
                       // AI Suggestion Banner
                       _buildAISuggestionBanner(),
                       const SizedBox(height: 16),
-                      
+
                       // Cart Items
                       ...cartState.items.map((item) {
                         return CartItemTile(
@@ -55,11 +58,15 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                               } else {
                                 _selectedItems.remove(item.id);
                               }
-                              _selectAll = _selectedItems.length == cartState.items.length;
+                              _selectAll =
+                                  _selectedItems.length ==
+                                  cartState.items.length;
                             });
                           },
                           onQuantityChanged: (quantity) {
-                            ref.read(cartProvider.notifier).updateQuantity(item.id, quantity);
+                            ref
+                                .read(cartProvider.notifier)
+                                .updateQuantity(item.id, quantity);
                           },
                           onRemove: () {
                             ref.read(cartProvider.notifier).removeItem(item.id);
@@ -67,17 +74,17 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                           },
                         );
                       }),
-                      
+
                       const SizedBox(height: 16),
-                      
+
                       // Promo Code Section
                       _buildPromoCodeSection(),
-                      
+
                       const SizedBox(height: 100),
                     ],
                   ),
                 ),
-                
+
                 // Bottom Summary
                 CartSummarySection(
                   cartState: cartState,
@@ -92,16 +99,16 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     return AppBar(
       backgroundColor: const Color(0xFFFAF7F2),
       elevation: 0,
-     leading: IconButton(
-  icon: const Icon(
-    Icons.arrow_back,
-    size: 20, // 👈 thêm dòng này
-    color: AppTheme.deepCharcoal,
-  ),
+      leading: IconButton(
+        icon: const Icon(
+          Icons.arrow_back,
+          size: 20, // 👈 thêm dòng này
+          color: AppTheme.deepCharcoal,
+        ),
         onPressed: () => Navigator.pop(context),
       ),
       title: Text(
-        'My Bag (${cartState.items.length})',
+        'Giỏ hàng (${cartState.items.length})',
         style: GoogleFonts.cormorantGaramond(
           fontSize: 18,
           fontWeight: FontWeight.w600,
@@ -121,7 +128,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             });
           },
           child: Text(
-            'Select All',
+            _selectAll ? 'Bỏ chọn hết' : 'Chọn tất cả',
             style: GoogleFonts.montserrat(
               fontSize: 11,
               fontWeight: FontWeight.w500,
@@ -141,7 +148,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             );
           },
           child: Text(
-            'Clear all',
+            'Xóa tất cả',
             style: GoogleFonts.montserrat(
               fontSize: 11,
               fontWeight: FontWeight.w500,
@@ -164,18 +171,14 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       ),
       child: Row(
         children: [
-          const Icon(
-            Icons.auto_awesome,
-            color: AppTheme.accentGold,
-            size: 22,
-          ),
+          const Icon(Icons.auto_awesome, color: AppTheme.accentGold, size: 22),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'PerfumeGPT Suggestion',
+                  'Gợi ý từ PerfumeGPT',
                   style: GoogleFonts.montserrat(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -184,7 +187,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Add a Golden Amber sample to complement your selection.',
+                  'Thêm mẫu thử Golden Amber để hoàn thiện lựa chọn của bạn.',
                   style: GoogleFonts.montserrat(
                     fontSize: 11,
                     fontWeight: FontWeight.w400,
@@ -209,7 +212,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
               elevation: 0,
             ),
             child: Text(
-              'Add +\$5',
+              'Thêm +\$5',
               style: GoogleFonts.montserrat(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
@@ -238,7 +241,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       child: Row(
         children: [
           Text(
-            'Have a promo code?',
+            'Bạn có mã khuyến mãi?',
             style: GoogleFonts.montserrat(
               fontSize: 14,
               fontWeight: FontWeight.w500,
@@ -268,7 +271,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           ),
           const SizedBox(height: 24),
           Text(
-            'Your bag is empty',
+            'Giỏ hàng của bạn đang trống',
             style: GoogleFonts.cormorantGaramond(
               fontSize: 24,
               fontWeight: FontWeight.w500,
@@ -277,7 +280,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Discover our curated collection',
+            'Khám phá bộ sưu tập tuyển chọn',
             style: GoogleFonts.montserrat(
               fontSize: 14,
               color: AppTheme.mutedSilver,
@@ -287,7 +290,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32),
             child: LuxuryButton(
-              text: 'EXPLORE COLLECTION',
+              text: 'KHÁM PHÁ BỘ SƯU TẬP',
               onPressed: () => Navigator.pop(context),
             ),
           ),

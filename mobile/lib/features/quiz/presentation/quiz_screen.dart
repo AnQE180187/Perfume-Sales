@@ -13,11 +13,11 @@ class QuizScreen extends StatefulWidget {
 class _QuizScreenState extends State<QuizScreen> {
   int _currentStep = 0;
   final List<String> _questions = [
-    "What occasion is this scent for?",
-    "What is your preferred budget?",
-    "Which scent family do you adore?",
-    "Desired longevity of the fragrance?",
-    "Describe your personality in one word."
+    'Mùi hương này dành cho dịp nào?',
+    'Mức ngân sách bạn mong muốn là bao nhiêu?',
+    'Bạn yêu thích nhóm hương nào nhất?',
+    'Bạn muốn độ lưu hương kéo dài tới mức nào?',
+    'Hãy mô tả tính cách của bạn bằng một từ.',
   ];
 
   @override
@@ -35,17 +35,22 @@ class _QuizScreenState extends State<QuizScreen> {
           children: [
             // Progress Indicator
             Row(
-              children: List.generate(5, (index) => Expanded(
-                child: Container(
-                  height: 2,
-                  margin: const EdgeInsets.only(right: 4),
-                  color: index <= _currentStep ? Theme.of(context).primaryColor : Theme.of(context).colorScheme.outline,
+              children: List.generate(
+                5,
+                (index) => Expanded(
+                  child: Container(
+                    height: 2,
+                    margin: const EdgeInsets.only(right: 4),
+                    color: index <= _currentStep
+                        ? Theme.of(context).primaryColor
+                        : Theme.of(context).colorScheme.outline,
+                  ),
                 ),
-              )),
+              ),
             ),
             const SizedBox(height: 40),
             Text(
-              "STEP ${_currentStep + 1} OF 5",
+              'BƯỚC ${_currentStep + 1} / 5',
               style: Theme.of(context).textTheme.labelLarge,
             ),
             const SizedBox(height: 20),
@@ -54,15 +59,35 @@ class _QuizScreenState extends State<QuizScreen> {
               style: Theme.of(context).textTheme.displayLarge,
             ),
             const SizedBox(height: 60),
-            
+
             // Options (Example for step 0)
             Expanded(
               child: ListView(
                 children: [
-                  QuizOption(title: "Grand Evening Gala", icon: Icons.nightlife, isSelected: false, onTap: _nextStep),
-                  QuizOption(title: "Professional Workplace", icon: Icons.business_center, isSelected: false, onTap: _nextStep),
-                  QuizOption(title: "Casual Sunday Brunch", icon: Icons.wb_sunny, isSelected: false, onTap: _nextStep),
-                  QuizOption(title: "Intimate Date Night", icon: Icons.favorite, isSelected: false, onTap: _nextStep),
+                  QuizOption(
+                    title: 'Dạ tiệc buổi tối sang trọng',
+                    icon: Icons.nightlife,
+                    isSelected: false,
+                    onTap: _nextStep,
+                  ),
+                  QuizOption(
+                    title: 'Môi trường làm việc chuyên nghiệp',
+                    icon: Icons.business_center,
+                    isSelected: false,
+                    onTap: _nextStep,
+                  ),
+                  QuizOption(
+                    title: 'Bữa brunch cuối tuần thoải mái',
+                    icon: Icons.wb_sunny,
+                    isSelected: false,
+                    onTap: _nextStep,
+                  ),
+                  QuizOption(
+                    title: 'Buổi hẹn hò riêng tư',
+                    icon: Icons.favorite,
+                    isSelected: false,
+                    onTap: _nextStep,
+                  ),
                 ],
               ),
             ),
@@ -124,7 +149,13 @@ class QuizOption extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              Icon(Icons.arrow_forward_ios, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3), size: 14),
+              Icon(
+                Icons.arrow_forward_ios,
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.3),
+                size: 14,
+              ),
             ],
           ),
         ),

@@ -18,7 +18,7 @@ export const env = {
 
 // Validate required environment variables
 if (!env.NEXT_PUBLIC_API_URL) {
-    console.warn('Warning: NEXT_PUBLIC_API_URL is not set, using default: http://localhost:3000/api/v1');
+    console.warn('Warning: NEXT_PUBLIC_API_URL is not set, using default: http://localhost:5000/api/v1');
 }
 
 export type Env = typeof env;

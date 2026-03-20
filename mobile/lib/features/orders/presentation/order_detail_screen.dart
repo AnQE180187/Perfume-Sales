@@ -23,14 +23,17 @@ class OrderDetailScreen extends ConsumerWidget {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          'ORDER DETAILS',
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            letterSpacing: 6,
-            fontSize: 12,
-          ),
+          'CHI TIẾT ĐƠN HÀNG',
+          style: Theme.of(
+            context,
+          ).textTheme.labelLarge?.copyWith(letterSpacing: 6, fontSize: 12),
         ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new, size: 18, color: Theme.of(context).primaryColor),
+          icon: Icon(
+            Icons.arrow_back_ios_new,
+            size: 18,
+            color: Theme.of(context).primaryColor,
+          ),
           onPressed: () => context.pop(),
         ),
       ),
@@ -49,17 +52,19 @@ class OrderDetailScreen extends ConsumerWidget {
               Icon(
                 Icons.error_outline,
                 size: 64,
-                color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.3),
+                color: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.color?.withValues(alpha: 0.3),
               ),
               const SizedBox(height: 16),
               Text(
-                'Failed to load order',
+                'Không thể tải chi tiết đơn hàng',
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
               const SizedBox(height: 24),
               OutlinedButton(
                 onPressed: () => ref.invalidate(orderDetailProvider(orderId)),
-                child: const Text('RETRY'),
+                child: const Text('THỬ LẠI'),
               ),
             ],
           ),
@@ -126,24 +131,32 @@ class OrderDetailScreen extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'ORDER NUMBER',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 10),
+                'MÃ ĐƠN HÀNG',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontSize: 10),
               ),
               GestureDetector(
                 onTap: () {
                   Clipboard.setData(ClipboardData(text: order.orderNumber));
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Order number copied')),
+                    const SnackBar(content: Text('Đã sao chép mã đơn hàng')),
                   );
                 },
                 child: Row(
                   children: [
                     Text(
                       order.orderNumber,
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(fontSize: 12),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.labelLarge?.copyWith(fontSize: 12),
                     ),
                     const SizedBox(width: 8),
-                    Icon(Icons.copy, size: 14, color: Theme.of(context).primaryColor),
+                    Icon(
+                      Icons.copy,
+                      size: 14,
+                      color: Theme.of(context).primaryColor,
+                    ),
                   ],
                 ),
               ),
@@ -157,13 +170,17 @@ class OrderDetailScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'ORDER DATE',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 10),
+                    'NGÀY ĐẶT HÀNG',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(fontSize: 10),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     DateFormat('MMM dd, yyyy • HH:mm').format(order.createdAt),
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontSize: 13),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyLarge?.copyWith(fontSize: 13),
                   ),
                 ],
               ),
@@ -180,7 +197,7 @@ class OrderDetailScreen extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'ORDER TIMELINE',
+          'LỊCH TRÌNH ĐƠN HÀNG',
           style: Theme.of(context).textTheme.labelLarge?.copyWith(fontSize: 10),
         ),
         const SizedBox(height: 20),
@@ -216,11 +233,17 @@ class OrderDetailScreen extends ConsumerWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.local_shipping_outlined, color: AppTheme.accentGold, size: 20),
+              Icon(
+                Icons.local_shipping_outlined,
+                color: AppTheme.accentGold,
+                size: 20,
+              ),
               const SizedBox(width: 12),
               Text(
-                'TRACKING INFORMATION',
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(fontSize: 10),
+                'THÔNG TIN VẬN ĐƠN',
+                style: Theme.of(
+                  context,
+                ).textTheme.labelLarge?.copyWith(fontSize: 10),
               ),
             ],
           ),
@@ -232,26 +255,35 @@ class OrderDetailScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Tracking Number',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 11),
+                    'Mã vận đơn',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(fontSize: 11),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     order.trackingNumber ?? 'N/A',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontSize: 13),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyLarge?.copyWith(fontSize: 13),
                   ),
                 ],
               ),
               if (order.shippingProvider != null)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     order.shippingProvider!.toUpperCase(),
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(fontSize: 9),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.labelLarge?.copyWith(fontSize: 9),
                   ),
                 ),
             ],
@@ -262,11 +294,14 @@ class OrderDetailScreen extends ConsumerWidget {
             child: OutlinedButton(
               onPressed: () async {
                 // TODO: Show tracking details
-                if (order.trackingNumber != null && order.shippingProvider != null) {
-                  await ref.read(orderActionsProvider).trackShipment(
-                    order.trackingNumber!,
-                    order.shippingProvider!,
-                  );
+                if (order.trackingNumber != null &&
+                    order.shippingProvider != null) {
+                  await ref
+                      .read(orderActionsProvider)
+                      .trackShipment(
+                        order.trackingNumber!,
+                        order.shippingProvider!,
+                      );
                   // Show tracking modal
                 }
               },
@@ -274,8 +309,10 @@ class OrderDetailScreen extends ConsumerWidget {
                 side: BorderSide(color: AppTheme.accentGold, width: 0.5),
               ),
               child: Text(
-                'TRACK SHIPMENT',
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(fontSize: 11),
+                'THEO DÕI VẬN CHUYỂN',
+                style: Theme.of(
+                  context,
+                ).textTheme.labelLarge?.copyWith(fontSize: 11),
               ),
             ),
           ),
@@ -289,79 +326,85 @@ class OrderDetailScreen extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'ITEMS (${order.itemCount})',
+          'SẢN PHẨM (${order.itemCount})',
           style: Theme.of(context).textTheme.labelLarge?.copyWith(fontSize: 10),
         ),
         const SizedBox(height: 16),
-        ...order.items.map((item) => Container(
-          margin: const EdgeInsets.only(bottom: 16),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            border: Border.all(
-              color: Theme.of(context).colorScheme.outline,
-              width: 0.5,
+        ...order.items.map(
+          (item) => Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              border: Border.all(
+                color: Theme.of(context).colorScheme.outline,
+                width: 0.5,
+              ),
+              borderRadius: BorderRadius.circular(8),
             ),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).scaffoldBackgroundColor,
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(
-                    color: Theme.of(context).colorScheme.outline,
-                    width: 0.5,
+            child: Row(
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).scaffoldBackgroundColor,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.outline,
+                      width: 0.5,
+                    ),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: Image.network(
+                      item.productImage,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(
+                          Icons.auto_awesome,
+                          color: Theme.of(context).colorScheme.outline,
+                          size: 24,
+                        );
+                      },
+                    ),
                   ),
                 ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(6),
-                  child: Image.network(
-                    item.productImage,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Icon(
-                        Icons.auto_awesome,
-                        color: Theme.of(context).colorScheme.outline,
-                        size: 24,
-                      );
-                    },
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item.productName,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontSize: 13),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Qty: ${item.quantity}${item.size != null ? ' • ${item.size}' : ''}',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 11),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '\$${item.subtotal.toStringAsFixed(2)}',
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        fontSize: 13,
-                        color: AppTheme.accentGold,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.productName,
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodyLarge?.copyWith(fontSize: 13),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 4),
+                      Text(
+                        'SL: ${item.quantity}${item.size != null ? ' • ${item.size}' : ''}',
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodyMedium?.copyWith(fontSize: 11),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '\$${item.subtotal.toStringAsFixed(2)}',
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          fontSize: 13,
+                          color: AppTheme.accentGold,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        )),
+        ),
       ],
     );
   }
@@ -382,18 +425,26 @@ class OrderDetailScreen extends ConsumerWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.location_on_outlined, color: Theme.of(context).primaryColor, size: 18),
+              Icon(
+                Icons.location_on_outlined,
+                color: Theme.of(context).primaryColor,
+                size: 18,
+              ),
               const SizedBox(width: 8),
               Text(
-                'SHIPPING ADDRESS',
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(fontSize: 10),
+                'ĐỊA CHỈ GIAO HÀNG',
+                style: Theme.of(
+                  context,
+                ).textTheme.labelLarge?.copyWith(fontSize: 10),
               ),
             ],
           ),
           const SizedBox(height: 12),
           Text(
             order.shippingAddress,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontSize: 13, height: 1.6),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(fontSize: 13, height: 1.6),
           ),
         ],
       ),
@@ -413,13 +464,28 @@ class OrderDetailScreen extends ConsumerWidget {
       ),
       child: Column(
         children: [
-          _buildPriceRow(context, 'Subtotal', '\$${order.subtotal.toStringAsFixed(2)}'),
+          _buildPriceRow(
+            context,
+            'Tạm tính',
+            '\$${order.subtotal.toStringAsFixed(2)}',
+          ),
           if (order.discount > 0) ...[
             const SizedBox(height: 12),
-            _buildPriceRow(context, 'Discount', '-\$${order.discount.toStringAsFixed(2)}', isDiscount: true),
+            _buildPriceRow(
+              context,
+              'Giảm giá',
+              '-\$${order.discount.toStringAsFixed(2)}',
+              isDiscount: true,
+            ),
           ],
           const SizedBox(height: 12),
-          _buildPriceRow(context, 'Shipping Fee', order.shippingFee > 0 ? '\$${order.shippingFee.toStringAsFixed(2)}' : 'FREE'),
+          _buildPriceRow(
+            context,
+            'Phí giao hàng',
+            order.shippingFee > 0
+                ? '\$${order.shippingFee.toStringAsFixed(2)}'
+                : 'Miễn phí',
+          ),
           const SizedBox(height: 16),
           Divider(color: Theme.of(context).colorScheme.outline, thickness: 0.5),
           const SizedBox(height: 16),
@@ -427,12 +493,16 @@ class OrderDetailScreen extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'TOTAL',
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(fontSize: 12),
+                'TỔNG CỘNG',
+                style: Theme.of(
+                  context,
+                ).textTheme.labelLarge?.copyWith(fontSize: 12),
               ),
               Text(
                 '\$${order.total.toStringAsFixed(2)}',
-                style: Theme.of(context).textTheme.displayMedium?.copyWith(fontSize: 24),
+                style: Theme.of(
+                  context,
+                ).textTheme.displayMedium?.copyWith(fontSize: 24),
               ),
             ],
           ),
@@ -441,12 +511,16 @@ class OrderDetailScreen extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Payment Method',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 11),
+                'Phương thức thanh toán',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontSize: 11),
               ),
               Text(
                 order.paymentMethod.toUpperCase(),
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(fontSize: 11),
+                style: Theme.of(
+                  context,
+                ).textTheme.labelLarge?.copyWith(fontSize: 11),
               ),
             ],
           ),
@@ -455,7 +529,12 @@ class OrderDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildPriceRow(BuildContext context, String label, String value, {bool isDiscount = false}) {
+  Widget _buildPriceRow(
+    BuildContext context,
+    String label,
+    String value, {
+    bool isDiscount = false,
+  }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -484,22 +563,26 @@ class OrderDetailScreen extends ConsumerWidget {
             child: ElevatedButton(
               onPressed: () async {
                 try {
-                  final newOrderId = await ref.read(orderActionsProvider).reorder(order.id);
+                  final newOrderId = await ref
+                      .read(orderActionsProvider)
+                      .reorder(order.id);
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Order placed successfully')),
+                      const SnackBar(
+                        content: Text('Đặt lại đơn hàng thành công'),
+                      ),
                     );
                     context.push('/orders/$newOrderId');
                   }
                 } catch (e) {
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Failed to reorder: $e')),
+                      SnackBar(content: Text('Không thể đặt lại đơn hàng: $e')),
                     );
                   }
                 }
               },
-              child: const Text('REORDER'),
+              child: const Text('ĐẶT LẠI'),
             ),
           ),
         if (order.canCancel) ...[
@@ -512,16 +595,18 @@ class OrderDetailScreen extends ConsumerWidget {
                 final confirmed = await showDialog<bool>(
                   context: context,
                   builder: (context) => AlertDialog(
-                    title: const Text('Cancel Order'),
-                    content: const Text('Are you sure you want to cancel this order?'),
+                    title: const Text('Hủy đơn hàng'),
+                    content: const Text(
+                      'Bạn có chắc muốn hủy đơn hàng này không?',
+                    ),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context, false),
-                        child: const Text('NO'),
+                        child: const Text('KHÔNG'),
                       ),
                       TextButton(
                         onPressed: () => Navigator.pop(context, true),
-                        child: const Text('YES, CANCEL'),
+                        child: const Text('CÓ, HỦY ĐƠN'),
                       ),
                     ],
                   ),
@@ -532,14 +617,14 @@ class OrderDetailScreen extends ConsumerWidget {
                     await ref.read(orderActionsProvider).cancelOrder(order.id);
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Order cancelled')),
+                        const SnackBar(content: Text('Đơn hàng đã được hủy')),
                       );
                       context.pop();
                     }
                   } catch (e) {
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Failed to cancel: $e')),
+                        SnackBar(content: Text('Không thể hủy đơn hàng: $e')),
                       );
                     }
                   }
@@ -549,7 +634,7 @@ class OrderDetailScreen extends ConsumerWidget {
                 side: const BorderSide(color: Colors.redAccent, width: 0.5),
               ),
               child: Text(
-                'CANCEL ORDER',
+                'HỦY ĐƠN HÀNG',
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
                   fontSize: 12,
                   color: Colors.redAccent,
@@ -582,7 +667,9 @@ class OrderDetailScreen extends ConsumerWidget {
         textColor = AppTheme.accentGold;
         break;
       default:
-        backgroundColor = Theme.of(context).colorScheme.outline.withValues(alpha: 0.1);
+        backgroundColor = Theme.of(
+          context,
+        ).colorScheme.outline.withValues(alpha: 0.1);
         textColor = Theme.of(context).textTheme.bodyMedium!.color!;
     }
 
@@ -617,7 +704,9 @@ class _TimelineItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isActive ? AppTheme.accentGold : Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.3);
+    final color = isActive
+        ? AppTheme.accentGold
+        : Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.3);
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -661,14 +750,18 @@ class _TimelineItem extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   timeline.status.description,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 11),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontSize: 11),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   DateFormat('MMM dd, yyyy • HH:mm').format(timeline.timestamp),
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     fontSize: 10,
-                    color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.5),
+                    color: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.color?.withValues(alpha: 0.5),
                   ),
                 ),
                 if (timeline.note != null) ...[

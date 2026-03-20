@@ -3,7 +3,7 @@ import '../../auth/providers/auth_provider.dart';
 import '../models/user_profile.dart';
 
 /// Profile State Provider
-/// 
+///
 /// Combines auth user data with profile-specific information.
 /// Returns null if user is not authenticated.
 final profileProvider = FutureProvider<UserProfile?>((ref) async {
@@ -18,16 +18,24 @@ final profileProvider = FutureProvider<UserProfile?>((ref) async {
   return UserProfile.fromJson({
     'id': user.id,
     'email': user.email ?? '',
-    'full_name': profileData['full_name'],
-    'avatar_url': profileData['avatar_url'],
-    'created_at': profileData['created_at'] ?? user.createdAt,
-    'olfactory_tags': profileData['olfactory_tags'] ?? ['Woody', 'Citrus', 'Bergamot'],
-    'has_ai_profile': profileData['has_ai_profile'] ?? true,
+    'full_name':
+        profileData['full_name'] ??
+        profileData['fullName'] ??
+        profileData['name'],
+    'avatar_url': profileData['avatar_url'] ?? profileData['avatarUrl'],
+    'created_at':
+        profileData['created_at'] ?? profileData['createdAt'] ?? user.createdAt,
+    'olfactory_tags':
+        profileData['olfactory_tags'] ??
+        profileData['olfactoryTags'] ??
+        ['Woody', 'Citrus', 'Bergamot'],
+    'has_ai_profile':
+        profileData['has_ai_profile'] ?? profileData['hasAiProfile'] ?? true,
   });
 });
 
 /// Profile Actions Notifier
-/// 
+///
 /// Handles profile-related actions like editing and navigation
 class ProfileNotifier extends StateNotifier<AsyncValue<void>> {
   ProfileNotifier() : super(const AsyncValue.data(null));
@@ -54,6 +62,7 @@ class ProfileNotifier extends StateNotifier<AsyncValue<void>> {
   }
 }
 
-final profileNotifierProvider = StateNotifierProvider<ProfileNotifier, AsyncValue<void>>((ref) {
-  return ProfileNotifier();
-});
+final profileNotifierProvider =
+    StateNotifierProvider<ProfileNotifier, AsyncValue<void>>((ref) {
+      return ProfileNotifier();
+    });

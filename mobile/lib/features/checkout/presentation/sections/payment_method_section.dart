@@ -7,11 +7,7 @@ class PaymentMethodSection extends StatelessWidget {
   final PaymentMethod? paymentMethod;
   final VoidCallback? onEdit;
 
-  const PaymentMethodSection({
-    super.key,
-    this.paymentMethod,
-    this.onEdit,
-  });
+  const PaymentMethodSection({super.key, this.paymentMethod, this.onEdit});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +20,7 @@ class PaymentMethodSection extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Payment Method',
+                'Phương thức thanh toán',
                 style: GoogleFonts.playfairDisplay(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
@@ -39,7 +35,7 @@ class PaymentMethodSection extends StatelessWidget {
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
                 child: Text(
-                  'Edit',
+                  'Chỉnh sửa',
                   style: GoogleFonts.montserrat(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
@@ -79,7 +75,8 @@ class PaymentMethodSection extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        paymentMethod?.type.displayName ?? 'No method selected',
+                        paymentMethod?.type.displayName ??
+                            'Chưa chọn phương thức',
                         style: GoogleFonts.montserrat(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,

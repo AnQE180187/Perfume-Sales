@@ -6,7 +6,7 @@ import {
     MessageSquare, BrainCircuit, Heart, History, Coins, Tag,
     Monitor, Box, ClipboardList, BarChart3, ShieldCheck,
     Globe, Mail, FileText, Settings2, Smartphone, Receipt, FolderTree,
-    Sparkles, Zap
+    Sparkles, Zap, Store, Warehouse
 } from 'lucide-react';
 import { Link, usePathname } from '@/lib/i18n';
 import { useAuth } from '@/hooks/use-auth';
@@ -32,10 +32,10 @@ export const Sidebar = () => {
         const shared = [
             { icon: LayoutDashboard, label: commonT('dashboard'), href: `/dashboard/${role.toLowerCase()}` },
             { icon: User, label: commonT('profile'), href: '/dashboard/profile' },
+            { icon: MessageSquare, label: 'Chat', href: '/dashboard/chat' },
         ];
 
         const customer = [
-            { icon: MessageSquare, label: navT('customer.ai_chat'), href: '/dashboard/customer/ai-chat' },
             { icon: BrainCircuit, label: navT('customer.quiz'), href: '/dashboard/customer/quiz' },
 
 
@@ -55,8 +55,11 @@ export const Sidebar = () => {
         const admin = [
             { icon: Users, label: navT('admin.users'), href: '/dashboard/admin/users' },
             { icon: ShieldCheck, label: navT('admin.rbac'), href: '/dashboard/admin/rbac' },
+            { icon: Store, label: 'Quầy / Cửa hàng', href: '/dashboard/admin/stores' },
+            { icon: Warehouse, label: 'Tồn kho theo quầy', href: '/dashboard/admin/stores/stock' },
             { icon: Package, label: navT('admin.products'), href: '/dashboard/admin/products' },
             { icon: FolderTree, label: 'Catalog', href: '/dashboard/admin/catalog' },
+            { icon: MessageSquare, label: 'Reviews', href: '/dashboard/admin/reviews' },
             { icon: Tag, label: navT('admin.promotions'), href: '/dashboard/admin/marketing/promotions' },
             { icon: Receipt, label: commonT('orders'), href: '/dashboard/admin/orders' },
             { icon: BarChart3, label: navT('admin.analytics'), href: '/dashboard/admin/analytics' },

@@ -50,7 +50,7 @@ class SearchHeader extends StatelessWidget {
                       controller: controller,
                       autofocus: true,
                       decoration: InputDecoration(
-                        hintText: 'woody',
+                        hintText: 'gỗ ấm',
                         border: InputBorder.none,
                         hintStyle: GoogleFonts.montserrat(
                           fontSize: 16,

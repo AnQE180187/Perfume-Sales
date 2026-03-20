@@ -40,7 +40,11 @@ class PromoCodeSection extends ConsumerWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.local_offer_outlined, color: AppTheme.accentGold, size: 20),
+          const Icon(
+            Icons.local_offer_outlined,
+            color: AppTheme.accentGold,
+            size: 20,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -54,8 +58,10 @@ class PromoCodeSection extends ConsumerWidget {
                   ),
                 ),
                 Text(
-                  '${(promoDiscount * 100).toInt()}% discount applied',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 11),
+                  'Đã áp dụng giảm ${(promoDiscount * 100).toInt()}%',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontSize: 11),
                 ),
               ],
             ),
@@ -76,8 +82,11 @@ class PromoCodeSection extends ConsumerWidget {
           child: TextField(
             controller: controller,
             decoration: InputDecoration(
-              hintText: 'PROMO CODE',
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              hintText: 'MÃ KHUYẾN MÃI',
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: BorderSide(
@@ -86,7 +95,9 @@ class PromoCodeSection extends ConsumerWidget {
                 ),
               ),
             ),
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontSize: 14),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(fontSize: 14),
           ),
         ),
         const SizedBox(width: 12),
@@ -107,8 +118,10 @@ class PromoCodeSection extends ConsumerWidget {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
               : Text(
-                  'APPLY',
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(fontSize: 12),
+                  'ÁP DỤNG',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.labelLarge?.copyWith(fontSize: 12),
                 ),
         ),
       ],

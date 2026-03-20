@@ -5,6 +5,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -17,18 +18,44 @@ import { StaffPosService } from './staff-pos.service';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('STAFF', 'ADMIN')
 export class StaffPosController {
-  constructor(private readonly staffPosService: StaffPosService) {}
+  constructor(private readonly staffPosService: StaffPosService) { }
 
   @Get('products')
-  searchProducts(@Req() req: any) {
-    const { q } = req.query as { q?: string };
-    return this.staffPosService.searchProducts(q ?? '');
+  searchProducts(@Query('q') q?: string, @Query('storeId') storeId?: string) {
+    return this.staffPosService.searchProducts(q ?? '', storeId);
+  }
+
+  @Get('loyalty')
+  lookupLoyalty(@Query('phone') phone: string) {
+    return this.staffPosService.lookupLoyaltyByPhone(phone);
   }
 
   @Post('orders')
-  createDraftOrder(@Req() req: any) {
+  createDraftOrder(
+    @Req() req: any,
+    @Body() body: { storeId?: string; customerPhone?: string },
+  ) {
+    const user = req.user as { userId: string; role: string };
+    return this.staffPosService.createDraftOrder(
+      user.userId,
+      body?.storeId ?? null,
+      user.role,
+      body?.customerPhone,
+    );
+  }
+
+  @Patch('orders/:id/customer')
+  setCustomer(
+    @Req() req: any,
+    @Param('id') orderId: string,
+    @Body() body: { customerPhone: string },
+  ) {
     const user = req.user as { userId: string };
-    return this.staffPosService.createDraftOrder(user.userId);
+    return this.staffPosService.setCustomer(
+      user.userId,
+      orderId,
+      body.customerPhone,
+    );
   }
 
   @Patch('orders/:id/items')
@@ -48,6 +75,12 @@ export class StaffPosController {
       body.variantId,
       body.quantity,
     );
+  }
+
+  @Get('orders/:id')
+  getOrder(@Req() req: any, @Param('id') orderId: string) {
+    const user = req.user as { userId: string };
+    return this.staffPosService.getOrder(user.userId, orderId);
   }
 
   @Post('orders/:id/pay/cash')

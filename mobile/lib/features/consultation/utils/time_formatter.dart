@@ -4,10 +4,10 @@ class TimeFormatter {
   static String formatRelativeTime(DateTime time) {
     final now = DateTime.now();
     final diff = now.difference(time);
-    
-    if (diff.inMinutes < 1) return 'Just now';
-    if (diff.inHours < 1) return '${diff.inMinutes}m ago';
-    if (diff.inDays < 1) return '${diff.inHours}h ago';
-    return '${diff.inDays}d ago';
+
+    if (diff.inMinutes < 1) return 'Vừa xong';
+    if (diff.inHours < 1) return '${diff.inMinutes} phút trước';
+    if (diff.inDays < 1) return '${diff.inHours} giờ trước';
+    return '${diff.inDays} ngày trước';
   }
 }

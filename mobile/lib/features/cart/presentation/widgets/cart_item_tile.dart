@@ -43,16 +43,14 @@ class CartItemTile extends StatelessWidget {
           // Selection Checkbox
           _buildCheckbox(),
           const SizedBox(width: 12),
-          
+
           // Product Image
           _buildProductImage(),
           const SizedBox(width: 12),
-          
+
           // Product Info
-          Expanded(
-            child: _buildProductInfo(),
-          ),
-          
+          Expanded(child: _buildProductInfo()),
+
           // Delete Button
           _buildDeleteButton(),
         ],
@@ -75,11 +73,7 @@ class CartItemTile extends StatelessWidget {
           ),
         ),
         child: isSelected
-            ? const Icon(
-                Icons.check,
-                color: Colors.white,
-                size: 16,
-              )
+            ? const Icon(Icons.check, color: Colors.white, size: 16)
             : null,
       ),
     );
@@ -142,7 +136,7 @@ class CartItemTile extends StatelessWidget {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  'SAMPLE',
+                  'MẪU THỬ',
                   style: GoogleFonts.montserrat(
                     fontSize: 9,
                     fontWeight: FontWeight.w700,
@@ -155,7 +149,7 @@ class CartItemTile extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 2),
-        
+
         // Notes & Size
         Text(
           '${item.variant ?? ''} • ${item.size ?? ''}',
@@ -168,7 +162,7 @@ class CartItemTile extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
         ),
         const SizedBox(height: 6),
-        
+
         Row(
           children: [
             // Price & Limit
@@ -177,7 +171,9 @@ class CartItemTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    isSample ? 'Free' : '\$${item.price.toStringAsFixed(2)}',
+                    isSample
+                        ? 'Miễn phí'
+                        : '\$${item.price.toStringAsFixed(2)}',
                     style: GoogleFonts.montserrat(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
@@ -186,7 +182,7 @@ class CartItemTile extends StatelessWidget {
                   ),
                   if (isSample)
                     Text(
-                      'Limit 1',
+                      'Giới hạn 1',
                       style: GoogleFonts.montserrat(
                         fontSize: 10,
                         fontWeight: FontWeight.w400,
@@ -196,7 +192,7 @@ class CartItemTile extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             // Quantity Control
             _buildQuantityControl(),
           ],
@@ -207,7 +203,7 @@ class CartItemTile extends StatelessWidget {
 
   Widget _buildQuantityControl() {
     final maxQuantity = isSample ? 1 : 99;
-    
+
     return Container(
       decoration: BoxDecoration(
         color: AppTheme.ivoryBackground,
@@ -218,7 +214,9 @@ class CartItemTile extends StatelessWidget {
         children: [
           _buildQuantityButton(
             icon: Icons.remove,
-            onTap: item.quantity > 1 ? () => onQuantityChanged(item.quantity - 1) : null,
+            onTap: item.quantity > 1
+                ? () => onQuantityChanged(item.quantity - 1)
+                : null,
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -233,7 +231,9 @@ class CartItemTile extends StatelessWidget {
           ),
           _buildQuantityButton(
             icon: Icons.add,
-            onTap: item.quantity < maxQuantity ? () => onQuantityChanged(item.quantity + 1) : null,
+            onTap: item.quantity < maxQuantity
+                ? () => onQuantityChanged(item.quantity + 1)
+                : null,
           ),
         ],
       ),

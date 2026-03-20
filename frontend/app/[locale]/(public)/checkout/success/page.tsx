@@ -74,10 +74,10 @@ export default function OrderSuccessPage() {
 
                         <div className="flex flex-col sm:flex-row gap-4">
                             <Link
-                                href="/dashboard/customer/orders"
+                                href={orderId ? `/dashboard/customer/orders/${orderId}` : '/dashboard/customer/orders'}
                                 className="flex-1 bg-luxury-black dark:bg-gold text-white py-4 rounded-full font-bold tracking-widest uppercase text-center text-xs hover:bg-stone-800 dark:hover:bg-gold/80 transition-all shadow-xl"
                             >
-                                Xem đơn hàng
+                                Xem đơn hàng & theo dõi vận chuyển
                             </Link>
                             <Link
                                 href="/"

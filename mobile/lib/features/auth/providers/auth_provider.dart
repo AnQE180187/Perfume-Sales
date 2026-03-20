@@ -1,46 +1,152 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import '../services/auth_service.dart';
-import 'mock_auth_provider.dart';
-import '../../../core/config/app_config.dart';
+import '../data/auth_repository.dart';
 
-/// Auth State Provider - Conditional based on AppConfig
-final authStateProvider = StreamProvider<AuthState>((ref) {
-  if (AppConfig.useMockAuth) {
-    return ref.watch(mockAuthStateProvider.future).asStream();
+class AuthUser {
+  final String id;
+  final String? email;
+  final String createdAt;
+
+  const AuthUser({
+    required this.id,
+    required this.email,
+    required this.createdAt,
+  });
+
+  factory AuthUser.fromJson(Map<String, dynamic> json) {
+    return AuthUser(
+      id: (json['id'] ?? json['_id'] ?? '') as String,
+      email: json['email'] as String?,
+      createdAt:
+          (json['created_at'] ??
+                  json['createdAt'] ??
+                  DateTime.now().toIso8601String())
+              as String,
+    );
   }
-  return AuthService.authStateChanges;
+}
+
+final _authUserStateProvider = StateProvider<AuthUser?>((ref) => null);
+final _authProfileStateProvider = StateProvider<Map<String, dynamic>?>(
+  (ref) => null,
+);
+
+class AuthStatusNotifier extends StateNotifier<bool> {
+  final Ref _ref;
+  final AuthRepository _repository;
+
+  AuthStatusNotifier({required Ref ref, required AuthRepository repository})
+    : _ref = ref,
+      _repository = repository,
+      super(false) {
+    _bootstrapAuthState();
+  }
+
+  Future<void> _bootstrapAuthState() async {
+    final hasToken = await _repository.isAuthenticated;
+    if (!hasToken) {
+      state = false;
+      return;
+    }
+
+    try {
+      final profile = await _repository.getProfile();
+      _ref.read(_authProfileStateProvider.notifier).state = profile;
+      _ref.read(_authUserStateProvider.notifier).state = AuthUser.fromJson(
+        profile,
+      );
+      state = true;
+    } catch (_) {
+      await _repository.logout();
+      clearAuthMemory();
+      state = false;
+    }
+  }
+
+  void markAuthenticated({Map<String, dynamic>? profile}) {
+    if (profile != null) {
+      _ref.read(_authProfileStateProvider.notifier).state = profile;
+      _ref.read(_authUserStateProvider.notifier).state = AuthUser.fromJson(
+        profile,
+      );
+    }
+    state = true;
+  }
+
+  void clearAuthMemory() {
+    _ref.read(_authUserStateProvider.notifier).state = null;
+    _ref.read(_authProfileStateProvider.notifier).state = null;
+  }
+
+  void markLoggedOut() {
+    clearAuthMemory();
+    state = false;
+  }
+}
+
+/// Authentication status used by router guard.
+///
+/// `true`  => user has valid login session
+/// `false` => user is logged out
+final authStateProvider = StateNotifierProvider<AuthStatusNotifier, bool>((
+  ref,
+) {
+  final repository = ref.watch(authRepositoryProvider);
+  return AuthStatusNotifier(ref: ref, repository: repository);
 });
 
-/// Current User Provider - Conditional based on AppConfig
-final currentUserProvider = Provider<User?>((ref) {
-  if (AppConfig.useMockAuth) {
-    return mockUser;
-  }
-  final authState = ref.watch(authStateProvider).value;
-  return authState?.session?.user ?? AuthService.currentUser;
+/// Current authenticated user information.
+final currentUserProvider = Provider<AuthUser?>((ref) {
+  return ref.watch(_authUserStateProvider);
 });
 
-/// User Profile Provider - Conditional based on AppConfig
+/// Full profile payload returned by `/auth/profile`.
 final userProfileProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
-  if (AppConfig.useMockAuth) {
-    return ref.watch(mockUserProfileProvider.future);
+  final isAuthenticated = ref.watch(authStateProvider);
+  if (!isAuthenticated) return null;
+
+  final cachedProfile = ref.watch(_authProfileStateProvider);
+  if (cachedProfile != null) return cachedProfile;
+
+  final repository = ref.watch(authRepositoryProvider);
+  final profile = await repository.getProfile();
+  ref.read(_authProfileStateProvider.notifier).state = profile;
+
+  final currentUser = ref.read(_authUserStateProvider);
+  if (currentUser == null) {
+    ref.read(_authUserStateProvider.notifier).state = AuthUser.fromJson(
+      profile,
+    );
   }
-  final user = ref.watch(currentUserProvider);
-  if (user == null) return null;
-  return await AuthService.getProfile(user.id);
+
+  return profile;
 });
 
 class AuthNotifier extends StateNotifier<AsyncValue<void>> {
-  AuthNotifier() : super(const AsyncValue.data(null));
+  final Ref _ref;
+  final AuthRepository _repository;
+
+  AuthNotifier({required Ref ref, required AuthRepository repository})
+    : _ref = ref,
+      _repository = repository,
+      super(const AsyncValue.data(null));
 
   Future<void> login(String email, String password) async {
     state = const AsyncValue.loading();
     try {
-      await AuthService.login(email, password);
+      await _repository.login(email: email, password: password);
+
+      Map<String, dynamic>? profile;
+      try {
+        profile = await _repository.getProfile();
+      } catch (_) {
+        // Keep authenticated if login succeeded and token was stored.
+      }
+
+      _ref.read(authStateProvider.notifier).markAuthenticated(profile: profile);
       state = const AsyncValue.data(null);
     } catch (e, stack) {
       state = AsyncValue.error(e, stack);
+      rethrow;
     }
   }
 
@@ -52,108 +158,69 @@ class AuthNotifier extends StateNotifier<AsyncValue<void>> {
   }) async {
     state = const AsyncValue.loading();
     try {
-      await AuthService.register(
+      await _repository.register(
         email: email,
         password: password,
         fullName: fullName,
         phone: phone,
       );
+
+      final hasToken = await _repository.isAuthenticated;
+      if (hasToken) {
+        Map<String, dynamic>? profile;
+        try {
+          profile = await _repository.getProfile();
+        } catch (_) {
+          // Registration can be successful even if profile endpoint is not ready.
+        }
+        _ref
+            .read(authStateProvider.notifier)
+            .markAuthenticated(profile: profile);
+      }
+
       state = const AsyncValue.data(null);
     } catch (e, stack) {
       state = AsyncValue.error(e, stack);
+      rethrow;
     }
   }
 
   Future<void> signInWithGoogle() async {
     state = const AsyncValue.loading();
-    try {
-      await AuthService.signInWithGoogle();
-      state = const AsyncValue.data(null);
-    } catch (e, stack) {
-      state = AsyncValue.error(e, stack);
-    }
+    state = AsyncValue.error(
+      UnsupportedError(
+        'Google OAuth is not implemented in NestJS REST auth flow.',
+      ),
+      StackTrace.current,
+    );
   }
 
   Future<void> signInWithFacebook() async {
     state = const AsyncValue.loading();
-    try {
-      await AuthService.signInWithFacebook();
-      state = const AsyncValue.data(null);
-    } catch (e, stack) {
-      state = AsyncValue.error(e, stack);
-    }
+    state = AsyncValue.error(
+      UnsupportedError(
+        'Facebook OAuth is not implemented in NestJS REST auth flow.',
+      ),
+      StackTrace.current,
+    );
   }
 
   Future<void> logout() async {
     state = const AsyncValue.loading();
     try {
-      await AuthService.logout();
+      await _repository.logout();
+      _ref.read(authStateProvider.notifier).markLoggedOut();
       state = const AsyncValue.data(null);
     } catch (e, stack) {
       state = AsyncValue.error(e, stack);
+      rethrow;
     }
   }
 }
 
-/// Mock Auth Notifier for Development Mode
-/// Extends AuthNotifier to simulate auth operations without backend
-class MockAuthNotifier extends AuthNotifier {
-  @override
-  Future<void> login(String email, String password) async {
-    state = const AsyncValue.loading();
-    // Simulate network call
-    await Future.delayed(const Duration(milliseconds: 800));
-    state = const AsyncValue.data(null);
-    // ignore: avoid_print
-    print('[MOCK AUTH] ✅ Login successful: $email');
-  }
-
-  @override
-  Future<void> register({
-    required String email,
-    required String password,
-    required String fullName,
-    String? phone,
-  }) async {
-    state = const AsyncValue.loading();
-    await Future.delayed(const Duration(milliseconds: 1000));
-    state = const AsyncValue.data(null);
-    // ignore: avoid_print
-    print('[MOCK AUTH] ✅ Register successful: $email ($fullName)');
-  }
-
-  @override
-  Future<void> signInWithGoogle() async {
-    state = const AsyncValue.loading();
-    await Future.delayed(const Duration(milliseconds: 600));
-    state = const AsyncValue.data(null);
-    // ignore: avoid_print
-    print('[MOCK AUTH] ✅ Google Sign-In successful');
-  }
-
-  @override
-  Future<void> signInWithFacebook() async {
-    state = const AsyncValue.loading();
-    await Future.delayed(const Duration(milliseconds: 600));
-    state = const AsyncValue.data(null);
-    // ignore: avoid_print
-    print('[MOCK AUTH] ✅ Facebook Sign-In successful');
-  }
-
-  @override
-  Future<void> logout() async {
-    state = const AsyncValue.loading();
-    await Future.delayed(const Duration(milliseconds: 300));
-    state = const AsyncValue.data(null);
-    // ignore: avoid_print
-    print('[MOCK AUTH] ✅ Logout successful');
-  }
-}
-
-/// Auth Controller Provider - Conditional based on AppConfig
-final authControllerProvider = StateNotifierProvider<AuthNotifier, AsyncValue<void>>((ref) {
-  if (AppConfig.useMockAuth) {
-    return MockAuthNotifier();
-  }
-  return AuthNotifier();
-});
+/// Auth controller used by existing login/register screens.
+final authControllerProvider =
+    StateNotifierProvider<AuthNotifier, AsyncValue<void>>((ref) {
+      final repository = ref.watch(authRepositoryProvider);
+      return AuthNotifier(ref: ref, repository: repository);
+    });

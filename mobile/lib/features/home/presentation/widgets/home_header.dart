@@ -54,14 +54,22 @@ class HomeHeader extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.search, color: AppTheme.mutedSilver.withValues(alpha: 0.6), size: 20),
+                  Icon(
+                    Icons.search,
+                    color: AppTheme.mutedSilver.withValues(alpha: 0.6),
+                    size: 20,
+                  ),
                   const SizedBox(width: 12),
-                  Text(
-                    'Search brands, notes, or moods…',
-                    style: GoogleFonts.montserrat(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w400,
-                      color: AppTheme.mutedSilver.withValues(alpha: 0.7),
+                  Expanded(
+                    child: Text(
+                      'Tìm thương hiệu, nốt hương hoặc cảm xúc...',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
+                        color: AppTheme.mutedSilver.withValues(alpha: 0.7),
+                      ),
                     ),
                   ),
                 ],
@@ -80,9 +88,9 @@ class HomeHeader extends StatelessWidget {
                 color: AppTheme.deepCharcoal,
               ),
               children: [
-                const TextSpan(text: 'Elevate your '),
+                const TextSpan(text: 'Nâng tầm '),
                 TextSpan(
-                  text: 'olfactive',
+                  text: 'dấu ấn',
                   style: GoogleFonts.playfairDisplay(
                     fontSize: 32,
                     fontWeight: FontWeight.w400,
@@ -90,7 +98,7 @@ class HomeHeader extends StatelessWidget {
                     color: AppTheme.accentGold,
                   ),
                 ),
-                const TextSpan(text: '\nidentity'),
+                const TextSpan(text: '\nhương riêng của bạn'),
               ],
             ),
           ),
@@ -104,10 +112,7 @@ class _IconButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
 
-  const _IconButton({
-    required this.icon,
-    required this.onTap,
-  });
+  const _IconButton({required this.icon, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -115,11 +120,7 @@ class _IconButton extends StatelessWidget {
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(8),
-        child: Icon(
-          icon,
-          color: AppTheme.deepCharcoal,
-          size: 24,
-        ),
+        child: Icon(icon, color: AppTheme.deepCharcoal, size: 24),
       ),
     );
   }

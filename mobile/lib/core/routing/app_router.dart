@@ -1,4 +1,3 @@
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/login_screen.dart';
@@ -7,10 +6,14 @@ import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/onboarding/providers/onboarding_provider.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/cart/presentation/cart_screen.dart';
+import '../../features/checkout/presentation/checkout_screen.dart';
+import '../../features/checkout/presentation/order_success_screen.dart';
 import '../../features/orders/presentation/orders_screen.dart';
 import '../../features/orders/presentation/order_detail_screen.dart';
 import '../../features/payment/presentation/payment_method_screen.dart';
 import '../../features/payment/presentation/payment_result_screen.dart';
+import '../../features/profile/presentation/screens/profile_payment_methods_screen.dart';
+import '../../features/profile/presentation/screens/shipping_addresses_screen.dart';
 import '../../features/search/presentation/search_screen.dart';
 import '../../features/wishlist/presentation/wishlist_screen.dart';
 import '../../features/product/presentation/explore_screen.dart';
@@ -19,14 +22,15 @@ import '../../features/product/presentation/reviews_screen.dart';
 import '../widgets/main_shell.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authStateProvider);
+  final isLoggedIn = ref.watch(authStateProvider);
   final hasSeenOnboarding = ref.watch(onboardingProvider);
 
   return GoRouter(
     initialLocation: '/',
     redirect: (context, state) {
-      final isLoggedIn = authState.value?.session != null;
-      final isAuthRoute = state.matchedLocation == '/login' || state.matchedLocation == '/register';
+      final isAuthRoute =
+          state.matchedLocation == '/login' ||
+          state.matchedLocation == '/register';
       final isOnboardingRoute = state.matchedLocation == '/onboarding';
 
       // 1. Force Onboarding if not seen
@@ -53,29 +57,25 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      GoRoute(
-        path: '/',
-        builder: (context, state) => const MainShell(),
-      ),
+      GoRoute(path: '/', builder: (context, state) => const MainShell()),
       GoRoute(
         path: '/onboarding',
         builder: (context, state) => const OnboardingScreen(),
       ),
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginScreen(),
-      ),
+      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterScreen(),
       ),
+      GoRoute(path: '/home', builder: (context, state) => const MainShell()),
+      GoRoute(path: '/cart', builder: (context, state) => const CartScreen()),
       GoRoute(
-        path: '/home',
-        builder: (context, state) => const MainShell(),
+        path: '/checkout',
+        builder: (context, state) => const CheckoutScreen(),
       ),
       GoRoute(
-        path: '/cart',
-        builder: (context, state) => const CartScreen(),
+        path: '/order-success',
+        builder: (context, state) => const OrderSuccessScreen(),
       ),
       GoRoute(
         path: '/orders',
@@ -87,6 +87,14 @@ final routerProvider = Provider<GoRouter>((ref) {
           final orderId = state.pathParameters['id']!;
           return OrderDetailScreen(orderId: orderId);
         },
+      ),
+      GoRoute(
+        path: '/shipping-addresses',
+        builder: (context, state) => const ShippingAddressesScreen(),
+      ),
+      GoRoute(
+        path: '/profile-payment-methods',
+        builder: (context, state) => const ProfilePaymentMethodsScreen(),
       ),
       GoRoute(
         path: '/payment',
@@ -135,10 +143,15 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final productId = state.pathParameters['id']!;
           final productName = state.uri.queryParameters['name'] ?? 'Product';
-          return ReviewsScreen(
-            productId: productId,
-            productName: productName,
-          );
+          return ReviewsScreen(productId: productId, productName: productName);
+        },
+      ),
+      GoRoute(
+        path: '/reviews',
+        builder: (context, state) {
+          final productId = state.uri.queryParameters['productId'] ?? '';
+          final productName = state.uri.queryParameters['name'] ?? 'Product';
+          return ReviewsScreen(productId: productId, productName: productName);
         },
       ),
     ],
