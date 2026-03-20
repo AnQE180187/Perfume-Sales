@@ -24,7 +24,7 @@ class ReviewsScreen extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Reviews',
+          'Đánh giá',
           style: GoogleFonts.playfairDisplay(
             fontSize: 20,
             fontWeight: FontWeight.w600,
@@ -65,7 +65,7 @@ class ReviewsScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'PERFUMEGPT INSIGHT',
+                        'GÓC NHÌN PERFUMEGPT',
                         style: GoogleFonts.montserrat(
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
@@ -75,7 +75,7 @@ class ReviewsScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        '92% of buyers recommend this scent for evening wear, specifically praising its complex Oud notes and warm vanilla dry down. Longevity is frequently cited as a highlight.',
+                        '92% người mua đề xuất mùi hương này cho buổi tối, đặc biệt yêu thích tổ hợp oud nhiều lớp cùng lớp hương vanilla ấm áp lưu lại sau cùng. Độ lưu hương là điểm được nhắc đến nhiều nhất.',
                         style: GoogleFonts.montserrat(
                           fontSize: 12,
                           fontWeight: FontWeight.w400,
@@ -121,7 +121,7 @@ class ReviewsScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '128 Verified Reviews',
+                    '128 đánh giá đã xác thực',
                     style: GoogleFonts.montserrat(
                       fontSize: 11,
                       fontWeight: FontWeight.w400,
@@ -134,9 +134,17 @@ class ReviewsScreen extends StatelessWidget {
               Expanded(
                 child: Column(
                   children: [
-                    _RatingBar(label: 'Longevity', value: 0.85, subtitle: 'MODERATE–LONG'),
+                    _RatingBar(
+                      label: 'Độ lưu hương',
+                      value: 0.85,
+                      subtitle: 'TRUNG BÌNH - LÂU',
+                    ),
                     const SizedBox(height: 10),
-                    _RatingBar(label: 'Sillage', value: 0.9, subtitle: 'STRONG'),
+                    _RatingBar(
+                      label: 'Độ tỏa hương',
+                      value: 0.9,
+                      subtitle: 'MẠNH',
+                    ),
                   ],
                 ),
               ),
@@ -150,11 +158,11 @@ class ReviewsScreen extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                _FilterChip(label: 'All Reviews', isSelected: true),
+                _FilterChip(label: 'Tất cả đánh giá', isSelected: true),
                 const SizedBox(width: 8),
-                _FilterChip(label: 'With Photos', isSelected: false),
+                _FilterChip(label: 'Có hình ảnh', isSelected: false),
                 const SizedBox(width: 8),
-                _FilterChip(label: 'Verified Buyers', isSelected: false),
+                _FilterChip(label: 'Người mua xác thực', isSelected: false),
               ],
             ),
           ),
@@ -164,11 +172,12 @@ class ReviewsScreen extends StatelessWidget {
           // Reviews List
           _ReviewCard(
             name: 'Isabella V.',
-            timeAgo: '2 days ago',
+            timeAgo: '2 ngày trước',
             isVerified: true,
             rating: 5,
-            tags: ['LONG LASTING', 'EVENING WEAR'],
-            review: 'Absolutely stunning. The opening is sharp citrus but it dries down to a warm, enveloping vanilla. Lasts about 6 hours on my skin, which is perfect for a dinner date.',
+            tags: ['LƯU HƯƠNG TỐT', 'PHÙ HỢP BUỔI TỐI'],
+            review:
+                'Thật sự ấn tượng. Mở đầu là citrus sắc nét nhưng lớp hương sau khô xuống thành vanilla ấm áp bao bọc. Lưu trên da tôi khoảng 6 giờ, rất hợp cho một buổi hẹn tối.',
             helpful: 12,
           ),
 
@@ -176,24 +185,27 @@ class ReviewsScreen extends StatelessWidget {
 
           _ReviewCard(
             name: 'Marc D.',
-            timeAgo: '1 week ago',
+            timeAgo: '1 tuần trước',
             isVerified: true,
             rating: 4,
-            tags: ['MASSIVE SILLAGE'],
-            review: 'Great scent, very masculine but a bit too strong for office wear. The sillage is massive—everyone will know you\'ve entered the room. Use sparingly!',
+            tags: ['TỎA HƯƠNG RÕ'],
+            review:
+                'Mùi hương rất ổn, nam tính rõ rệt nhưng hơi mạnh nếu dùng trong văn phòng. Độ tỏa hương lớn, ai cũng biết bạn vừa bước vào phòng. Nên dùng tiết chế.',
             helpful: 5,
-            imageUrl: 'https://images.unsplash.com/photo-1541643600914-78b084683601?w=200',
+            imageUrl:
+                'https://images.unsplash.com/photo-1541643600914-78b084683601?w=200',
           ),
 
           const SizedBox(height: 16),
 
           _ReviewCard(
             name: 'Elena S.',
-            timeAgo: '3 weeks ago',
+            timeAgo: '3 tuần trước',
             isVerified: true,
             rating: 5,
             tags: [],
-            review: 'Perfect for date nights. The gold bottle is heavy and feels very luxurious. 10/10 recommendation. It truly smells like wealth in a bottle.',
+            review:
+                'Hoàn hảo cho những buổi hẹn hò. Chai màu vàng cầm rất chắc tay và tạo cảm giác cực kỳ sang trọng. Rất đáng thử. Đúng kiểu mùi hương của sự đắt giá.',
             helpful: 24,
           ),
 
@@ -249,7 +261,9 @@ class _RatingBar extends StatelessWidget {
             value: value,
             minHeight: 6,
             backgroundColor: AppTheme.softTaupe.withValues(alpha: 0.3),
-            valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.accentGold),
+            valueColor: const AlwaysStoppedAnimation<Color>(
+              AppTheme.accentGold,
+            ),
           ),
         ),
       ],
@@ -261,10 +275,7 @@ class _FilterChip extends StatelessWidget {
   final String label;
   final bool isSelected;
 
-  const _FilterChip({
-    required this.label,
-    required this.isSelected,
-  });
+  const _FilterChip({required this.label, required this.isSelected});
 
   @override
   Widget build(BuildContext context) {
@@ -370,7 +381,7 @@ class _ReviewCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            'Verified Buyer',
+                            'Người mua xác thực',
                             style: GoogleFonts.montserrat(
                               fontSize: 10,
                               fontWeight: FontWeight.w500,
@@ -400,7 +411,9 @@ class _ReviewCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
-                border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.3)),
+                border: Border.all(
+                  color: AppTheme.accentGold.withValues(alpha: 0.3),
+                ),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
@@ -451,7 +464,7 @@ class _ReviewCard extends StatelessWidget {
               ),
               const SizedBox(width: 4),
               Text(
-                '$helpful Helpful',
+                '$helpful người thấy hữu ích',
                 style: GoogleFonts.montserrat(
                   fontSize: 11,
                   fontWeight: FontWeight.w400,

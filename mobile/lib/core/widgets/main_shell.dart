@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/product/presentation/explore_screen.dart';
+import '../../features/alerts/presentation/alerts_screen.dart';
 import '../../features/consultation/presentation/consultation_screen.dart';
 import '../../features/membership/presentation/profile_screen.dart';
 import '../theme/app_theme.dart';
@@ -22,7 +23,7 @@ class _MainShellState extends State<MainShell> {
     HomeScreen(),
     ExploreScreen(),
     SizedBox.shrink(), // Placeholder for FAB (AI)
-    SizedBox.shrink(), // Alerts (future)
+    AlertsScreen(),
     ProfileScreen(),
   ];
 
@@ -125,7 +126,7 @@ class _LuxuryBottomNavBar extends StatelessWidget {
                 child: _NavBarItem(
                   icon: Icons.home_outlined,
                   activeIcon: Icons.home_rounded,
-                  label: 'Home',
+                  label: 'Trang chủ',
                   isSelected: currentIndex == 0,
                   onTap: () => onChanged(0),
                 ),
@@ -134,7 +135,7 @@ class _LuxuryBottomNavBar extends StatelessWidget {
                 child: _NavBarItem(
                   icon: Icons.explore_outlined,
                   activeIcon: Icons.explore_rounded,
-                  label: 'Explore',
+                  label: 'Khám phá',
                   isSelected: currentIndex == 1,
                   onTap: () => onChanged(1),
                 ),
@@ -147,7 +148,7 @@ class _LuxuryBottomNavBar extends StatelessWidget {
                 child: _NavBarItem(
                   icon: Icons.notifications_outlined,
                   activeIcon: Icons.notifications_rounded,
-                  label: 'Alerts',
+                  label: 'Thông báo',
                   isSelected: currentIndex == 3,
                   onTap: () => onChanged(3),
                 ),
@@ -156,7 +157,7 @@ class _LuxuryBottomNavBar extends StatelessWidget {
                 child: _NavBarItem(
                   icon: Icons.person_outline_rounded,
                   activeIcon: Icons.person_rounded,
-                  label: 'Profile',
+                  label: 'Hồ sơ',
                   isSelected: currentIndex == 4,
                   onTap: () => onChanged(4),
                 ),

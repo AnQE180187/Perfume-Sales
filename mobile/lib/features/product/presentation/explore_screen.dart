@@ -14,8 +14,8 @@ class ExploreScreen extends ConsumerStatefulWidget {
 }
 
 class _ExploreScreenState extends ConsumerState<ExploreScreen> {
-  String _selectedFilter = 'ALL';
-  final List<String> _filters = ['ALL', 'MOOD', 'OCCASION', 'SEASON', 'PRICE'];
+  String _selectedFilter = 'TẤT CẢ';
+  final List<String> _filters = ['TẤT CẢ', 'CẢM XÚC', 'DỊP DÙNG', 'MÙA', 'GIÁ'];
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +31,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               child: GestureDetector(
                 onTap: () => context.push('/search'),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(28),
@@ -51,12 +54,16 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                         size: 20,
                       ),
                       const SizedBox(width: 12),
-                      Text(
-                        'Search brands, notes, or moods…',
-                        style: GoogleFonts.montserrat(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                          color: AppTheme.mutedSilver.withValues(alpha: 0.7),
+                      Expanded(
+                        child: Text(
+                          'Tìm thương hiệu, nốt hương hoặc cảm xúc...',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w400,
+                            color: AppTheme.mutedSilver.withValues(alpha: 0.7),
+                          ),
                         ),
                       ),
                     ],
@@ -140,7 +147,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                         product: product,
                         variant: ProductCardVariant.grid,
                         badge: (product.rating ?? 0) >= 4.9
-                            ? 'TOP RATED'
+                            ? 'ĐÁNH GIÁ CAO'
                             : null,
                         onTap: () => context.push('/product/${product.id}'),
                       );
@@ -163,7 +170,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Failed to load products',
+                        'Không thể tải danh sách sản phẩm',
                         style: GoogleFonts.montserrat(
                           fontSize: 14,
                           color: AppTheme.mutedSilver,

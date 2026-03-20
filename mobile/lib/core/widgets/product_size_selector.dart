@@ -27,7 +27,7 @@ class _ProductSizeSelectorState extends State<ProductSizeSelector> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Select Size',
+              'Chọn dung tích',
               style: GoogleFonts.montserrat(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -40,7 +40,7 @@ class _ProductSizeSelectorState extends State<ProductSizeSelector> {
                 Expanded(
                   child: _SizeOption(
                     size: '10ml',
-                    label: 'TRIAL SIZE',
+                    label: 'DÙNG THỬ',
                     isSelected: widget.selectedSize == '10ml',
                     onTap: () => widget.onSizeChanged('10ml'),
                   ),
@@ -65,7 +65,7 @@ class _ProductSizeSelectorState extends State<ProductSizeSelector> {
                 Expanded(
                   child: _SizeOption(
                     size: '100ml',
-                    label: 'BEST VALUE',
+                    label: 'TIẾT KIỆM NHẤT',
                     isSelected: widget.selectedSize == '100ml',
                     onTap: () => widget.onSizeChanged('100ml'),
                   ),

@@ -21,9 +21,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   final ProductService _productService = ProductService();
   List<Product> _searchResults = [];
   bool _isSearching = false;
-  String _selectedFilter = 'MOOD';
+  String _selectedFilter = 'TÂM TRẠNG';
 
-  final List<String> _filters = ['MOOD', 'OCCASION', 'SEASON'];
+  final List<String> _filters = ['TÂM TRẠNG', 'DỊP DÙNG', 'MÙA'];
 
   @override
   void initState() {
@@ -52,7 +52,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     });
 
     final results = await _productService.searchProducts(query);
-    
+
     if (mounted) {
       setState(() {
         _searchResults = results;
@@ -93,8 +93,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 children: [
                   Text(
                     _searchController.text.isEmpty
-                        ? 'Trending Scents'
-                        : 'Results for "${_searchController.text}"',
+                        ? 'Hương thơm nổi bật'
+                        : 'Kết quả cho "${_searchController.text}"',
                     style: GoogleFonts.playfairDisplay(
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
@@ -122,58 +122,63 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             Expanded(
               child: _isSearching
                   ? const Center(
-                      child: CircularProgressIndicator(color: AppTheme.champagneGold),
+                      child: CircularProgressIndicator(
+                        color: AppTheme.champagneGold,
+                      ),
                     )
                   : _searchResults.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(
-                                Icons.search_off,
-                                size: 64,
-                                color: AppTheme.mutedSilver,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'No results found',
-                                style: GoogleFonts.montserrat(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                  color: AppTheme.mutedSilver,
-                                ),
-                              ),
-                            ],
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.search_off,
+                            size: 64,
+                            color: AppTheme.mutedSilver,
                           ),
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          itemCount: _searchResults.length,
-                          itemBuilder: (context, index) {
-                            final product = _searchResults[index];
-                            final matchPercent = product.rating != null && product.rating! >= 4.8
-                                ? (product.rating! * 20).toInt()
-                                : null;
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 16),
-                              child: ProductCard(
-                                product: product,
-                                variant: ProductCardVariant.list,
-                                matchPercent: matchPercent,
-                                onTap: () => context.push('/product/${product.id}'),
-                                onAdd: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('${product.name} added to cart'),
-                                      duration: const Duration(seconds: 2),
-                                      behavior: SnackBarBehavior.floating,
-                                    ),
-                                  );
-                                },
-                              ),
-                            );
-                          },
-                        ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Không tìm thấy kết quả',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: AppTheme.mutedSilver,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      itemCount: _searchResults.length,
+                      itemBuilder: (context, index) {
+                        final product = _searchResults[index];
+                        final matchPercent =
+                            product.rating != null && product.rating! >= 4.8
+                            ? (product.rating! * 20).toInt()
+                            : null;
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: ProductCard(
+                            product: product,
+                            variant: ProductCardVariant.list,
+                            matchPercent: matchPercent,
+                            onTap: () => context.push('/product/${product.id}'),
+                            onAdd: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Đã thêm ${product.name} vào giỏ hàng',
+                                  ),
+                                  duration: const Duration(seconds: 2),
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    ),
             ),
           ],
         ),

@@ -32,7 +32,12 @@ class CollectionScreen extends StatelessWidget {
             ),
             actions: [
               IconButton(
-                icon: Icon(Icons.search_rounded, color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.5)),
+                icon: Icon(
+                  Icons.search_rounded,
+                  color: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.color?.withValues(alpha: 0.5),
+                ),
                 onPressed: () {},
               ),
             ],
@@ -57,22 +62,26 @@ class CollectionScreen extends StatelessWidget {
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     itemCount: 3,
-                    itemBuilder: (context, index) => _FeaturedCard(index: index),
+                    itemBuilder: (context, index) =>
+                        _FeaturedCard(index: index),
                   ),
                 ),
                 const SizedBox(height: 40),
-                
+
                 // Category Filter
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Row(
                     children: [
-                      const _CategoryChip(label: 'ALL SCENTS', isSelected: true),
-                      const _CategoryChip(label: 'WOODY'),
-                      const _CategoryChip(label: 'FLORAL'),
-                      const _CategoryChip(label: 'CITRUS'),
-                      const _CategoryChip(label: 'ORIENTAL'),
+                      const _CategoryChip(
+                        label: 'TẤT CẢ MÙI HƯƠNG',
+                        isSelected: true,
+                      ),
+                      const _CategoryChip(label: 'HƯƠNG GỖ'),
+                      const _CategoryChip(label: 'HƯƠNG HOA'),
+                      const _CategoryChip(label: 'HƯƠNG CAM CHANH'),
+                      const _CategoryChip(label: 'PHƯƠNG ĐÔNG'),
                     ],
                   ),
                 ),
@@ -80,7 +89,7 @@ class CollectionScreen extends StatelessWidget {
               ],
             ),
           ),
-          
+
           // Product Grid
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -97,7 +106,7 @@ class CollectionScreen extends StatelessWidget {
               ),
             ),
           ),
-          
+
           const SliverToBoxAdapter(child: SizedBox(height: 120)),
         ],
       ),
@@ -116,7 +125,10 @@ class _FeaturedCard extends StatelessWidget {
       margin: const EdgeInsets.only(right: 20),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        border: Border.all(color: Theme.of(context).colorScheme.outline, width: 0.5),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline,
+          width: 0.5,
+        ),
         borderRadius: BorderRadius.circular(8),
       ),
       child: ClipRRect(
@@ -137,8 +149,10 @@ class _FeaturedCard extends StatelessWidget {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.transparent, 
-                    Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.8)
+                    Colors.transparent,
+                    Theme.of(
+                      context,
+                    ).scaffoldBackgroundColor.withValues(alpha: 0.8),
                   ],
                 ),
               ),
@@ -150,13 +164,18 @@ class _FeaturedCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'LIMITED EDITION',
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(fontSize: 10, letterSpacing: 1),
+                    'PHIÊN BẢN GIỚI HẠN',
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      fontSize: 10,
+                      letterSpacing: 1,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'NOIR COLLECTION',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontSize: 18),
+                    'BỘ SƯU TẬP NOIR',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.headlineMedium?.copyWith(fontSize: 18),
                   ),
                 ],
               ),
@@ -180,14 +199,22 @@ class _CategoryChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       decoration: BoxDecoration(
         color: isSelected ? Theme.of(context).primaryColor : Colors.transparent,
-        border: Border.all(color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).colorScheme.outline),
+        border: Border.all(
+          color: isSelected
+              ? Theme.of(context).primaryColor
+              : Theme.of(context).colorScheme.outline,
+        ),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
         label,
         style: Theme.of(context).textTheme.labelLarge?.copyWith(
           fontSize: 10,
-          color: isSelected ? Theme.of(context).colorScheme.onPrimary : Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.5),
+          color: isSelected
+              ? Theme.of(context).colorScheme.onPrimary
+              : Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.color?.withValues(alpha: 0.5),
         ),
       ),
     );
@@ -205,7 +232,9 @@ class ProductCard extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const ProductDetailScreen(productId: '1')),
+          MaterialPageRoute(
+            builder: (context) => const ProductDetailScreen(productId: '1'),
+          ),
         );
       },
       child: Column(
@@ -215,7 +244,10 @@ class ProductCard extends StatelessWidget {
             child: Container(
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
-                border: Border.all(color: Theme.of(context).colorScheme.outline, width: 0.5),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outline,
+                  width: 0.5,
+                ),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: ClipRRect(
@@ -231,19 +263,25 @@ class ProductCard extends StatelessWidget {
           Text(
             l10n.luminaAtelier.toUpperCase(),
             style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              fontSize: 9, 
-              color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.5),
+              fontSize: 9,
+              color: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.color?.withValues(alpha: 0.5),
             ),
           ),
           const SizedBox(height: 4),
           Text(
             'NOIR ÉLIXIR',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w400),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w400),
           ),
           const SizedBox(height: 4),
           Text(
             '\$280',
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Theme.of(context).primaryColor),
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: Theme.of(context).primaryColor,
+            ),
           ),
         ],
       ),

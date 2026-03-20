@@ -205,7 +205,7 @@ class OrderCard extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                '${firstItem.size ?? '50ml'} • Eau de Parfum',
+                '${firstItem.size ?? '50ml'} • Nước hoa Eau de Parfum',
                 style: GoogleFonts.montserrat(
                   fontSize: 11,
                   fontWeight: FontWeight.w400,
@@ -232,7 +232,7 @@ class OrderCard extends StatelessWidget {
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
               child: Text(
-                'View Receipt',
+                'Xem hóa đơn',
                 style: GoogleFonts.montserrat(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
@@ -257,7 +257,7 @@ class OrderCard extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Track Order',
+                      'Theo dõi đơn',
                       style: GoogleFonts.montserrat(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -280,7 +280,7 @@ class OrderCard extends StatelessWidget {
       // Completed variant
       if (isCancelled) {
         return Text(
-          'This item is not eligible for review',
+          'Sản phẩm này hiện không đủ điều kiện để đánh giá',
           style: GoogleFonts.montserrat(
             fontSize: 11,
             fontWeight: FontWeight.w400,
@@ -289,7 +289,8 @@ class OrderCard extends StatelessWidget {
           ),
         );
       } else if (hasReviewed) {
-        return Row(
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -307,7 +308,7 @@ class OrderCard extends StatelessWidget {
                   Icon(Icons.star, size: 12, color: AppTheme.accentGold),
                   const SizedBox(width: 5),
                   Text(
-                    'REVIEWED',
+                    'ĐÃ ĐÁNH GIÁ',
                     style: GoogleFonts.montserrat(
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
@@ -318,35 +319,39 @@ class OrderCard extends StatelessWidget {
                 ],
               ),
             ),
-            const Spacer(),
-            if (onViewReview != null)
-              TextButton(
-                onPressed: onViewReview,
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.zero,
-                  minimumSize: const Size(0, 0),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'View Your Review',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
+            if (onViewReview != null) ...[
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: onViewReview,
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    minimumSize: const Size(0, 0),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Xem đánh giá của bạn',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: AppTheme.deepCharcoal.withValues(alpha: 0.6),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.arrow_forward,
+                        size: 12,
                         color: AppTheme.deepCharcoal.withValues(alpha: 0.6),
                       ),
-                    ),
-                    const SizedBox(width: 4),
-                    Icon(
-                      Icons.arrow_forward,
-                      size: 12,
-                      color: AppTheme.deepCharcoal.withValues(alpha: 0.6),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
+            ],
           ],
         );
       } else {
@@ -354,7 +359,7 @@ class OrderCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Share your experience with this scent',
+              'Chia sẻ trải nghiệm của bạn với mùi hương này',
               style: GoogleFonts.montserrat(
                 fontSize: 11,
                 fontWeight: FontWeight.w400,
@@ -374,7 +379,7 @@ class OrderCard extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  'Write Review',
+                  'Viết đánh giá',
                   style: GoogleFonts.montserrat(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -395,9 +400,9 @@ class OrderCard extends StatelessWidget {
     final cardDate = DateTime(date.year, date.month, date.day);
 
     if (cardDate == today) {
-      return 'Today';
+      return 'Hôm nay';
     } else if (cardDate == today.subtract(const Duration(days: 1))) {
-      return 'Yesterday';
+      return 'Hôm qua';
     } else {
       return DateFormat('MMM dd').format(date);
     }

@@ -8,15 +8,15 @@ import '../../providers/order_provider.dart';
 import '../widgets/order_card.dart';
 
 /// Orders Screen - Refactored
-/// 
+///
 /// Luxury e-commerce order history with Active/Completed tabs.
-/// 
+///
 /// Architecture:
 /// - Tab-based navigation (Active / Completed)
 /// - Reusable OrderCard with variants
 /// - Context-aware empty states
 /// - Smooth animations and transitions
-/// 
+///
 /// Why this refactor improves UX:
 /// 1. Clear separation: Active vs Completed orders
 /// 2. Context-aware actions: Track, Review, View Receipt
@@ -26,13 +26,14 @@ class OrdersScreenRefactored extends ConsumerStatefulWidget {
   const OrdersScreenRefactored({super.key});
 
   @override
-  ConsumerState<OrdersScreenRefactored> createState() => _OrdersScreenRefactoredState();
+  ConsumerState<OrdersScreenRefactored> createState() =>
+      _OrdersScreenRefactoredState();
 }
 
 class _OrdersScreenRefactoredState extends ConsumerState<OrdersScreenRefactored>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  
+
   @override
   void initState() {
     super.initState();
@@ -69,7 +70,10 @@ class _OrdersScreenRefactoredState extends ConsumerState<OrdersScreenRefactored>
     );
   }
 
-  Widget _buildHeader(BuildContext context, AsyncValue<List<Order>> ordersAsync) {
+  Widget _buildHeader(
+    BuildContext context,
+    AsyncValue<List<Order>> ordersAsync,
+  ) {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
       decoration: BoxDecoration(
@@ -97,7 +101,7 @@ class _OrdersScreenRefactoredState extends ConsumerState<OrdersScreenRefactored>
                 child: Column(
                   children: [
                     Text(
-                      'My Orders',
+                      'Đơn hàng của tôi',
                       style: GoogleFonts.playfairDisplay(
                         fontSize: 22,
                         fontWeight: FontWeight.w600,
@@ -107,22 +111,28 @@ class _OrdersScreenRefactoredState extends ConsumerState<OrdersScreenRefactored>
                     const SizedBox(height: 4),
                     ordersAsync.when(
                       data: (orders) {
-                        final activeCount = orders.where((o) => 
-                          o.status == OrderStatus.shipped || 
-                          o.status == OrderStatus.outForDelivery
-                        ).length;
-                        final completedCount = orders.where((o) => 
-                          o.status == OrderStatus.delivered || 
-                          o.status == OrderStatus.cancelled
-                        ).length;
-                        
-                        final count = _tabController.index == 0 
-                          ? activeCount 
-                          : completedCount;
+                        final activeCount = orders
+                            .where(
+                              (o) =>
+                                  o.status == OrderStatus.shipped ||
+                                  o.status == OrderStatus.outForDelivery,
+                            )
+                            .length;
+                        final completedCount = orders
+                            .where(
+                              (o) =>
+                                  o.status == OrderStatus.delivered ||
+                                  o.status == OrderStatus.cancelled,
+                            )
+                            .length;
+
+                        final count = _tabController.index == 0
+                            ? activeCount
+                            : completedCount;
                         final label = _tabController.index == 0
-                          ? 'active shipment${count != 1 ? 's' : ''}'
-                          : 'past order${count != 1 ? 's' : ''}';
-                        
+                            ? 'đơn đang giao'
+                            : 'đơn trước đó';
+
                         return Text(
                           '$count $label',
                           style: GoogleFonts.montserrat(
@@ -170,8 +180,8 @@ class _OrdersScreenRefactoredState extends ConsumerState<OrdersScreenRefactored>
           letterSpacing: 0.5,
         ),
         tabs: const [
-          Tab(text: 'Active'),
-          Tab(text: 'Completed'),
+          Tab(text: 'Đang giao'),
+          Tab(text: 'Hoàn tất'),
         ],
       ),
     );
@@ -188,17 +198,20 @@ class _OrdersScreenRefactoredState extends ConsumerState<OrdersScreenRefactored>
   }
 
   Widget _buildActiveTab(BuildContext context, List<Order> orders) {
-    final activeOrders = orders.where((o) => 
-      o.status == OrderStatus.shipped || 
-      o.status == OrderStatus.outForDelivery
-    ).toList();
+    final activeOrders = orders
+        .where(
+          (o) =>
+              o.status == OrderStatus.shipped ||
+              o.status == OrderStatus.outForDelivery,
+        )
+        .toList();
 
     if (activeOrders.isEmpty) {
       return _buildEmptyState(
         context,
         icon: Icons.local_shipping_outlined,
-        title: 'No active shipments',
-        subtitle: 'Your active orders will appear here',
+        title: 'Chưa có đơn đang giao',
+        subtitle: 'Các đơn hàng đang vận chuyển sẽ xuất hiện tại đây',
       );
     }
 
@@ -225,17 +238,20 @@ class _OrdersScreenRefactoredState extends ConsumerState<OrdersScreenRefactored>
   }
 
   Widget _buildCompletedTab(BuildContext context, List<Order> orders) {
-    final completedOrders = orders.where((o) => 
-      o.status == OrderStatus.delivered || 
-      o.status == OrderStatus.cancelled
-    ).toList();
+    final completedOrders = orders
+        .where(
+          (o) =>
+              o.status == OrderStatus.delivered ||
+              o.status == OrderStatus.cancelled,
+        )
+        .toList();
 
     if (completedOrders.isEmpty) {
       return _buildEmptyState(
         context,
         icon: Icons.receipt_long_outlined,
-        title: 'No past orders',
-        subtitle: 'You haven\'t placed any orders yet',
+        title: 'Chưa có đơn hàng trước đó',
+        subtitle: 'Bạn vẫn chưa phát sinh đơn hàng nào',
       );
     }
 
@@ -250,8 +266,9 @@ class _OrdersScreenRefactoredState extends ConsumerState<OrdersScreenRefactored>
         itemBuilder: (context, index) {
           final order = completedOrders[index];
           // TODO: Check if order has been reviewed from your review system
-          final hasReviewed = index == 1; // Mock: second order has been reviewed
-          
+          final hasReviewed =
+              index == 1; // Mock: second order has been reviewed
+
           return OrderCard(
             order: order,
             variant: OrderCardVariant.completed,
@@ -318,14 +335,10 @@ class _OrdersScreenRefactoredState extends ConsumerState<OrdersScreenRefactored>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.error_outline,
-            size: 64,
-            color: AppTheme.mutedSilver,
-          ),
+          Icon(Icons.error_outline, size: 64, color: AppTheme.mutedSilver),
           const SizedBox(height: 16),
           Text(
-            'Failed to load orders',
+            'Không thể tải danh sách đơn hàng',
             style: GoogleFonts.playfairDisplay(
               fontSize: 18,
               fontWeight: FontWeight.w600,
@@ -360,7 +373,7 @@ class _OrdersScreenRefactoredState extends ConsumerState<OrdersScreenRefactored>
     // TODO: Navigate to order detail screen
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Order detail: ${order.orderNumber}'),
+        content: Text('Mở chi tiết đơn ${order.orderNumber}'),
         duration: const Duration(seconds: 1),
       ),
     );
@@ -370,7 +383,7 @@ class _OrdersScreenRefactoredState extends ConsumerState<OrdersScreenRefactored>
     // TODO: Navigate to tracking screen or show tracking modal
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Track order: ${order.trackingNumber}'),
+        content: Text('Theo dõi vận đơn: ${order.trackingNumber}'),
         duration: const Duration(seconds: 1),
       ),
     );
@@ -380,7 +393,7 @@ class _OrdersScreenRefactoredState extends ConsumerState<OrdersScreenRefactored>
     // TODO: Show receipt modal or navigate to receipt screen
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('View receipt for ${order.orderNumber}'),
+        content: Text('Xem hóa đơn của ${order.orderNumber}'),
         duration: const Duration(seconds: 1),
       ),
     );
@@ -390,7 +403,7 @@ class _OrdersScreenRefactoredState extends ConsumerState<OrdersScreenRefactored>
     // TODO: Navigate to write review screen
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Write review for ${order.items.first.productName}'),
+        content: Text('Viết đánh giá cho ${order.items.first.productName}'),
         duration: const Duration(seconds: 1),
       ),
     );
@@ -400,7 +413,9 @@ class _OrdersScreenRefactoredState extends ConsumerState<OrdersScreenRefactored>
     // TODO: Navigate to view review screen
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('View your review for ${order.items.first.productName}'),
+        content: Text(
+          'Xem đánh giá của bạn cho ${order.items.first.productName}',
+        ),
         duration: const Duration(seconds: 1),
       ),
     );

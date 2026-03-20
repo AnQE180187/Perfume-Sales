@@ -33,7 +33,7 @@ class SearchResultCard extends StatelessWidget {
           children: [
             // Product Image
             _buildProductImage(),
-            
+
             // Product Info
             Expanded(
               child: Padding(
@@ -52,7 +52,7 @@ class SearchResultCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 6),
-                    
+
                     // Product Name
                     Text(
                       product.name,
@@ -65,7 +65,7 @@ class SearchResultCard extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    
+
                     // Description
                     if (product.description != null) ...[
                       const SizedBox(height: 6),
@@ -80,9 +80,9 @@ class SearchResultCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
-                    
+
                     const SizedBox(height: 12),
-                    
+
                     // Price and Add Button
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -96,7 +96,10 @@ class SearchResultCard extends StatelessWidget {
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
                             color: AppTheme.accentGold,
                             borderRadius: BorderRadius.circular(20),
@@ -105,7 +108,7 @@ class SearchResultCard extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                'ADD',
+                                'THÊM',
                                 style: GoogleFonts.montserrat(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,
@@ -145,7 +148,9 @@ class SearchResultCard extends StatelessWidget {
       child: Stack(
         children: [
           ClipRRect(
-            borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
+            borderRadius: const BorderRadius.horizontal(
+              left: Radius.circular(12),
+            ),
             child: Image.network(
               product.imageUrl,
               fit: BoxFit.cover,

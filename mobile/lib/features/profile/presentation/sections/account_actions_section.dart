@@ -4,9 +4,9 @@ import '../../../../core/theme/app_theme.dart';
 import '../widgets/profile_action_tile.dart';
 
 /// Account Actions Section
-/// 
+///
 /// List of account-related navigation items.
-/// 
+///
 /// Why this is a section:
 /// - Groups all account actions in one place
 /// - Makes it easy to reorder or add new actions
@@ -41,23 +41,23 @@ class AccountActionsSection extends StatelessWidget {
             children: [
               ProfileActionTile(
                 icon: Icons.shopping_bag_outlined,
-                title: 'My Orders',
+                title: 'Đơn hàng của tôi',
                 subtitle: activeShipmentsText,
                 onTap: onMyOrders,
               ),
               ProfileActionTile(
                 icon: Icons.local_shipping_outlined,
-                title: 'Shipping Addresses',
+                title: 'Địa chỉ giao hàng',
                 onTap: onShippingAddresses,
               ),
               ProfileActionTile(
                 icon: Icons.payment_outlined,
-                title: 'Payment Methods',
+                title: 'Phương thức thanh toán',
                 onTap: onPaymentMethods,
               ),
               ProfileActionTile(
                 icon: Icons.tune_outlined,
-                title: 'AI Preferences',
+                title: 'Tùy chọn AI',
                 onTap: onAiPreferences,
               ),
             ],
@@ -69,9 +69,9 @@ class AccountActionsSection extends StatelessWidget {
 }
 
 /// Logout Section
-/// 
+///
 /// Separated logout action with low visual emphasis.
-/// 
+///
 /// Why this is separate:
 /// - Logout is destructive and should be visually distinct
 /// - Easy to customize logout behavior
@@ -79,10 +79,7 @@ class AccountActionsSection extends StatelessWidget {
 class LogoutSection extends StatelessWidget {
   final VoidCallback onLogout;
 
-  const LogoutSection({
-    super.key,
-    required this.onLogout,
-  });
+  const LogoutSection({super.key, required this.onLogout});
 
   @override
   Widget build(BuildContext context) {
@@ -97,14 +94,10 @@ class LogoutSection extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.logout,
-              size: 14,
-              color: AppTheme.mutedSilver,
-            ),
+            Icon(Icons.logout, size: 14, color: AppTheme.mutedSilver),
             const SizedBox(width: 7),
             Text(
-              'Log Out',
+              'Đăng xuất',
               style: GoogleFonts.montserrat(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,

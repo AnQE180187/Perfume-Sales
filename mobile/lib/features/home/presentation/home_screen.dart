@@ -13,20 +13,19 @@ class HomeScreen extends ConsumerWidget {
     final personalizedProducts = ref.watch(personalizedProductsProvider);
     final recommendedProducts = ref.watch(recommendedProductsProvider);
 
-    return Scaffold(
-      backgroundColor: AppTheme.ivoryBackground,
-      body: SafeArea(
+    return Container(
+      color: AppTheme.ivoryBackground,
+      child: SafeArea(
+        bottom: false,
         child: CustomScrollView(
           slivers: [
             // Header with Search
-            const SliverToBoxAdapter(
-              child: HomeHeader(),
-            ),
+            const SliverToBoxAdapter(child: HomeHeader()),
 
             // Personalized Selection
             SliverToBoxAdapter(
               child: ProductSection(
-                title: 'PERSONALIZED SELECTION',
+                title: 'LỰA CHỌN DÀNH RIÊNG CHO BẠN',
                 productsAsync: personalizedProducts,
               ),
             ),
@@ -36,8 +35,8 @@ class HomeScreen extends ConsumerWidget {
             // Tailored Recommendations
             SliverToBoxAdapter(
               child: ProductSection(
-                title: 'TAILORED RECOMMENDATIONS',
-                actionText: 'VIEW COLLECTION',
+                title: 'GỢI Ý PHÙ HỢP VỚI BẠN',
+                actionText: 'XEM BỘ SƯU TẬP',
                 productsAsync: recommendedProducts,
               ),
             ),

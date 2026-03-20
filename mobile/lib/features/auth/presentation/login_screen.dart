@@ -15,19 +15,34 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   bool _isSignIn = true;
+  bool _showPassword = false;
 
   @override
   void dispose() {
     _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
+  }
+
+  void _showSocialNotSupported() {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Đăng nhập mạng xã hội hiện chưa được hỗ trợ với API hiện tại.',
+        ),
+      ),
+    );
   }
 
   Future<void> _handleContinue() async {
     final l10n = AppLocalizations.of(context)!;
     final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
 
-    if (email.isEmpty) {
+    if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(l10n.pleaseProvideCredentials)));
@@ -35,11 +50,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
 
     try {
-      if (_isSignIn) {
-        await ref.read(authControllerProvider.notifier).login(email, '');
-      } else {
-        await ref.read(authControllerProvider.notifier).login(email, '');
-      }
+      await ref.read(authControllerProvider.notifier).login(email, password);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
@@ -72,7 +83,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                       // Title
                       Text(
-                        'Welcome to\nPerfumeGPT',
+                        'Chào mừng đến với\nPerfumeGPT',
                         textAlign: TextAlign.center,
                         style: GoogleFonts.playfairDisplay(
                           fontSize: 36,
@@ -86,7 +97,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                       // Subtitle
                       Text(
-                        'Your personal AI scent concierge',
+                        'Trợ lý mùi hương AI dành riêng cho bạn',
                         textAlign: TextAlign.center,
                         style: GoogleFonts.montserrat(
                           fontSize: 14,
@@ -105,6 +116,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                       // Email Input
                       _buildEmailField(),
+
+                      const SizedBox(height: 16),
+
+                      // Password Input
+                      _buildPasswordField(),
 
                       const SizedBox(height: 20),
 
@@ -134,7 +150,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   ),
                                 )
                               : Text(
-                                  'Continue →',
+                                  'Tiếp tục →',
                                   style: GoogleFonts.montserrat(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
@@ -158,7 +174,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Text(
-                              'OR CONTINUE WITH',
+                              'HOẶC TIẾP TỤC VỚI',
                               style: GoogleFonts.montserrat(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w400,
@@ -184,16 +200,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         children: [
                           _buildSocialButton(
                             icon: FontAwesomeIcons.google,
-                            onPressed: () => ref
-                                .read(authControllerProvider.notifier)
-                                .signInWithGoogle(),
+                            onPressed: _showSocialNotSupported,
                           ),
                           const SizedBox(width: 20),
                           _buildSocialButton(
                             icon: FontAwesomeIcons.facebookF,
-                            onPressed: () => ref
-                                .read(authControllerProvider.notifier)
-                                .signInWithFacebook(),
+                            onPressed: _showSocialNotSupported,
                           ),
                         ],
                       ),
@@ -211,10 +223,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                           children: [
                             const TextSpan(
-                              text: 'By continuing, you agree to our ',
+                              text: 'Khi tiếp tục, bạn đồng ý với ',
                             ),
                             TextSpan(
-                              text: 'Terms of Service',
+                              text: 'Điều khoản dịch vụ',
                               style: GoogleFonts.montserrat(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w300,
@@ -222,9 +234,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 decoration: TextDecoration.underline,
                               ),
                             ),
-                            const TextSpan(text: ' and '),
+                            const TextSpan(text: ' và '),
                             TextSpan(
-                              text: 'Privacy Policy',
+                              text: 'Chính sách bảo mật',
                               style: GoogleFonts.montserrat(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w300,
@@ -299,7 +311,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 alignment: Alignment.center,
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 child: Text(
-                  'Sign In',
+                  'Đăng nhập',
                   style: GoogleFonts.montserrat(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -322,7 +334,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 alignment: Alignment.center,
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 child: Text(
-                  'Create Account',
+                  'Tạo tài khoản',
                   style: GoogleFonts.montserrat(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -349,7 +361,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         color: const Color(0xFF1A1A1A),
       ),
       decoration: InputDecoration(
-        hintText: 'Email Address',
+        hintText: 'Địa chỉ email',
         hintStyle: GoogleFonts.montserrat(
           fontSize: 14,
           fontWeight: FontWeight.w400,
@@ -364,6 +376,64 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
         ),
         prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 16),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(28),
+          borderSide: const BorderSide(color: Color(0xFFE8D5B7), width: 1),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(28),
+          borderSide: const BorderSide(color: Color(0xFFE8D5B7), width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(28),
+          borderSide: const BorderSide(color: Color(0xFFD4AF37), width: 1.5),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPasswordField() {
+    return TextField(
+      controller: _passwordController,
+      obscureText: !_showPassword,
+      style: GoogleFonts.montserrat(
+        fontSize: 14,
+        fontWeight: FontWeight.w400,
+        color: const Color(0xFF1A1A1A),
+      ),
+      decoration: InputDecoration(
+        hintText: 'Mật khẩu',
+        hintStyle: GoogleFonts.montserrat(
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+          color: const Color(0xFFCCCCCC),
+        ),
+        prefixIcon: Padding(
+          padding: const EdgeInsets.only(left: 16, right: 12),
+          child: Icon(
+            Icons.lock_outline,
+            color: const Color(0xFFD4AF37),
+            size: 20,
+          ),
+        ),
+        prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+        suffixIcon: GestureDetector(
+          onTap: () => setState(() => _showPassword = !_showPassword),
+          child: Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: Icon(
+              _showPassword
+                  ? Icons.visibility_off_outlined
+                  : Icons.visibility_outlined,
+              color: const Color(0xFFAAAAAA),
+              size: 20,
+            ),
+          ),
+        ),
+        suffixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
         filled: true,
         fillColor: Colors.white,
         contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 16),

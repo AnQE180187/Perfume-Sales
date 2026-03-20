@@ -20,7 +20,7 @@ class PaymentHeaderSection extends StatelessWidget {
       child: Column(
         children: [
           Text(
-            'Pay',
+            'Thanh toán',
             style: GoogleFonts.playfairDisplay(
               fontSize: 24,
               fontWeight: FontWeight.w600,
@@ -29,7 +29,7 @@ class PaymentHeaderSection extends StatelessWidget {
           ),
           const SizedBox(height: 2),
           Text(
-            'Review & Confirm',
+            'Kiểm tra và xác nhận',
             style: GoogleFonts.montserrat(
               fontSize: 11,
               fontWeight: FontWeight.w400,
