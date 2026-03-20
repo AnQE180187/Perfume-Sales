@@ -10,6 +10,7 @@ import '../../../core/widgets/ai_scent_analysis_card.dart';
 import '../../../core/widgets/scent_structure_section.dart';
 import '../../../core/widgets/product_story_section.dart';
 import '../../../core/widgets/product_bottom_cta.dart';
+import 'scent_structure_detail_screen.dart';
 import '../providers/product_provider.dart';
 
 class ProductDetailScreen extends ConsumerStatefulWidget {
@@ -290,7 +291,64 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
 
                   // ================= SCENT STRUCTURE =================
                   SliverToBoxAdapter(
-                    child: ScentStructureSection(notes: product.notes),
+                    child: Hero(
+                      tag: 'scent-structure-${product.id}',
+                      child: Material(
+                        color: Colors.transparent,
+                        child: ScentStructureSection(
+                          notes: product.notes,
+                          topNotes: product.topNotes,
+                          heartNotes: product.heartNotes,
+                          baseNotes: product.baseNotes,
+                          onViewAll: () {
+                            if (!mounted) return;
+                            Navigator.of(context, rootNavigator: true).push(
+                              PageRouteBuilder(
+                                transitionDuration: const Duration(
+                                  milliseconds: 420,
+                                ),
+                                reverseTransitionDuration: const Duration(
+                                  milliseconds: 280,
+                                ),
+                                pageBuilder: (_, __, ___) =>
+                                    ScentStructureDetailScreen(
+                                      heroTag: 'scent-structure-${product.id}',
+                                      productName: product.name,
+                                      notes: product.notes,
+                                      topNotes: product.topNotes,
+                                      heartNotes: product.heartNotes,
+                                      baseNotes: product.baseNotes,
+                                    ),
+                                transitionsBuilder: (_, animation, __, child) {
+                                  final fade = CurvedAnimation(
+                                    parent: animation,
+                                    curve: Curves.easeOutCubic,
+                                  );
+                                  final scale =
+                                      Tween<double>(
+                                        begin: 0.985,
+                                        end: 1,
+                                      ).animate(
+                                        CurvedAnimation(
+                                          parent: animation,
+                                          curve: Curves.easeOut,
+                                        ),
+                                      );
+
+                                  return FadeTransition(
+                                    opacity: fade,
+                                    child: ScaleTransition(
+                                      scale: scale,
+                                      child: child,
+                                    ),
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
                   ),
 
                   // ================= THE STORY =================

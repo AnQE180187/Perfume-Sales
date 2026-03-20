@@ -9,6 +9,9 @@ class Product {
   final double? rating;
   final int? reviews;
   final List<String> notes;
+  final List<String> topNotes;
+  final List<String> heartNotes;
+  final List<String> baseNotes;
   final String? size;
   final String? variant;
   final bool? inStock;
@@ -25,6 +28,9 @@ class Product {
     this.rating,
     this.reviews,
     this.notes = const [],
+    this.topNotes = const [],
+    this.heartNotes = const [],
+    this.baseNotes = const [],
     this.size,
     this.variant,
     this.inStock = true,
@@ -42,6 +48,9 @@ class Product {
     double? rating,
     int? reviews,
     List<String>? notes,
+    List<String>? topNotes,
+    List<String>? heartNotes,
+    List<String>? baseNotes,
     String? size,
     String? variant,
     bool? inStock,
@@ -58,6 +67,9 @@ class Product {
       rating: rating ?? this.rating,
       reviews: reviews ?? this.reviews,
       notes: notes ?? this.notes,
+      topNotes: topNotes ?? this.topNotes,
+      heartNotes: heartNotes ?? this.heartNotes,
+      baseNotes: baseNotes ?? this.baseNotes,
       size: size ?? this.size,
       variant: variant ?? this.variant,
       inStock: inStock ?? this.inStock,
@@ -76,6 +88,9 @@ class Product {
       'rating': rating,
       'reviews': reviews,
       'notes': notes,
+      'top_notes': topNotes,
+      'heart_notes': heartNotes,
+      'base_notes': baseNotes,
       'size': size,
       'variant': variant,
       'in_stock': inStock,
@@ -84,6 +99,15 @@ class Product {
   }
 
   factory Product.fromJson(Map<String, dynamic> json) {
+    List<String> parseStringList(dynamic raw) {
+      if (raw is! List) return <String>[];
+      return raw
+          .map((item) => item?.toString())
+          .whereType<String>()
+          .where((item) => item.trim().isNotEmpty)
+          .toList();
+    }
+
     final dynamic brandRaw = json['brand'];
     final brandName = brandRaw is String
         ? brandRaw
@@ -106,6 +130,7 @@ class Product {
                 return null;
               })
               .whereType<String>()
+              .where((url) => url.trim().isNotEmpty)
               .toList()
         : <String>[];
 
@@ -125,6 +150,49 @@ class Product {
               .whereType<String>()
               .toList()
         : <String>[];
+
+    final topNotes = parseStringList(json['top_notes'] ?? json['topNotes']);
+    final heartNotes = parseStringList(
+      json['heart_notes'] ?? json['heartNotes'],
+    );
+    final baseNotes = parseStringList(json['base_notes'] ?? json['baseNotes']);
+
+    if (notesRaw is List) {
+      for (final entry in notesRaw) {
+        if (entry is! Map<String, dynamic>) continue;
+        final noteRaw = entry['note'];
+        if (noteRaw is! Map<String, dynamic>) continue;
+
+        final noteName = noteRaw['name']?.toString();
+        final noteType = noteRaw['type']?.toString().toUpperCase();
+        if (noteName == null || noteName.isEmpty || noteType == null) continue;
+
+        if (noteType == 'TOP' && !topNotes.contains(noteName)) {
+          topNotes.add(noteName);
+        } else if ((noteType == 'MIDDLE' || noteType == 'HEART') &&
+            !heartNotes.contains(noteName)) {
+          heartNotes.add(noteName);
+        } else if (noteType == 'BASE' && !baseNotes.contains(noteName)) {
+          baseNotes.add(noteName);
+        }
+      }
+    }
+
+    if (topNotes.isEmpty && heartNotes.isEmpty && baseNotes.isEmpty) {
+      if (parsedNotes.length == 1) {
+        topNotes.add(parsedNotes.first);
+      } else if (parsedNotes.length == 2) {
+        topNotes.add(parsedNotes[0]);
+        heartNotes.add(parsedNotes[1]);
+      } else if (parsedNotes.length > 2) {
+        final topEnd = (parsedNotes.length / 3).ceil();
+        final heartEnd = ((parsedNotes.length * 2) / 3).ceil();
+
+        topNotes.addAll(parsedNotes.sublist(0, topEnd));
+        heartNotes.addAll(parsedNotes.sublist(topEnd, heartEnd));
+        baseNotes.addAll(parsedNotes.sublist(heartEnd));
+      }
+    }
 
     final dynamic reviewsRaw = json['reviews'];
     final int? reviewCount = json['reviews'] is int
@@ -169,6 +237,9 @@ class Product {
       rating: rating,
       reviews: reviewCount,
       notes: parsedNotes,
+      topNotes: topNotes,
+      heartNotes: heartNotes,
+      baseNotes: baseNotes,
       size: (json['size'] as String?) ?? firstVariant?['name']?.toString(),
       variant:
           (json['variant'] as String?) ?? firstVariant?['name']?.toString(),
