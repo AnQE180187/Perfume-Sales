@@ -555,18 +555,18 @@ export default function AdminProducts() {
                             <label className="text-[8px] uppercase tracking-widest text-muted-foreground mb-1 block">Price</label>
                             <input
                               type="number"
-                              className="w-full bg-background border border-border rounded-lg py-1.5 px-3 text-xs outline-none focus:border-gold"
-                              value={v.price}
-                              onChange={(e) => updateVariant(i, { price: Number(e.target.value) || 0 })}
+                              className="w-full bg-background border border-border rounded-lg py-1.5 px-3 text-xs outline-none focus:border-gold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                              value={v.price === 0 && !editId ? '' : v.price}
+                              onChange={(e) => updateVariant(i, { price: e.target.value === '' ? 0 : Number(e.target.value) })}
                             />
                           </div>
                           <div className="w-20">
                             <label className="text-[8px] uppercase tracking-widest text-muted-foreground mb-1 block">Stock</label>
                             <input
                               type="number"
-                              className="w-full bg-background border border-border rounded-lg py-1.5 px-3 text-xs outline-none focus:border-gold"
-                              value={v.stock}
-                              onChange={(e) => updateVariant(i, { stock: Number(e.target.value) || 0 })}
+                              className="w-full bg-background border border-border rounded-lg py-1.5 px-3 text-xs outline-none focus:border-gold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                              value={v.stock === 0 && !editId ? '' : v.stock}
+                              onChange={(e) => updateVariant(i, { stock: e.target.value === '' ? 0 : Number(e.target.value) })}
                             />
                           </div>
                           {form.variants.length > 1 && (

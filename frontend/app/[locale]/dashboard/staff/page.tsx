@@ -1,6 +1,31 @@
+'use client';
+
 import { AuthGuard } from '@/components/auth/auth-guard';
+import { useEffect, useState } from 'react';
+import { DollarSign, Package, TrendingUp, Loader2 } from 'lucide-react';
+import { staffReportsService, type DailyReport } from '@/services/staff-reports.service';
+
+const formatVND = (n: number) =>
+    new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n);
 
 export default function StaffDashboard() {
+    const [report, setReport] = useState<DailyReport | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const load = async () => {
+            try {
+                const data = await staffReportsService.getDailyReport();
+                setReport(data);
+            } catch {
+                // ignore
+            } finally {
+                setLoading(false);
+            }
+        };
+        void load();
+    }, []);
+
     return (
         <AuthGuard allowedRoles={['staff', 'admin']}>
             <main className="p-8">
@@ -10,18 +35,36 @@ export default function StaffDashboard() {
                 </header>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div className="glass p-8 rounded-[2.5rem] border-border hover:border-gold/30 transition-all">
-                        <h3 className="text-muted-foreground text-[10px] uppercase tracking-[0.3em] font-heading mb-4">Pending Requests</h3>
-                        <p className="text-4xl font-heading text-foreground">12</p>
-                    </div>
-                    <div className="glass p-8 rounded-[2.5rem] border-border hover:border-gold/30 transition-all">
-                        <h3 className="text-muted-foreground text-[10px] uppercase tracking-[0.3em] font-heading mb-4">Crafting in Progress</h3>
-                        <p className="text-4xl font-heading text-foreground">05</p>
-                    </div>
-                    <div className="glass p-8 rounded-[2.5rem] border-border hover:border-gold/30 transition-all bg-gold/5">
-                        <h3 className="text-gold text-[10px] uppercase tracking-[0.3em] font-heading mb-4">Today's Revenue</h3>
-                        <p className="text-4xl font-heading text-foreground">$4,280</p>
-                    </div>
+                    {loading ? (
+                        <div className="col-span-full flex items-center justify-center py-10 text-sm text-muted-foreground">
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Loading…
+                        </div>
+                    ) : (
+                        <>
+                            <div className="glass p-8 rounded-[2.5rem] border-border hover:border-gold/30 transition-all">
+                                <div className="flex justify-between items-start mb-4">
+                                    <h3 className="text-muted-foreground text-[10px] uppercase tracking-[0.3em] font-heading">Total Orders Today</h3>
+                                    <Package className="w-5 h-5 text-gold/50" />
+                                </div>
+                                <p className="text-4xl font-heading text-foreground">{report?.totalOrders ?? 0}</p>
+                                <p className="text-[10px] text-muted-foreground mt-1">{report?.completedOrders ?? 0} completed</p>
+                            </div>
+                            <div className="glass p-8 rounded-[2.5rem] border-border hover:border-gold/30 transition-all">
+                                <div className="flex justify-between items-start mb-4">
+                                    <h3 className="text-muted-foreground text-[10px] uppercase tracking-[0.3em] font-heading">Avg Order Value</h3>
+                                    <TrendingUp className="w-5 h-5 text-gold/50" />
+                                </div>
+                                <p className="text-4xl font-heading text-foreground">{formatVND(report?.avgOrderValue ?? 0)}</p>
+                            </div>
+                            <div className="glass p-8 rounded-[2.5rem] border-border hover:border-gold/30 transition-all bg-gold/5">
+                                <div className="flex justify-between items-start mb-4">
+                                    <h3 className="text-gold text-[10px] uppercase tracking-[0.3em] font-heading">Today&apos;s Revenue</h3>
+                                    <DollarSign className="w-5 h-5 text-gold" />
+                                </div>
+                                <p className="text-4xl font-heading text-gold">{formatVND(report?.totalRevenue ?? 0)}</p>
+                            </div>
+                        </>
+                    )}
                 </div>
             </main>
         </AuthGuard>

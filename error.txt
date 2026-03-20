@@ -1,30 +1,22 @@
-[Nest] 17976  - 01/24/2026, 12:44:10 AM   ERROR [ExceptionsHandler] PrismaClientUnknownRequestError:
-Invalid `this.prisma.user.findUnique()` invocation in
-D:\CVScode source\FPT-Capstonee\backend\src\users\users.service.ts:10:29
-
-   7 constructor(private readonly prisma: PrismaService) {}
-   8
-   9 findMe(userId: string) {
-→ 10   return this.prisma.user.findUnique(
-Error in connector: Error querying the database: FATAL: the database system is in recovery mode
-    at ei.handleRequestError (D:\CVScode source\FPT-Capstonee\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:237:13)
-    at ei.handleAndLogRequestError (D:\CVScode source\FPT-Capstonee\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:174:12)
-→ 10   return this.prisma.user.findUnique(
-Error in connector: Error querying the database: FATAL: the database system is in recovery mode
-    at ei.handleRequestError (D:\CVScode source\FPT-Capstonee\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:237:13)
-    at ei.handleAndLogRequestError (D:\CVScode source\FPT-Capstonee\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:174:12)
-ry mode
-    at ei.handleRequestError (D:\CVScode source\FPT-Capstonee\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:237:13)
-    at ei.handleAndLogRequestError (D:\CVScode source\FPT-Capstonee\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:174:12)
-    at ei.handleRequestError (D:\CVScode source\FPT-Capstonee\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:237:13)
-    at ei.handleAndLogRequestError (D:\CVScode source\FPT-Capstonee\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:174:12)
-ma\client\src\runtime\RequestHandler.ts:237:13)
-    at ei.handleAndLogRequestError (D:\CVScode source\FPT-Capstonee\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:174:12)
-    at ei.handleAndLogRequestError (D:\CVScode source\FPT-Capstonee\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:174:12)
-\@prisma\client\src\runtime\RequestHandler.ts:174:12)
-    at ei.request (D:\CVScode source\FPT-Capstonee\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:143:12)
-    at async a (D:\CVScode source\FPT-Capstonee\backend\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:833:24)
-    at async D:\CVScode source\FPT-Capstonee\backend\node_modules\@nestjs\core\router\router-execution-context.js:46:28
-    at async D:\CVScode source\FPT-Capstonee\backend\node_modules\@nestjs\core\router\router-proxy.js:9:17 {
-  clientVersion: '6.19.2'
-}
+ backend@0.0.1 build
+> nest build
+seed-perfumes-v4.ts:15:18 - error TS2339: Property 'productVariant' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+15     await prisma.productVariant.deleteMany();
+                    ~~~~~~~~~~~~~~
+seed-perfumes-v4.ts:337:17 - error TS2353: Object literal may only specify known properties, and 'variants' does not exist in type 'Without<ProductCreateInput, ProductUncheckedCreateInput> & ProductUncheckedCreateInput'.
+337                 variants: {
+                    ~~~~~~~~
+  node_modules/.prisma/client/index.d.ts:15306:5
+    15306     data: XOR<ProductCreateInput, ProductUncheckedCreateInput>
+              ~~~~
+    The expected type comes from property 'data' which is declared here on type '{ select?: ProductSelect<DefaultArgs> | null | undefined; omit?: ProductOmit<DefaultArgs> | null | undefined; include?: ProductInclude<...> | ... 1 more ... | undefined; data: (Without<...> & ProductUncheckedCreateInput) | (Without<...> & ProductCreateInput); }'
+src/cart/cart.service.ts:16:13 - error TS2353: Object literal may only specify known properties, and 'variant' does not exist in type 'CartItemInclude<DefaultArgs>'.
+16             variant: {
+               ~~~~~~~
+src/cart/cart.service.ts:40:15 - error TS2353: Object literal may only specify known properties, and 'variant' does not exist in type 'CartItemInclude<DefaultArgs>'.
+40               variant: {
+                 ~~~~~~~
+src/cart/cart.service.ts:64:33 - error TS2353: Object literal may only specify known properties, and 'variantId' does not exist in type 'CartItemWhereInput'.
+64       where: { cartId: cart.id, variantId: dto.variantId },
+                                   ~~~~~~~~~
+src/cart/cart.service.ts:76:9 - error TS2353: Object literal may only specify known properties, and 'variantId' does not exist in type 'Without<CartItemCreateInput, CartItemUncheckedCreateInput> & CartItemUncheckedCreateInput'.

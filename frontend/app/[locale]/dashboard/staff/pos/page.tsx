@@ -1,52 +1,132 @@
 'use client';
 
 import { AuthGuard } from '@/components/auth/auth-guard';
-import { useEffect, useState } from 'react';
-import { Search, ShoppingCart, CreditCard, Plus, Minus, Receipt, QrCode } from 'lucide-react';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import {
+    Search, ShoppingCart, CreditCard, Plus, Minus, Receipt, QrCode,
+    Store, CheckCircle, AlertTriangle, X, Printer, Sparkles,
+    ChevronDown, ChevronUp, Loader2, Phone, User, Award
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { staffPosService, type PosOrder } from '@/services/staff-pos.service';
+import { storesService, type Store as StoreType } from '@/services/stores.service';
 import type { Product } from '@/services/product.service';
 import type { PayOSPaymentResponse } from '@/services/payment.service';
 
 type PaymentMethod = 'CASH' | 'QR';
+const LOW_STOCK_THRESHOLD = 5;
+
+function formatVND(n: number) {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n);
+}
 
 export default function PosPage() {
+    // Store
+    const [myStores, setMyStores] = useState<StoreType[]>([]);
+    const [selectedStoreId, setSelectedStoreId] = useState<string>('');
+    // Products
     const [products, setProducts] = useState<Product[]>([]);
     const [search, setSearch] = useState('');
     const [loadingProducts, setLoadingProducts] = useState(false);
+    // Order
     const [order, setOrder] = useState<PosOrder | null>(null);
     const [creatingOrder, setCreatingOrder] = useState(false);
     const [paying, setPaying] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [stockWarning, setStockWarning] = useState<string | null>(null);
     const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('CASH');
     const [qrPayment, setQrPayment] = useState<PayOSPaymentResponse | null>(null);
+    const [showReceipt, setShowReceipt] = useState(false);
+    const [completedOrder, setCompletedOrder] = useState<PosOrder | null>(null);
+    const qrPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    // Customer / Loyalty
+    const [customerPhone, setCustomerPhone] = useState('');
+    const [loyaltyInfo, setLoyaltyInfo] = useState<{
+        registered: boolean;
+        userId: string | null;
+        fullName: string | null;
+        phone: string;
+        email: string | null;
+        loyaltyPoints: number;
+        transactionCount?: number;
+    } | null>(null);
+    const [lookingUpCustomer, setLookingUpCustomer] = useState(false);
+    // AI Panel
+    const [showAiPanel, setShowAiPanel] = useState(false);
+    const [aiGender, setAiGender] = useState('');
+    const [aiOccasion, setAiOccasion] = useState('');
+    const [aiBudget, setAiBudget] = useState<number>(0);
+    const [aiNotes, setAiNotes] = useState('');
+    const [aiLoading, setAiLoading] = useState(false);
+    const [aiResults, setAiResults] = useState<{
+        productId: string; productName: string; variantId?: string; variantName?: string; price: number; reason: string;
+    }[]>([]);
+    const [aiError, setAiError] = useState<string | null>(null);
 
     const subtotal = order?.items?.reduce((acc, item) => acc + item.totalPrice, 0) ?? 0;
+    const isOrderCompleted = order?.paymentStatus === 'PAID' || order?.status === 'COMPLETED';
 
-    const loadProducts = async (term: string) => {
+    // ─── Store loading ───
+    const loadMyStores = useCallback(async () => {
+        try {
+            const list = await storesService.getMyStores();
+            setMyStores(list);
+            if (list.length && !selectedStoreId) setSelectedStoreId(list[0].id);
+        } catch { /* optional */ }
+    }, []);
+
+    useEffect(() => { void loadMyStores(); }, [loadMyStores]);
+
+    // ─── Product loading (filtered by store) ───
+    const loadProducts = useCallback(async (term: string, storeId?: string) => {
         setLoadingProducts(true);
         setError(null);
         try {
-            const list = await staffPosService.searchProducts(term);
+            const list = await staffPosService.searchProducts(term, storeId || undefined);
             setProducts(list);
         } catch (e: any) {
             setError(e.message || 'Failed to load products');
         } finally {
             setLoadingProducts(false);
         }
-    };
-
-    useEffect(() => {
-        // initial load
-        loadProducts('');
     }, []);
 
+    // Reload products when store changes
+    useEffect(() => {
+        if (selectedStoreId) loadProducts(search, selectedStoreId);
+    }, [selectedStoreId]);
+
+    // ─── QR polling cleanup ───
+    useEffect(() => {
+        return () => { if (qrPollRef.current) clearInterval(qrPollRef.current); };
+    }, []);
+
+    const startQrPolling = (orderId: string) => {
+        if (qrPollRef.current) clearInterval(qrPollRef.current);
+        qrPollRef.current = setInterval(async () => {
+            try {
+                const updated = await staffPosService.getOrder(orderId);
+                if (updated.paymentStatus === 'PAID' || updated.status === 'COMPLETED') {
+                    if (qrPollRef.current) clearInterval(qrPollRef.current);
+                    setOrder(updated);
+                    setCompletedOrder(updated);
+                    setShowReceipt(true);
+                    setQrPayment(null);
+                }
+            } catch { /* ignore */ }
+        }, 3000);
+    };
+
+    // ─── Order helpers ───
     const ensureOrder = async () => {
         if (order) return order;
         setCreatingOrder(true);
         setError(null);
         try {
-            const created = await staffPosService.createDraft();
+            const created = await staffPosService.createDraft(
+                selectedStoreId || undefined,
+                customerPhone || undefined,
+            );
             setOrder(created);
             return created;
         } catch (e: any) {
@@ -60,29 +140,55 @@ export default function PosPage() {
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setSearch(value);
-        loadProducts(value);
+        loadProducts(value, selectedStoreId || undefined);
     };
 
-    const handleAddVariant = async (variantId: string) => {
+    const handleAddVariant = async (variantId: string, variantStock: number) => {
+        if (variantStock <= 0) {
+            setStockWarning('Sản phẩm đã hết hàng!');
+            setTimeout(() => setStockWarning(null), 3000);
+            return;
+        }
         try {
             const current = await ensureOrder();
-            const updated = await staffPosService.upsertItem(current.id, variantId, 1);
+            const existingItem = current.items?.find(i => i.variantId === variantId);
+            const nextQty = (existingItem?.quantity ?? 0) + 1;
+            if (nextQty > variantStock) {
+                setStockWarning(`Chỉ còn ${variantStock} sản phẩm trong kho!`);
+                setTimeout(() => setStockWarning(null), 3000);
+                return;
+            }
+            const updated = await staffPosService.upsertItem(current.id, variantId, nextQty);
             setOrder(updated);
-        } catch {
-            // error đã set ở ensureOrder / upsert
+            setError(null);
+        } catch (e: any) {
+            if (e?.response?.data?.message?.includes('stock') || e?.response?.data?.message?.includes('kho')) {
+                setStockWarning(e.response.data.message);
+                setTimeout(() => setStockWarning(null), 3000);
+            } else {
+                setError(e?.response?.data?.message || e.message || 'Lỗi thêm sản phẩm');
+            }
         }
     };
 
-    const handleChangeQuantity = async (variantId: string, delta: number) => {
+    const handleChangeQuantity = async (variantId: string, deltaOrValue: number, isAbsolute = false) => {
         if (!order) return;
         const item = order.items.find(i => i.variantId === variantId);
         const currentQty = item?.quantity ?? 0;
-        const nextQty = Math.max(0, currentQty + delta);
+        const nextQty = isAbsolute ? Math.max(0, deltaOrValue) : Math.max(0, currentQty + deltaOrValue);
+
         try {
             const updated = await staffPosService.upsertItem(order.id, variantId, nextQty);
             setOrder(updated);
+            setError(null);
+            setStockWarning(null);
         } catch (e: any) {
-            setError(e.message || 'Failed to update quantity');
+            if (e?.response?.data?.message?.includes('stock') || e?.response?.data?.message?.includes('kho')) {
+                setStockWarning(e.response.data.message);
+                setTimeout(() => setStockWarning(null), 3000);
+            } else {
+                setError(e?.response?.data?.message || e.message || 'Failed to update quantity');
+            }
         }
     };
 
@@ -93,9 +199,10 @@ export default function PosPage() {
         try {
             const paid = await staffPosService.payCash(order.id);
             setOrder(paid);
-            // đơn đã hoàn tất, có thể reset UI hoặc để staff tạo đơn mới
+            setCompletedOrder(paid);
+            setShowReceipt(true);
         } catch (e: any) {
-            setError(e.message || 'Failed to complete payment');
+            setError(e?.response?.data?.message || e.message || 'Failed to complete payment');
         } finally {
             setPaying(false);
         }
@@ -108,90 +215,335 @@ export default function PosPage() {
         try {
             const payment = await staffPosService.createQrPayment(order.id);
             setQrPayment(payment);
+            startQrPolling(order.id);
         } catch (e: any) {
-            setError(e.message || 'Failed to create QR payment');
+            setError(e?.response?.data?.message || e.message || 'Failed to create QR payment');
         } finally {
             setPaying(false);
         }
     };
 
+    const handleNewOrder = () => {
+        if (qrPollRef.current) clearInterval(qrPollRef.current);
+        setOrder(null);
+        setCompletedOrder(null);
+        setShowReceipt(false);
+        setQrPayment(null);
+        setPaymentMethod('CASH');
+        setError(null);
+        setStockWarning(null);
+        setCustomerPhone('');
+        setLoyaltyInfo(null);
+        // Reload products for current store
+        if (selectedStoreId) loadProducts('', selectedStoreId);
+    };
+
+    const handleSetCustomer = async () => {
+        if (!customerPhone.trim()) return;
+        setLookingUpCustomer(true);
+        setError(null);
+        try {
+            // Lookup loyalty info (registered user or guest)
+            const info = await staffPosService.lookupLoyalty(customerPhone.trim());
+            setLoyaltyInfo(info);
+
+            // If order exists, attach customer phone to it
+            if (order) {
+                const updated = await staffPosService.setCustomer(order.id, customerPhone.trim());
+                setOrder(updated);
+            }
+        } catch (e: any) {
+            setError(e?.response?.data?.message || e.message || 'Lỗi tra cứu khách hàng');
+        } finally {
+            setLookingUpCustomer(false);
+        }
+    };
+
+    // ─── AI ───
+    const handleAiConsult = async () => {
+        setAiLoading(true); setAiError(null); setAiResults([]);
+        try {
+            const res = await staffPosService.aiConsult({
+                gender: aiGender || undefined,
+                occasion: aiOccasion || undefined,
+                budget: aiBudget > 0 ? aiBudget : undefined,
+                notes: aiNotes || undefined,
+            });
+            setAiResults(res.recommendations);
+            if (res.recommendations.length === 0) setAiError('AI không tìm được sản phẩm phù hợp.');
+        } catch (e: any) {
+            setAiError(e?.response?.data?.message || e.message || 'AI consultation failed');
+        } finally {
+            setAiLoading(false);
+        }
+    };
+
+    const handleAddAiRecommendation = async (variantId?: string) => {
+        if (!variantId) return;
+        let stock = 999;
+        for (const p of products) {
+            const v = p.variants?.find(v => v.id === variantId);
+            if (v) { stock = v.stock; break; }
+        }
+        await handleAddVariant(variantId, stock);
+    };
+
+    // ─── Helper: get first product image URL ───
+    const getProductImage = (p: Product) => {
+        const img = p.images?.[0];
+        return img?.url ?? null;
+    };
+
     return (
         <AuthGuard allowedRoles={['staff', 'admin']}>
-            <div className="flex h-[calc(100vh-80px)] overflow-hidden">
-                {/* Catalog Area */}
+            <div className="flex h-[calc(100vh-80px)] overflow-hidden relative">
+                {/* Stock Warning Toast */}
+                <AnimatePresence>
+                    {stockWarning && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="absolute top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-6 py-3 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-heading uppercase tracking-widest shadow-xl backdrop-blur-md"
+                        >
+                            <AlertTriangle className="w-4 h-4 shrink-0" />
+                            {stockWarning}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* ═══════════ Catalog Area ═══════════ */}
                 <div className="flex-1 flex flex-col border-r border-border min-w-0">
-                    <header className="p-8 border-b border-border flex justify-between items-center bg-secondary/10 shrink-0">
-                        <div className="relative w-full max-w-lg">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                            <input
-                                type="text"
-                                value={search}
-                                onChange={handleSearchChange}
-                                placeholder="Search products, batches or scan barcode..."
-                                className="w-full bg-background border border-border rounded-full py-3.5 pl-12 pr-4 text-sm focus:border-gold/50 outline-none transition-all shadow-sm"
-                            />
+                    <header className="p-8 border-b border-border flex flex-wrap justify-between items-center gap-4 bg-secondary/10 shrink-0">
+                        <div className="flex items-center gap-4 flex-1 min-w-0">
+                            <div className="flex items-center gap-2 shrink-0">
+                                <Store className="w-4 h-4 text-gold" />
+                                <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Quầy:</label>
+                                <select
+                                    value={order?.storeId ?? selectedStoreId}
+                                    onChange={(e) => {
+                                        if (!order) setSelectedStoreId(e.target.value);
+                                    }}
+                                    disabled={!!order}
+                                    className="rounded-lg border border-border bg-background px-3 py-2 text-xs font-heading uppercase tracking-wider focus:border-gold/60 disabled:opacity-70"
+                                >
+                                    <option value="">-- Chọn quầy --</option>
+                                    {myStores.map((s) => (
+                                        <option key={s.id} value={s.id}>{s.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="relative flex-1 max-w-lg min-w-0">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                <input
+                                    type="text"
+                                    value={search}
+                                    onChange={handleSearchChange}
+                                    placeholder="Search products, SKU or scan barcode..."
+                                    className="w-full bg-background border border-border rounded-full py-3.5 pl-12 pr-4 text-sm focus:border-gold/50 outline-none transition-all shadow-sm"
+                                />
+                            </div>
                         </div>
                     </header>
 
+                    {/* Product Grid */}
                     <div className="flex-1 overflow-y-auto p-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 custom-scrollbar">
                         {loadingProducts ? (
                             <div className="col-span-full text-center text-muted-foreground text-sm">Loading products…</div>
                         ) : products.length === 0 ? (
-                            <div className="col-span-full text-center text-muted-foreground text-sm">No products found.</div>
+                            <div className="col-span-full text-center text-muted-foreground text-sm">
+                                {selectedStoreId ? 'Không có sản phẩm nào trong quầy này.' : 'Vui lòng chọn quầy để xem sản phẩm.'}
+                            </div>
                         ) : (
                             products.flatMap((p) =>
-                                (p.variants ?? []).map((v) => (
-                                    <motion.div
-                                        key={v.id}
-                                        whileHover={{ y: -5 }}
-                                        className="glass p-5 rounded-[2rem] border-border hover:border-gold/30 cursor-pointer group transition-all"
-                                    >
-                                        <div className="aspect-square bg-secondary/50 rounded-2xl mb-4 overflow-hidden relative">
-                                            <div className="absolute inset-0 bg-gradient-to-tr from-gold/10 to-transparent" />
-                                            <div className="absolute bottom-3 left-3 px-2 py-1 bg-background/80 backdrop-blur-md rounded-lg text-[9px] uppercase font-heading text-gold border border-gold/10">
-                                                Stock: {v.stock}
+                                (p.variants ?? []).map((v) => {
+                                    const isLow = v.stock > 0 && v.stock <= LOW_STOCK_THRESHOLD;
+                                    const isOut = v.stock <= 0;
+                                    const imageUrl = getProductImage(p);
+                                    return (
+                                        <motion.div
+                                            key={v.id}
+                                            whileHover={{ y: -5 }}
+                                            className={`glass p-5 rounded-[2rem] border-border cursor-pointer group transition-all ${isOut ? 'opacity-50 hover:border-red-500/30' : 'hover:border-gold/30'}`}
+                                        >
+                                            <div className="aspect-square bg-secondary/50 rounded-2xl mb-4 overflow-hidden relative">
+                                                {imageUrl ? (
+                                                    <img
+                                                        src={imageUrl}
+                                                        alt={p.name}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="absolute inset-0 bg-gradient-to-tr from-gold/10 to-transparent flex items-center justify-center text-muted-foreground text-[10px] uppercase tracking-widest">No Image</div>
+                                                )}
+                                                <div className={`absolute bottom-3 left-3 px-2 py-1 bg-background/80 backdrop-blur-md rounded-lg text-[9px] uppercase font-heading border ${isOut ? 'text-red-500 border-red-500/20' : isLow ? 'text-amber-500 border-amber-500/20' : 'text-gold border-gold/10'}`}>
+                                                    {isOut ? '⛔ Hết hàng' : isLow ? `⚠ Còn ${v.stock}` : `Stock: ${v.stock}`}
+                                                </div>
                                             </div>
-                                        </div>
-                                        <h3 className="font-heading text-sm mb-1 line-clamp-1 uppercase tracking-tight">
-                                            {p.name}
-                                        </h3>
-                                        <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mb-1">
-                                            {p.brand?.name ?? '—'}
-                                        </p>
-                                        <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mb-2">
-                                            {v.name}
-                                        </p>
-                                        <div className="flex justify-between items-center mt-4">
-                                            <span className="font-heading text-gold text-lg">
-                                                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(v.price)}
-                                            </span>
-                                            <button
-                                                onClick={() => handleAddVariant(v.id)}
-                                                disabled={creatingOrder}
-                                                className="p-3 rounded-xl bg-gold/10 text-gold group-hover:bg-gold group-hover:text-primary-foreground transition-all disabled:opacity-50"
-                                            >
-                                                <Plus className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    </motion.div>
-                                ))
+                                            <h3 className="font-heading text-sm mb-1 line-clamp-1 uppercase tracking-tight">{p.name}</h3>
+                                            <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mb-1">{p.brand?.name ?? '—'}</p>
+                                            <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mb-2">{v.name}</p>
+                                            <div className="flex justify-between items-center mt-4">
+                                                <span className="font-heading text-gold text-lg">{formatVND(v.price)}</span>
+                                                <button
+                                                    onClick={() => handleAddVariant(v.id, v.stock)}
+                                                    disabled={creatingOrder || isOrderCompleted || isOut}
+                                                    className={`p-3 rounded-xl transition-all disabled:opacity-50 ${isOut ? 'bg-red-500/10 text-red-500 cursor-not-allowed' : 'bg-gold/10 text-gold group-hover:bg-gold group-hover:text-primary-foreground'}`}
+                                                >
+                                                    <Plus className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </motion.div>
+                                    );
+                                })
                             )
                         )}
                     </div>
+
+                    {/* AI Consultation Panel */}
+                    <div className="border-t border-border bg-secondary/10 shrink-0">
+                        <button type="button" onClick={() => setShowAiPanel(!showAiPanel)} className="w-full px-8 py-3 flex items-center justify-between text-[10px] font-heading uppercase tracking-[0.2em] text-gold hover:bg-gold/5 transition-all">
+                            <span className="flex items-center gap-2"><Sparkles className="w-4 h-4" /> AI Consultant</span>
+                            {showAiPanel ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+                        </button>
+                        <AnimatePresence>
+                            {showAiPanel && (
+                                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                                    <div className="px-8 pb-6 space-y-3">
+                                        <p className="text-[10px] text-muted-foreground">Nhập thông tin khách hàng để AI gợi ý sản phẩm phù hợp.</p>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <select value={aiGender} onChange={e => setAiGender(e.target.value)} className="text-xs rounded-xl border border-border bg-background px-3 py-2 outline-none focus:border-gold/60">
+                                                <option value="">Giới tính</option>
+                                                <option value="male">Nam</option>
+                                                <option value="female">Nữ</option>
+                                                <option value="unisex">Unisex</option>
+                                            </select>
+                                            <select value={aiOccasion} onChange={e => setAiOccasion(e.target.value)} className="text-xs rounded-xl border border-border bg-background px-3 py-2 outline-none focus:border-gold/60">
+                                                <option value="">Dịp sử dụng</option>
+                                                <option value="daily">Hàng ngày</option>
+                                                <option value="office">Công sở</option>
+                                                <option value="date">Hẹn hò</option>
+                                                <option value="party">Tiệc tùng</option>
+                                                <option value="gift">Tặng quà</option>
+                                                <option value="sport">Thể thao</option>
+                                            </select>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <input type="number" value={aiBudget || ''} onChange={e => setAiBudget(Number(e.target.value) || 0)} placeholder="Ngân sách (VND)" className="text-xs rounded-xl border border-border bg-background px-3 py-2 outline-none focus:border-gold/60" />
+                                            <input type="text" value={aiNotes} onChange={e => setAiNotes(e.target.value)} placeholder="Ghi chú thêm…" className="text-xs rounded-xl border border-border bg-background px-3 py-2 outline-none focus:border-gold/60" />
+                                        </div>
+                                        <button onClick={handleAiConsult} disabled={aiLoading} className="w-full py-2.5 rounded-full bg-gold text-primary-foreground text-[10px] font-heading uppercase tracking-widest disabled:opacity-50 flex items-center justify-center gap-2">
+                                            {aiLoading ? <><Loader2 className="w-3 h-3 animate-spin" /> Đang tư vấn…</> : <><Sparkles className="w-3 h-3" /> Gợi ý sản phẩm</>}
+                                        </button>
+                                        {aiError && <p className="text-[10px] text-red-500">{aiError}</p>}
+                                        {aiResults.length > 0 && (
+                                            <div className="space-y-2 pt-2">
+                                                <p className="text-[9px] uppercase tracking-widest text-muted-foreground font-heading">AI gợi ý:</p>
+                                                {aiResults.map((r, i) => (
+                                                    <div key={i} className="glass rounded-2xl p-3 border-border space-y-1">
+                                                        <div className="flex justify-between items-start">
+                                                            <div>
+                                                                <p className="font-heading text-[10px] uppercase tracking-widest">{r.productName}</p>
+                                                                {r.variantName && <p className="text-[9px] text-muted-foreground">{r.variantName}</p>}
+                                                            </div>
+                                                            <span className="font-heading text-gold text-sm">{formatVND(r.price)}</span>
+                                                        </div>
+                                                        <p className="text-[10px] text-muted-foreground italic">{r.reason}</p>
+                                                        <button onClick={() => handleAddAiRecommendation(r.variantId)} disabled={!r.variantId || isOrderCompleted} className="text-[9px] font-heading uppercase tracking-widest text-gold hover:text-foreground transition-colors disabled:opacity-50 flex items-center gap-1 pt-1">
+                                                            <Plus className="w-3 h-3" /> Add to Bill
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
                 </div>
 
-                {/* Cart Area */}
-                <div className="w-[400px] flex flex-col bg-secondary/10 shrink-0 p-8 shadow-2xl z-10 transition-colors">
+                {/* ═══════════ Cart Area ═══════════ */}
+                <div className="w-[420px] flex flex-col bg-secondary/10 shrink-0 p-8 shadow-2xl z-10 transition-colors">
                     <div className="flex items-center gap-3 mb-4">
                         <ShoppingCart className="w-6 h-6 text-gold" />
                         <h2 className="font-heading text-lg uppercase tracking-[0.2em]">Active Bin</h2>
+                        {isOrderCompleted && (
+                            <span className="ml-auto px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 text-[9px] font-heading uppercase tracking-widest flex items-center gap-1">
+                                <CheckCircle className="w-3 h-3" /> Paid
+                            </span>
+                        )}
                     </div>
-                    {error && (
-                        <div className="mb-4 text-xs text-red-500">
-                            {error}
+
+                    {/* Customer Phone / Loyalty Section */}
+                    <div className="mb-4 space-y-2">
+                        <div className="flex items-center gap-2">
+                            <Phone className="w-3.5 h-3.5 text-gold" />
+                            <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-heading">Khách hàng</span>
                         </div>
+                        {!isOrderCompleted && (
+                            <div className="flex gap-2">
+                                <input
+                                    type="tel"
+                                    value={customerPhone}
+                                    onChange={e => { setCustomerPhone(e.target.value); setLoyaltyInfo(null); }}
+                                    placeholder="Nhập SĐT khách hàng…"
+                                    disabled={isOrderCompleted}
+                                    className="flex-1 bg-background border border-border rounded-xl py-2 px-3 text-xs outline-none focus:border-gold/50 transition-all"
+                                />
+                                <button
+                                    onClick={handleSetCustomer}
+                                    disabled={!customerPhone.trim() || isOrderCompleted || lookingUpCustomer}
+                                    className="px-3 py-2 rounded-xl bg-gold/10 text-gold text-[9px] font-heading uppercase tracking-widest hover:bg-gold/20 disabled:opacity-50 transition-all flex items-center gap-1"
+                                >
+                                    {lookingUpCustomer ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+                                    Tra cứu
+                                </button>
+                            </div>
+                        )}
+                        {loyaltyInfo && (
+                            <div className="glass rounded-xl p-3 border-border flex items-center gap-3">
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${loyaltyInfo.registered ? 'bg-gold/10' : 'bg-blue-500/10'}`}>
+                                    <User className={`w-4 h-4 ${loyaltyInfo.registered ? 'text-gold' : 'text-blue-500'}`} />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    {loyaltyInfo.registered ? (
+                                        <>
+                                            <div className="flex items-center gap-2">
+                                                <p className="font-heading text-xs uppercase tracking-widest truncate">{loyaltyInfo.fullName ?? loyaltyInfo.phone}</p>
+                                                <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 text-[8px] font-heading uppercase">Thành viên</span>
+                                            </div>
+                                            <div className="flex items-center gap-1 mt-0.5">
+                                                <Award className="w-3 h-3 text-amber-500" />
+                                                <span className="text-[10px] text-amber-500 font-heading">{loyaltyInfo.loyaltyPoints} điểm tích lũy</span>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className="flex items-center gap-2">
+                                                <p className="font-heading text-xs uppercase tracking-widest">Khách vãng lai</p>
+                                                <span className="px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-500 text-[8px] font-heading uppercase">Chưa đăng ký</span>
+                                            </div>
+                                            {loyaltyInfo.loyaltyPoints > 0 ? (
+                                                <div className="flex items-center gap-1 mt-0.5">
+                                                    <Award className="w-3 h-3 text-amber-500" />
+                                                    <span className="text-[10px] text-amber-500 font-heading">{loyaltyInfo.loyaltyPoints} điểm đang chờ</span>
+                                                </div>
+                                            ) : (
+                                                <p className="text-[9px] text-muted-foreground mt-0.5">Điểm sẽ được tích khi thanh toán. Đăng ký tài khoản để sử dụng.</p>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {error && (
+                        <div className="mb-4 text-xs text-red-500 bg-red-500/5 border border-red-500/20 rounded-xl px-3 py-2">{error}</div>
                     )}
 
+                    {/* Cart Items */}
                     <div className="flex-1 space-y-4 overflow-y-auto custom-scrollbar mb-8 pr-2">
                         <AnimatePresence>
                             {order?.items.map(item => (
@@ -202,130 +554,150 @@ export default function PosPage() {
                                     exit={{ opacity: 0, x: -20 }}
                                     className="glass p-5 rounded-2xl border-border flex gap-4 hover:border-gold/20 transition-colors"
                                 >
-                                    <div className="w-16 h-16 rounded-xl bg-secondary border border-border shrink-0" />
+                                    <div className="w-16 h-16 rounded-xl bg-secondary border border-border shrink-0 overflow-hidden">
+                                        {/* Item thumbnail — future: load from variant.product.images */}
+                                    </div>
                                     <div className="flex-1 overflow-hidden">
                                         <p className="font-heading text-[10px] uppercase tracking-widest truncate">
                                             {item.variant.product?.name ?? 'Product'} — {item.variant.name}
                                         </p>
                                         <div className="flex justify-between items-center mt-4">
                                             <div className="flex items-center gap-3 glass rounded-lg p-1 border-border">
-                                                <button
-                                                    onClick={() => handleChangeQuantity(item.variantId, -1)}
-                                                    className="p-1 hover:text-gold transition-colors"
-                                                >
-                                                    <Minus className="w-3 h-3" />
-                                                </button>
+                                                <button onClick={() => handleChangeQuantity(item.variantId, -1)} disabled={isOrderCompleted} className="p-1 hover:text-gold transition-colors disabled:opacity-50"><Minus className="w-3 h-3" /></button>
                                                 <span className="text-xs font-heading w-4 text-center">{item.quantity}</span>
-                                                <button
-                                                    onClick={() => handleChangeQuantity(item.variantId, 1)}
-                                                    className="p-1 hover:text-gold transition-colors"
-                                                >
-                                                    <Plus className="w-3 h-3" />
-                                                </button>
+                                                <button onClick={() => handleChangeQuantity(item.variantId, 1)} disabled={isOrderCompleted} className="p-1 hover:text-gold transition-colors disabled:opacity-50"><Plus className="w-3 h-3" /></button>
                                             </div>
-                                            <span className="font-heading text-sm text-gold">
-                                                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.totalPrice)}
-                                            </span>
+                                            <span className="font-heading text-sm text-gold">{formatVND(item.totalPrice)}</span>
                                         </div>
                                     </div>
                                 </motion.div>
                             ))}
                         </AnimatePresence>
                         {!order?.items.length && (
-                            <div className="text-xs text-muted-foreground text-center mt-8">
-                                No items in the bin. Search and add products from the left.
-                            </div>
+                            <div className="text-xs text-muted-foreground text-center mt-8">No items in the bin. Search and add products from the left.</div>
                         )}
                     </div>
 
+                    {/* Totals & Payment */}
                     <div className="space-y-4 border-t border-border pt-8 mt-auto">
                         <div className="flex justify-between text-muted-foreground text-[10px] uppercase tracking-widest font-heading">
-                            <span>Subtotal</span>
-                            <span>
-                                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(subtotal)}
-                            </span>
+                            <span>Subtotal</span><span>{formatVND(subtotal)}</span>
                         </div>
                         <div className="flex justify-between text-2xl font-heading pt-4 text-foreground">
                             <span className="tracking-tighter uppercase">Total</span>
-                            <span className="text-gold">
-                                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(subtotal)}
-                            </span>
+                            <span className="text-gold">{formatVND(subtotal)}</span>
                         </div>
 
-                        <div className="mt-6 flex gap-2 text-[9px] font-heading uppercase tracking-[0.2em]">
-                            <button
-                                type="button"
-                                onClick={() => setPaymentMethod('CASH')}
-                                className={`flex-1 py-2 rounded-full border ${
-                                    paymentMethod === 'CASH'
-                                        ? 'border-gold bg-gold/10 text-gold'
-                                        : 'border-border text-muted-foreground'
-                                }`}
-                            >
-                                Cash
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setPaymentMethod('QR')}
-                                className={`flex-1 py-2 rounded-full border flex items-center justify-center gap-1 ${
-                                    paymentMethod === 'QR'
-                                        ? 'border-gold bg-gold/10 text-gold'
-                                        : 'border-border text-muted-foreground'
-                                }`}
-                            >
-                                <QrCode className="w-3 h-3" />
-                                QR Pay
-                            </button>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4 mt-6">
-                            <button
-                                className="py-4 glass border-border rounded-2xl font-heading text-[9px] uppercase tracking-[0.2em] hover:border-gold/50 transition-all flex flex-col items-center gap-2"
-                                disabled
-                            >
-                                <Receipt className="w-4 h-4 text-gold" />
-                                Hold
-                            </button>
-                            {paymentMethod === 'CASH' ? (
-                                <button
-                                    onClick={handlePayCash}
-                                    disabled={!order || !order.items.length || paying}
-                                    className="py-4 bg-gold text-primary-foreground font-heading font-bold rounded-2xl text-[9px] uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-gold/20 flex flex-col items-center gap-2 disabled:opacity-50"
-                                >
-                                    <CreditCard className="w-4 h-4" />
-                                    {paying ? 'Processing…' : 'Charge Cash'}
+                        {isOrderCompleted ? (
+                            <div className="grid grid-cols-2 gap-4 mt-6">
+                                <button onClick={() => { setCompletedOrder(order); setShowReceipt(true); }} className="py-4 glass border-border rounded-2xl font-heading text-[9px] uppercase tracking-[0.2em] hover:border-gold/50 transition-all flex flex-col items-center gap-2">
+                                    <Printer className="w-4 h-4 text-gold" /> View Receipt
                                 </button>
-                            ) : (
-                                <button
-                                    onClick={handleCreateQrPayment}
-                                    disabled={!order || !order.items.length || paying}
-                                    className="py-4 bg-gold text-primary-foreground font-heading font-bold rounded-2xl text-[9px] uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-gold/20 flex flex-col items-center gap-2 disabled:opacity-50"
-                                >
-                                    <QrCode className="w-4 h-4" />
-                                    {paying ? 'Generating…' : qrPayment ? 'Show QR Again' : 'Generate QR'}
+                                <button onClick={handleNewOrder} className="py-4 bg-gold text-primary-foreground font-heading font-bold rounded-2xl text-[9px] uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-gold/20 flex flex-col items-center gap-2">
+                                    <Plus className="w-4 h-4" /> New Order
                                 </button>
-                            )}
-                        </div>
-
-                        {paymentMethod === 'QR' && qrPayment && (
-                            <div className="mt-6 space-y-2 text-[10px]">
-                                <p className="font-heading uppercase tracking-[0.2em] text-muted-foreground">
-                                    Scan QR in your banking app or open PayOS checkout:
-                                </p>
-                                <a
-                                    href={qrPayment.checkoutUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center justify-center px-4 py-2 rounded-full border border-gold text-gold text-[9px] font-heading uppercase tracking-[0.2em] hover:bg-gold/10"
-                                >
-                                    Open PayOS Checkout
-                                </a>
                             </div>
+                        ) : (
+                            <>
+                                <div className="mt-6 flex gap-2 text-[9px] font-heading uppercase tracking-[0.2em]">
+                                    <button type="button" onClick={() => setPaymentMethod('CASH')} className={`flex-1 py-2 rounded-full border ${paymentMethod === 'CASH' ? 'border-gold bg-gold/10 text-gold' : 'border-border text-muted-foreground'}`}>Cash</button>
+                                    <button type="button" onClick={() => setPaymentMethod('QR')} className={`flex-1 py-2 rounded-full border flex items-center justify-center gap-1 ${paymentMethod === 'QR' ? 'border-gold bg-gold/10 text-gold' : 'border-border text-muted-foreground'}`}><QrCode className="w-3 h-3" /> QR Pay</button>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4 mt-6">
+                                    <button className="py-4 glass border-border rounded-2xl font-heading text-[9px] uppercase tracking-[0.2em] hover:border-gold/50 transition-all flex flex-col items-center gap-2" disabled>
+                                        <Receipt className="w-4 h-4 text-gold" /> Hold
+                                    </button>
+                                    {paymentMethod === 'CASH' ? (
+                                        <button onClick={handlePayCash} disabled={!order || !order.items.length || paying} className="py-4 bg-gold text-primary-foreground font-heading font-bold rounded-2xl text-[9px] uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-gold/20 flex flex-col items-center gap-2 disabled:opacity-50">
+                                            <CreditCard className="w-4 h-4" /> {paying ? 'Processing…' : 'Charge Cash'}
+                                        </button>
+                                    ) : (
+                                        <button onClick={handleCreateQrPayment} disabled={!order || !order.items.length || paying} className="py-4 bg-gold text-primary-foreground font-heading font-bold rounded-2xl text-[9px] uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-gold/20 flex flex-col items-center gap-2 disabled:opacity-50">
+                                            <QrCode className="w-4 h-4" /> {paying ? 'Generating…' : qrPayment ? 'Show QR Again' : 'Generate QR'}
+                                        </button>
+                                    )}
+                                </div>
+                                {paymentMethod === 'QR' && qrPayment && (
+                                    <div className="mt-6 space-y-2 text-[10px]">
+                                        <div className="flex items-center gap-2 text-emerald-500">
+                                            <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                            <span className="font-heading uppercase tracking-[0.2em]">Waiting for payment…</span>
+                                        </div>
+                                        <a href={qrPayment.checkoutUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center px-4 py-2 rounded-full border border-gold text-gold text-[9px] font-heading uppercase tracking-[0.2em] hover:bg-gold/10">Open PayOS Checkout</a>
+                                    </div>
+                                )}
+                            </>
                         )}
                     </div>
                 </div>
+
+                {/* ═══════════ Receipt Modal ═══════════ */}
+                <AnimatePresence>
+                    {showReceipt && completedOrder && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowReceipt(false)}>
+                            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="bg-background border border-border rounded-[2.5rem] p-10 max-w-md w-full shadow-2xl relative">
+                                <button onClick={() => setShowReceipt(false)} className="absolute top-6 right-6 p-2 rounded-full hover:bg-secondary transition-colors"><X className="w-4 h-4 text-muted-foreground" /></button>
+                                <div className="text-center mb-8">
+                                    <div className="w-16 h-16 mx-auto bg-emerald-500/10 rounded-full flex items-center justify-center mb-4"><CheckCircle className="w-8 h-8 text-emerald-500" /></div>
+                                    <h2 className="font-heading text-2xl uppercase tracking-tighter mb-1">Payment Complete</h2>
+                                    <p className="text-xs text-muted-foreground uppercase tracking-widest">Order {completedOrder.code}</p>
+                                </div>
+                                {/* Customer info on receipt */}
+                                {(completedOrder.user || loyaltyInfo) && (
+                                    <div className="glass rounded-xl p-3 border-border flex items-center gap-3 mb-4">
+                                        <User className={`w-4 h-4 ${completedOrder.user ? 'text-gold' : 'text-blue-500'}`} />
+                                        <div>
+                                            {completedOrder.user ? (
+                                                <>
+                                                    <p className="font-heading text-[10px] uppercase tracking-widest">{completedOrder.user.fullName ?? completedOrder.user.phone}</p>
+                                                    <div className="flex items-center gap-1">
+                                                        <Award className="w-3 h-3 text-amber-500" />
+                                                        <span className="text-[10px] text-amber-500 font-heading">+{Math.floor(completedOrder.finalAmount / 10000)} điểm tích lũy</span>
+                                                    </div>
+                                                </>
+                                            ) : loyaltyInfo && !loyaltyInfo.registered ? (
+                                                <>
+                                                    <p className="font-heading text-[10px] uppercase tracking-widest">Khách vãng lai — {loyaltyInfo.phone}</p>
+                                                    <div className="flex items-center gap-1">
+                                                        <Award className="w-3 h-3 text-amber-500" />
+                                                        <span className="text-[10px] text-amber-500 font-heading">+{Math.floor(completedOrder.finalAmount / 10000)} điểm (đăng ký để sử dụng)</span>
+                                                    </div>
+                                                </>
+                                            ) : null}
+                                        </div>
+                                    </div>
+                                )}
+                                <div className="space-y-3 mb-6 max-h-[200px] overflow-y-auto custom-scrollbar">
+                                    {completedOrder.items.map((item) => (
+                                        <div key={item.id} className="flex justify-between items-center text-sm border-b border-border/20 pb-2">
+                                            <div>
+                                                <span className="font-heading text-[10px] uppercase tracking-widest">{item.variant.product?.name}</span>
+                                                <span className="text-muted-foreground text-[10px]"> — {item.variant.name}</span>
+                                                <span className="text-muted-foreground text-[10px]"> x{item.quantity}</span>
+                                            </div>
+                                            <span className="font-heading text-gold text-sm">{formatVND(item.totalPrice)}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="border-t border-border pt-4 space-y-2">
+                                    <div className="flex justify-between text-[10px] uppercase tracking-widest text-muted-foreground font-heading"><span>Subtotal</span><span>{formatVND(completedOrder.totalAmount)}</span></div>
+                                    {completedOrder.discountAmount > 0 && (
+                                        <div className="flex justify-between text-[10px] uppercase tracking-widest text-emerald-500 font-heading"><span>Discount</span><span>-{formatVND(completedOrder.discountAmount)}</span></div>
+                                    )}
+                                    <div className="flex justify-between text-xl font-heading pt-2"><span className="uppercase tracking-tighter">Total</span><span className="text-gold">{formatVND(completedOrder.finalAmount)}</span></div>
+                                </div>
+                                <div className="mt-4 text-center text-[10px] text-muted-foreground uppercase tracking-widest font-heading">
+                                    {completedOrder.store?.name ?? 'POS'} • {new Date().toLocaleString('vi-VN')}
+                                </div>
+                                <div className="mt-8 grid grid-cols-2 gap-3">
+                                    <button onClick={() => setShowReceipt(false)} className="py-3 glass border-border rounded-2xl font-heading text-[9px] uppercase tracking-[0.2em] hover:border-gold/50 transition-all">Close</button>
+                                    <button onClick={() => { setShowReceipt(false); handleNewOrder(); }} className="py-3 bg-gold text-primary-foreground font-heading font-bold rounded-2xl text-[9px] uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-gold/20">New Order</button>
+                                </div>
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
         </AuthGuard>
     );
 }
-

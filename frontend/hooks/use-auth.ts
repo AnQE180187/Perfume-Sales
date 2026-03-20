@@ -29,13 +29,12 @@ export const useAuth = () => {
     };
 
     const register = async (userData: { email: string; password: string; full_name?: string; fullName?: string; phone?: string }) => {
-        const { accessToken, refreshToken } = await authService.register(userData);
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('token', accessToken);
-            localStorage.setItem('refreshToken', refreshToken);
-        }
-        const me = await userService.getMe();
-        setAuth(toFrontendUser(me), accessToken);
+        return await authService.register({
+            email: userData.email,
+            password: userData.password,
+            fullName: userData.fullName ?? userData.full_name,
+            phone: userData.phone
+        });
     };
 
     const logout = () => {

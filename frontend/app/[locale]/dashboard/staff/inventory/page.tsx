@@ -1,11 +1,14 @@
 'use client';
 
 import { AuthGuard } from '@/components/auth/auth-guard';
-import { Box, RefreshCw, AlertTriangle, Activity, Loader2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Box, RefreshCw, AlertTriangle, Activity, Loader2, Store } from 'lucide-react';
+import { useEffect, useState, useCallback } from 'react';
 import { staffInventoryService, type StaffInventoryOverview, type StaffInventoryLog } from '@/services/staff-inventory.service';
+import { storesService, type Store as StoreType } from '@/services/stores.service';
 
 export default function StaffInventory() {
+    const [myStores, setMyStores] = useState<StoreType[]>([]);
+    const [selectedStoreId, setSelectedStoreId] = useState<string>('');
     const [overview, setOverview] = useState<StaffInventoryOverview | null>(null);
     const [logs, setLogs] = useState<StaffInventoryLog[]>([]);
     const [loading, setLoading] = useState(true);
@@ -19,42 +22,68 @@ export default function StaffInventory() {
     const [adjustReason, setAdjustReason] = useState<string>('');
     const [submitting, setSubmitting] = useState(false);
 
-    const loadOverview = async () => {
+    const loadMyStores = useCallback(async () => {
+        try {
+            const list = await storesService.getMyStores();
+            setMyStores(list);
+            if (list.length && !selectedStoreId) setSelectedStoreId(list[0].id);
+            if (list.length === 0) setLoading(false);
+        } catch {
+            setError('Không tải được danh sách quầy');
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        void loadMyStores();
+    }, [loadMyStores]);
+
+    const loadOverview = useCallback(async () => {
+        if (!selectedStoreId) return;
         setLoading(true);
         setError(null);
         try {
-            const data = await staffInventoryService.getOverview();
+            const data = await staffInventoryService.getOverview(selectedStoreId);
             setOverview(data);
         } catch (e: any) {
             setError(e.message || 'Failed to load inventory overview');
         } finally {
             setLoading(false);
         }
-    };
+    }, [selectedStoreId]);
 
-    const loadLogs = async (variantId?: string) => {
+    const loadLogs = useCallback(async (variantId?: string) => {
+        if (!selectedStoreId) return;
         setLoadingLogs(true);
         try {
-            const data = await staffInventoryService.getLogs(variantId ? { variantId } : undefined);
+            const data = await staffInventoryService.getLogs({
+                storeId: selectedStoreId,
+                ...(variantId ? { variantId } : {}),
+            });
             setLogs(data);
         } catch {
-            // ignore for now
+            // ignore
         } finally {
             setLoadingLogs(false);
         }
-    };
+    }, [selectedStoreId]);
 
     useEffect(() => {
-        void loadOverview();
-        void loadLogs();
-    }, []);
+        if (selectedStoreId) {
+            void loadOverview();
+            void loadLogs();
+        } else {
+            setOverview(null);
+            setLogs([]);
+        }
+    }, [selectedStoreId, loadOverview, loadLogs]);
 
     const handleImport = async () => {
-        if (!selectedVariant || importQty <= 0) return;
+        if (!selectedStoreId || !selectedVariant || importQty <= 0) return;
         setSubmitting(true);
         setError(null);
         try {
-            const data = await staffInventoryService.importStock(selectedVariant, importQty, importReason || undefined);
+            const data = await staffInventoryService.importStock(selectedStoreId, selectedVariant, importQty, importReason || undefined);
             setOverview(data);
             setImportQty(0);
             setImportReason('');
@@ -67,11 +96,11 @@ export default function StaffInventory() {
     };
 
     const handleAdjust = async () => {
-        if (!selectedVariant || adjustDelta === 0) return;
+        if (!selectedStoreId || !selectedVariant || adjustDelta === 0) return;
         setSubmitting(true);
         setError(null);
         try {
-            const data = await staffInventoryService.adjustStock(selectedVariant, adjustDelta, adjustReason || 'Adjustment');
+            const data = await staffInventoryService.adjustStock(selectedStoreId, selectedVariant, adjustDelta, adjustReason || 'Adjustment');
             setOverview(data);
             setAdjustDelta(0);
             setAdjustReason('');
@@ -105,6 +134,24 @@ export default function StaffInventory() {
                         {error}
                     </div>
                 )}
+
+                <div className="mb-6 flex items-center gap-4">
+                    <Store className="w-5 h-5 text-gold" />
+                    <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Quầy:</label>
+                    <select
+                        value={selectedStoreId}
+                        onChange={(e) => setSelectedStoreId(e.target.value)}
+                        className="rounded-xl border border-border bg-background px-4 py-2 text-sm font-heading uppercase tracking-wider focus:border-gold/60"
+                    >
+                        <option value="">-- Chọn quầy --</option>
+                        {myStores.map((s) => (
+                            <option key={s.id} value={s.id}>{s.name}</option>
+                        ))}
+                    </select>
+                    {!myStores.length && !loading && (
+                        <span className="text-xs text-muted-foreground">Chưa được gán quầy. Liên hệ Admin.</span>
+                    )}
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
                     {loading ? (
@@ -146,6 +193,11 @@ export default function StaffInventory() {
                     )}
                 </div>
 
+                {!selectedStoreId ? (
+                    <div className="glass rounded-[2.5rem] p-12 text-center text-muted-foreground">
+                        Chọn quầy ở trên để xem và thao tác tồn kho.
+                    </div>
+                ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Variants & stock table */}
                     <div className="lg:col-span-2 glass rounded-[2.5rem] border-border overflow-hidden">
@@ -358,6 +410,7 @@ export default function StaffInventory() {
                         </div>
                     </div>
                 </div>
+                )}
             </main>
         </AuthGuard>
     );
