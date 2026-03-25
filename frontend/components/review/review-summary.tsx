@@ -5,12 +5,14 @@ import { ReviewSummary, reviewService } from '@/services/review.service';
 import { Sparkles, ThumbsUp, ThumbsDown, Tag, Loader2, Quote } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 interface ReviewSummaryViewProps {
     productId: string;
 }
 
 const ReviewSummaryView: React.FC<ReviewSummaryViewProps> = ({ productId }) => {
+    const t = useTranslations('review_summary');
     const [summary, setSummary] = useState<ReviewSummary | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -32,7 +34,7 @@ const ReviewSummaryView: React.FC<ReviewSummaryViewProps> = ({ productId }) => {
         return (
             <div className="flex flex-col items-center justify-center p-12 glass bg-white/50 dark:bg-zinc-900/50 rounded-[3rem] border border-stone-100 dark:border-white/5 animate-pulse">
                 <Loader2 className="animate-spin h-6 w-6 text-gold mb-4" />
-                <span className="text-[10px] uppercase tracking-[.3em] text-stone-400 font-black">AI is distilling essence...</span>
+                <span className="text-[10px] uppercase tracking-[.3em] text-stone-400 font-black">{t('ai_distilling')}</span>
             </div>
         );
     }
@@ -52,9 +54,9 @@ const ReviewSummaryView: React.FC<ReviewSummaryViewProps> = ({ productId }) => {
                 <div className="space-y-2">
                     <div className="flex items-center gap-2 text-gold">
                         <Sparkles size={18} className="fill-gold/20" />
-                        <span className="text-[10px] uppercase tracking-[.4em] font-black">AI Powered Olfactory Insights</span>
+                        <span className="text-[10px] uppercase tracking-[.4em] font-black">{t('ai_powered_insights')}</span>
                     </div>
-                    <h3 className="text-3xl font-serif text-luxury-black dark:text-white">What people are saying</h3>
+                    <h3 className="text-3xl font-serif text-luxury-black dark:text-white">{t('what_people_saying')}</h3>
                 </div>
                 
                 {summary.sentiment && (
@@ -63,7 +65,7 @@ const ReviewSummaryView: React.FC<ReviewSummaryViewProps> = ({ productId }) => {
                         summary.sentiment === 'POSITIVE' ? "bg-emerald-500/10 text-emerald-600" :
                         summary.sentiment === 'NEGATIVE' ? "bg-red-500/10 text-red-600" : "bg-stone-500/10 text-stone-600"
                     )}>
-                        Overall Sentiment: {summary.sentiment}
+                        {t('overall_sentiment', { sentiment: summary.sentiment })}
                     </Badge>
                 )}
             </header>
@@ -81,7 +83,7 @@ const ReviewSummaryView: React.FC<ReviewSummaryViewProps> = ({ productId }) => {
                         <div className="space-y-6">
                             <h4 className="text-[10px] font-black uppercase tracking-[.3em] flex items-center gap-3 text-emerald-600">
                                 <span className="h-px w-8 bg-emerald-600/30" />
-                                <ThumbsUp size={14} /> The Allure
+                                <ThumbsUp size={14} /> {t('the_allure')}
                             </h4>
                             <ul className="space-y-4">
                                 {pros.map((pro, i) => (
@@ -98,7 +100,7 @@ const ReviewSummaryView: React.FC<ReviewSummaryViewProps> = ({ productId }) => {
                         <div className="space-y-6">
                             <h4 className="text-[10px] font-black uppercase tracking-[.3em] flex items-center gap-3 text-red-600/70">
                                 <span className="h-px w-8 bg-red-600/20" />
-                                <ThumbsDown size={14} /> The Nuance
+                                <ThumbsDown size={14} /> {t('the_nuance')}
                             </h4>
                             <ul className="space-y-4">
                                 {cons.map((con, i) => (

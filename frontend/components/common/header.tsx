@@ -198,7 +198,7 @@ export const Header = () => {
 
                             {/* Mobile Language Switch & Theme Toggle */}
                             <div className="flex items-center justify-between pt-6 border-t border-stone-100 dark:border-white/10">
-                                <span className="text-[10px] font-bold tracking-widest uppercase text-stone-400">Settings</span>
+                                <span className="text-[10px] font-bold tracking-widest uppercase text-stone-400">{t('settings')}</span>
                                 <div className="flex items-center gap-4">
                                     <LanguageSwitch />
                                     <ThemeToggle />
@@ -212,7 +212,7 @@ export const Header = () => {
                                             className="text-xs font-bold tracking-[.3em] uppercase text-gold hover:text-gold/80 transition-colors flex items-center justify-between group pt-4 border-t border-stone-100 dark:border-white/10"
                                             onClick={() => setIsMobileMenuOpen(false)}
                                         >
-                                            Admin Dashboard
+                                            {t('admin_dashboard')}
                                             <ChevronRight size={14} />
                                         </Link>
                                     )}
@@ -222,7 +222,7 @@ export const Header = () => {
                                             className="text-xs font-bold tracking-[.3em] uppercase text-gold hover:text-gold/80 transition-colors flex items-center justify-between group pt-4 border-t border-stone-100 dark:border-white/10"
                                             onClick={() => setIsMobileMenuOpen(false)}
                                         >
-                                            Staff Dashboard
+                                            {t('staff_dashboard')}
                                             <ChevronRight size={14} />
                                         </Link>
                                     )}

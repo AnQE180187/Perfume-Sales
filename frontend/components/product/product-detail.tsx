@@ -9,8 +9,11 @@ import { useRouter } from 'next/navigation';
 import ReviewList from '../review/review-list';
 import ReviewSummaryView from '../review/review-summary';
 import StarRating from '../review/star-rating';
+import { useTranslations } from 'next-intl';
 
 export default function ProductDetail({ product }: { product: Product }) {
+    const t = useTranslations('product_detail');
+    const tCommon = useTranslations('common');
     const { isAuthenticated } = useAuth();
     const router = useRouter();
     const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
@@ -58,13 +61,13 @@ export default function ProductDetail({ product }: { product: Product }) {
                             />
                         ) : (
                             <div className="w-full h-full bg-secondary/20 flex items-center justify-center font-heading text-gold/30">
-                                Visual Data Unavailable
+                                {t('visual_data_unavailable')}
                             </div>
                         )}
                         <div className="absolute inset-0 bg-gradient-to-tr from-gold/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
                         <div className="absolute inset-x-0 bottom-0 p-12 text-center bg-gradient-to-t from-background/80 to-transparent">
                             <span className="text-gold font-heading tracking-[0.5em] uppercase text-[10px] animate-pulse inline-flex items-center gap-3">
-                                <Sparkles className="w-4 h-4" /> Neural Scanning Active
+                                <Sparkles className="w-4 h-4" /> {t('neural_scanning_active')}
                             </span>
                         </div>
                     </div>
@@ -85,10 +88,10 @@ export default function ProductDetail({ product }: { product: Product }) {
                     <div className="space-y-2 mb-8">
                         <div className="flex items-center gap-3">
                             <span className="px-3 py-1 rounded-full glass border-gold/20 text-gold text-[8px] uppercase tracking-widest font-bold">
-                                {product.brand?.name || 'Elite Series'}
+                                {product.brand?.name || t('elite_series')}
                             </span>
                             <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-heading">
-                                Archived #{product.slug.toUpperCase().slice(0, 8)}
+                                {t('archived_hash')}{product.slug.toUpperCase().slice(0, 8)}
                             </span>
                         </div>
                         <h1 className="text-5xl lg:text-7xl font-heading text-foreground uppercase tracking-tighter leading-none mb-2">
@@ -96,10 +99,10 @@ export default function ProductDetail({ product }: { product: Product }) {
                         </h1>
                         <div className="flex items-center gap-2 mb-4">
                             <StarRating rating={4.5} readOnly size={14} />
-                            <span className="text-[10px] text-muted-foreground uppercase tracking-widest">4.5 Rating</span>
+                            <span className="text-[10px] text-muted-foreground uppercase tracking-widest">{t('rating_label', { rating: 4.5 })}</span>
                         </div>
                         <p className="text-3xl font-heading text-gold">
-                            {selectedVariant ? fmt(selectedVariant.price) : 'Select Size'}
+                            {selectedVariant ? fmt(selectedVariant.price) : t('select_size')}
                         </p>
                     </div>
 
@@ -111,7 +114,7 @@ export default function ProductDetail({ product }: { product: Product }) {
 
                         <div className="space-y-6">
                             <h3 className="text-[10px] uppercase tracking-[0.3em] font-heading text-foreground border-b border-border/50 pb-4">
-                                Select Olfactory Volume (Size)
+                                {t('select_olfactory_volume')}
                             </h3>
                             <div className="flex flex-wrap gap-4">
                                 {product.variants?.map((v) => (
@@ -135,13 +138,13 @@ export default function ProductDetail({ product }: { product: Product }) {
                         {product.notes && product.notes.length > 0 && (
                             <div className="space-y-6">
                                 <h3 className="text-[10px] uppercase tracking-[0.3em] font-heading text-foreground border-b border-border/50 pb-4">
-                                    olfactory structure
+                                {t('olfactory_structure')}
                                 </h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                                     {[
-                                        { type: 'TOP', label: 'Top Notes' },
-                                        { type: 'MIDDLE', label: 'Heart Notes' },
-                                        { type: 'BASE', label: 'Base Notes' },
+                                        { type: 'TOP', label: t('top_notes') },
+                                        { type: 'MIDDLE', label: t('heart_notes') },
+                                        { type: 'BASE', label: t('base_notes') },
                                     ].map((group) => {
                                         const notes = product.notes!
                                             .filter((n) => n.note?.type === group.type)
@@ -165,12 +168,12 @@ export default function ProductDetail({ product }: { product: Product }) {
 
                         <div className="space-y-6">
                             <h3 className="text-[10px] uppercase tracking-[0.3em] font-heading text-foreground border-b border-border/50 pb-4">
-                                Technical Specifications
+                                {t('technical_specifications')}
                             </h3>
                             <div className="grid grid-cols-2 gap-8">
                                 <div>
                                     <p className="text-[8px] text-muted-foreground uppercase tracking-widest mb-1">
-                                        Concentration
+                                        {t('concentration')}
                                     </p>
                                     <p className="text-xs font-heading text-gold uppercase tracking-widest">
                                         {product.concentration || 'Eau de Parfum'}
@@ -178,7 +181,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                                 </div>
                                 <div>
                                     <p className="text-[8px] text-muted-foreground uppercase tracking-widest mb-1">
-                                        Longevity
+                                        {t('longevity')}
                                     </p>
                                     <p className="text-xs font-heading text-gold uppercase tracking-widest">
                                         {product.longevity || 'Persistent'}
@@ -193,7 +196,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                     )}
 
                     {success && (
-                        <p className="text-green-500 text-[10px] uppercase tracking-widest mb-4">Unit added to acquisition queue</p>
+                        <p className="text-green-500 text-[10px] uppercase tracking-widest mb-4">{t('unit_added_queue')}</p>
                     )}
 
                     <div className="flex flex-col sm:flex-row gap-4 mb-12">
@@ -203,10 +206,10 @@ export default function ProductDetail({ product }: { product: Product }) {
                             className="flex-1 bg-gold text-primary-foreground h-16 rounded-full font-heading text-[10px] uppercase font-bold tracking-[0.3em] hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-gold/20 flex items-center justify-center gap-3 disabled:opacity-50"
                         >
                             {loading ? (
-                                'Processing...'
+                                tCommon('processing')
                             ) : (
                                 <>
-                                    <ShoppingBag className="w-4 h-4" /> Assemble Acquisition
+                                    <ShoppingBag className="w-4 h-4" /> {t('assemble_acquisition')}
                                 </>
                             )}
                         </button>
@@ -222,10 +225,10 @@ export default function ProductDetail({ product }: { product: Product }) {
                             </div>
                             <div>
                                 <h4 className="text-[10px] uppercase font-heading tracking-widest text-foreground mb-1">
-                                    Pattern Matching
+                                    {t('pattern_matching')}
                                 </h4>
                                 <p className="text-[8px] text-muted-foreground uppercase tracking-widest leading-relaxed">
-                                    Matches your bio-profile with 98.4% precision.
+                                    {t('pattern_matching_desc')}
                                 </p>
                             </div>
                         </div>
@@ -235,10 +238,10 @@ export default function ProductDetail({ product }: { product: Product }) {
                             </div>
                             <div>
                                 <h4 className="text-[10px] uppercase font-heading tracking-widest text-foreground mb-1">
-                                    Authenticity Shield
+                                    {t('authenticity_shield')}
                                 </h4>
                                 <p className="text-[8px] text-muted-foreground uppercase tracking-widest leading-relaxed">
-                                    Indelible molecular signature for certification.
+                                    {t('authenticity_shield_desc')}
                                 </p>
                             </div>
                         </div>

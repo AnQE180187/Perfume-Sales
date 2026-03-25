@@ -28,7 +28,18 @@
         "journal": "Tạp Chí",
         "view_profile": "Xem Hồ Sơ",
         "my_profile": "Hồ Sơ Của Tôi",
-        "member": "Thành Viên"
+        "member": "Thành Viên",
+        "all": "Tất Cả",
+        "loading": "Đang Tải...",
+        "processing": "Đang Xử Lý...",
+        "view_options": "Xem Chi Tiết",
+        "clear_filters": "Xóa Bộ Lọc",
+        "previous": "Trước",
+        "next": "Tiếp",
+        "odyssey": "Hành Trình",
+        "catalog": "Danh Mục",
+        "admin_dashboard": "Bảng Điều Khiển Admin",
+        "staff_dashboard": "Bảng Điều Khiển Nhân Viên"
     },
     "navigation": {
         "customer": {
@@ -226,6 +237,67 @@
                 "engraving": "Khắc Tên Cá Nhân",
                 "masterclass": "Lớp Học AI Riêng Tư"
             }
+        }
+    },
+    "product_detail": {
+        "visual_data_unavailable": "Không Có Dữ Liệu Hình Ảnh",
+        "neural_scanning_active": "Đang Quét Thần Kinh",
+        "elite_series": "Dòng Cao Cấp",
+        "archived_hash": "Lưu Trữ #",
+        "rating_label": "Đánh Giá {rating}",
+        "select_size": "Chọn Kích Cỡ",
+        "select_olfactory_volume": "Chọn Thể Tích Khứu Giác (Size)",
+        "olfactory_structure": "Cấu Trúc Khứu Giác",
+        "top_notes": "Nốt Hương Đầu",
+        "heart_notes": "Nốt Hương Giữa",
+        "base_notes": "Nốt Hương Cuối",
+        "technical_specifications": "Thông Số Kỹ Thuật",
+        "concentration": "Nồng Độ",
+        "longevity": "Độ Lưu Hương",
+        "unit_added_queue": "Đã thêm vào hàng đợi sở hữu",
+        "assemble_acquisition": "Tiến Hành Sở Hữu",
+        "pattern_matching": "Khớp Mẫu",
+        "pattern_matching_desc": "Khớp với hồ sơ sinh học của bạn với độ chính xác 98.4%.",
+        "authenticity_shield": "Giáp Xác Thực",
+        "authenticity_shield_desc": "Chữ ký phân tử không thể tẩy xóa để chứng nhận."
+    },
+    "review": {
+        "customer_reviews": "Đánh Giá Khách Hàng",
+        "based_on_count": "Dựa trên {total} đánh giá",
+        "stars": "{count} Sao",
+        "all_ratings": "Tất Cả Đánh Giá",
+        "sort_label": "Sắp Xếp: {sortBy}",
+        "sort_newest": "Mới Nhất",
+        "sort_highest": "Đánh Giá Cao",
+        "sort_lowest": "Đánh Giá Thấp",
+        "sort_helpful": "Hữu Ích Nhất",
+        "no_reviews_match": "Không có đánh giá nào khớp với tiêu chí.",
+        "verified_customer": "Khách Hàng Đã Xác Minh",
+        "helpful_count": "Hữu Ích ({count})",
+        "report": "Báo Cáo",
+        "showing_count": "Hiển thị {start}-{end} trong {total}",
+        "reason_reporting": "Lý do báo cáo:"
+    },
+    "review_summary": {
+        "ai_distilling": "AI đang tinh lọc tinh túy...",
+        "ai_powered_insights": "Thông Tin Khứu Giác Từ AI",
+        "what_people_saying": "Mọi người đang nói gì",
+        "overall_sentiment": "Cảm xúc chung: {sentiment}",
+        "the_allure": "Sự Quyến Rũ",
+        "the_nuance": "Sắc Thái"
+    },
+    "journal_page": {
+        "digital_anthology": "Tập Ký Số",
+        "journal_title": "Tạp Chí Aura",
+        "journal_subtitle": "Khám phá giao thoa giữa truyền thống, khoa học thần kinh và nước hoa cao cấp.",
+        "special_release": "Phát Hành Đặc Biệt",
+        "consume_story": "Đọc Câu Chuyện",
+        "load_older": "Tải Thêm Bản Ghi",
+        "categories": {
+            "all": "Tất Cả",
+            "science": "Khoa Học",
+            "philosophy": "Triết Học",
+            "artistry": "Nghệ Thuật"
         }
     },
     "collection": {

@@ -28,7 +28,18 @@
         "journal": "Journal",
         "view_profile": "View Profile",
         "my_profile": "My Profile",
-        "member": "Member"
+        "member": "Member",
+        "all": "All",
+        "loading": "Loading...",
+        "processing": "Processing...",
+        "view_options": "View Options",
+        "clear_filters": "Clear Filters",
+        "previous": "Previous",
+        "next": "Next",
+        "odyssey": "Odyssey",
+        "catalog": "Catalog",
+        "admin_dashboard": "Admin Dashboard",
+        "staff_dashboard": "Staff Dashboard"
     },
     "navigation": {
         "customer": {
@@ -226,6 +237,67 @@
                 "engraving": "Personalized Engraving",
                 "masterclass": "Private AI Masterclass"
             }
+        }
+    },
+    "product_detail": {
+        "visual_data_unavailable": "Visual Data Unavailable",
+        "neural_scanning_active": "Neural Scanning Active",
+        "elite_series": "Elite Series",
+        "archived_hash": "Archived #",
+        "rating_label": "{rating} Rating",
+        "select_size": "Select Size",
+        "select_olfactory_volume": "Select Olfactory Volume (Size)",
+        "olfactory_structure": "Olfactory Structure",
+        "top_notes": "Top Notes",
+        "heart_notes": "Heart Notes",
+        "base_notes": "Base Notes",
+        "technical_specifications": "Technical Specifications",
+        "concentration": "Concentration",
+        "longevity": "Longevity",
+        "unit_added_queue": "Unit added to acquisition queue",
+        "assemble_acquisition": "Assemble Acquisition",
+        "pattern_matching": "Pattern Matching",
+        "pattern_matching_desc": "Matches your bio-profile with 98.4% precision.",
+        "authenticity_shield": "Authenticity Shield",
+        "authenticity_shield_desc": "Indelible molecular signature for certification."
+    },
+    "review": {
+        "customer_reviews": "Customer Reviews",
+        "based_on_count": "Based on {total} reviews",
+        "stars": "{count} Stars",
+        "all_ratings": "All Ratings",
+        "sort_label": "Sort: {sortBy}",
+        "sort_newest": "Newest First",
+        "sort_highest": "Highest Rated",
+        "sort_lowest": "Lowest Rated",
+        "sort_helpful": "Most Helpful",
+        "no_reviews_match": "No reviews matching your criteria.",
+        "verified_customer": "Verified Customer",
+        "helpful_count": "Helpful ({count})",
+        "report": "Report",
+        "showing_count": "Showing {start}-{end} of {total}",
+        "reason_reporting": "Reason for reporting:"
+    },
+    "review_summary": {
+        "ai_distilling": "AI is distilling essence...",
+        "ai_powered_insights": "AI Powered Olfactory Insights",
+        "what_people_saying": "What people are saying",
+        "overall_sentiment": "Overall Sentiment: {sentiment}",
+        "the_allure": "The Allure",
+        "the_nuance": "The Nuance"
+    },
+    "journal_page": {
+        "digital_anthology": "Digital Anthology",
+        "journal_title": "Aura Journal",
+        "journal_subtitle": "Exploring the intersection of tradition, neural science, and luxury perfumery.",
+        "special_release": "Special Release",
+        "consume_story": "Consume the Story",
+        "load_older": "Load Older Transcripts",
+        "categories": {
+            "all": "All",
+            "science": "Science",
+            "philosophy": "Philosophy",
+            "artistry": "Artistry"
         }
     },
     "collection": {
