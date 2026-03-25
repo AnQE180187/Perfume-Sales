@@ -4,6 +4,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { Review, reviewService } from '@/services/review.service';
 import StarRating from './star-rating';
 import { ThumbsUp, Flag, CheckCircle2, Loader2, Filter, SortAsc, ChevronDown } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -20,6 +21,8 @@ interface ReviewListProps {
 }
 
 const ReviewList: React.FC<ReviewListProps> = ({ productId }) => {
+    const t = useTranslations('review');
+    const tCommon = useTranslations('common');
     const [reviews, setReviews] = useState<Review[]>([]);
     const [total, setTotal] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
@@ -64,7 +67,7 @@ const ReviewList: React.FC<ReviewListProps> = ({ productId }) => {
     const handleReact = async (reviewId: string) => {
         try {
             await reviewService.react(reviewId, 'HELPFUL');
-            toast.success("Marked as helpful");
+            toast.success(t('helpful_count', { count: '' }).replace(' ()', '')); // Simplified toast message
             setReviews(prev => prev.map(r => 
                 r.id === reviewId 
                 ? { ...r, _count: { reactions: (r._count?.reactions || 0) + 1 } } 
@@ -76,12 +79,12 @@ const ReviewList: React.FC<ReviewListProps> = ({ productId }) => {
     };
 
     const handleReport = async (reviewId: string) => {
-        const reason = window.prompt("Reason for reporting:");
+        const reason = window.prompt(t('reason_reporting'));
         if (!reason) return;
         
         try {
             await reviewService.report(reviewId, reason);
-            toast.success("Report submitted");
+            toast.success(t('report_submitted') || "Report submitted");
         } catch (error: any) {
             toast.error(error.message || "Failed to report");
         }
@@ -115,12 +118,12 @@ const ReviewList: React.FC<ReviewListProps> = ({ productId }) => {
             {/* Header & Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-12 items-center border-b border-stone-100 dark:border-white/5 pb-12">
                 <div className="text-center md:text-left space-y-2">
-                    <h2 className="text-4xl font-serif text-luxury-black dark:text-white">Customer Reviews</h2>
+                    <h2 className="text-4xl font-serif text-luxury-black dark:text-white">{t('customer_reviews')}</h2>
                     <div className="flex items-center justify-center md:justify-start gap-4">
                         <span className="text-5xl font-serif text-gold">{stats.avg}</span>
                         <div className="space-y-1">
                             <StarRating rating={Number(stats.avg)} readOnly size={18} />
-                            <p className="text-[10px] text-stone-400 uppercase tracking-widest font-bold">Based on {total} reviews</p>
+                            <p className="text-[10px] text-stone-400 uppercase tracking-widest font-bold">{t('based_on_count', { total })}</p>
                         </div>
                     </div>
                 </div>
@@ -131,7 +134,7 @@ const ReviewList: React.FC<ReviewListProps> = ({ productId }) => {
                         const percentage = reviews.length > 0 ? (count / reviews.length) * 100 : 0;
                         return (
                             <div key={starNum} className="flex items-center gap-4 text-xs">
-                                <span className="w-12 text-stone-400 font-bold uppercase tracking-tighter">{starNum} Stars</span>
+                                <span className="w-12 text-stone-400 font-bold uppercase tracking-tighter">{t('stars', { count: starNum })}</span>
                                 <Progress value={percentage} className="h-1.5 bg-stone-100 dark:bg-white/5" indicatorClassName="bg-gold" />
                                 <span className="w-8 text-right text-stone-400 font-medium">{Math.round(percentage)}%</span>
                             </div>
@@ -147,15 +150,15 @@ const ReviewList: React.FC<ReviewListProps> = ({ productId }) => {
                         <DropdownMenuTrigger asChild>
                             <Button variant="outline" size="sm" className="rounded-full border-stone-200 dark:border-white/10 text-[10px] uppercase font-bold tracking-widest">
                                 <Filter size={14} className="mr-2" />
-                                {ratingFilter ? `${ratingFilter} Stars` : 'All Ratings'}
+                                {ratingFilter ? t('stars', { count: ratingFilter }) : t('all_ratings')}
                                 <ChevronDown size={14} className="ml-2 opacity-50" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-40 rounded-2xl p-2 border-stone-100 dark:border-white/5 shadow-2xl">
-                            <DropdownMenuItem onClick={() => setRatingFilter(null)} className="rounded-xl text-[10px] uppercase font-bold tracking-widest">All Ratings</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setRatingFilter(null)} className="rounded-xl text-[10px] uppercase font-bold tracking-widest">{t('all_ratings')}</DropdownMenuItem>
                             {[5, 4, 3, 2, 1].map(num => (
                                 <DropdownMenuItem key={num} onClick={() => setRatingFilter(num)} className="rounded-xl text-[10px] uppercase font-bold tracking-widest">
-                                    {num} Stars
+                                    {t('stars', { count: num })}
                                 </DropdownMenuItem>
                             ))}
                         </DropdownMenuContent>
@@ -165,15 +168,15 @@ const ReviewList: React.FC<ReviewListProps> = ({ productId }) => {
                         <DropdownMenuTrigger asChild>
                             <Button variant="outline" size="sm" className="rounded-full border-stone-200 dark:border-white/10 text-[10px] uppercase font-bold tracking-widest">
                                 <SortAsc size={14} className="mr-2" />
-                                Sort: {sortBy.charAt(0).toUpperCase() + sortBy.slice(1)}
+                                {t('sort_label', { sortBy: t(`sort_${sortBy}`) })}
                                 <ChevronDown size={14} className="ml-2 opacity-50" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-48 rounded-2xl p-2 border-stone-100 dark:border-white/5 shadow-2xl">
-                            <DropdownMenuItem onClick={() => setSortBy('newest')} className="rounded-xl text-[10px] uppercase font-bold tracking-widest">Newest First</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setSortBy('highest')} className="rounded-xl text-[10px] uppercase font-bold tracking-widest">Highest Rated</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setSortBy('lowest')} className="rounded-xl text-[10px] uppercase font-bold tracking-widest">Lowest Rated</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setSortBy('helpful')} className="rounded-xl text-[10px] uppercase font-bold tracking-widest">Most Helpful</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setSortBy('newest')} className="rounded-xl text-[10px] uppercase font-bold tracking-widest">{t('sort_newest')}</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setSortBy('highest')} className="rounded-xl text-[10px] uppercase font-bold tracking-widest">{t('sort_highest')}</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setSortBy('lowest')} className="rounded-xl text-[10px] uppercase font-bold tracking-widest">{t('sort_lowest')}</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setSortBy('helpful')} className="rounded-xl text-[10px] uppercase font-bold tracking-widest">{t('sort_helpful')}</DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
@@ -185,7 +188,7 @@ const ReviewList: React.FC<ReviewListProps> = ({ productId }) => {
                         onClick={() => setRatingFilter(null)}
                         className="text-[10px] uppercase font-bold tracking-widest text-stone-400 hover:text-gold"
                     >
-                        Clear Filters
+                        {tCommon('clear_filters')}
                     </Button>
                 )}
             </div>
@@ -194,7 +197,7 @@ const ReviewList: React.FC<ReviewListProps> = ({ productId }) => {
             <div className="space-y-10">
                 {filteredReviews.length === 0 ? (
                     <div className="text-center py-20 border border-dashed border-stone-200 dark:border-white/10 rounded-[2rem] bg-stone-50/50 dark:bg-white/[0.02]">
-                        <p className="text-stone-400 font-serif italic text-lg">No reviews matching your criteria.</p>
+                        <p className="text-stone-400 font-serif italic text-lg">{t('no_reviews_match')}</p>
                     </div>
                 ) : (
                     filteredReviews.map((review) => (
@@ -215,7 +218,7 @@ const ReviewList: React.FC<ReviewListProps> = ({ productId }) => {
                                             </p>
                                             {review.isVerified && (
                                                 <p className="text-[8px] text-emerald-500 uppercase tracking-widest font-black flex items-center gap-1 mt-1">
-                                                    <CheckCircle2 size={10} /> Verified Customer
+                                                    <CheckCircle2 size={10} /> {t('verified_customer')}
                                                 </p>
                                             )}
                                         </div>
@@ -254,14 +257,14 @@ const ReviewList: React.FC<ReviewListProps> = ({ productId }) => {
                                             className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-stone-400 hover:text-gold transition-colors"
                                         >
                                             <ThumbsUp size={14} className={review._count?.reactions ? 'fill-gold text-gold' : ''} />
-                                            Helpful ({review._count?.reactions || 0})
+                                            {t('helpful_count', { count: review._count?.reactions || 0 })}
                                         </button>
                                         <button 
                                             onClick={() => handleReport(review.id)}
                                             className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-stone-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
                                         >
                                             <Flag size={14} />
-                                            Report
+                                            {t('report')}
                                         </button>
                                     </div>
                                 </div>
@@ -275,17 +278,21 @@ const ReviewList: React.FC<ReviewListProps> = ({ productId }) => {
             {total > take && (
                 <div className="flex items-center justify-between pt-12 border-t border-stone-100 dark:border-white/5">
                     <p className="text-[10px] text-stone-400 uppercase tracking-widest font-bold">
-                        Showing {skip + 1}-{Math.min(skip + take, total)} of {total}
+                        {t('showing_count', { 
+                            start: skip + 1, 
+                            end: Math.min(skip + take, total), 
+                            total 
+                        })}
                     </p>
                     <div className="flex gap-4">
                         <Button
                             variant="outline"
                             size="sm"
                             className="rounded-full px-6 text-[10px] uppercase font-bold tracking-widest"
-                            disabled={skip === 0}
+                             disabled={skip === 0}
                             onClick={() => setSkip(Math.max(0, skip - take))}
                         >
-                            Previous
+                            {tCommon('previous')}
                         </Button>
                         <Button
                             variant="outline"
@@ -294,7 +301,7 @@ const ReviewList: React.FC<ReviewListProps> = ({ productId }) => {
                             disabled={skip + take >= total}
                             onClick={() => setSkip(skip + take)}
                         >
-                            Next
+                            {tCommon('next')}
                         </Button>
                     </div>
                 </div>

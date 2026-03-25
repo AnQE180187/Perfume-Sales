@@ -12,9 +12,10 @@ import { useAuth } from '@/hooks/use-auth';
 
 export default function CollectionPage() {
     const t = useTranslations('collection');
+    const tCommon = useTranslations('common');
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
-    const [activeCategory, setActiveCategory] = useState('All');
+    const [activeCategory, setActiveCategory] = useState(tCommon('all'));
     const [isMounted, setIsMounted] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
     const { isAuthenticated } = useAuth();
@@ -38,8 +39,8 @@ export default function CollectionPage() {
     const bannerY = useTransform(scrollYProgress, [0, 0.4], ['0%', '30%']);
     const bannerOpacity = useTransform(scrollYProgress, [0, 0.4], [1, 0.5]);
 
-    const categories = ['All', ...Array.from(new Set(products.map(p => p.category?.name).filter(Boolean) as string[]))];
-    const filteredProducts = activeCategory === 'All'
+    const categories = [tCommon('all'), ...Array.from(new Set(products.map(p => p.category?.name).filter(Boolean) as string[]))];
+    const filteredProducts = activeCategory === tCommon('all')
         ? products
         : products.filter(p => p.category?.name === activeCategory);
 
@@ -142,7 +143,7 @@ export default function CollectionPage() {
                 {/* Grid */}
                 <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-16 gap-y-24">
                     {loading ? (
-                        <div className="col-span-full py-20 text-center text-stone-400 text-sm uppercase tracking-widest">Loading…</div>
+                        <div className="col-span-full py-20 text-center text-stone-400 text-sm uppercase tracking-widest">{tCommon('loading')}</div>
                     ) : (
                         filteredProducts.map((product, i) => (
                             <motion.div
@@ -181,7 +182,7 @@ export default function CollectionPage() {
                                         {/* Quick Add shifted to View Details */}
                                         <div className="absolute bottom-10 left-10 right-10 translate-y-8 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700">
                                             <div className="w-full glass py-4 rounded-full text-[10px] font-bold tracking-[.3em] uppercase text-white hover:bg-white hover:text-luxury-black transition-all flex items-center justify-center gap-3 shadow-2xl">
-                                                View Options
+                                                {tCommon('view_options')}
                                             </div>
                                         </div>
                                     </div>

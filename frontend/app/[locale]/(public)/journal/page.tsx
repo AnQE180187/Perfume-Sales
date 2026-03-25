@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Header } from '@/components/common/header';
 import { ArrowUpRight, BookOpen } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 const articles = [
     {
@@ -38,6 +39,7 @@ const articles = [
 ];
 
 export default function JournalPage() {
+    const t = useTranslations('journal_page');
     return (
         <div className="min-h-screen bg-white dark:bg-zinc-950 transition-colors">
             <Header />
@@ -52,7 +54,7 @@ export default function JournalPage() {
                         >
                             <BookOpen size={18} />
                             <span className="text-xs font-bold tracking-[.3em] uppercase italic transition-colors">
-                                Digital Anthology
+                                {t('digital_anthology')}
                             </span>
                         </motion.div>
                         <motion.h1
@@ -69,7 +71,7 @@ export default function JournalPage() {
                             transition={{ delay: 0.2 }}
                             className="text-stone-500 dark:text-stone-400 text-lg font-light leading-relaxed transition-colors"
                         >
-                            Exploring the intersection of tradition, neural science, and luxury perfumery.
+                            {t('journal_subtitle')}
                         </motion.p>
                     </div>
 
@@ -78,9 +80,9 @@ export default function JournalPage() {
                         animate={{ opacity: 1 }}
                         className="flex gap-6"
                     >
-                        {["All", "Science", "Philosophy", "Artistry"].map(cat => (
-                            <button key={cat} className="text-[10px] font-bold tracking-widest uppercase text-stone-400 hover:text-gold transition-colors cursor-pointer">
-                                {cat}
+                        {["all", "science", "philosophy", "artistry"].map(catKey => (
+                            <button key={catKey} className="text-[10px] font-bold tracking-widest uppercase text-stone-400 hover:text-gold transition-colors cursor-pointer">
+                                {t(`categories.${catKey}`)}
                             </button>
                         ))}
                     </motion.div>
@@ -102,7 +104,7 @@ export default function JournalPage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                     <div className="absolute bottom-16 left-16 right-16">
                         <span className="text-gold text-[10px] font-bold tracking-widest uppercase mb-4 block">
-                            Special Release
+                            {t('special_release')}
                         </span>
                         <h2 className="text-4xl md:text-6xl font-serif text-white max-w-3xl mb-6">
                             Sustainable Synthesis: The Future of Raw Materials
@@ -111,7 +113,7 @@ export default function JournalPage() {
                             How neural AI is predicting the next century of botanical rarity and how we're preserving it today.
                         </p>
                         <button className="flex items-center gap-3 text-white text-[10px] font-bold tracking-[.3em] uppercase group-hover:text-gold transition-colors">
-                            Consume the Story <ArrowUpRight size={18} />
+                            {t('consume_story')} <ArrowUpRight size={18} />
                         </button>
                     </div>
                 </motion.section>
@@ -162,7 +164,7 @@ export default function JournalPage() {
                     className="mt-32 pt-24 border-t border-stone-100 dark:border-white/10 text-center"
                 >
                     <button className="px-12 py-5 bg-luxury-black dark:bg-gold text-white rounded-full font-bold tracking-[.2em] uppercase hover:scale-105 transition-all shadow-xl cursor-pointer">
-                        Load Older Transcripts
+                        {t('load_older')}
                     </button>
                 </motion.div>
             </main>
