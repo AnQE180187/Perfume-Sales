@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/currency_utils.dart';
 import '../../../cart/models/cart_item.dart';
 
 class OrderSummarySection extends StatelessWidget {
@@ -24,20 +25,11 @@ class OrderSummarySection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Tóm tắt đơn hàng',
-            style: GoogleFonts.playfairDisplay(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: AppTheme.deepCharcoal,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'KIỂM TRA LẦN CUỐI',
+            'SẢN PHẨM',
             style: GoogleFonts.montserrat(
-              fontSize: 9,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 1.2,
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.6,
               color: AppTheme.mutedSilver,
             ),
           ),
@@ -128,7 +120,7 @@ class _OrderItemRow extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              '\$${item.price.toStringAsFixed(2)}',
+              formatVND(item.price),
               style: GoogleFonts.montserrat(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,

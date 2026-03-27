@@ -1,22 +1,45 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../core/api/api_client.dart';
+import '../../../core/api/api_endpoints.dart';
 import '../models/payment_method.dart';
 
-/// Payment Service - Calls backend API for payment processing
-/// Backend handles VNPay, Momo, and COD integration
 class PaymentService {
-  final String _baseUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:3000';
-  final SupabaseClient _supabase = Supabase.instance.client;
+  final ApiClient _client;
 
-  /// Get authorization header
-  Future<Map<String, String>> _getHeaders() async {
-    final session = _supabase.auth.currentSession;
-    return {
-      'Content-Type': 'application/json',
-      if (session != null) 'Authorization': 'Bearer ${session.accessToken}',
-    };
+  PaymentService({required ApiClient client}) : _client = client;
+
+  Future<List<PaymentMethod>> getPaymentMethods() async {
+    try {
+      final response = await _client.get(ApiEndpoints.paymentMethods);
+      final rawList = _asList(response.data);
+
+      final methods = rawList
+          .whereType<Map>()
+          .map((raw) => PaymentMethod.fromJson(_asMap(raw)))
+          .toList();
+
+      return _normalizeSingleDefault(methods);
+    } on DioException catch (error) {
+      throw PaymentServiceException(_messageFromDio(error));
+    } catch (_) {
+      throw const PaymentServiceException(
+        'Khong the tai danh sach phuong thuc thanh toan.',
+      );
+    }
+  }
+
+  Future<void> setDefaultPaymentMethod(String id) async {
+    try {
+      await _client.patch(ApiEndpoints.paymentMethodDefaultById(id));
+    } on DioException catch (error) {
+      throw PaymentServiceException(_messageFromDio(error));
+    } catch (_) {
+      throw const PaymentServiceException(
+        'Khong the cap nhat phuong thuc thanh toan.',
+      );
+    }
   }
 
   /// Create payment for VNPay
@@ -26,26 +49,10 @@ class PaymentService {
     required double amount,
     required String orderInfo,
   }) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$_baseUrl/api/payment/vnpay/create'),
-        headers: await _getHeaders(),
-        body: jsonEncode({
-          'orderId': orderId,
-          'amount': amount,
-          'orderInfo': orderInfo,
-          'returnUrl': 'perfumegpt://payment/vnpay/return',
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body) as Map<String, dynamic>;
-      } else {
-        throw Exception('VNPay payment creation failed: ${response.body}');
-      }
-    } catch (e) {
-      throw Exception('VNPay payment error: $e');
-    }
+    return {
+      'success': false,
+      'message': 'VNPay hien khong duoc ho tro tren backend hien tai.',
+    };
   }
 
   /// Create payment for Momo
@@ -55,26 +62,10 @@ class PaymentService {
     required double amount,
     required String orderInfo,
   }) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$_baseUrl/api/payment/momo/create'),
-        headers: await _getHeaders(),
-        body: jsonEncode({
-          'orderId': orderId,
-          'amount': amount,
-          'orderInfo': orderInfo,
-          'returnUrl': 'perfumegpt://payment/momo/return',
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body) as Map<String, dynamic>;
-      } else {
-        throw Exception('Momo payment creation failed: ${response.body}');
-      }
-    } catch (e) {
-      throw Exception('Momo payment error: $e');
-    }
+    return {
+      'success': false,
+      'message': 'Momo hien khong duoc ho tro tren backend hien tai.',
+    };
   }
 
   /// Create COD order
@@ -84,25 +75,10 @@ class PaymentService {
     required double amount,
     required String shippingAddress,
   }) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$_baseUrl/api/payment/cod/create'),
-        headers: await _getHeaders(),
-        body: jsonEncode({
-          'orderId': orderId,
-          'amount': amount,
-          'shippingAddress': shippingAddress,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body) as Map<String, dynamic>;
-      } else {
-        throw Exception('COD order creation failed: ${response.body}');
-      }
-    } catch (e) {
-      throw Exception('COD order error: $e');
-    }
+    return {
+      'success': false,
+      'message': 'Thanh toan COD duoc xu ly trong luong checkout moi.',
+    };
   }
 
   /// Verify payment callback from VNPay/Momo
@@ -111,79 +87,102 @@ class PaymentService {
     required PaymentMethodType method,
     required Map<String, dynamic> params,
   }) async {
-    try {
-      final endpoint = method == PaymentMethodType.vnpay
-          ? '/api/payment/vnpay/verify'
-          : '/api/payment/momo/verify';
-
-      final response = await http.post(
-        Uri.parse('$_baseUrl$endpoint'),
-        headers: await _getHeaders(),
-        body: jsonEncode(params),
-      );
-
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body) as Map<String, dynamic>;
-      } else {
-        throw Exception('Payment verification failed: ${response.body}');
-      }
-    } catch (e) {
-      throw Exception('Payment verification error: $e');
-    }
+    return {
+      'success': false,
+      'message': 'Khong ho tro verify callback cho phuong thuc nay.',
+    };
   }
 
   /// Get payment status
   Future<PaymentTransaction?> getPaymentStatus(String orderId) async {
     try {
-      final response = await http.get(
-        Uri.parse('$_baseUrl/api/payment/status/$orderId'),
-        headers: await _getHeaders(),
+      final response = await _client.get(
+        ApiEndpoints.paymentByOrderId(orderId),
       );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return PaymentTransaction.fromJson(data);
-      } else if (response.statusCode == 404) {
+      final data = response.data;
+      if (data == null) return null;
+      if (data is! Map) {
         return null;
-      } else {
-        throw Exception('Failed to get payment status: ${response.body}');
       }
-    } catch (e) {
-      throw Exception('Payment status error: $e');
+
+      return PaymentTransaction.fromJson(_asMap(data));
+    } on DioException {
+      return null;
+    } catch (_) {
+      return null;
     }
   }
 
   /// Cancel payment
   Future<bool> cancelPayment(String orderId) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$_baseUrl/api/payment/cancel'),
-        headers: await _getHeaders(),
-        body: jsonEncode({'orderId': orderId}),
-      );
-
-      return response.statusCode == 200;
-    } catch (e) {
-      throw Exception('Payment cancellation error: $e');
-    }
+    return false;
   }
 
   /// Get payment history
   Future<List<PaymentTransaction>> getPaymentHistory() async {
-    try {
-      final response = await http.get(
-        Uri.parse('$_baseUrl/api/payment/history'),
-        headers: await _getHeaders(),
-      );
+    return const <PaymentTransaction>[];
+  }
 
-      if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        return data.map((json) => PaymentTransaction.fromJson(json)).toList();
-      } else {
-        throw Exception('Failed to get payment history: ${response.body}');
-      }
-    } catch (e) {
-      throw Exception('Payment history error: $e');
+  List<PaymentMethod> _normalizeSingleDefault(List<PaymentMethod> methods) {
+    if (methods.isEmpty) return methods;
+
+    var hasDefault = false;
+    return methods.map((method) {
+      if (!method.isDefault) return method;
+      if (hasDefault) return method.copyWith(isDefault: false);
+      hasDefault = true;
+      return method;
+    }).toList();
+  }
+
+  List<dynamic> _asList(dynamic data) {
+    if (data is List) return data;
+    if (data is Map && data['data'] is List) {
+      return data['data'] as List<dynamic>;
     }
+    return const <dynamic>[];
+  }
+
+  Map<String, dynamic> _asMap(dynamic data) {
+    if (data is Map<String, dynamic>) return data;
+    if (data is Map) {
+      return data.map((k, v) => MapEntry(k.toString(), v));
+    }
+    return <String, dynamic>{};
+  }
+
+  String _messageFromDio(DioException error) {
+    final data = error.response?.data;
+    if (data is Map) {
+      final message = data['message'];
+      if (message is List && message.isNotEmpty) {
+        return message.join(', ');
+      }
+      if (message is String && message.trim().isNotEmpty) {
+        return message;
+      }
+    }
+
+    if (error.type == DioExceptionType.connectionTimeout ||
+        error.type == DioExceptionType.receiveTimeout ||
+        error.type == DioExceptionType.sendTimeout) {
+      return 'Ket noi may chu qua lau. Vui long thu lai.';
+    }
+
+    return 'Khong the ket noi den he thong thanh toan.';
   }
 }
+
+class PaymentServiceException implements Exception {
+  final String message;
+
+  const PaymentServiceException(this.message);
+
+  @override
+  String toString() => message;
+}
+
+final paymentServiceProvider = Provider<PaymentService>((ref) {
+  final client = ref.watch(apiClientProvider);
+  return PaymentService(client: client);
+});

@@ -10,10 +10,11 @@ import '../../features/checkout/presentation/checkout_screen.dart';
 import '../../features/checkout/presentation/order_success_screen.dart';
 import '../../features/orders/presentation/orders_screen.dart';
 import '../../features/orders/presentation/order_detail_screen.dart';
+import '../../features/orders/presentation/screens/track_order_screen.dart';
 import '../../features/payment/presentation/payment_method_screen.dart';
 import '../../features/payment/presentation/payment_result_screen.dart';
-import '../../features/profile/presentation/screens/profile_payment_methods_screen.dart';
-import '../../features/profile/presentation/screens/shipping_addresses_screen.dart';
+import '../../features/payment/presentation/screens/payment_method_screen.dart';
+import '../../features/address/presentation/screens/address_management_screen.dart';
 import '../../features/search/presentation/search_screen.dart';
 import '../../features/wishlist/presentation/wishlist_screen.dart';
 import '../../features/product/presentation/explore_screen.dart';
@@ -89,12 +90,19 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
+        path: '/orders/:id/track',
+        builder: (context, state) {
+          final orderId = state.pathParameters['id']!;
+          return TrackOrderScreen(orderId: orderId);
+        },
+      ),
+      GoRoute(
         path: '/shipping-addresses',
-        builder: (context, state) => const ShippingAddressesScreen(),
+        builder: (context, state) => const AddressManagementScreen(),
       ),
       GoRoute(
         path: '/profile-payment-methods',
-        builder: (context, state) => const ProfilePaymentMethodsScreen(),
+        builder: (context, state) => const PreferredPaymentMethodScreen(),
       ),
       GoRoute(
         path: '/payment',

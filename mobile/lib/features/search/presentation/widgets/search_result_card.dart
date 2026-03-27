@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/currency_utils.dart';
 import '../../../product/models/product.dart';
 
 class SearchResultCard extends StatelessWidget {
@@ -88,7 +89,7 @@ class SearchResultCard extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          '\$${product.price.toStringAsFixed(2)}',
+                          formatVND(product.price),
                           style: GoogleFonts.montserrat(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../data/cart_repository.dart';
 import '../models/cart_item.dart';
 
 class CartState {
@@ -39,92 +40,109 @@ class CartState {
 }
 
 class CartNotifier extends StateNotifier<CartState> {
-  CartNotifier() : super(CartState(items: _mockItems));
+  final CartRepository _repository;
 
-  // Mock data for testing
-  static final List<CartItem> _mockItems = [
-    CartItem(
-      id: '1',
-      productId: 'p1',
-      productName: 'Elysium Essence',
-      productImage:
-          'https://images.unsplash.com/photo-1541643600914-78b084683601?w=400',
-      price: 120.00,
-      quantity: 1,
-      size: '100ml',
-      variant: 'Oud & Bergamot',
-    ),
-    CartItem(
-      id: '2',
-      productId: 'p2',
-      productName: 'Night Shade',
-      productImage:
-          'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=400',
-      price: 85.00,
-      quantity: 1,
-      size: '50ml',
-      variant: 'AI Formulation #4',
-    ),
-    CartItem(
-      id: '3',
-      productId: 'p3',
-      productName: 'Solar Flare',
-      productImage:
-          'https://images.unsplash.com/photo-1588405748880-12d1d2a59db9?w=400',
-      price: 0.00, // Free sample
-      quantity: 1,
-      size: '2ml',
-      variant: 'Citrus & Amber',
-    ),
-  ];
+  CartNotifier({required CartRepository repository})
+    : _repository = repository,
+      super(CartState()) {
+    loadCart();
+  }
 
-  // Add item to cart
-  void addItem(CartItem item) {
-    final existingIndex = state.items.indexWhere(
-      (i) => i.productId == item.productId && i.size == item.size,
-    );
+  String _mapError(Object error) {
+    final raw = error.toString();
+    if (raw.startsWith('Exception: ')) {
+      return raw.replaceFirst('Exception: ', '');
+    }
+    return raw;
+  }
 
-    if (existingIndex >= 0) {
-      // Update quantity if item exists
-      final updatedItems = List<CartItem>.from(state.items);
-      updatedItems[existingIndex] = updatedItems[existingIndex].copyWith(
-        quantity: updatedItems[existingIndex].quantity + item.quantity,
+  Future<void> loadCart() async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final items = await _repository.getCartItems();
+      state = state.copyWith(items: items, isLoading: false, error: null);
+    } catch (error) {
+      state = state.copyWith(isLoading: false, error: _mapError(error));
+    }
+  }
+
+  Future<void> addItemByVariant(String variantId, {int quantity = 1}) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final items = await _repository.addItemByVariant(
+        variantId: variantId,
+        quantity: quantity,
       );
-      state = state.copyWith(items: updatedItems);
-    } else {
-      // Add new item
-      state = state.copyWith(items: [...state.items, item]);
+      state = state.copyWith(items: items, isLoading: false, error: null);
+    } catch (error) {
+      state = state.copyWith(isLoading: false, error: _mapError(error));
+      rethrow;
     }
   }
 
   // Update item quantity
-  void updateQuantity(String itemId, int quantity) {
-    if (quantity <= 0) {
-      removeItem(itemId);
+  Future<void> updateQuantity(String itemId, int quantity) async {
+    final parsedItemId = int.tryParse(itemId);
+    if (parsedItemId == null) {
+      state = state.copyWith(error: 'Cart item ID is invalid.');
       return;
     }
 
-    final updatedItems = state.items.map((item) {
-      if (item.id == itemId) {
-        return item.copyWith(quantity: quantity);
-      }
-      return item;
-    }).toList();
+    if (quantity <= 0) {
+      await removeItem(itemId);
+      return;
+    }
 
-    state = state.copyWith(items: updatedItems);
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final items = await _repository.updateItemQuantity(
+        itemId: parsedItemId,
+        quantity: quantity,
+      );
+      state = state.copyWith(items: items, isLoading: false, error: null);
+    } catch (error) {
+      state = state.copyWith(isLoading: false, error: _mapError(error));
+    }
   }
 
   // Remove item from cart
-  void removeItem(String itemId) {
-    final updatedItems = state.items
-        .where((item) => item.id != itemId)
-        .toList();
-    state = state.copyWith(items: updatedItems);
+  Future<void> removeItem(String itemId) async {
+    final parsedItemId = int.tryParse(itemId);
+    if (parsedItemId == null) {
+      state = state.copyWith(error: 'Cart item ID is invalid.');
+      return;
+    }
+
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final items = await _repository.removeItem(parsedItemId);
+      state = state.copyWith(items: items, isLoading: false, error: null);
+    } catch (error) {
+      state = state.copyWith(isLoading: false, error: _mapError(error));
+    }
   }
 
   // Clear cart
-  void clearCart() {
-    state = CartState();
+  Future<void> clearCart() async {
+    final currentItems = List<CartItem>.from(state.items);
+    if (currentItems.isEmpty) return;
+
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      var updatedItems = currentItems;
+      for (final item in currentItems) {
+        final parsedItemId = int.tryParse(item.id);
+        if (parsedItemId == null) continue;
+        updatedItems = await _repository.removeItem(parsedItemId);
+      }
+      state = state.copyWith(
+        items: updatedItems,
+        isLoading: false,
+        error: null,
+      );
+    } catch (error) {
+      state = state.copyWith(isLoading: false, error: _mapError(error));
+    }
   }
 
   // Apply promo code
@@ -167,5 +185,5 @@ class CartNotifier extends StateNotifier<CartState> {
 
 // Provider
 final cartProvider = StateNotifierProvider<CartNotifier, CartState>((ref) {
-  return CartNotifier();
+  return CartNotifier(repository: ref.watch(cartRepositoryProvider));
 });
