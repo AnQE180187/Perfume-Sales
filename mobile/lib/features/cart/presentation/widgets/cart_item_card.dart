@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/currency_utils.dart';
 import '../../models/cart_item.dart';
 import '../../providers/cart_provider.dart';
 import 'quantity_control.dart';
@@ -8,10 +9,7 @@ import 'quantity_control.dart';
 class CartItemCard extends ConsumerWidget {
   final CartItem item;
 
-  const CartItemCard({
-    super.key,
-    required this.item,
-  });
+  const CartItemCard({super.key, required this.item});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -34,9 +32,7 @@ class CartItemCard extends ConsumerWidget {
           const SizedBox(width: 16),
 
           // Product Details
-          Expanded(
-            child: _buildProductDetails(context),
-          ),
+          Expanded(child: _buildProductDetails(context)),
 
           // Quantity Controls
           Column(
@@ -47,7 +43,9 @@ class CartItemCard extends ConsumerWidget {
                 icon: Icon(
                   Icons.delete_outline,
                   size: 18,
-                  color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.5),
+                  color: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.color?.withValues(alpha: 0.5),
                 ),
                 onPressed: () {
                   ref.read(cartProvider.notifier).removeItem(item.id);
@@ -106,11 +104,13 @@ class CartItemCard extends ConsumerWidget {
         if (item.size != null)
           Text(
             item.size!,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 11),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontSize: 11),
           ),
         const SizedBox(height: 8),
         Text(
-          '\$${item.price.toStringAsFixed(2)}',
+          formatVND(item.price),
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
             color: AppTheme.accentGold,
             fontSize: 14,

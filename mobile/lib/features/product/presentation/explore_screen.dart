@@ -14,9 +14,6 @@ class ExploreScreen extends ConsumerStatefulWidget {
 }
 
 class _ExploreScreenState extends ConsumerState<ExploreScreen> {
-  String _selectedFilter = 'TẤT CẢ';
-  final List<String> _filters = ['TẤT CẢ', 'CẢM XÚC', 'DỊP DÙNG', 'MÙA', 'GIÁ'];
-
   @override
   Widget build(BuildContext context) {
     final productsAsync = ref.watch(productsProvider);
@@ -72,58 +69,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               ),
             ),
 
-            // Filter Chips
-            SizedBox(
-              height: 50,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                itemCount: _filters.length,
-                itemBuilder: (context, index) {
-                  final filter = _filters[index];
-                  final isSelected = _selectedFilter == filter;
-
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: ChoiceChip(
-                      label: Text(filter),
-                      selected: isSelected,
-                      onSelected: (selected) {
-                        setState(() {
-                          _selectedFilter = filter;
-                        });
-                      },
-                      labelStyle: GoogleFonts.montserrat(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 1.2,
-                        color: isSelected
-                            ? AppTheme.primaryDb
-                            : AppTheme.mutedSilver,
-                      ),
-                      backgroundColor: AppTheme.creamWhite,
-                      selectedColor: AppTheme.champagneGold,
-                      side: BorderSide(
-                        color: isSelected
-                            ? AppTheme.champagneGold
-                            : AppTheme.softTaupe,
-                        width: 1,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
             // Products Grid
             Expanded(
               child: productsAsync.when(
@@ -136,7 +81,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
-                          childAspectRatio: 0.62,
+                          childAspectRatio: 0.60,
                           crossAxisSpacing: 16,
                           mainAxisSpacing: 16,
                         ),

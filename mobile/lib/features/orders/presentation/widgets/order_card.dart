@@ -1,410 +1,182 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
-import '../../../../core/theme/app_theme.dart';
-import '../../models/order.dart';
 
-/// Order Card - Reusable component with variants
-///
-/// Handles both Active and Completed order states with context-aware actions.
-///
-/// Why this exists:
-/// - Single source of truth for order card UI
-/// - Variant-based rendering (active vs completed)
-/// - Context-aware CTAs (track, review, view receipt)
-/// - Consistent luxury styling across all order states
-enum OrderCardVariant {
-  active, // For Active tab (shipped, out for delivery)
-  completed, // For Completed tab (delivered, cancelled)
-}
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/currency_utils.dart';
+import '../../models/order.dart';
+import 'order_status_badge.dart';
+
+enum OrderCardVariant { active, completed }
 
 class OrderCard extends StatelessWidget {
   final Order order;
   final OrderCardVariant variant;
-  final VoidCallback? onTrackOrder;
-  final VoidCallback? onViewReceipt;
-  final VoidCallback? onWriteReview;
-  final VoidCallback? onViewReview;
-  final VoidCallback? onTap;
-  final bool hasReviewed;
+  final VoidCallback onTap;
+  final VoidCallback? onTrack;
+  final VoidCallback? onReview;
+  final VoidCallback? onViewDetail;
 
   const OrderCard({
     super.key,
     required this.order,
     required this.variant,
-    this.onTrackOrder,
-    this.onViewReceipt,
-    this.onWriteReview,
-    this.onViewReview,
-    this.onTap,
-    this.hasReviewed = false,
+    required this.onTap,
+    this.onTrack,
+    this.onReview,
+    this.onViewDetail,
   });
 
   @override
   Widget build(BuildContext context) {
-    final bool isCancelled = order.status == OrderStatus.cancelled;
+    final previewItem = order.previewItem;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: isCancelled
-              ? AppTheme.mutedSilver.withValues(alpha: 0.3)
-              : AppTheme.accentGold.withValues(alpha: 0.15),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.deepCharcoal.withValues(alpha: 0.04),
-            offset: const Offset(0, 2),
-            blurRadius: 8,
-          ),
-        ],
-      ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
       child: Material(
-        color: Colors.transparent,
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
         child: InkWell(
+          borderRadius: BorderRadius.circular(16),
           onTap: onTap,
-          borderRadius: BorderRadius.circular(14),
-          child: Padding(
-            padding: const EdgeInsets.all(18),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeader(context, isCancelled),
-                const SizedBox(height: 14),
-                _buildStatusRow(context, isCancelled),
-                const SizedBox(height: 16),
-                _buildProductInfo(context, isCancelled),
-                const SizedBox(height: 16),
-                _buildActions(context, isCancelled),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context, bool isCancelled) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          order.orderNumber,
-          style: GoogleFonts.montserrat(
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 1.5,
-            color: isCancelled ? AppTheme.mutedSilver : AppTheme.deepCharcoal,
-          ),
-        ),
-        Text(
-          _formatDate(order.createdAt),
-          style: GoogleFonts.montserrat(
-            fontSize: 11,
-            fontWeight: FontWeight.w400,
-            color: AppTheme.mutedSilver,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatusRow(BuildContext context, bool isCancelled) {
-    IconData statusIcon;
-    Color statusColor;
-
-    switch (order.status) {
-      case OrderStatus.outForDelivery:
-        statusIcon = Icons.local_shipping_outlined;
-        statusColor = AppTheme.accentGold;
-        break;
-      case OrderStatus.shipped:
-        statusIcon = Icons.inventory_2_outlined;
-        statusColor = AppTheme.accentGold;
-        break;
-      case OrderStatus.delivered:
-        statusIcon = Icons.check_circle_outline;
-        statusColor = AppTheme.accentGold;
-        break;
-      case OrderStatus.cancelled:
-        statusIcon = Icons.cancel_outlined;
-        statusColor = AppTheme.mutedSilver;
-        break;
-      default:
-        statusIcon = Icons.access_time;
-        statusColor = AppTheme.mutedSilver;
-    }
-
-    return Row(
-      children: [
-        Icon(statusIcon, size: 18, color: statusColor),
-        const SizedBox(width: 7),
-        Text(
-          order.status.displayName,
-          style: GoogleFonts.montserrat(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: statusColor,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildProductInfo(BuildContext context, bool isCancelled) {
-    final firstItem = order.items.first;
-
-    return Row(
-      children: [
-        // Product thumbnail
-        Container(
-          width: 60,
-          height: 60,
-          decoration: BoxDecoration(
-            color: AppTheme.ivoryBackground,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: AppTheme.softTaupe.withValues(alpha: 0.3),
-              width: 0.5,
-            ),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: Image.network(
-              firstItem.productImage,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Icon(
-                Icons.auto_awesome,
-                color: AppTheme.mutedSilver,
-                size: 24,
+          child: Ink(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: variant == OrderCardVariant.active
+                    ? AppTheme.accentGold.withValues(alpha: 0.4)
+                    : AppTheme.softTaupe,
               ),
             ),
-          ),
-        ),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                firstItem.productName,
-                style: GoogleFonts.playfairDisplay(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: isCancelled
-                      ? AppTheme.mutedSilver
-                      : AppTheme.deepCharcoal,
-                  height: 1.3,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '${firstItem.size ?? '50ml'} • Nước hoa Eau de Parfum',
-                style: GoogleFonts.montserrat(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w400,
-                  color: AppTheme.mutedSilver,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActions(BuildContext context, bool isCancelled) {
-    if (variant == OrderCardVariant.active) {
-      return Row(
-        children: [
-          if (onViewReceipt != null)
-            TextButton(
-              onPressed: onViewReceipt,
-              style: TextButton.styleFrom(
-                padding: EdgeInsets.zero,
-                minimumSize: const Size(0, 0),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: Text(
-                'Xem hóa đơn',
-                style: GoogleFonts.montserrat(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: AppTheme.deepCharcoal.withValues(alpha: 0.6),
-                ),
-              ),
-            ),
-          const Spacer(),
-          if (onTrackOrder != null)
-            SizedBox(
-              height: 36,
-              child: OutlinedButton(
-                onPressed: onTrackOrder,
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 18),
-                  side: BorderSide(color: AppTheme.accentGold, width: 1.5),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Theo dõi đơn',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.accentGold,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Icon(
-                      Icons.arrow_forward,
-                      size: 14,
-                      color: AppTheme.accentGold,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-        ],
-      );
-    } else {
-      // Completed variant
-      if (isCancelled) {
-        return Text(
-          'Sản phẩm này hiện không đủ điều kiện để đánh giá',
-          style: GoogleFonts.montserrat(
-            fontSize: 11,
-            fontWeight: FontWeight.w400,
-            color: AppTheme.mutedSilver,
-            fontStyle: FontStyle.italic,
-          ),
-        );
-      } else if (hasReviewed) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: AppTheme.ivoryBackground,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: AppTheme.accentGold.withValues(alpha: 0.3),
-                  width: 1,
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.star, size: 12, color: AppTheme.accentGold),
-                  const SizedBox(width: 5),
-                  Text(
-                    'ĐÃ ĐÁNH GIÁ',
-                    style: GoogleFonts.montserrat(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1,
-                      color: AppTheme.accentGold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (onViewReview != null) ...[
-              const SizedBox(height: 8),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: onViewReview,
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.zero,
-                    minimumSize: const Size(0, 0),
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
+                  Row(
                     children: [
+                      OrderStatusBadge(status: order.status),
+                      const Spacer(),
                       Text(
-                        'Xem đánh giá của bạn',
-                        style: GoogleFonts.montserrat(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: AppTheme.deepCharcoal.withValues(alpha: 0.6),
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Icon(
-                        Icons.arrow_forward,
-                        size: 12,
-                        color: AppTheme.deepCharcoal.withValues(alpha: 0.6),
+                        _formatDate(order.createdAt),
+                        style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     ],
                   ),
-                ),
-              ),
-            ],
-          ],
-        );
-      } else {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Chia sẻ trải nghiệm của bạn với mùi hương này',
-              style: GoogleFonts.montserrat(
-                fontSize: 11,
-                fontWeight: FontWeight.w400,
-                color: AppTheme.mutedSilver,
+                  const SizedBox(height: 12),
+                  Text(
+                    order.code,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _ProductImage(url: previewItem?.productImage ?? ''),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              previewItem?.productName ?? 'Perfume item',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context).textTheme.bodyLarge
+                                  ?.copyWith(fontWeight: FontWeight.w600),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              (previewItem?.variantLabel.isNotEmpty ?? false)
+                                  ? previewItem!.variantLabel
+                                  : 'Luxury fragrance',
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              '${order.itemCount} item${order.itemCount > 1 ? 's' : ''} • ${formatVND(order.finalAmount)}',
+                              style: Theme.of(context).textTheme.bodyLarge
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: AppTheme.deepCharcoal,
+                                  ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  _buildCtaRow(context),
+                ],
               ),
             ),
-            const SizedBox(height: 10),
-            SizedBox(
-              height: 36,
-              child: OutlinedButton(
-                onPressed: onWriteReview,
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 18),
-                  side: BorderSide(color: AppTheme.accentGold, width: 1.5),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                child: Text(
-                  'Viết đánh giá',
-                  style: GoogleFonts.montserrat(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.accentGold,
-                  ),
-                ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCtaRow(BuildContext context) {
+    final showTrack = variant == OrderCardVariant.active && onTrack != null;
+    final isCancelled = order.status == OrderStatus.cancelled;
+    final ctaLabel = showTrack
+        ? 'Track Order'
+        : isCancelled
+        ? 'View Details'
+        : 'Review';
+
+    return Row(
+      children: [
+        TextButton(
+          onPressed: onViewDetail ?? onTap,
+          child: const Text('View Details'),
+        ),
+        const Spacer(),
+        ElevatedButton(
+          onPressed:
+              showTrack ? onTrack : (isCancelled ? onViewDetail : onReview),
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          ),
+          child: Text(ctaLabel),
+        ),
+      ],
+    );
+  }
+}
+
+class _ProductImage extends StatelessWidget {
+  final String url;
+
+  const _ProductImage({required this.url});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 62,
+      height: 62,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.softTaupe),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: url.isEmpty
+            ? const Icon(Icons.inventory_2_outlined)
+            : Image.network(
+                url,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) =>
+                    const Icon(Icons.inventory_2_outlined),
               ),
-            ),
-          ],
-        );
-      }
-    }
+      ),
+    );
   }
+}
 
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final cardDate = DateTime(date.year, date.month, date.day);
-
-    if (cardDate == today) {
-      return 'Hôm nay';
-    } else if (cardDate == today.subtract(const Duration(days: 1))) {
-      return 'Hôm qua';
-    } else {
-      return DateFormat('MMM dd').format(date);
-    }
-  }
+String _formatDate(DateTime date) {
+  final day = date.day.toString().padLeft(2, '0');
+  final month = date.month.toString().padLeft(2, '0');
+  return '$day/$month/${date.year}';
 }

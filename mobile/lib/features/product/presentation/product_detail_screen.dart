@@ -10,8 +10,11 @@ import '../../../core/widgets/ai_scent_analysis_card.dart';
 import '../../../core/widgets/scent_structure_section.dart';
 import '../../../core/widgets/product_story_section.dart';
 import '../../../core/widgets/product_bottom_cta.dart';
+import '../../cart/providers/cart_provider.dart';
 import 'scent_structure_detail_screen.dart';
 import '../providers/product_provider.dart';
+import '../models/product.dart';
+import '../../../core/widgets/product_price_section.dart';
 
 class ProductDetailScreen extends ConsumerStatefulWidget {
   final String productId;
@@ -27,10 +30,12 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
     with SingleTickerProviderStateMixin {
   bool _isFavorite = false;
   bool _isBookmarked = false;
-  bool _isAIAnalysisExpanded = true;
+  bool _isAIAnalysisExpanded = false;
   String _selectedSize = '100ml';
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+  final PageController _pageController = PageController();
+  int _currentImagePage = 0;
 
   // Size pricing map
   final Map<String, double> _sizePricing = {
@@ -40,7 +45,28 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
     '100ml': 295.00,
   };
 
-  double get _currentPrice => _sizePricing[_selectedSize] ?? 295.00;
+  ProductVariant? _findSelectedVariant(Product product, String selectedSize) {
+    if (product.variants.isEmpty) return null;
+
+    for (final variant in product.variants) {
+      if (!variant.isActive) continue;
+      if (variant.name.toLowerCase() == selectedSize.toLowerCase()) {
+        return variant;
+      }
+    }
+
+    for (final variant in product.variants) {
+      if (variant.isActive) return variant;
+    }
+
+    return product.variants.first;
+  }
+
+  double _priceFor(Product product, String selectedSize) {
+    final selectedVariant = _findSelectedVariant(product, selectedSize);
+    if (selectedVariant != null) return selectedVariant.price;
+    return _sizePricing[selectedSize] ?? product.price;
+  }
 
   @override
   void initState() {
@@ -59,6 +85,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
   @override
   void dispose() {
     _animationController.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -88,6 +115,20 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
           ),
         ),
         data: (product) {
+          final images = (product.images != null && product.images!.isNotEmpty)
+              ? product.images!
+              : [product.imageUrl];
+          final backendVariantSizes = product.variants
+              .where((variant) => variant.isActive)
+              .map((variant) => variant.name)
+              .toList();
+          final selectedSize = backendVariantSizes.contains(_selectedSize)
+              ? _selectedSize
+              : (backendVariantSizes.isNotEmpty
+                    ? backendVariantSizes.first
+                    : _selectedSize);
+          final currentPrice = _priceFor(product, selectedSize);
+
           return Stack(
             children: [
               CustomScrollView(
@@ -131,28 +172,77 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                               bottomLeft: Radius.circular(32),
                               bottomRight: Radius.circular(32),
                             ),
-                            child: Container(
-                              decoration: const BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    Color(0xFFE8D5B7),
-                                    Color(0xFFF5F1ED),
-                                  ],
-                                ),
-                              ),
-                              child: Image.network(
-                                product.imageUrl,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => const Center(
-                                  child: Icon(
-                                    Icons.image_outlined,
-                                    size: 64,
-                                    color: AppTheme.mutedSilver,
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                // gradient background
+                                Container(
+                                  decoration: const BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
+                                      colors: [
+                                        Color(0xFFE8D5B7),
+                                        Color(0xFFF5F1ED),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
+                                // swipeable image gallery
+                                PageView.builder(
+                                  controller: _pageController,
+                                  onPageChanged: (i) =>
+                                      setState(() => _currentImagePage = i),
+                                  itemCount: images.length,
+                                  itemBuilder: (_, i) => Image.network(
+                                    images[i],
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => const Center(
+                                      child: Icon(
+                                        Icons.image_outlined,
+                                        size: 64,
+                                        color: AppTheme.mutedSilver,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                // indicator dots
+                                if (images.length > 1)
+                                  Positioned(
+                                    bottom: 28,
+                                    left: 0,
+                                    right: 0,
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: List.generate(
+                                        images.length,
+                                        (i) => AnimatedContainer(
+                                          duration: const Duration(
+                                            milliseconds: 200,
+                                          ),
+                                          margin: const EdgeInsets.symmetric(
+                                            horizontal: 3,
+                                          ),
+                                          width: i == _currentImagePage
+                                              ? 18.0
+                                              : 6.0,
+                                          height: 6,
+                                          decoration: BoxDecoration(
+                                            color: i == _currentImagePage
+                                                ? Colors.white
+                                                : Colors.white.withValues(
+                                                    alpha: 0.5,
+                                                  ),
+                                            borderRadius: BorderRadius.circular(
+                                              3,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
                           ),
                         ),
@@ -160,23 +250,31 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                     ),
                   ),
 
-                  // ================= FLOATING PRODUCT INFO CARD =================
+                  // ================= PRODUCT INFO CARD =================
                   SliverToBoxAdapter(
                     child: Transform.translate(
-                      offset: const Offset(0, -50),
+                      // Light overlap with hero bottom edge
+                      offset: const Offset(0, -24),
                       child: FadeTransition(
                         opacity: _fadeAnimation,
                         child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 16),
+                          margin: const EdgeInsets.fromLTRB(16, 16, 16, 20),
                           padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: AppTheme.ivoryBackground,
                             borderRadius: BorderRadius.circular(28),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.08),
-                                blurRadius: 40,
-                                offset: const Offset(0, 16),
+                                color: Colors.black.withValues(alpha: 0.10),
+                                blurRadius: 32,
+                                spreadRadius: 0,
+                                offset: const Offset(0, 8),
+                              ),
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.04),
+                                blurRadius: 8,
+                                spreadRadius: 0,
+                                offset: const Offset(0, 2),
                               ),
                             ],
                           ),
@@ -214,54 +312,62 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                                 ),
                               ),
                               const SizedBox(height: 12),
-                              // RATING
-                              if (product.rating != null)
-                                GestureDetector(
-                                  onTap: () {
-                                    context.push(
+                              // RATING + VIEW REVIEWS
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  if (product.rating != null) ...[
+                                    const Icon(
+                                      Icons.star,
+                                      size: 14,
+                                      color: AppTheme.accentGold,
+                                    ),
+                                    const SizedBox(width: 5),
+                                    Text(
+                                      '${product.rating}/5',
+                                      style: GoogleFonts.montserrat(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppTheme.deepCharcoal,
+                                      ),
+                                    ),
+                                    if (product.reviews != null) ...[
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        '· ${product.reviews} đánh giá',
+                                        style: GoogleFonts.montserrat(
+                                          fontSize: 11,
+                                          color: AppTheme.mutedSilver,
+                                        ),
+                                      ),
+                                    ],
+                                  ] else
+                                    Text(
+                                      'Chưa có đánh giá',
+                                      style: GoogleFonts.montserrat(
+                                        fontSize: 11,
+                                        color: AppTheme.mutedSilver,
+                                      ),
+                                    ),
+                                  const Spacer(),
+                                  GestureDetector(
+                                    onTap: () => context.push(
                                       AppRoutes.reviewsWithProductId(
                                         product.id,
                                         productName: product.name,
                                       ),
-                                    );
-                                  },
-                                  child: Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.star,
-                                        size: 14,
+                                    ),
+                                    child: Text(
+                                      'Xem review →',
+                                      style: GoogleFonts.montserrat(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
                                         color: AppTheme.accentGold,
                                       ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        '${product.rating}',
-                                        style: GoogleFonts.montserrat(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w700,
-                                          color: AppTheme.deepCharcoal,
-                                        ),
-                                      ),
-                                      if (product.reviews != null) ...[
-                                        const SizedBox(width: 6),
-                                        Text(
-                                          '(${product.reviews} đánh giá)',
-                                          style: GoogleFonts.montserrat(
-                                            fontSize: 12,
-                                            color: AppTheme.mutedSilver,
-                                            decoration:
-                                                TextDecoration.underline,
-                                          ),
-                                        ),
-                                      ],
-                                      const Spacer(),
-                                      const Icon(
-                                        Icons.arrow_forward_ios,
-                                        size: 14,
-                                        color: AppTheme.mutedSilver,
-                                      ),
-                                    ],
+                                    ),
                                   ),
-                                ),
+                                ],
+                              ),
                             ],
                           ),
                         ),
@@ -269,10 +375,18 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                     ),
                   ),
 
+                  // ================= PRICE (above the fold) =================
+                  SliverToBoxAdapter(
+                    child: ProductPriceSection(price: currentPrice),
+                  ),
+
                   // ================= SIZE SELECTOR =================
                   SliverToBoxAdapter(
                     child: ProductSizeSelector(
-                      selectedSize: _selectedSize,
+                      selectedSize: selectedSize,
+                      sizes: backendVariantSizes.isEmpty
+                          ? null
+                          : backendVariantSizes,
                       onSizeChanged: (size) =>
                           setState(() => _selectedSize = size),
                     ),
@@ -291,67 +405,58 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
 
                   // ================= SCENT STRUCTURE =================
                   SliverToBoxAdapter(
-                    child: Hero(
-                      tag: 'scent-structure-${product.id}',
-                      child: Material(
-                        color: Colors.transparent,
-                        child: ScentStructureSection(
-                          notes: product.notes,
-                          topNotes: product.topNotes,
-                          heartNotes: product.heartNotes,
-                          baseNotes: product.baseNotes,
-                          onViewAll: () {
-                            if (!mounted) return;
-                            Navigator.of(context, rootNavigator: true).push(
-                              PageRouteBuilder(
-                                transitionDuration: const Duration(
-                                  milliseconds: 420,
+                    child: ScentStructureSection(
+                      notes: product.notes,
+                      topNotes: product.topNotes,
+                      heartNotes: product.heartNotes,
+                      baseNotes: product.baseNotes,
+                      onViewAll: () {
+                        if (!mounted) return;
+                        Navigator.of(context, rootNavigator: true).push(
+                          PageRouteBuilder(
+                            transitionDuration: const Duration(
+                              milliseconds: 420,
+                            ),
+                            reverseTransitionDuration: const Duration(
+                              milliseconds: 280,
+                            ),
+                            pageBuilder: (_, __, ___) =>
+                                ScentStructureDetailScreen(
+                                  productName: product.name,
+                                  notes: product.notes,
+                                  topNotes: product.topNotes,
+                                  heartNotes: product.heartNotes,
+                                  baseNotes: product.baseNotes,
                                 ),
-                                reverseTransitionDuration: const Duration(
-                                  milliseconds: 280,
-                                ),
-                                pageBuilder: (_, __, ___) =>
-                                    ScentStructureDetailScreen(
-                                      heroTag: 'scent-structure-${product.id}',
-                                      productName: product.name,
-                                      notes: product.notes,
-                                      topNotes: product.topNotes,
-                                      heartNotes: product.heartNotes,
-                                      baseNotes: product.baseNotes,
+                            transitionsBuilder: (_, animation, __, child) {
+                              final fade = CurvedAnimation(
+                                parent: animation,
+                                curve: Curves.easeOutCubic,
+                              );
+                              final scale = Tween<double>(begin: 0.985, end: 1)
+                                  .animate(
+                                    CurvedAnimation(
+                                      parent: animation,
+                                      curve: Curves.easeOut,
                                     ),
-                                transitionsBuilder: (_, animation, __, child) {
-                                  final fade = CurvedAnimation(
-                                    parent: animation,
-                                    curve: Curves.easeOutCubic,
                                   );
-                                  final scale =
-                                      Tween<double>(
-                                        begin: 0.985,
-                                        end: 1,
-                                      ).animate(
-                                        CurvedAnimation(
-                                          parent: animation,
-                                          curve: Curves.easeOut,
-                                        ),
-                                      );
 
-                                  return FadeTransition(
-                                    opacity: fade,
-                                    child: ScaleTransition(
-                                      scale: scale,
-                                      child: child,
-                                    ),
-                                  );
-                                },
-                              ),
-                            );
-                          },
-                        ),
-                      ),
+                              return FadeTransition(
+                                opacity: fade,
+                                child: ScaleTransition(
+                                  scale: scale,
+                                  child: child,
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      },
                     ),
                   ),
 
                   // ================= THE STORY =================
+                  const SliverToBoxAdapter(child: SizedBox(height: 40)),
                   SliverToBoxAdapter(
                     child: ProductStorySection(
                       description: product.description,
@@ -361,18 +466,59 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                     ),
                   ),
 
-                  // ================= BOTTOM CTA =================
-                  SliverToBoxAdapter(
-                    child: ProductBottomCTA(
-                      selectedSize: _selectedSize,
-                      price: _currentPrice,
-                      productName: product.name,
-                    ),
-                  ),
-
-                  // Final padding
-                  const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                  // Bottom padding — space reserved for the sticky CTA overlay
+                  const SliverToBoxAdapter(child: SizedBox(height: 110)),
                 ],
+              ),
+
+              // ===================== STICKY CTA =====================
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: ProductBottomCTA(
+                  selectedSize: selectedSize,
+                  price: currentPrice,
+                  productName: product.name,
+                  onAddToCart: () async {
+                    final messenger = ScaffoldMessenger.of(context);
+                    final variant = _findSelectedVariant(product, selectedSize);
+                    if (variant == null || variant.id.isEmpty) {
+                      if (!mounted) return;
+                      messenger.showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Không tìm thấy phiên bản sản phẩm phù hợp.',
+                          ),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                      return;
+                    }
+
+                    try {
+                      await ref
+                          .read(cartProvider.notifier)
+                          .addItemByVariant(variant.id, quantity: 1);
+
+                      if (!mounted) return;
+                      messenger.showSnackBar(
+                        SnackBar(
+                          content: Text('Đã thêm ${product.name} vào giỏ hàng'),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    } catch (error) {
+                      if (!mounted) return;
+                      messenger.showSnackBar(
+                        SnackBar(
+                          content: Text('Không thể thêm vào giỏ: $error'),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    }
+                  },
+                ),
               ),
             ],
           );

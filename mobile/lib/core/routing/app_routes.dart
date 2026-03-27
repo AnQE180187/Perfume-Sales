@@ -44,6 +44,7 @@ class AppRoutes {
   // ============================================
   static const String orders = '/orders';
   static const String orderDetail = '/orders/:id';
+  static const String trackOrder = '/orders/:id/track';
 
   // ============================================
   // SEARCH & DISCOVERY
@@ -76,6 +77,11 @@ class AppRoutes {
   /// Build order detail route with ID
   static String orderDetailWithId(String orderId) {
     return '/orders/$orderId';
+  }
+
+  /// Build order tracking route with ID
+  static String trackOrderWithId(String orderId) {
+    return '/orders/$orderId/track';
   }
 
   /// Build product story route with ID

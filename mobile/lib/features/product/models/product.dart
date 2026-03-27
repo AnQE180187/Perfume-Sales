@@ -1,3 +1,42 @@
+class ProductVariant {
+  final String id;
+  final String name;
+  final double price;
+  final int stock;
+  final bool isActive;
+
+  const ProductVariant({
+    required this.id,
+    required this.name,
+    required this.price,
+    required this.stock,
+    required this.isActive,
+  });
+
+  factory ProductVariant.fromJson(Map<String, dynamic> json) {
+    final rawId = json['id']?.toString() ?? '';
+    final rawName = json['name']?.toString() ?? '';
+
+    return ProductVariant(
+      id: rawId,
+      name: rawName.isEmpty ? 'Unknown variant' : rawName,
+      price: (json['price'] as num?)?.toDouble() ?? 0,
+      stock: (json['stock'] as num?)?.toInt() ?? 0,
+      isActive: json['isActive'] as bool? ?? true,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'price': price,
+      'stock': stock,
+      'isActive': isActive,
+    };
+  }
+}
+
 class Product {
   final String id;
   final String name;
@@ -14,6 +53,7 @@ class Product {
   final List<String> baseNotes;
   final String? size;
   final String? variant;
+  final List<ProductVariant> variants;
   final bool? inStock;
   final List<String>? images;
 
@@ -33,6 +73,7 @@ class Product {
     this.baseNotes = const [],
     this.size,
     this.variant,
+    this.variants = const [],
     this.inStock = true,
     this.images,
   });
@@ -53,6 +94,7 @@ class Product {
     List<String>? baseNotes,
     String? size,
     String? variant,
+    List<ProductVariant>? variants,
     bool? inStock,
     List<String>? images,
   }) {
@@ -72,6 +114,7 @@ class Product {
       baseNotes: baseNotes ?? this.baseNotes,
       size: size ?? this.size,
       variant: variant ?? this.variant,
+      variants: variants ?? this.variants,
       inStock: inStock ?? this.inStock,
       images: images ?? this.images,
     );
@@ -93,6 +136,7 @@ class Product {
       'base_notes': baseNotes,
       'size': size,
       'variant': variant,
+      'variants': variants.map((v) => v.toJson()).toList(),
       'in_stock': inStock,
       'images': images,
     };
@@ -116,10 +160,16 @@ class Product {
               : '');
 
     final dynamic variantsRaw = json['variants'];
-    final variants = variantsRaw is List
+    final rawVariants = variantsRaw is List
         ? variantsRaw.whereType<Map<String, dynamic>>().toList()
         : const <Map<String, dynamic>>[];
-    final firstVariant = variants.isNotEmpty ? variants.first : null;
+    final parsedVariants = rawVariants
+        .map(ProductVariant.fromJson)
+        .where((variant) => variant.id.isNotEmpty)
+        .toList();
+    final firstVariant = parsedVariants.isNotEmpty
+        ? parsedVariants.first
+        : null;
 
     final dynamic imagesRaw = json['images'];
     final imageList = imagesRaw is List
@@ -214,13 +264,13 @@ class Product {
       if (count > 0) rating = sum / count;
     }
 
-    final dynamic priceRaw = json['price'] ?? firstVariant?['price'];
+    final dynamic priceRaw = json['price'] ?? firstVariant?.price;
     final double price = priceRaw is num ? priceRaw.toDouble() : 0;
 
     final dynamic stockRaw = json['in_stock'];
     final bool inStock = stockRaw is bool
         ? stockRaw
-        : variants.any((v) => (v['stock'] is num) && ((v['stock'] as num) > 0));
+        : parsedVariants.any((v) => v.stock > 0 && v.isActive);
 
     final String imageUrl = (json['image_url']?.toString().isNotEmpty ?? false)
         ? json['image_url'] as String
@@ -240,9 +290,9 @@ class Product {
       topNotes: topNotes,
       heartNotes: heartNotes,
       baseNotes: baseNotes,
-      size: (json['size'] as String?) ?? firstVariant?['name']?.toString(),
-      variant:
-          (json['variant'] as String?) ?? firstVariant?['name']?.toString(),
+      size: (json['size'] as String?) ?? firstVariant?.name,
+      variant: (json['variant'] as String?) ?? firstVariant?.name,
+      variants: parsedVariants,
       inStock: inStock,
       images: imageList,
     );
