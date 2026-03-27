@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
 import { Link, useRouter } from '@/lib/i18n';
+import { useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import QRCode from 'qrcode';
 import {
@@ -26,6 +28,7 @@ type PaymentMethod = 'COD' | 'ONLINE' | null;
 
 // QR Code Canvas Component
 function QRCodeCanvas({ qrCodeValue }: { qrCodeValue: string }) {
+    const t = useTranslations('checkout');
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
@@ -59,13 +62,15 @@ function QRCodeCanvas({ qrCodeValue }: { qrCodeValue: string }) {
                 className="flex items-center gap-2 text-xs text-gold hover:text-gold/80 transition"
             >
                 <Download size={14} />
-                Tải QR code
+                {t('download_qr')}
             </button>
         </div>
     );
 }
 
 export default function CheckoutPage() {
+    const t = useTranslations('checkout');
+    const locale = useLocale();
     const router = useRouter();
     const { isAuthenticated } = useAuth();
     const [step, setStep] = useState(1);
@@ -220,7 +225,7 @@ export default function CheckoutPage() {
         if (orderId) return orderId;
 
         if (!canProceedStep1) {
-            alert('Vui lòng nhập đầy đủ thông tin giao hàng');
+            alert(t('error_missing_info'));
             return null;
         }
 
@@ -270,7 +275,7 @@ export default function CheckoutPage() {
                 // Move to step 3 to show the QR code
                 setStep(3);
             } catch (e: any) {
-                alert(e.message || 'Có lỗi xảy ra khi tạo thanh toán');
+                alert(e.message || t('error_create_payment'));
             } finally {
                 setSubmitting(false);
             }
@@ -278,7 +283,7 @@ export default function CheckoutPage() {
     };
 
     return (
-        <div className="min-h-screen bg-stone-50 dark:bg-zinc-950 transition-colors">
+        <div className="min-h-screen bg-background transition-colors">
             <main className="container mx-auto px-6 py-32 lg:py-40">
                 <div className="max-w-7xl mx-auto">
                     <div className="flex flex-col lg:flex-row justify-between items-start gap-16 lg:gap-24">
@@ -289,11 +294,11 @@ export default function CheckoutPage() {
                                 className="inline-flex items-center gap-3 text-[10px] font-bold tracking-[.4em] uppercase text-stone-400 hover:text-luxury-black dark:hover:text-white transition-colors mb-16 group"
                             >
                                 <ArrowLeft size={16} className="group-hover:-translate-x-2 transition-transform" />
-                                Quay lại giỏ hàng
+                                {t('return_to_cart')}
                             </Link>
 
                             <h1 className="text-5xl md:text-7xl font-serif text-luxury-black dark:text-white mb-16 tracking-tighter">
-                                Thanh <span className="italic">toán</span>
+                                {t('page_title_part1')} <span className="italic">{t('page_title_part2')}</span>
                             </h1>
 
                             <AnimatePresence mode="wait">
@@ -310,14 +315,14 @@ export default function CheckoutPage() {
                                             <div className="space-y-3">
                                                 <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2 flex items-center gap-2">
                                                     <User size={14} />
-                                                    Họ tên người nhận *
+                                                    {t('recipient_name')} *
                                                 </label>
                                                 <input
                                                     type="text"
                                                     value={recipientName}
                                                     onChange={(e) => setRecipientName(e.target.value)}
                                                     className="w-full bg-white dark:bg-zinc-900 border border-stone-100 dark:border-white/10 rounded-[2rem] p-6 outline-none focus:border-gold transition-all text-sm text-luxury-black dark:text-white"
-                                                    placeholder="Nguyễn Văn A"
+                                                    placeholder={t('name_placeholder')}
                                                 />
                                             </div>
                                         )}
@@ -326,41 +331,41 @@ export default function CheckoutPage() {
                                             <>
                                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                                     <div className="space-y-2">
-                                                        <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2">Tỉnh/TP *</label>
-                                                        <select
+                                                    <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2">{t('select_province')} *</label>
+                                                    <select
                                                             value={provinceId ?? ''}
                                                             onChange={(e) => setProvinceId(e.target.value ? Number(e.target.value) : null)}
                                                             className="w-full bg-white dark:bg-zinc-900 border border-stone-100 dark:border-white/10 rounded-[2rem] px-5 py-4 outline-none focus:border-gold text-sm text-luxury-black dark:text-white"
                                                         >
-                                                            <option value="">Chọn tỉnh/thành phố</option>
+                                                        <option value="">{t('select_province')}</option>
                                                             {provinces.map((p) => (
                                                                 <option key={p.ProvinceID} value={p.ProvinceID}>{p.ProvinceName}</option>
                                                             ))}
                                                         </select>
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2">Quận/Huyện *</label>
+                                                        <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2">{t('select_district')} *</label>
                                                         <select
                                                             value={districtId ?? ''}
                                                             onChange={(e) => setDistrictId(e.target.value ? Number(e.target.value) : null)}
                                                             disabled={!provinceId}
                                                             className="w-full bg-white dark:bg-zinc-900 border border-stone-100 dark:border-white/10 rounded-[2rem] px-5 py-4 outline-none focus:border-gold text-sm text-luxury-black dark:text-white disabled:opacity-50"
                                                         >
-                                                            <option value="">Chọn quận/huyện</option>
+                                                            <option value="">{t('select_district')}</option>
                                                             {districts.map((d) => (
                                                                 <option key={d.DistrictID} value={d.DistrictID}>{d.DistrictName}</option>
                                                             ))}
                                                         </select>
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2">Phường/Xã *</label>
+                                                        <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2">{t('select_ward')} *</label>
                                                         <select
                                                             value={wardCode}
                                                             onChange={(e) => setWardCode(e.target.value)}
                                                             disabled={!districtId}
                                                             className="w-full bg-white dark:bg-zinc-900 border border-stone-100 dark:border-white/10 rounded-[2rem] px-5 py-4 outline-none focus:border-gold text-sm text-luxury-black dark:text-white disabled:opacity-50"
                                                         >
-                                                            <option value="">Chọn phường/xã</option>
+                                                            <option value="">{t('select_ward')}</option>
                                                             {wards.map((w) => (
                                                                 <option key={w.WardCode} value={w.WardCode}>{w.WardName}</option>
                                                             ))}
@@ -370,7 +375,7 @@ export default function CheckoutPage() {
 
                                                 {services.length > 1 && (
                                                     <div className="space-y-2">
-                                                        <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2">Dịch vụ vận chuyển</label>
+                                                        <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2">{t('shipping_service')}</label>
                                                         <select
                                                             value={selectedServiceId ?? ''}
                                                             onChange={(e) => setSelectedServiceId(e.target.value ? Number(e.target.value) : null)}
@@ -391,7 +396,7 @@ export default function CheckoutPage() {
                                                             <span className="text-[10px] text-red-500 font-bold uppercase">{feeError}</span>
                                                         ) : (
                                                             <span className="text-[10px] font-bold uppercase text-gold tracking-widest">
-                                                                Phí vận chuyển: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(shippingFee)}
+                                                                {t('shipping_fee')}: {new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', { style: 'currency', currency: 'VND' }).format(shippingFee)}
                                                             </span>
                                                         )}
                                                     </div>
@@ -402,37 +407,37 @@ export default function CheckoutPage() {
                                         <div className="space-y-3">
                                             <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2 flex items-center gap-2">
                                                 <MapPin size={14} />
-                                                {ghnEnabled ? 'Số nhà, tên đường *' : 'Địa chỉ giao hàng *'}
+                                                {ghnEnabled ? t('street_name') + ' *' : t('shipping_address') + ' *'}
                                             </label>
                                             <input
                                                 type="text"
                                                 value={shippingAddress}
                                                 onChange={(e) => setShippingAddress(e.target.value)}
                                                 className="w-full bg-white dark:bg-zinc-900 border border-stone-100 dark:border-white/10 rounded-[2rem] p-6 outline-none focus:border-gold transition-all text-sm text-luxury-black dark:text-white"
-                                                placeholder={ghnEnabled ? 'Số 1, đường ABC, ...' : 'Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố'}
+                                                placeholder={ghnEnabled ? t('street_placeholder') : t('shipping_placeholder')}
                                             />
                                         </div>
 
                                         <div className="space-y-3">
                                             <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2 flex items-center gap-2">
                                                 <Phone size={14} />
-                                                Số điện thoại *
+                                                {t('phone_number')} *
                                             </label>
                                             <input
                                                 type="tel"
                                                 value={phone}
                                                 onChange={(e) => setPhone(e.target.value)}
                                                 className="w-full bg-white dark:bg-zinc-900 border border-stone-100 dark:border-white/10 rounded-[2rem] p-6 outline-none focus:border-gold transition-all text-sm text-luxury-black dark:text-white"
-                                                placeholder="0901234567"
+                                                placeholder={t('phone_placeholder')}
                                             />
                                         </div>
 
                                         <button
                                             onClick={() => setStep(2)}
                                             disabled={!canProceedStep1}
-                                            className="w-full py-6 bg-luxury-black dark:bg-gold text-white rounded-full font-bold tracking-[.4em] uppercase text-[10px] shadow-2xl hover:bg-stone-800 dark:hover:bg-gold/80 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="w-full py-6 bg-gold-btn-gradient text-white rounded-full font-bold tracking-[.4em] uppercase text-[10px] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
-                                            Tiếp tục đến thanh toán
+                                            {t('continue_to_payment')}
                                             <ArrowRight size={16} className="inline ml-4 group-hover:translate-x-2 transition-transform" />
                                         </button>
                                     </motion.div>
@@ -448,7 +453,7 @@ export default function CheckoutPage() {
                                         className="space-y-8"
                                     >
                                         <h2 className="text-2xl font-serif text-luxury-black dark:text-white mb-8">
-                                            Chọn phương thức thanh toán
+                                            {t('select_payment_method')}
                                         </h2>
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -460,7 +465,7 @@ export default function CheckoutPage() {
                                             >
                                                 {submitting && paymentMethod === 'COD' ? <Loader2 className="animate-spin" /> : <Wallet className="text-gold" size={40} strokeWidth={1.5} />}
                                                 <span className="text-sm font-bold tracking-[.2em] uppercase text-luxury-black dark:text-white">
-                                                    Thanh toán khi nhận hàng
+                                                    {t('cod')}
                                                 </span>
                                                 <span className="text-[10px] text-stone-400 uppercase tracking-wider">
                                                     COD
@@ -475,7 +480,7 @@ export default function CheckoutPage() {
                                             >
                                                 {submitting && paymentMethod === 'ONLINE' ? <Loader2 className="animate-spin" /> : <CreditCard className="text-gold" size={40} strokeWidth={1.5} />}
                                                 <span className="text-sm font-bold tracking-[.2em] uppercase text-luxury-black dark:text-white">
-                                                    Thanh toán online
+                                                    {t('online_payment')}
                                                 </span>
                                                 <span className="text-[10px] text-stone-400 uppercase tracking-wider">
                                                     VietQR / PayOS
@@ -487,7 +492,7 @@ export default function CheckoutPage() {
                                             onClick={() => setStep(1)}
                                             className="w-full py-4 border border-stone-200 dark:border-white/10 rounded-full font-bold tracking-[.3em] uppercase text-[10px] text-stone-400 hover:text-luxury-black dark:hover:text-white transition-all"
                                         >
-                                            Quay lại
+                                            {t('return_to_cart')}
                                         </button>
                                     </motion.div>
                                 )}
@@ -503,10 +508,10 @@ export default function CheckoutPage() {
                                     >
                                         <div className="text-center space-y-4">
                                             <h2 className="text-2xl font-serif text-luxury-black dark:text-white">
-                                                Quét mã QR để thanh toán
+                                                {t('qr_scan')}
                                             </h2>
                                             <p className="text-sm text-stone-400">
-                                                Mở app ngân hàng và quét mã QR bên dưới để hoàn tất thanh toán
+                                                {t('qr_desc')}
                                             </p>
                                         </div>
 
@@ -533,13 +538,13 @@ export default function CheckoutPage() {
 
                                             <div className="flex items-center gap-3 text-sm text-stone-400">
                                                 <Loader2 className="w-4 h-4 animate-spin" />
-                                                <span>Đang chờ xác nhận thanh toán...</span>
+                                                <span>{t('waiting_confirmation')}</span>
                                             </div>
                                         </div>
 
                                         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-6">
                                             <p className="text-sm text-blue-800 dark:text-blue-200 text-center mb-4">
-                                                <strong>Hoặc nhấn nút bên dưới để thanh toán qua trang PayOS</strong>
+                                                <strong>{t('pay_via_payos_desc')}</strong>
                                             </p>
                                             <a
                                                 href={paymentData.checkoutUrl || '#'}
@@ -547,7 +552,7 @@ export default function CheckoutPage() {
                                                 rel="noopener noreferrer"
                                                 className="block w-full py-4 bg-gold text-white rounded-full font-bold tracking-[.3em] uppercase text-[10px] text-center hover:bg-gold/90 transition-all"
                                             >
-                                                Thanh toán qua PayOS
+                                                {t('pay_via_payos')}
                                                 <ArrowRight size={16} className="inline ml-2" />
                                             </a>
                                         </div>
@@ -556,7 +561,7 @@ export default function CheckoutPage() {
                                             onClick={() => setStep(2)}
                                             className="w-full py-4 border border-stone-200 dark:border-white/10 rounded-full font-bold tracking-[.3em] uppercase text-[10px] text-stone-400 hover:text-luxury-black dark:hover:text-white transition-all"
                                         >
-                                            Chọn phương thức khác
+                                            {t('other_method')}
                                         </button>
                                     </motion.div>
                                 )}
@@ -567,12 +572,12 @@ export default function CheckoutPage() {
                         <div className="w-full lg:w-[450px] sticky top-40 order-1 lg:order-2">
                             <div className="bg-white dark:bg-zinc-900 rounded-[4rem] p-12 border border-stone-100 dark:border-white/5 shadow-2xl">
                                 <h3 className="text-2xl font-serif text-luxury-black dark:text-white uppercase tracking-[.2em] mb-12 pb-8 border-b border-stone-100 dark:border-white/5 italic">
-                                    Đơn hàng
+                                    {t('order_summary')}
                                 </h3>
 
                                 <div className="space-y-10 mb-12 max-h-[50vh] overflow-y-auto">
                                     {loading ? (
-                                        <div className="py-8 text-center text-stone-400 text-sm">Đang tải…</div>
+                                        <div className="py-8 text-center text-stone-400 text-sm">{t('loading')}</div>
                                     ) : cartItems.length > 0 ? (
                                         cartItems.map((item) => (
                                             <div key={item.id} className="flex gap-6 group">
@@ -606,7 +611,7 @@ export default function CheckoutPage() {
                                     ) : (
                                         <div className="py-20 text-center space-y-4 opacity-30">
                                             <p className="text-[10px] font-bold tracking-widest uppercase italic">
-                                                Giỏ hàng trống
+                                                {t('empty_cart')}
                                             </p>
                                         </div>
                                     )}
@@ -620,7 +625,7 @@ export default function CheckoutPage() {
                                                 type="text"
                                                 value={couponCode}
                                                 onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                                                placeholder="MÃ GIẢM GIÁ"
+                                                placeholder={t('coupon_code')}
                                                 disabled={!!appliedCoupon || isApplyingCoupon}
                                                 className="w-full h-14 bg-stone-50 dark:bg-zinc-900 border border-stone-100 dark:border-white/5 rounded-2xl px-6 text-xs font-bold tracking-[.3em] uppercase focus:ring-0 focus:border-gold transition-all disabled:opacity-50"
                                             />
@@ -644,7 +649,7 @@ export default function CheckoutPage() {
                                                 className="px-8 bg-luxury-black dark:bg-white text-white dark:text-luxury-black rounded-2xl text-[10px] font-bold tracking-[.3em] uppercase hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 flex items-center gap-3"
                                             >
                                                 {isApplyingCoupon ? <Loader2 className="animate-spin" size={16} /> : <Tag size={16} />}
-                                                Áp dụng
+                                                {t('apply')}
                                             </button>
                                         )}
                                     </div>
@@ -655,7 +660,7 @@ export default function CheckoutPage() {
                                     )}
                                     {appliedCoupon && (
                                         <p className="mt-4 text-[10px] font-bold text-green-500 uppercase tracking-widest leading-relaxed flex items-center gap-2">
-                                            <Tag size={12} /> Áp dụng thành công: Giảm {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(appliedCoupon.discountAmount)}
+                                            <Tag size={12} /> {t('coupon_success', { amount: new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', { style: 'currency', currency: 'VND' }).format(appliedCoupon.discountAmount) })}
                                         </p>
                                     )}
 
@@ -677,10 +682,10 @@ export default function CheckoutPage() {
                                                 </div>
                                                 <div className="flex-1">
                                                     <p className="text-[10px] font-bold uppercase tracking-widest text-luxury-black dark:text-white">
-                                                        Dùng điểm tích lũy
+                                                        {t('loyalty_points')}
                                                     </p>
                                                     <p className="text-[8px] text-stone-400 uppercase tracking-tighter">
-                                                        Bạn có {loyaltyInfo.points} điểm (Tương đương {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(loyaltyInfo.points * 500)})
+                                                        {t('points_balance', { points: loyaltyInfo.points, value: new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', { style: 'currency', currency: 'VND' }).format(loyaltyInfo.points * 500) })}
                                                     </p>
                                                 </div>
                                             </label>
@@ -698,7 +703,7 @@ export default function CheckoutPage() {
                                                             onChange={(e) => setPointsToUse(Math.min(loyaltyInfo.points, Number(e.target.value)))}
                                                             className="w-24 h-10 bg-stone-50 dark:bg-zinc-950 border border-stone-100 dark:border-white/5 rounded-xl px-4 text-xs font-bold outline-none border-gold"
                                                         />
-                                                        <span className="text-[10px] text-stone-400 uppercase font-bold">Giảm {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(pointsToUse * 500)}</span>
+                                                        <span className="text-[10px] text-stone-400 uppercase font-bold">{t('points_discount', { amount: new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', { style: 'currency', currency: 'VND' }).format(pointsToUse * 500) })}</span>
                                                     </div>
                                                 </motion.div>
                                             )}
@@ -709,43 +714,43 @@ export default function CheckoutPage() {
                                 <div className="space-y-6 pt-12 border-t border-stone-100 dark:border-white/5">
                                     <div className="space-y-4">
                                         <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-stone-400">
-                                            <span>Tạm tính</span>
+                                            <span>{t('subtotal')}</span>
                                             <span className="text-luxury-black dark:text-white">
-                                                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(subtotal)}
+                                                {new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', { style: 'currency', currency: 'VND' }).format(subtotal)}
                                             </span>
                                         </div>
                                         {appliedCoupon && (
                                             <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-green-500">
-                                                <span>Coupon giảm giá</span>
+                                                <span>{t('coupon_code')}</span>
                                                 <span className="">
-                                                    -{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(couponDiscount)}
+                                                    -{new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', { style: 'currency', currency: 'VND' }).format(couponDiscount)}
                                                 </span>
                                             </div>
                                         )}
                                         {usePoints && loyaltyDiscount > 0 && (
                                             <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-gold text-amber-500">
-                                                <span>Điểm tích lũy</span>
+                                                <span>{t('loyalty_points')}</span>
                                                 <span className="">
-                                                    -{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(loyaltyDiscount)}
+                                                    -{new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', { style: 'currency', currency: 'VND' }).format(loyaltyDiscount)}
                                                 </span>
                                             </div>
                                         )}
                                         <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-stone-400">
-                                            <span>Phí vận chuyển</span>
+                                            <span>{t('shipping_fee')}</span>
                                             <span className={shippingFee > 0 ? 'text-luxury-black dark:text-white' : 'text-gold'}>
                                                 {ghnEnabled && shippingFee > 0
-                                                    ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(shippingFee)
-                                                    : 'Miễn phí'}
+                                                    ? new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', { style: 'currency', currency: 'VND' }).format(shippingFee)
+                                                    : t('shipping_free')}
                                             </span>
                                         </div>
                                     </div>
 
                                     <div className="pt-8 mt-6 flex justify-between items-center border-t border-stone-100 dark:border-white/10">
                                         <span className="text-[10px] font-bold tracking-[.5em] uppercase text-stone-400">
-                                            Tổng cộng
+                                            {t('total')}
                                         </span>
                                         <span className="text-4xl font-serif text-luxury-black dark:text-white italic">
-                                            {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(total)}
+                                            {new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', { style: 'currency', currency: 'VND' }).format(total)}
                                         </span>
                                     </div>
                                 </div>

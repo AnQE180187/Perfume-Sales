@@ -9,26 +9,26 @@ export const Footer = () => {
     const commonT = useTranslations('common');
 
     const navigation = [
-        { label: 'Products', href: '/products' },
-        { label: 'AI Consultation', href: '/customer/consultation' },
-        { label: 'Journal', href: '/journal' },
-        { label: 'The Anthology Club', href: '/customer/subscription' },
-        { label: 'Boutiques', href: '/boutiques' },
-        { label: 'Gifting', href: '/gifting' }
+        { label: t('navigation_labels.products'), href: '/products' },
+        { label: t('navigation_labels.consultation'), href: '/customer/consultation' },
+        { label: t('navigation_labels.journal'), href: '/journal' },
+        { label: t('navigation_labels.subscription'), href: '/customer/subscription' },
+        { label: t('navigation_labels.boutiques'), href: '/boutiques' },
+        { label: t('navigation_labels.gifting'), href: '/gifting' }
     ];
 
     const support = [
-        { label: 'Story', href: '/story' },
-        { label: 'Ingredients', href: '/ingredients' },
-        { label: 'Terms of Service', href: '/terms' },
-        { label: 'Privacy Policy', href: '/privacy' },
-        { label: 'Customer Support', href: '/support' }
+        { label: t('support_labels.story'), href: '/story' },
+        { label: t('support_labels.ingredients'), href: '/ingredients' },
+        { label: t('support_labels.terms'), href: '/terms' },
+        { label: t('support_labels.privacy'), href: '/privacy' },
+        { label: t('support_labels.support'), href: '/support' }
     ];
 
     const social = ['Instagram', 'Pinterest', 'LinkedIn', 'YouTube'];
 
     return (
-        <footer className="bg-luxury-black text-stone-500 py-32">
+        <footer className="bg-ebony text-muted-foreground py-32 border-t border-white/5">
             <div className="container mx-auto px-6">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-16 lg:gap-24 mb-32">
                     {/* Brand Column */}
@@ -46,7 +46,7 @@ export const Footer = () => {
                                 <a
                                     key={name}
                                     href="#"
-                                    className="text-[9px] uppercase tracking-[.3em] text-stone-600 hover:text-gold transition-colors font-bold"
+                                    className="text-[9px] uppercase tracking-[.3em] text-stone-700 hover:text-gold transition-colors font-bold"
                                 >
                                     {name}
                                 </a>
@@ -100,13 +100,13 @@ export const Footer = () => {
                         <p className="text-xs mb-8 italic">
                             {t('newsletter_desc') || 'Join the inner circle for archival releases and AI insights.'}
                         </p>
-                        <div className="flex border-b border-stone-800 pb-4 group focus-within:border-gold transition-colors">
+                        <div className="flex border-b border-white/10 pb-4 group focus-within:border-gold transition-colors">
                             <input
                                 type="email"
                                 placeholder={t('email_placeholder') || 'YOUR EMAIL'}
-                                className="bg-transparent text-xs w-full outline-none placeholder:text-stone-700 text-white transition-all uppercase tracking-widest"
+                                className="bg-transparent text-xs w-full outline-none placeholder:text-stone-800 text-white transition-all uppercase tracking-widest"
                             />
-                            <button className="text-stone-600 hover:text-gold transition-colors">
+                            <button className="text-stone-700 hover:text-gold transition-colors">
                                 <ArrowRight size={20} strokeWidth={1} />
                             </button>
                         </div>
@@ -114,7 +114,7 @@ export const Footer = () => {
                 </div>
 
                 {/* Bottom Bar */}
-                <div className="flex flex-col md:flex-row justify-between items-center pt-12 border-t border-stone-900 text-[9px] tracking-[.4em] uppercase font-bold text-stone-700">
+                <div className="flex flex-col md:flex-row justify-between items-center pt-12 border-t border-white/5 text-[9px] tracking-[.4em] uppercase font-bold text-stone-800">
                     <span>{t('copyright') || '© 2026 AURA HOUSE. ALL RIGHTS RESERVED.'}</span>
                     <div className="flex gap-12 mt-8 md:mt-0 italic">
                         <span>{t('engine') || 'Aura AI v4.2 Engine'}</span>

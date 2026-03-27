@@ -53,6 +53,12 @@
     --border: #E8E2DD;
     --input: #E8E2DD;
     --ring: #C5A059;
+    --success: #15803D;
+    --success-foreground: #FFFFFF;
+    --warning: #B45309;
+    --warning-foreground: #FFFFFF;
+    --error: #B91C1C;
+    --error-foreground: #FFFFFF;
   }
 
   .dark {
@@ -75,6 +81,9 @@
     --border: #262626;
     --input: #262626;
     --ring: #C5A059;
+    --success: #22C55E;
+    --warning: #F59E0B;
+    --error: #EF4444;
   }
 }
 

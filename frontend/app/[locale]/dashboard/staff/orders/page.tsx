@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Package, Search, Eye, CheckCircle2, Clock, AlertCircle,
@@ -12,14 +13,15 @@ import { AuthGuard } from '@/components/auth/auth-guard';
 const formatMoney = (n: number) =>
     new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n);
 
-function getStatusBadge(order: StaffPosOrder) {
-    if (order.status === 'COMPLETED') return { label: 'Completed', color: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500', icon: CheckCircle2 };
-    if (order.paymentStatus === 'PAID') return { label: 'Paid', color: 'bg-blue-500/10 border-blue-500/20 text-blue-500', icon: CreditCard };
-    if (order.status === 'CANCELLED') return { label: 'Cancelled', color: 'bg-stone-500/10 border-stone-500/20 text-stone-500', icon: AlertCircle };
-    return { label: 'Pending', color: 'bg-amber-500/10 border-amber-500/20 text-amber-500', icon: Clock };
+function getStatusBadge(order: StaffPosOrder, t: any) {
+    if (order.status === 'COMPLETED') return { label: t('status.completed'), color: 'bg-success/10 border-success/20 text-success', icon: CheckCircle2 };
+    if (order.paymentStatus === 'PAID') return { label: t('status.paid'), color: 'bg-blue-500/10 border-blue-500/20 text-blue-500', icon: CreditCard };
+    if (order.status === 'CANCELLED') return { label: t('status.cancelled'), color: 'bg-muted border-border text-muted-foreground', icon: AlertCircle };
+    return { label: t('status.pending'), color: 'bg-warning/10 border-warning/20 text-warning', icon: Clock };
 }
 
 export default function StaffOrdersPage() {
+    const t = useTranslations('dashboard.orders');
     const [orders, setOrders] = useState<StaffPosOrder[]>([]);
     const [total, setTotal] = useState(0);
     const [loading, setLoading] = useState(true);
@@ -37,7 +39,7 @@ export default function StaffOrdersPage() {
             setOrders(res.data);
             setTotal(res.total);
         } catch (e: any) {
-            setError(e.message || 'Failed to load staff orders');
+            setError(e.message || t('errors.load_failed'));
         } finally {
             setLoading(false);
         }
@@ -75,8 +77,8 @@ export default function StaffOrdersPage() {
             <div className="flex flex-col gap-10 py-10 px-8">
                 <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                     <div>
-                        <h1 className="text-3xl font-heading uppercase tracking-tighter gold-gradient">POS Orders</h1>
-                        <p className="text-sm text-muted-foreground uppercase tracking-widest">Orders created at the boutique counter.</p>
+                        <h1 className="text-3xl font-heading uppercase tracking-tighter gold-gradient">{t('title')}</h1>
+                        <p className="text-sm text-muted-foreground uppercase tracking-widest">{t('subtitle')}</p>
                     </div>
                 </header>
 
@@ -95,7 +97,7 @@ export default function StaffOrdersPage() {
                                 type="text"
                                 value={searchTerm}
                                 onChange={handleSearchChange}
-                                placeholder="Search by order code, phone number, or customer name…"
+                                placeholder={t('search_placeholder')}
                                 className="w-full pl-16 pr-8 py-4 bg-secondary/30 border border-border rounded-2xl text-xs outline-none focus:border-gold/50 transition-all"
                             />
                         </div>
@@ -104,22 +106,22 @@ export default function StaffOrdersPage() {
                     <div className="overflow-x-auto">
                         {loading ? (
                             <div className="flex items-center justify-center py-10 text-sm text-muted-foreground">
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Loading orders…
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" /> {t('loading')}
                             </div>
                         ) : orders.length === 0 ? (
                             <div className="flex items-center justify-center py-10 text-sm text-muted-foreground">
-                                No POS orders found.
+                                {t('no_orders')}
                             </div>
                         ) : (
                             <table className="w-full text-left">
                                 <thead>
                                     <tr className="text-[10px] font-bold tracking-[.3em] uppercase text-muted-foreground border-b border-border/50 transition-colors">
-                                        <th className="p-10 pb-6">Order Code</th>
-                                        <th className="pb-6">Created At</th>
-                                        <th className="pb-6">Items</th>
-                                        <th className="pb-6 text-center">Status</th>
-                                        <th className="pb-6">Total</th>
-                                        <th className="p-10 pb-6 text-right">Actions</th>
+                                        <th className="p-10 pb-6">{t('table.code')}</th>
+                                        <th className="pb-6">{t('table.date')}</th>
+                                        <th className="pb-6">{t('table.items')}</th>
+                                        <th className="pb-6 text-center">{t('table.status')}</th>
+                                        <th className="pb-6">{t('table.total')}</th>
+                                        <th className="p-10 pb-6 text-right">{t('table.actions')}</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-border/30 transition-colors">
@@ -129,7 +131,7 @@ export default function StaffOrdersPage() {
                                             ? `${firstItem.product?.name ?? 'Product'} x${firstItem.quantity}${order.items.length > 1 ? ` +${order.items.length - 1} more` : ''
                                             }`
                                             : '—';
-                                        const badge = getStatusBadge(order);
+                                        const badge = getStatusBadge(order, t);
                                         const BadgeIcon = badge.icon;
 
                                         return (
@@ -183,7 +185,7 @@ export default function StaffOrdersPage() {
 
                     <footer className="p-10 pt-8 border-t border-border/50 flex justify-between items-center text-[10px] font-bold uppercase tracking-[.3em] text-muted-foreground">
                         <span className="tracking-widest">
-                            Showing {orders.length} of {total} POS orders
+                            {t('stats.showing', { count: orders.length, total: total })}
                         </span>
                     </footer>
                 </section>
@@ -220,11 +222,11 @@ export default function StaffOrdersPage() {
                                     <>
                                         <div className="mb-8">
                                             <h2 className="font-heading text-2xl uppercase tracking-tighter mb-1">
-                                                Order {selectedOrder.code}
+                                                {t('detail.title')} {selectedOrder.code}
                                             </h2>
                                             <div className="flex items-center gap-3">
                                                 {(() => {
-                                                    const badge = getStatusBadge(selectedOrder);
+                                                    const badge = getStatusBadge(selectedOrder, t);
                                                     const BadgeIcon = badge.icon;
                                                     return (
                                                         <span className={`inline-flex items-center gap-1.5 text-[9px] px-3 py-1 rounded-full font-bold uppercase border ${badge.color}`}>
@@ -245,7 +247,7 @@ export default function StaffOrdersPage() {
                                                 <div className="glass rounded-2xl p-4 border-border">
                                                     <div className="flex items-center gap-2 mb-2">
                                                         <User className="w-3 h-3 text-gold" />
-                                                        <span className="text-[9px] uppercase tracking-widest text-muted-foreground font-heading">Staff</span>
+                                                        <span className="text-[9px] uppercase tracking-widest text-muted-foreground font-heading">{t('detail.staff')}</span>
                                                     </div>
                                                     <p className="text-xs font-heading">{selectedOrder.staff.fullName ?? selectedOrder.staff.email}</p>
                                                 </div>
@@ -254,7 +256,7 @@ export default function StaffOrdersPage() {
                                                 <div className="glass rounded-2xl p-4 border-border">
                                                     <div className="flex items-center gap-2 mb-2">
                                                         <Package className="w-3 h-3 text-gold" />
-                                                        <span className="text-[9px] uppercase tracking-widest text-muted-foreground font-heading">Store</span>
+                                                        <span className="text-[9px] uppercase tracking-widest text-muted-foreground font-heading">{t('detail.store')}</span>
                                                     </div>
                                                     <p className="text-xs font-heading">{selectedOrder.store.name}</p>
                                                 </div>
@@ -263,7 +265,7 @@ export default function StaffOrdersPage() {
 
                                         {/* Items */}
                                         <div className="mb-6">
-                                            <h3 className="font-heading text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-3">Items</h3>
+                                            <h3 className="font-heading text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-3">{t('detail.items')}</h3>
                                             <div className="space-y-2">
                                                 {selectedOrder.items.map((item) => (
                                                     <div key={item.id} className="flex justify-between items-center text-sm border-b border-border/20 pb-2">
@@ -285,17 +287,17 @@ export default function StaffOrdersPage() {
                                         {/* Totals */}
                                         <div className="border-t border-border pt-4 mb-6 space-y-2">
                                             <div className="flex justify-between text-[10px] uppercase tracking-widest text-muted-foreground font-heading">
-                                                <span>Subtotal</span>
+                                                <span>{t('detail.subtotal')}</span>
                                                 <span>{formatMoney(selectedOrder.totalAmount)}</span>
                                             </div>
                                             {selectedOrder.discountAmount > 0 && (
-                                                <div className="flex justify-between text-[10px] uppercase tracking-widest text-emerald-500 font-heading">
-                                                    <span>Discount</span>
+                                                <div className="flex justify-between text-[10px] uppercase tracking-widest text-success font-heading">
+                                                    <span>{t('detail.discount')}</span>
                                                     <span>-{formatMoney(selectedOrder.discountAmount)}</span>
                                                 </div>
                                             )}
                                             <div className="flex justify-between text-lg font-heading pt-2">
-                                                <span className="uppercase tracking-tighter">Total</span>
+                                                <span className="uppercase tracking-tighter">{t('detail.total')}</span>
                                                 <span className="text-gold">{formatMoney(selectedOrder.finalAmount)}</span>
                                             </div>
                                         </div>
@@ -303,7 +305,7 @@ export default function StaffOrdersPage() {
                                         {/* Payments */}
                                         {selectedOrder.payments && selectedOrder.payments.length > 0 && (
                                             <div className="mb-4">
-                                                <h3 className="font-heading text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-3">Payments</h3>
+                                                <h3 className="font-heading text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-3">{t('detail.payments')}</h3>
                                                 <div className="space-y-2">
                                                     {selectedOrder.payments.map((p) => (
                                                         <div key={p.id} className="flex justify-between items-center text-xs glass rounded-xl p-3 border-border">
@@ -312,7 +314,7 @@ export default function StaffOrdersPage() {
                                                                 <span className="font-heading uppercase tracking-widest text-[10px]">{p.provider}</span>
                                                             </div>
                                                             <div className="flex items-center gap-4">
-                                                                <span className={`text-[9px] uppercase font-bold ${p.status === 'PAID' ? 'text-emerald-500' : 'text-amber-500'
+                                                                <span className={`text-[9px] uppercase font-bold ${p.status === 'PAID' ? 'text-success' : 'text-warning'
                                                                     }`}>{p.status}</span>
                                                                 <span className="font-heading">{formatMoney(p.amount)}</span>
                                                             </div>

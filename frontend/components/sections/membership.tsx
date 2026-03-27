@@ -27,7 +27,7 @@ export const Membership = () => {
                         viewport={{ once: true }}
                         className="inline-block px-4 py-1.5 rounded-full border border-gold/20 glass-dark"
                     >
-                        <span className="text-[9px] uppercase tracking-[0.4em] font-bold text-gold">Exclusive Circle</span>
+                        <span className="text-[9px] uppercase tracking-[0.4em] font-bold text-gold">{t('badge')}</span>
                     </motion.div>
 
                     <motion.h2
@@ -103,7 +103,7 @@ export const Membership = () => {
                                 <div className="absolute inset-0 bg-gradient-to-tr from-ebony/60 via-transparent to-white/10" />
 
                                 <div className="absolute bottom-10 left-10 text-white/40 font-body text-[8px] uppercase tracking-[0.5em] font-bold">
-                                    Member No. 0001 / VIP
+                                    {t('member_no', { no: '0001' })}
                                 </div>
                             </motion.div>
                         </div>
@@ -111,7 +111,7 @@ export const Membership = () => {
                         {/* CTA Overlay or Button Below */}
                         <div className="mt-12 text-center lg:text-left">
                             <button className="gold-btn-gradient px-12 py-5 rounded-full font-body font-bold text-[10px] uppercase tracking-[0.4em] text-white shadow-2xl shadow-gold/10 hover:shadow-gold/30 transition-all">
-                                Request Access to the Residency
+                                {t('cta_access')}
                             </button>
                         </div>
                     </motion.div>

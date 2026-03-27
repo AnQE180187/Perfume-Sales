@@ -29,7 +29,7 @@ export default function Home() {
 
     return (
         <div
-            className="relative min-h-screen bg-white dark:bg-zinc-950 transition-colors"
+            className="relative min-h-screen bg-background transition-colors"
             ref={containerRef}
         >
             <Header />
