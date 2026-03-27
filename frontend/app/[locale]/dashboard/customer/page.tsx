@@ -1,5 +1,5 @@
 import { AuthGuard } from '@/components/auth/auth-guard';
-import { Tag, Sparkles, ArrowUpRight, Zap, Coins, Inbox } from 'lucide-react';
+import { Tag, Sparkles, ArrowUpRight, Zap, Coins, Inbox, MapPinned, User } from 'lucide-react';
 import Link from 'next/link';
 
 export default function CustomerDashboard() {
@@ -80,6 +80,8 @@ export default function CustomerDashboard() {
                 {/* Secondary Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {[
+                        { label: "Profile", icon: User, href: "/dashboard/customer/profile", color: "text-purple-400" },
+                        { label: "Address Book", icon: MapPinned, href: "/dashboard/customer/addresses", color: "text-green-400" },
                         { label: "My Orders", icon: Inbox, href: "/dashboard/customer/orders", color: "text-blue-400" },
                         { label: "Loyalty", icon: Coins, href: "/dashboard/customer/loyalty", color: "text-gold" },
                         { label: "AI Consultation", icon: Zap, href: "/dashboard/customer/ai-chat", color: "text-ai" },

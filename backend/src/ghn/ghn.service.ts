@@ -20,7 +20,23 @@ export type GHNCreateOrderResponse = {
   total_fee: number;
   trans_type: string;
   expected_delivery_time: string;
-  fee: { main_service: number; insurance: number; [key: string]: number };
+  fee: { main_service: number; insurance: number;[key: string]: number };
+};
+
+export type GHNOrderDetailResponse = {
+  order_code: string;
+  status: string;
+  client_order_code: string;
+  to_name: string;
+  to_phone: string;
+  to_address: string;
+  total_fee: number;
+  deliver_station_id: number;
+  updated_date: string;
+  finish_date: string | null;
+  expected_delivery_time: string;
+  log: { status: string; updated_date: string }[];
+  [key: string]: any;
 };
 
 @Injectable()
@@ -35,17 +51,17 @@ export class GHNService {
   private readonly returnAddress: string;
 
   constructor(private readonly config: ConfigService) {
-    this.token = this.config.get<string>('GHN_TOKEN') ?? '';
-    this.shopId = parseInt(this.config.get<string>('GHN_SHOP_ID') ?? '0', 10);
+    this.token = this.config.get<string>('SHIPPING_GHN_TOKEN') ?? '';
+    this.shopId = parseInt(this.config.get<string>('SHIPPING_GHN_SHOP_ID') ?? '0', 10);
     const isDev = this.config.get('NODE_ENV') !== 'production';
-    this.baseUrl = isDev
+    this.baseUrl = this.config.get<string>('GHN_API_URL') || (isDev
       ? 'https://dev-online-gateway.ghn.vn/shiip/public-api'
-      : 'https://online-gateway.ghn.vn/shiip/public-api';
+      : 'https://online-gateway.ghn.vn/shiip/public-api');
 
-    this.fromDistrictId = parseInt(this.config.get('GHN_FROM_DISTRICT_ID') ?? '0', 10);
-    this.fromWardCode = this.config.get('GHN_FROM_WARD_CODE') ?? '';
-    this.returnPhone = this.config.get('GHN_RETURN_PHONE') ?? '';
-    this.returnAddress = this.config.get('GHN_RETURN_ADDRESS') ?? '';
+    this.fromDistrictId = parseInt(this.config.get('SHIPPING_GHN_FROM_DISTRICT_ID') ?? '0', 10);
+    this.fromWardCode = this.config.get('SHIPPING_GHN_FROM_WARD_CODE') ?? '';
+    this.returnPhone = this.config.get('SHIPPING_GHN_RETURN_PHONE') ?? '';
+    this.returnAddress = this.config.get('SHIPPING_GHN_RETURN_ADDRESS') ?? '';
 
     this.client = axios.create({
       baseURL: this.baseUrl,
@@ -195,6 +211,29 @@ export class GHNService {
       throw new Error(res.data.message ?? 'GHN create order failed');
     }
     return res.data.data;
+  }
+
+  async getOrderDetail(orderCode: string): Promise<GHNOrderDetailResponse> {
+    this.ensureConfigured();
+    const res = await this.client.post<{ code: number; message?: string; data: GHNOrderDetailResponse }>(
+      '/v2/shipping-order/detail',
+      { order_code: orderCode },
+    );
+    if (res.data.code !== 200) {
+      throw new Error(res.data.message ?? 'GHN get order detail failed');
+    }
+    return res.data.data;
+  }
+
+  async cancelOrder(orderCodes: string[]): Promise<void> {
+    this.ensureConfigured();
+    const res = await this.client.post<{ code: number; message?: string }>(
+      '/v2/switch-status/cancel',
+      { order_codes: orderCodes },
+    );
+    if (res.data.code !== 200) {
+      throw new Error(res.data.message ?? 'GHN cancel order failed');
+    }
   }
 
   isConfigured(): boolean {
