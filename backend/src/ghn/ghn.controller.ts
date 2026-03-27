@@ -11,11 +11,15 @@ import { GHNService } from './ghn.service';
 
 @Controller('ghn')
 export class GHNController {
-  constructor(private readonly ghn: GHNService) {}
+  constructor(private readonly ghn: GHNService) { }
 
   @Get('provinces')
   async getProvinces() {
-    return this.ghn.getProvinces();
+    try {
+      return await this.ghn.getProvinces();
+    } catch (error) {
+      throw new Error(`GHN API Error: ${error.message}`);
+    }
   }
 
   @Get('districts')

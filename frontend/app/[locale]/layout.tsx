@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { routing } from '@/lib/i18n';
 import { ThemeProvider } from '@/components/common/theme-provider';
 import { SetHtmlLang } from '@/components/common/set-html-lang';
+import { Toaster } from '@/components/ui/sonner';
 
 export default async function LocaleLayout({
     children,
@@ -30,6 +31,7 @@ export default async function LocaleLayout({
                 disableTransitionOnChange
             >
                 {children}
+                <Toaster />
             </ThemeProvider>
         </NextIntlClientProvider>
     );

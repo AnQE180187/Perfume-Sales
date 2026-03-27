@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ShippingService } from './shipping.service';
 
@@ -25,4 +25,37 @@ export class ShippingController {
     const userId = req.user?.userId ?? req.user?.sub;
     return this.shipping.getShipmentsForUserOrder(userId, orderId);
   }
+
+  // ── Admin endpoints ──────────────────────────────────────
+
+  @Get('admin/all')
+  @UseGuards(JwtAuthGuard)
+  async listAll(@Query('skip') skip?: number, @Query('take') take?: number) {
+    return this.shipping.listAllShipments(skip || 0, take || 10);
+  }
+
+  @Post('admin/:orderId/create-ghn')
+  @UseGuards(JwtAuthGuard)
+  async adminCreateGhn(@Param('orderId') orderId: string) {
+    return this.shipping.createGhnShipmentAdmin(orderId);
+  }
+
+  @Post('admin/:orderId/cancel')
+  @UseGuards(JwtAuthGuard)
+  async adminCancel(@Param('orderId') orderId: string) {
+    return this.shipping.cancelGhnShipment(orderId);
+  }
+
+  @Post('admin/:shipmentId/sync')
+  @UseGuards(JwtAuthGuard)
+  async adminSync(@Param('shipmentId') shipmentId: string) {
+    return this.shipping.syncShipmentStatus(shipmentId);
+  }
+
+  @Get('admin/:orderId/detail')
+  @UseGuards(JwtAuthGuard)
+  async adminDetail(@Param('orderId') orderId: string) {
+    return this.shipping.getShipmentDetailAdmin(orderId);
+  }
 }
+

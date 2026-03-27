@@ -22,6 +22,9 @@ import { StoresModule } from './stores/stores.module';
 import { ChatModule } from './chat/chat.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { AiModule } from './ai/ai.module';
+import { AddressesModule } from './addresses/addresses.module';
+import { GHNModule } from './ghn/ghn.module';
+import { ShippingModule } from './shipping/shipping.module';
 
 @Module({
   imports: [
@@ -47,6 +50,9 @@ import { AiModule } from './ai/ai.module';
     ChatModule,
     ReviewsModule,
     AiModule,
+    AddressesModule,
+    GHNModule,
+    ShippingModule,
   ],
 
   controllers: [AppController],
