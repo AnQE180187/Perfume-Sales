@@ -5,6 +5,7 @@ import { ThemeToggle } from '@/components/common/theme-toggle';
 import { LanguageSwitch } from '@/components/common/language-switch';
 import { motion } from 'framer-motion';
 import { usePathname } from '@/lib/i18n';
+import { useLocale } from 'next-intl';
 import { AuthGuard } from '@/components/auth/auth-guard';
 
 export default function DashboardLayout({
@@ -13,6 +14,7 @@ export default function DashboardLayout({
     children: React.ReactNode;
 }) {
     const pathname = usePathname();
+    const locale = useLocale();
 
     return (
         <AuthGuard>
@@ -29,9 +31,9 @@ export default function DashboardLayout({
                 <header className="h-20 border-b border-border/50 flex items-center justify-between px-8 bg-background/40 backdrop-blur-2xl sticky top-0 z-30 shrink-0">
                     <div className="flex items-center gap-6">
                         <div className="h-10 px-5 rounded-2xl glass border-gold/10 flex items-center gap-3 text-muted-foreground hover:text-foreground transition-all cursor-pointer group hover:border-gold/30">
-                            <div className="w-2 h-2 rounded-full bg-gold animate-pulse" />
+                            <div className="w-2 h-2 rounded-full bg-gold animate-pulse shadow-[0_0_10px_rgba(197,160,89,0.5)]" />
                             <span className="text-[10px] uppercase font-heading tracking-[0.2em] font-medium">
-                                {new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                                {new Date().toLocaleDateString(locale === 'vi' ? 'vi-VN' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                             </span>
                         </div>
                     </div>
