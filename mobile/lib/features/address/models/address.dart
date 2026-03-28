@@ -25,10 +25,14 @@ class Address {
   final AddressLabel label;
   final String recipientName;
   final String phone;
+  final String detailAddress;
   final String fullAddress;
   final int provinceId;
+  final String provinceName;
   final int districtId;
+  final String districtName;
   final String wardCode;
+  final String wardName;
   final int serviceId;
   final bool isDefault;
   final String? note;
@@ -38,10 +42,14 @@ class Address {
     required this.label,
     required this.recipientName,
     required this.phone,
+    required this.detailAddress,
     required this.fullAddress,
     required this.provinceId,
+    required this.provinceName,
     required this.districtId,
+    required this.districtName,
     required this.wardCode,
+    required this.wardName,
     required this.serviceId,
     required this.isDefault,
     this.note,
@@ -52,10 +60,14 @@ class Address {
     AddressLabel? label,
     String? recipientName,
     String? phone,
+    String? detailAddress,
     String? fullAddress,
     int? provinceId,
+    String? provinceName,
     int? districtId,
+    String? districtName,
     String? wardCode,
+    String? wardName,
     int? serviceId,
     bool? isDefault,
     String? note,
@@ -65,10 +77,14 @@ class Address {
       label: label ?? this.label,
       recipientName: recipientName ?? this.recipientName,
       phone: phone ?? this.phone,
+      detailAddress: detailAddress ?? this.detailAddress,
       fullAddress: fullAddress ?? this.fullAddress,
       provinceId: provinceId ?? this.provinceId,
+      provinceName: provinceName ?? this.provinceName,
       districtId: districtId ?? this.districtId,
+      districtName: districtName ?? this.districtName,
       wardCode: wardCode ?? this.wardCode,
+      wardName: wardName ?? this.wardName,
       serviceId: serviceId ?? this.serviceId,
       isDefault: isDefault ?? this.isDefault,
       note: note ?? this.note,
@@ -76,6 +92,22 @@ class Address {
   }
 
   factory Address.fromJson(Map<String, dynamic> json) {
+    final detailAddress =
+        (json['detailAddress'] ?? json['fullAddress'] ?? json['address'] ?? '')
+            .toString();
+    final provinceName = (json['provinceName'] ?? '').toString();
+    final districtName = (json['districtName'] ?? '').toString();
+    final wardName = (json['wardName'] ?? '').toString();
+
+    final fullAddress = detailAddress.isEmpty
+        ? ''
+        : [
+            detailAddress,
+            wardName,
+            districtName,
+            provinceName,
+          ].where((part) => part.trim().isNotEmpty).join(', ');
+
     return Address(
       id: (json['id'] ?? '').toString(),
       label: AddressLabelX.fromRaw(
@@ -83,10 +115,14 @@ class Address {
       ),
       recipientName: (json['recipientName'] ?? json['name'] ?? '').toString(),
       phone: (json['phone'] ?? '').toString(),
-      fullAddress: (json['fullAddress'] ?? json['address'] ?? '').toString(),
+      detailAddress: detailAddress,
+      fullAddress: fullAddress,
       provinceId: _readInt(json['provinceId'] ?? json['shippingProvinceId']),
+      provinceName: provinceName,
       districtId: _readInt(json['districtId'] ?? json['shippingDistrictId']),
+      districtName: districtName,
       wardCode: (json['wardCode'] ?? json['shippingWardCode'] ?? '').toString(),
+      wardName: wardName,
       serviceId: _readInt(json['serviceId'] ?? json['shippingServiceId']),
       isDefault: (json['isDefault'] ?? false) == true,
       note: json['note']?.toString(),
@@ -94,17 +130,18 @@ class Address {
   }
 
   Map<String, dynamic> toApiPayload() {
+    // Keep payload aligned with backend DTO (CreateAddressDto / UpdateAddressDto).
     return {
-      'label': label.displayName,
       'recipientName': recipientName,
       'phone': phone,
-      'fullAddress': fullAddress,
+      'detailAddress': detailAddress,
       'provinceId': provinceId,
+      'provinceName': provinceName,
       'districtId': districtId,
+      'districtName': districtName,
       'wardCode': wardCode,
-      'serviceId': serviceId,
+      'wardName': wardName,
       'isDefault': isDefault,
-      if (note != null && note!.isNotEmpty) 'note': note,
     };
   }
 }

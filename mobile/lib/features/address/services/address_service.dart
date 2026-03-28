@@ -30,7 +30,7 @@ class AddressService {
   }
 
   Future<Address> updateAddress(String id, Address address) async {
-    final response = await _client.put(
+    final response = await _client.patch(
       ApiEndpoints.addressById(id),
       data: address.toApiPayload(),
     );
@@ -115,11 +115,34 @@ final addressServiceProvider = Provider<AddressService>((ref) {
 
 String parseAddressError(Object error) {
   if (error is DioException) {
+    final status = error.response?.statusCode;
     final data = error.response?.data;
     if (data is Map) {
       final msg = data['message'];
-      if (msg is List) return msg.join(', ');
-      if (msg != null) return msg.toString();
+      if (msg is List && msg.isNotEmpty) {
+        final merged = msg.join(', ');
+        if (merged.toLowerCase().contains('should not exist')) {
+          return 'Dữ liệu địa chỉ không đúng định dạng. Vui lòng kiểm tra lại.';
+        }
+        return merged;
+      }
+      if (msg != null) {
+        final text = msg.toString();
+        if (text.toLowerCase().contains('internal server error')) {
+          return 'Hệ thống đang bận, vui lòng thử lại sau.';
+        }
+        return text;
+      }
+    }
+
+    if (status == 400) {
+      return 'Thông tin địa chỉ chưa hợp lệ. Vui lòng kiểm tra lại.';
+    }
+    if (status == 401 || status == 403) {
+      return 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+    }
+    if (status != null && status >= 500) {
+      return 'Máy chủ đang gặp sự cố. Vui lòng thử lại sau.';
     }
     return error.message ?? 'Không thể kết nối máy chủ';
   }

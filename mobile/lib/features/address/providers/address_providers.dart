@@ -64,9 +64,17 @@ class AddressListNotifier extends AsyncNotifier<List<Address>> {
 
     state = const AsyncLoading();
     try {
-      final saved = address.id.isEmpty
+      final savedFromApi = address.id.isEmpty
           ? await service.createAddress(address)
           : await service.updateAddress(address.id, address);
+
+      // Backend does not persist UI-only fields like serviceId/label/note yet,
+      // so keep user-selected values in local state for checkout UX.
+      final saved = savedFromApi.copyWith(
+        label: address.label,
+        serviceId: address.serviceId,
+        note: address.note,
+      );
 
       final exists = current.any((item) => item.id == saved.id);
       final updated = exists
@@ -202,6 +210,11 @@ class AddressFormNotifier extends StateNotifier<AddressFormState> {
   }
 
   Future<void> loadDistricts(int provinceId) async {
+    final clearedErrors = Map<String, String>.from(state.fieldErrors)
+      ..remove('provinceId')
+      ..remove('districtId')
+      ..remove('wardCode');
+
     state = state.copyWith(
       provinceId: provinceId,
       loadingDistricts: true,
@@ -211,6 +224,7 @@ class AddressFormNotifier extends StateNotifier<AddressFormState> {
       clearDistrict: true,
       clearWard: true,
       clearService: true,
+      fieldErrors: clearedErrors,
       errorMessage: null,
     );
 
@@ -226,11 +240,16 @@ class AddressFormNotifier extends StateNotifier<AddressFormState> {
   }
 
   Future<void> loadWards(int districtId) async {
+    final clearedErrors = Map<String, String>.from(state.fieldErrors)
+      ..remove('districtId')
+      ..remove('wardCode');
+
     state = state.copyWith(
       districtId: districtId,
       loadingWards: true,
       wards: const [],
       clearWard: true,
+      fieldErrors: clearedErrors,
       errorMessage: null,
     );
 
@@ -266,27 +285,49 @@ class AddressFormNotifier extends StateNotifier<AddressFormState> {
   }
 
   void setLabel(AddressLabel label) {
-    state = state.copyWith(label: label);
+    state = state.copyWith(label: label, errorMessage: null);
   }
 
   void setRecipientName(String value) {
-    state = state.copyWith(recipientName: value, errorMessage: null);
+    state = state.copyWith(
+      recipientName: value,
+      fieldErrors: _removeFieldError('recipientName'),
+      errorMessage: null,
+    );
   }
 
   void setPhone(String value) {
-    state = state.copyWith(phone: value, errorMessage: null);
+    final digits = value.replaceAll(RegExp(r'[^0-9]'), '');
+    final normalized = digits.length > 11 ? digits.substring(0, 11) : digits;
+    state = state.copyWith(
+      phone: normalized,
+      fieldErrors: _removeFieldError('phone'),
+      errorMessage: null,
+    );
   }
 
-  void setFullAddress(String value) {
-    state = state.copyWith(fullAddress: value, errorMessage: null);
+  void setDetailAddress(String value) {
+    state = state.copyWith(
+      detailAddress: value,
+      fieldErrors: _removeFieldError('detailAddress'),
+      errorMessage: null,
+    );
   }
 
   void setNote(String value) {
     state = state.copyWith(note: value);
   }
 
+  void setDefaultAddress(bool value) {
+    state = state.copyWith(isDefault: value);
+  }
+
   void setWardCode(String wardCode) {
-    state = state.copyWith(wardCode: wardCode, errorMessage: null);
+    state = state.copyWith(
+      wardCode: wardCode,
+      fieldErrors: _removeFieldError('wardCode'),
+      errorMessage: null,
+    );
   }
 
   void setServiceId(int serviceId) {
@@ -294,28 +335,52 @@ class AddressFormNotifier extends StateNotifier<AddressFormState> {
   }
 
   Future<bool> submit() async {
-    if (!state.canSubmit) {
-      state = state.copyWith(
-        errorMessage:
-            'Vui lòng điền đủ thông tin bắt buộc của địa chỉ giao hàng.',
-      );
+    final errors = _validateAll();
+    if (errors.isNotEmpty) {
+      state = state.copyWith(fieldErrors: errors, errorMessage: null);
       return false;
     }
 
-    state = state.copyWith(isSubmitting: true, errorMessage: null);
+    state = state.copyWith(
+      isSubmitting: true,
+      fieldErrors: const {},
+      errorMessage: null,
+    );
 
     try {
+      final selectedProvince = state.provinces.firstWhere(
+        (item) => item.id == state.provinceId,
+      );
+      final selectedDistrict = state.districts.firstWhere(
+        (item) => item.id == state.districtId,
+      );
+      final selectedWard = state.wards.firstWhere(
+        (item) => item.code == state.wardCode,
+      );
+
+      final detailAddress = state.detailAddress.trim();
+      final fullAddress = [
+        detailAddress,
+        selectedWard.name,
+        selectedDistrict.name,
+        selectedProvince.name,
+      ].join(', ');
+
       final address = Address(
         id: _initialAddress?.id ?? '',
         label: state.label,
         recipientName: state.recipientName.trim(),
         phone: state.phone.trim(),
-        fullAddress: state.fullAddress.trim(),
+        detailAddress: detailAddress,
+        fullAddress: fullAddress,
         provinceId: state.provinceId!,
+        provinceName: selectedProvince.name,
         districtId: state.districtId!,
+        districtName: selectedDistrict.name,
         wardCode: state.wardCode!,
-        serviceId: state.serviceId!,
-        isDefault: _initialAddress?.isDefault ?? false,
+        wardName: selectedWard.name,
+        serviceId: state.serviceId ?? 0,
+        isDefault: state.isDefault,
         note: state.note.trim().isEmpty ? null : state.note.trim(),
       );
 
@@ -325,10 +390,61 @@ class AddressFormNotifier extends StateNotifier<AddressFormState> {
     } catch (e) {
       state = state.copyWith(
         isSubmitting: false,
-        errorMessage: parseAddressError(e),
+        errorMessage: _friendlySubmitError(parseAddressError(e)),
       );
       return false;
     }
+  }
+
+  Map<String, String> _removeFieldError(String field) {
+    if (!state.fieldErrors.containsKey(field)) return state.fieldErrors;
+    final map = Map<String, String>.from(state.fieldErrors);
+    map.remove(field);
+    return map;
+  }
+
+  Map<String, String> _validateAll() {
+    final errors = <String, String>{};
+
+    if (state.recipientName.trim().isEmpty) {
+      errors['recipientName'] = 'Vui lòng nhập tên người nhận';
+    }
+
+    final phone = state.phone.trim();
+    if (phone.isEmpty) {
+      errors['phone'] = 'Vui lòng nhập số điện thoại';
+    } else if (!RegExp(r'^(0|84)[0-9]{9,10}$').hasMatch(phone)) {
+      errors['phone'] = 'Số điện thoại không hợp lệ';
+    }
+
+    if (state.provinceId == null) {
+      errors['provinceId'] = 'Vui lòng chọn tỉnh / thành phố';
+    }
+    if (state.districtId == null) {
+      errors['districtId'] = 'Vui lòng chọn quận / huyện';
+    }
+    if (state.wardCode == null || state.wardCode!.isEmpty) {
+      errors['wardCode'] = 'Vui lòng chọn phường / xã';
+    }
+    if (state.detailAddress.trim().isEmpty) {
+      errors['detailAddress'] = 'Vui lòng nhập địa chỉ chi tiết';
+    }
+
+    return errors;
+  }
+
+  String _friendlySubmitError(String raw) {
+    final lower = raw.toLowerCase();
+    if (lower.contains('internal server error')) {
+      return 'Có lỗi hệ thống khi lưu địa chỉ. Vui lòng thử lại sau.';
+    }
+    if (lower.contains('forbidden') || lower.contains('unauthorized')) {
+      return 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+    }
+    if (lower.contains('network') || lower.contains('socket')) {
+      return 'Không thể kết nối máy chủ. Vui lòng kiểm tra mạng.';
+    }
+    return raw;
   }
 }
 

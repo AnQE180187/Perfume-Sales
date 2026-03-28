@@ -6,12 +6,13 @@ class AddressFormState {
   final AddressLabel label;
   final String recipientName;
   final String phone;
-  final String fullAddress;
+  final String detailAddress;
   final String note;
   final int? provinceId;
   final int? districtId;
   final String? wardCode;
   final int? serviceId;
+  final bool isDefault;
   final List<GhnProvince> provinces;
   final List<GhnDistrict> districts;
   final List<GhnWard> wards;
@@ -21,6 +22,7 @@ class AddressFormState {
   final bool loadingWards;
   final bool loadingServices;
   final bool isSubmitting;
+  final Map<String, String> fieldErrors;
   final String? errorMessage;
 
   const AddressFormState({
@@ -28,12 +30,13 @@ class AddressFormState {
     this.label = AddressLabel.home,
     this.recipientName = '',
     this.phone = '',
-    this.fullAddress = '',
+    this.detailAddress = '',
     this.note = '',
     this.provinceId,
     this.districtId,
     this.wardCode,
     this.serviceId,
+    this.isDefault = false,
     this.provinces = const [],
     this.districts = const [],
     this.wards = const [],
@@ -43,20 +46,23 @@ class AddressFormState {
     this.loadingWards = false,
     this.loadingServices = false,
     this.isSubmitting = false,
+    this.fieldErrors = const {},
     this.errorMessage,
   });
 
   bool get canSubmit {
     return recipientName.trim().isNotEmpty &&
         phone.trim().isNotEmpty &&
-        fullAddress.trim().isNotEmpty &&
+        detailAddress.trim().isNotEmpty &&
         provinceId != null &&
         districtId != null &&
         wardCode != null &&
         wardCode!.isNotEmpty &&
-        serviceId != null &&
+        fieldErrors.isEmpty &&
         !isSubmitting;
   }
+
+  String? errorOf(String field) => fieldErrors[field];
 
   bool get isEditing => editingAddress != null;
 
@@ -65,12 +71,13 @@ class AddressFormState {
     AddressLabel? label,
     String? recipientName,
     String? phone,
-    String? fullAddress,
+    String? detailAddress,
     String? note,
     int? provinceId,
     int? districtId,
     String? wardCode,
     int? serviceId,
+    bool? isDefault,
     List<GhnProvince>? provinces,
     List<GhnDistrict>? districts,
     List<GhnWard>? wards,
@@ -80,6 +87,7 @@ class AddressFormState {
     bool? loadingWards,
     bool? loadingServices,
     bool? isSubmitting,
+    Map<String, String>? fieldErrors,
     String? errorMessage,
     bool clearProvince = false,
     bool clearDistrict = false,
@@ -91,12 +99,13 @@ class AddressFormState {
       label: label ?? this.label,
       recipientName: recipientName ?? this.recipientName,
       phone: phone ?? this.phone,
-      fullAddress: fullAddress ?? this.fullAddress,
+      detailAddress: detailAddress ?? this.detailAddress,
       note: note ?? this.note,
       provinceId: clearProvince ? null : (provinceId ?? this.provinceId),
       districtId: clearDistrict ? null : (districtId ?? this.districtId),
       wardCode: clearWard ? null : (wardCode ?? this.wardCode),
       serviceId: clearService ? null : (serviceId ?? this.serviceId),
+      isDefault: isDefault ?? this.isDefault,
       provinces: provinces ?? this.provinces,
       districts: districts ?? this.districts,
       wards: wards ?? this.wards,
@@ -106,6 +115,7 @@ class AddressFormState {
       loadingWards: loadingWards ?? this.loadingWards,
       loadingServices: loadingServices ?? this.loadingServices,
       isSubmitting: isSubmitting ?? this.isSubmitting,
+      fieldErrors: fieldErrors ?? this.fieldErrors,
       errorMessage: errorMessage,
     );
   }
@@ -117,12 +127,13 @@ class AddressFormState {
       label: address.label,
       recipientName: address.recipientName,
       phone: address.phone,
-      fullAddress: address.fullAddress,
+      detailAddress: address.detailAddress,
       note: address.note ?? '',
       provinceId: address.provinceId,
       districtId: address.districtId,
       wardCode: address.wardCode,
       serviceId: address.serviceId,
+      isDefault: address.isDefault,
     );
   }
 }
