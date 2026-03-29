@@ -39,7 +39,37 @@
         "odyssey": "Odyssey",
         "catalog": "Catalog",
         "admin_dashboard": "Admin Dashboard",
-        "staff_dashboard": "Staff Dashboard"
+        "staff_dashboard": "Staff Dashboard",
+        "description": "Aura AI - Personalized luxury perfume experience powered by artificial intelligence and neuroscience.",
+        "keywords": "perfume, luxury perfume, ai scent, personalized fragrance, aura ai, niche perfume"
+    },
+    "notifications": {
+        "success": "Success",
+        "error": "System Error",
+        "info": "Information",
+        "review_success": "Thank you for sharing your elegant experience!",
+        "review_error": "Failed to submit review. Please try again later.",
+        "image_upload_error": "Image upload failed. Please verify your files.",
+        "image_limit": "You can only upload up to {max} images.",
+        "image_size_error": "File {name} is too large (max {max}MB).",
+        "image_type_error": "File {name} is not a valid image format.",
+        "rating_required": "Please select your satisfaction level.",
+        "save_success": "Intelligence synchronized successfully.",
+        "save_error": "Failed to save changes. Please check your connection.",
+        "logged_in": "Welcome back to the Sanctuary.",
+        "logged_out": "You have been safely disconnected.",
+        "helpful_success": "Helpfulness recorded.",
+        "report_success": "Report submitted for review.",
+        "failed_to_react": "Failed to react at this time.",
+        "anonymous_user": "Anonymous Guest",
+        "action_success": "Action executed successfully.",
+        "action_failed": "Action failed.",
+        "review_hidden": "Review has been hidden from public.",
+        "review_visible": "Review is now visible to public.",
+        "review_pinned": "Review pinned to top.",
+        "review_unpinned": "Review unpinned.",
+        "review_flagged": "Review flagged for investigation.",
+        "review_purged": "Review permanently deleted."
     },
     "navigation": {
         "customer": {
@@ -65,7 +95,14 @@
             "analytics": "System Intelligence",
             "logs": "Audit & AI Logs",
             "marketing": "Campaign Manager",
-            "promotions": "Promotion Registry"
+            "promotions": "Promotion Registry",
+            "stores": "Boutique Network",
+            "stock": "Store Inventory",
+            "catalog": "Collection Catalog",
+            "reviews": "Guest Reviews"
+        },
+        "shared": {
+            "chat": "Aura Chat"
         }
     },
     "hero": {
@@ -73,7 +110,8 @@
         "title": "The Soul of Scent",
         "subtitle": "Experience an olfactory journey guided by neural intelligence and timeless craftsmanship.",
         "cta": "Personalize My Scent",
-        "explore": "The Collection"
+        "explore": "The Collection",
+        "scroll_to_discover": "Scroll to Discover"
     },
     "story": {
         "badge": "Neural Synthesizer",
@@ -98,16 +136,33 @@
         "benefit2_title": "The Vault",
         "benefit2_desc": "Early access to extremely limited editions synthesized by guest master perfumers.",
         "benefit3_title": "Privé Concierge",
-        "benefit3_desc": "24/7 access to your personal AI scent consultant and bespoke layering guides."
+        "benefit3_desc": "24/7 access to your personal AI scent consultant and bespoke layering guides.",
+        "badge": "Exclusive Circle",
+        "cta_access": "Request Access to the Residency",
+        "member_no": "Member No. {no} / VIP"
     },
     "discovery": {
-        "title": "The AI Discovery Process",
+        "title": "The AI <span>Discovery</span> Process",
         "step1_title": "Bio-Mapping",
         "step1_desc": "Our AI analyzes 147 data points from your sensory preferences and lifestyle.",
         "step2_title": "Synthesis",
         "step2_desc": "A unique molecular formula is generated, blending over 200 rare ingredients.",
         "step3_title": "Manifestation",
-        "step3_desc": "Hand-poured in Grasse, France, and shipped to your doorstep in obsidian glass."
+        "step3_desc": "Hand-poured in Grasse, France, and shipped to your doorstep in obsidian glass.",
+        "methodology": "The Methodology",
+        "phase": "Phase",
+        "begin_profile": "Begin My Neural Profile",
+        "steps": [
+            {
+                "label": "Neural Analysis"
+            },
+            {
+                "label": "Olfactory Synthesis"
+            },
+            {
+                "label": "Curation"
+            }
+        ]
     },
     "featured": {
         "badge": "The Archive",
@@ -298,7 +353,41 @@
             "science": "Science",
             "philosophy": "Philosophy",
             "artistry": "Artistry"
-        }
+        },
+        "featured_article": {
+            "title": "Sustainable Synthesis: The Future of Raw Materials",
+            "excerpt": "How neural AI is predicting the next century of botanical rarity and how we're preserving it today."
+        },
+        "articles": [
+            {
+                "category": "Olfactory Science",
+                "title": "The Neural Mapping of Memory",
+                "excerpt": "How our AI engine decodes the link between nostalgia and scent molecules to create deeply personal fragrances.",
+                "date": "Jan 12, 2026",
+                "image": "/luxury_perfume_hero_cinematic.png"
+            },
+            {
+                "category": "Mastery",
+                "title": "Grasse: The Heart of Extraction",
+                "excerpt": "A look inside our solar-powered laboratories where traditional distillation meets computational precision.",
+                "date": "Dec 15, 2025",
+                "image": "/luxury_ai_scent_lab.png"
+            },
+            {
+                "category": "Trends",
+                "title": "The Rise of Nocturnal Florals",
+                "excerpt": "Why the global shift towards deep, animalic jasmine and ink notes is defining the current generation of prestige scents.",
+                "date": "Nov 28, 2025",
+                "image": "/luxury_perfume_hero_cinematic.png"
+            },
+            {
+                "category": "Experience",
+                "title": "The Architecture of Sillage",
+                "excerpt": "Understanding projection and how AI optimizes the volume of your scent based on your environment.",
+                "date": "Nov 02, 2025",
+                "image": "/luxury_ai_scent_lab.png"
+            }
+        ]
     },
     "collection": {
         "badge": "The Anthology",
@@ -316,6 +405,550 @@
         "email_placeholder": "The Registry (Email)",
         "copyright": "© 2026 AURA AI ATELIER. ALL RIGHTS RESERVED.",
         "engine": "Neural Scent Engine v1.2",
-        "location": "Stabilized in Grasse"
+        "location": "Stabilized in Grasse",
+        "navigation_labels": {
+            "products": "Products",
+            "consultation": "AI Consultation",
+            "journal": "Journal",
+            "subscription": "The Anthology Club",
+            "boutiques": "Boutiques",
+            "gifting": "Gifting"
+        },
+        "support_labels": {
+            "story": "Story",
+            "ingredients": "Ingredients",
+            "terms": "Terms of Service",
+            "privacy": "Privacy Policy",
+            "support": "Customer Support"
+        }
+    },
+    "cart": {
+        "title": "Your Collection",
+        "signin_required": "Please sign in to view your cart.",
+        "signin_btn": "Sign In",
+        "empty": "Your cart is empty.",
+        "continue_shopping": "Continue Shopping",
+        "loading": "Loading...",
+        "each": "each",
+        "summary": "Summary",
+        "subtotal": "Subtotal",
+        "shipping": "Shipping",
+        "complimentary": "Complimentary",
+        "total": "Total",
+        "proceed_checkout": "Proceed to Checkout",
+        "secure_checkout": "SECURE CHECKOUT POWERED BY",
+        "intelligence": "AURA AI INTELLIGENCE",
+        "perks": {
+            "delivery_title": "White-Glove Delivery",
+            "delivery_desc": "Complimentary on all orders.",
+            "auth_title": "Authenticity Guaranteed",
+            "auth_desc": "Sealed with our digital seal.",
+            "refill_title": "Refill Service",
+            "refill_desc": "Sustainability in every bottle."
+        }
+    },
+    "checkout": {
+        "return_to_cart": "Return to Portal Archive (Cart)",
+        "page_title": "Assemble Acquisition",
+        "recipient_name": "Recipient Full Name (Identifier)",
+        "select_province": "Select Province/Metropolis",
+        "select_district": "Select Administrative District",
+        "select_ward": "Select Local Ward",
+        "shipping_service": "Logistics Service",
+        "shipping_fee": "Atmospheric Logistics Fee",
+        "shipping_address": "Acquisition Destination (Address)",
+        "phone_number": "Communication Channel (Phone)",
+        "continue_to_payment": "Proceed to Financial Synthesis",
+        "select_payment_method": "Select Transaction Frequency",
+        "cod": "Cash on Manifestation (COD)",
+        "online_payment": "Neural Financial Link (Online)",
+        "qr_scan": "Scan Neural Link (QR) for Synthesis",
+        "qr_desc": "Initialize your secure financial link to complete the acquisition",
+        "waiting_confirmation": "Awaiting Financial Resonance...",
+        "pay_via_payos": "Execute via PayOS Gateway",
+        "other_method": "Alternate Synthesis Method",
+        "order_summary": "Acquisition Summary",
+        "empty_cart": "Acquisition Queue Empty",
+        "coupon_code": "PROMOTION SIGNATURE",
+        "apply": "SYNTHESIZE",
+        "invalid_coupon": "Signature Invalid",
+        "coupon_success": "Signature Verified: Discount {amount}",
+        "loyalty_points": "Neural Credits",
+        "use_points": "Redeem Neural Credits",
+        "points_balance": "You possess {points} credits (Value: {value})",
+        "points_discount": "Credit Deduction",
+        "subtotal": "Scent Base Value",
+        "total": "Total Acquisition Value",
+        "shipping_placeholder": "Street, Ward, District, City...",
+        "name_placeholder": "Alexander Dupont",
+        "phone_placeholder": "0901234567",
+        "loading": "Processing...",
+        "page_title_part1": "Assemble",
+        "page_title_part2": "Acquisition",
+        "download_qr": "Download QR Code",
+        "street_name": "Street Name & Number",
+        "street_placeholder": "e.g. 123 Luxury Ave",
+        "pay_via_payos_desc": "Or click the button below to pay via PayOS gateway",
+        "shipping_free": "Complementary",
+        "error_missing_info": "Please specify all required logistics identifiers.",
+        "error_create_order": "A neural resonance failure occurred during acquisition creation.",
+        "error_create_payment": "Acquisition synthesis link failed to initialize."
+    },
+    "dashboard": {
+        "profile": {
+            "tabs": {
+                "dna": "Scent DNA",
+                "history": "Order History",
+                "favorites": "Favorites",
+                "rewards": "Rewards",
+                "settings": "Settings"
+            },
+            "premium_member": "Premium Member",
+            "active": "Active",
+            "loyalty_points": "Loyalty Points",
+            "ai_profile_badge": "AI-Generated Profile",
+            "match_score": "Match Score",
+            "preferred_families": "Preferred Families",
+            "intensity": "Intensity",
+            "top_notes": "Top Notes",
+            "refresh_dna": "Refresh Your DNA",
+            "retake_consultation": "Retake consultation",
+            "account_settings": "Account Settings",
+            "full_name": "Full Name",
+            "phone_number": "Phone Number",
+            "save_changes": "Save Changes",
+            "coming_soon": "Coming Soon",
+            "under_development": "This feature is under development"
+        },
+        "inventory": {
+            "title": "Boutique Stock",
+            "subtitle": "Inventory Oversight & Adjustments",
+            "store": "Store",
+            "select_store": "-- Select Store --",
+            "no_store_assigned": "Not assigned to any store. Contact Admin.",
+            "total_units": "Total Units",
+            "low_stock": "Low Stock",
+            "recent_refill": "Recent Refill",
+            "no_imports_yet": "No imports yet",
+            "select_store_to_view": "Select a store above to view and manage inventory.",
+            "stock_ledger": "Stock Ledger",
+            "filter_placeholder": "Filter by product or brand...",
+            "quantity": "Quantity",
+            "status": {
+                "out": "Out",
+                "low": "Low",
+                "optimal": "Optimal"
+            },
+            "operations": {
+                "title": "Stock Operations",
+                "desc": "Select a variant from the ledger to import or adjust stock.",
+                "selected_variant": "Selected Variant",
+                "none": "None",
+                "import_qty": "Import Quantity",
+                "import_reason": "Reason (optional)",
+                "import_btn": "Import",
+                "adjust_delta": "Adjust Delta",
+                "adjust_reason": "Reason",
+                "adjust_btn": "Adjust"
+            },
+            "logs": {
+                "title": "Recent Inventory Logs",
+                "no_logs": "No inventory logs yet."
+            },
+            "processing": "Processing...",
+            "loading": "Loading inventory...",
+            "errors": {
+                "load_stores": "Failed to load stores list",
+                "load_overview": "Failed to load inventory overview",
+                "import_failed": "Failed to import stock",
+                "adjust_failed": "Failed to adjust stock"
+            }
+        },
+        "orders": {
+            "title": "POS Orders",
+            "subtitle": "Orders created at the boutique counter.",
+            "search_placeholder": "Search by order code, phone number, or customer name...",
+            "table": {
+                "code": "Order Code",
+                "date": "Created At",
+                "items": "Items",
+                "status": "Status",
+                "total": "Total",
+                "actions": "Actions"
+            },
+            "status": {
+                "completed": "Completed",
+                "paid": "Paid",
+                "cancelled": "Cancelled",
+                "pending": "Pending",
+                "unknown": "Unknown"
+            },
+            "detail": {
+                "title": "Order",
+                "staff": "Staff",
+                "store": "Store",
+                "items": "Items",
+                "subtotal": "Subtotal",
+                "discount": "Discount",
+                "total": "Total",
+                "payments": "Payments"
+            },
+            "stats": {
+                "showing": "Showing {count} of {total} POS orders"
+            },
+            "errors": {
+                "load_failed": "Failed to load staff orders"
+            },
+            "loading": "Loading orders...",
+            "no_orders": "No POS orders found."
+        },
+        "pos": {
+            "title": "Boutique POS",
+            "store": "Store",
+            "select_store": "-- Select Store --",
+            "search_placeholder": "Search products, SKU or scan barcode...",
+            "loading_products": "Loading products...",
+            "no_products": {
+                "select_store": "Please select a store to view products.",
+                "empty_store": "No products found in this store."
+            },
+            "out_of_stock": "Out of stock",
+            "low_stock_warning": "Only {count} items left in stock!",
+            "product_out_warning": "Product is out of stock!",
+            "ai": {
+                "title": "AI Consultant",
+                "desc": "Enter customer info for AI product recommendations.",
+                "gender": "Gender",
+                "genders": {
+                    "male": "Male",
+                    "female": "Female",
+                    "unisex": "Unisex"
+                },
+                "occasion": "Occasion",
+                "occasions": {
+                    "daily": "Daily",
+                    "office": "Office",
+                    "date": "Date",
+                    "party": "Party",
+                    "gift": "Gift",
+                    "sport": "Sport"
+                },
+                "budget": "Budget (VND)",
+                "notes": "Additional notes...",
+                "consult_btn": "Get AI Recommendations",
+                "consulting": "Consulting...",
+                "results_title": "AI Recommendations:",
+                "no_results": "AI could not find matching products.",
+                "add_to_bill": "Add to Bill"
+            },
+            "cart": {
+                "title": "Active Bin",
+                "paid": "Paid",
+                "customer": "Customer",
+                "phone_placeholder": "Enter customer phone...",
+                "lookup_btn": "Lookup",
+                "looking_up": "Looking up...",
+                "member": "Member",
+                "guest": "Guest",
+                "points": "{count} points",
+                "pending_points": "{count} pending points",
+                "guest_desc": "Points will be earned upon payment. Register to use.",
+                "no_items": "No items in the bin. Search and add products from the left.",
+                "subtotal": "Subtotal",
+                "total": "Total",
+                "receipt_btn": "View Receipt",
+                "new_order_btn": "New Order",
+                "hold_btn": "Hold",
+                "cash_btn": "Cash",
+                "qr_btn": "QR Pay",
+                "charge_cash": "Charge Cash",
+                "generate_qr": "Generate QR",
+                "show_qr_again": "Show QR Again",
+                "processing": "Processing...",
+                "generating": "Generating...",
+                "waiting_payment": "Waiting for payment...",
+                "open_payos": "Open PayOS Checkout"
+            },
+            "receipt": {
+                "complete": "Payment Complete",
+                "order": "Order",
+                "earned_points": "+{count} points earned",
+                "reg_to_use": "(register to use)",
+                "subtotal": "Subtotal",
+                "discount": "Discount",
+                "total": "Total",
+                "close_btn": "Close",
+                "new_order_btn": "New Order"
+            },
+            "errors": {
+                "load_stores": "Failed to load stores list",
+                "load_products": "Failed to load products",
+                "create_draft": "Failed to create draft order",
+                "add_item": "Failed to add item",
+                "update_qty": "Failed to update quantity",
+                "pay_cash": "Failed to complete payment",
+                "create_qr": "Failed to create QR payment",
+                "lookup_customer": "Customer lookup failed"
+            }
+        },
+        "user": {
+            "explorer": "Aura Explorer",
+            "guest": "House Guest"
+        },
+        "customer": {
+            "home": {
+                "title": "My Sanctuary",
+                "subtitle": "Tailored for your unique essence.",
+                "credits_label": "Aura Credits",
+                "analyzing": "Analyzing DNA...",
+                "evolving_title": "Your Neural Signature is evolving",
+                "evolving_desc": "Our AI has detected new olfactory resonances based on your recent interactions. Update your profile to synchronize.",
+                "refresh_btn": "Refresh Synthesis",
+                "membership_label": "Membership",
+                "offers_title": "Active Offers",
+                "offers_new": "New",
+                "offers_desc": "{count} Rewards available for synthesis",
+                "modules": {
+                    "orders": "My Orders",
+                    "loyalty": "Loyalty",
+                    "ai_chat": "AI Consultation",
+                    "quiz": "Quiz Results",
+                    "explore": "Explore module →"
+                }
+            },
+            "orders": {
+                "title": "My Acquisitions",
+                "subtitle": "Registry of your unique olfactory journey.",
+                "empty_title": "The Archival Registry is Empty",
+                "empty_desc": "Start your journey into luxury scents today.",
+                "order_label": "Order",
+                "more_suffix": "(+{count} more)",
+                "fragrance_acquisition": "Fragrance Acquisition",
+                "destination": "Destination",
+                "view_details": "View Details & Track",
+                "status": {
+                    "pending": "Awaiting Confirmation",
+                    "confirmed": "Confirmed",
+                    "processing": "Preparing Synthesis",
+                    "shipped": "In Transit",
+                    "completed": "Synthesis Complete",
+                    "cancelled": "Voided"
+                }
+            },
+            "promotions": {
+                "title": "Olfactory Incentives",
+                "subtitle": "Exclusive mathematical benefits for your next discovery.",
+                "time_left": "{time} left",
+                "expired": "Temporal Resonance Expired",
+                "copy_btn": "Trace Signature",
+                "copied": "Traced",
+                "benefit_label": "Synthesis Benefit",
+                "no_promos": "No Active Synthesis",
+                "no_promos_desc": "Check back later for exclusive AI-predicted opportunities.",
+                "referral": {
+                    "title": "Artisan Referral Program",
+                    "desc": "Share the Aura experience with a fellow connoisseur and unlock a 10ml rare decant once they complete their first synthesis.",
+                    "cta": "Invite Connoisseurs"
+                }
+            }
+        },
+        "admin": {
+            "home": {
+                "title": "Central Command",
+                "subtitle": "Neural Intelligence Dashboard v4.2",
+                "search_placeholder": "Universal registry search...",
+                "stats": {
+                    "revenue": "Total Revenue",
+                    "consultations": "Active Consultations",
+                    "members": "Prestige Members",
+                    "delivery": "Avg. Delivery"
+                },
+                "management": {
+                    "products": "Products",
+                    "products_desc": "Manage collection",
+                    "catalog": "Catalog",
+                    "catalog_desc": "Brands, categories, scents",
+                    "orders": "Orders",
+                    "orders_desc": "Fulfillment registry",
+                    "discounts": "Discounts",
+                    "discounts_desc": "Campaign rewards",
+                    "users": "Users",
+                    "users_desc": "Member accounts"
+                },
+                "feed": {
+                    "title": "Live AI Consultations",
+                    "cta": "View Monitor Matrix",
+                    "match_score": "Match Score"
+                },
+                "intelligence": {
+                    "title": "Scent Intelligence",
+                    "trending_notes": "Trending Molecular Notes",
+                    "market_absorption": "Market Absorption",
+                    "tier_platinum": "Luxury Platinum Tier",
+                    "tier_niche": "Artisanal Niche",
+                    "report_btn": "Generate Full Report"
+                }
+            },
+            "analytics": {
+                "title": "Neural Ecosystem Telemetry",
+                "stats": {
+                    "revenue": "Total Revenue",
+                    "users": "Active Users",
+                    "acceptance": "AI Acceptance",
+                    "inventory": "Inventory Health"
+                },
+                "performance": {
+                    "title": "Performance Metrics"
+                },
+                "feed": {
+                    "title": "Live Feed",
+                    "event_label": "EVENT:",
+                    "sync_complete": "User #{id} sync complete",
+                    "active_now": "Active Now"
+                }
+            },
+            "users": {
+                "title": "User Archival Registry",
+                "subtitle": "Management of neural identifiers, role synthesis, and boutique assignment.",
+                "filter_role": "Filter Role:",
+                "roles": {
+                    "all": "All Identifiers",
+                    "admin": "Administrator",
+                    "staff": "Boutique Staff",
+                    "customer": "House Guest"
+                },
+                "table": {
+                    "user": "Identifier (User)",
+                    "role": "Synthesis (Role)",
+                    "store": "Boutique Assignment",
+                    "status": "Resonance (Status)",
+                    "actions": "Protocols"
+                },
+                "status": {
+                    "active": "Active",
+                    "inactive": "Voided"
+                },
+                "actions": {
+                    "edit": "Modify",
+                    "assign_store": "Assign Boutique",
+                    "unassign_store": "Void Assignment"
+                },
+                "modals": {
+                    "edit_title": "Modify Identifier: {name}",
+                    "assign_title": "Assign Boutique to: {name}",
+                    "assign_desc": "Select the boutique for neural synchronization.",
+                    "save": "Execute Changes",
+                    "saving": "Synchronizing...",
+                    "cancel": "Abort",
+                    "close": "Close Registry",
+                    "no_stores": "No boutiques available for synchronization."
+                },
+                "no_users": "No identifiers found in the current sector."
+            },
+            "rbac": {
+                "title": "Neural Access Control",
+                "subtitle": "Management of Role-Based Permission Matrices.",
+                "stats": {
+                    "active_roles": "Active Matrix Roles",
+                    "pending": "Pending Clearances",
+                    "alerts": "Security Resonance Alerts"
+                },
+                "matrix": {
+                    "title": "Permission Matrix",
+                    "sync_msg": "The security matrix is being synchronized with the neural network."
+                }
+            },
+            "promotions": {
+                "title": "Promotions Engine",
+                "subtitle": "Neural Rewards & Incentives Control.",
+                "search_placeholder": "Search signatures...",
+                "stats": {
+                    "total": "Total Signatures",
+                    "active": "Resonating Now",
+                    "redemptions": "Global Redemptions"
+                },
+                "table": {
+                    "code": "Signature (Code)",
+                    "discount": "Benefit",
+                    "conditions": "Parameters",
+                    "redeemed": "Redeemed",
+                    "validity": "Temporal Validity",
+                    "status": "Resonance",
+                    "actions": "Protocols"
+                },
+                "status": {
+                    "active": "Active",
+                    "expired": "Expired"
+                },
+                "modals": {
+                    "create_title": "Forge New Signature",
+                    "create_subtitle": "Configure Incentive Logic",
+                    "code": "SIGNATURE CODE",
+                    "type": "BENEFIT TYPE",
+                    "desc": "SPECIFICATIONS",
+                    "value": "VALUE",
+                    "limit": "USAGE QUANTUM",
+                    "start": "COMMENCEMENT",
+                    "end": "EXPIRATION",
+                    "submit": "Activate Protocol",
+                    "submitting": "Forging...",
+                    "error_create": "Protocol initialization failure."
+                },
+                "types": {
+                    "percentage": "PERCENTAGE (%)",
+                    "fixed": "FIXED AMOUNT (VND)"
+                },
+                "delete_confirm": "Are you sure you want to void this signature?"
+            },
+            "reviews": {
+                "title": "Review Moderation",
+                "subtitle": "Refining the voice of our community",
+                "stats": {
+                    "total": "Total Reviews",
+                    "pending_reports": "Pending Reports"
+                },
+                "tabs": {
+                    "all": "All Reviews",
+                    "reports": "Reports"
+                },
+                "search_placeholder": "Search products...",
+                "all_ratings": "All Ratings",
+                "table": {
+                    "customer_product": "Customer & Product",
+                    "impression": "Impression",
+                    "feedback": "Feedback",
+                    "status": "Status",
+                    "action": "Action"
+                },
+                "status": {
+                    "hidden": "Hidden",
+                    "pinned": "Pinned",
+                    "verified": "Verified",
+                    "flagged": "Flagged"
+                },
+                "actions": {
+                    "unhide": "Unhide Review",
+                    "hide": "Hide from Public",
+                    "unpin": "Unpin from Top",
+                    "pin": "Pin to Highlights",
+                    "flag": "Flag as Suspicious",
+                    "purge": "Purge Review"
+                },
+                "reports": {
+                    "purity_title": "Purity Maintained",
+                    "purity_desc": "No reports pending investigation",
+                    "concern": "Reported Concern",
+                    "reason": "Reason",
+                    "on_review_by": "On Review By {name}"
+                },
+                "messages": {
+                    "curating": "Curating reviews...",
+                    "silence": "Silence in the gallery.",
+                    "no_commentary": "No commentary provided",
+                    "essence_voices": "essence voices",
+                    "confirm_purge": "Are you sure you want to PERMANENTLY delete this review? This action cannot be undone."
+                }
+            }
+        }
     }
 }

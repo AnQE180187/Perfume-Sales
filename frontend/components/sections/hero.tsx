@@ -81,7 +81,7 @@ export const Hero = ({ heroY: parentHeroY, heroScale: parentHeroScale, heroOpaci
                     </h1>
 
                     {/* Subtitle */}
-                    <p className="text-xl md:text-2xl text-stone-200 mb-12 font-light leading-relaxed max-w-lg italic">
+                    <p className="text-xl md:text-2xl text-white/80 mb-12 font-light leading-relaxed max-w-lg italic">
                         {t('subtitle')}
                     </p>
 
@@ -89,7 +89,7 @@ export const Hero = ({ heroY: parentHeroY, heroScale: parentHeroScale, heroOpaci
                     <div className="flex flex-wrap gap-6 mt-8">
                         <Link
                             href="/customer/consultation"
-                            className="group px-10 py-5 bg-gold hover:bg-yellow-600 text-white rounded-full font-bold tracking-[.3em] uppercase text-[10px] flex items-center gap-4 transition-all shadow-xl"
+                            className="group px-10 py-5 bg-gold hover:bg-gold-light text-white rounded-full font-bold tracking-[.3em] uppercase text-[10px] flex items-center gap-4 transition-all shadow-xl"
                         >
                             {t('cta')}
                             <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform" />
@@ -111,14 +111,14 @@ export const Hero = ({ heroY: parentHeroY, heroScale: parentHeroScale, heroOpaci
                 transition={{ delay: 1.5, duration: 1 }}
                 className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 pointer-events-none"
             >
-                <span className="text-[10px] uppercase tracking-[0.5em] text-white/40 font-bold">
-                    Scroll to Discover
+                <span className="text-[10px] uppercase tracking-[0.5em] text-white/60 font-bold">
+                    {t('scroll_to_discover')}
                 </span>
-                <motion.div
-                    animate={{ y: [0, 10, 0] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                    className="w-px h-16 bg-gradient-to-b from-white/60 to-transparent"
-                />
+                    <motion.div
+                        animate={{ y: [0, 10, 0] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                        className="w-px h-16 bg-gradient-to-b from-gold/60 to-transparent"
+                    />
             </motion.div>
         </section>
     );

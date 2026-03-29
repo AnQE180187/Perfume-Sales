@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import StarRating from './star-rating';
 import { Button } from '@/components/ui/button';
 import { reviewService } from '@/services/review.service';
@@ -26,6 +27,8 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
     onSuccess,
     onCancel,
 }) => {
+    const t = useTranslations('notifications');
+    const tReview = useTranslations('review');
     const [rating, setRating] = useState(5);
     const [content, setContent] = useState('');
     const [images, setImages] = useState<{ file?: File, url: string }[]>([]);
@@ -36,17 +39,17 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
         if (images.length + files.length > MAX_IMAGES) {
-            toast.error(`You can only upload up to ${MAX_IMAGES} images`);
+            toast.error(t('image_limit', { max: MAX_IMAGES }));
             return;
         }
 
         const validFiles = files.filter(file => {
             if (file.size > MAX_FILE_SIZE) {
-                toast.error(`File ${file.name} is too large (max 5MB)`);
+                toast.error(t('image_size_error', { name: file.name, max: 5 }));
                 return false;
             }
             if (!file.type.startsWith('image/')) {
-                toast.error(`File ${file.name} is not an image`);
+                toast.error(t('image_type_error', { name: file.name }));
                 return false;
             }
             return true;
@@ -71,13 +74,12 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (rating < 1) {
-            toast.error("Please select a rating");
+            toast.error(t('rating_required'));
             return;
         }
 
         setIsSubmitting(true);
         try {
-            // Logic to upload images if any
             let imageUrls: string[] = [];
 
             if (images.length > 0) {
@@ -92,7 +94,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                     }
                 } catch (error: any) {
                     console.error("Failed to upload images:", error);
-                    toast.error("Failed to upload images. Please try again.");
+                    toast.error(t('image_upload_error'));
                     setIsUploading(false);
                     setIsSubmitting(false);
                     return;
@@ -108,39 +110,51 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                 images: imageUrls,
             });
 
-            toast.success("Thank you for your elegant review!");
+            toast.success(t('review_success'));
             onSuccess?.();
         } catch (error: any) {
-            toast.error(error.message || "Failed to submit review");
+            toast.error(error.message || t('review_error'));
         } finally {
             setIsSubmitting(false);
             setIsUploading(false);
         }
     };
 
+    // Helper for rating description translation
+    const getRatingDesc = (r: number) => {
+        switch (r) {
+            case 5: return 'Excellent';
+            case 4: return 'Very Good';
+            case 3: return 'Good';
+            case 2: return 'Fair';
+            case 1: return 'Poor';
+            default: return '';
+        }
+    };
+
     return (
-        <form onSubmit={handleSubmit} className="glass bg-white dark:bg-zinc-900 rounded-[2.5rem] p-8 border border-stone-100 dark:border-white/5 space-y-8 animate-in fade-in zoom-in-95 duration-300">
-            <div className="space-y-1 text-center md:text-left">
-                <h3 className="text-2xl font-serif text-luxury-black dark:text-white italic">Share Your Experience</h3>
-                <p className="text-[10px] text-stone-400 uppercase tracking-widest font-bold">Reviewing: {productName}</p>
+        <form onSubmit={handleSubmit} className="glass dark:bg-zinc-900 rounded-[2.5rem] p-8 md:p-12 border-border space-y-10 animate-in fade-in zoom-in-95 duration-700">
+            <div className="space-y-3 text-center md:text-left">
+                <h3 className="text-3xl font-serif text-foreground italic capitalize tracking-tight">Share Your Experience</h3>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-[.4em] font-bold opacity-60">Reviewing: <span className="text-gold italic">{productName}</span></p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-4">
-                    <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-[.2em] text-stone-500">Your Rating</label>
-                        <div className="flex items-center gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div className="space-y-8">
+                    <div className="space-y-4">
+                        <label className="text-[10px] font-bold uppercase tracking-[.4em] text-muted-foreground ml-1">Your Rating</label>
+                        <div className="flex items-center gap-6 glass px-6 py-4 rounded-2xl border-gold/10">
                             <StarRating rating={rating} onChange={setRating} size={32} />
-                            <span className="text-sm font-serif text-gold italic">
-                                {rating === 5 ? 'Excellent' : rating === 4 ? 'Very Good' : rating === 3 ? 'Good' : rating === 2 ? 'Fair' : 'Poor'}
+                            <span className="text-sm font-serif text-gold italic border-l border-gold/20 pl-6">
+                                {getRatingDesc(rating)}
                             </span>
                         </div>
                     </div>
 
-                    <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-[.2em] text-stone-500">Your Story</label>
+                    <div className="space-y-4">
+                        <label className="text-[10px] font-bold uppercase tracking-[.4em] text-muted-foreground ml-1">Your Story</label>
                         <textarea
-                            className="w-full h-32 bg-stone-50 dark:bg-white/[0.02] border border-stone-100 dark:border-white/5 rounded-2xl p-4 text-sm font-serif italic focus:outline-none focus:ring-1 focus:ring-gold/30 transition-all resize-none"
+                            className="w-full h-44 bg-foreground/5 dark:bg-white/[0.02] border border-border rounded-3xl p-6 text-sm font-serif italic focus:outline-none focus:ring-1 focus:ring-gold/30 transition-all resize-none custom-scrollbar"
                             placeholder="Describe the scent, the longevity, or the compliments you received..."
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
@@ -149,22 +163,22 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                     </div>
                 </div>
 
-                <div className="space-y-4">
-                    <label className="text-[10px] font-black uppercase tracking-[.2em] text-stone-500 flex justify-between">
+                <div className="space-y-6">
+                    <label className="text-[10px] font-bold uppercase tracking-[.4em] text-muted-foreground flex justify-between ml-1">
                         Visual Memories
-                        <span className="text-stone-400">{images.length}/{MAX_IMAGES}</span>
+                        <span className="text-gold/50">{images.length}/{MAX_IMAGES}</span>
                     </label>
 
-                    <div className="grid grid-cols-3 gap-3">
+                    <div className="grid grid-cols-3 gap-4">
                         {images.map((img, idx) => (
-                            <div key={idx} className="relative aspect-square rounded-2xl overflow-hidden border border-stone-100 dark:border-white/5 group">
+                            <div key={idx} className="relative aspect-square rounded-2xl overflow-hidden border border-border group shadow-xl hover:scale-95 transition-transform duration-500">
                                 <img src={img.url} alt="review" className="w-full h-full object-cover" />
                                 <button
                                     type="button"
                                     onClick={() => removeImage(idx)}
-                                    className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    className="absolute top-2 right-2 bg-black/50 backdrop-blur-md text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
                                 >
-                                    <X size={12} />
+                                    <X size={14} />
                                 </button>
                             </div>
                         ))}
@@ -173,10 +187,10 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                             <button
                                 type="button"
                                 onClick={() => fileInputRef.current?.click()}
-                                className="aspect-square flex flex-col items-center justify-center border-2 border-dashed border-stone-200 dark:border-white/10 rounded-2xl hover:bg-stone-50 dark:hover:bg-white/5 hover:border-gold/30 transition-all group"
+                                className="aspect-square flex flex-col items-center justify-center border-2 border-dashed border-border rounded-2xl hover:bg-gold/5 hover:border-gold/30 transition-all group scale-100 hover:scale-95 duration-500"
                             >
-                                <ImageIcon className="text-stone-300 group-hover:text-gold transition-colors" size={24} />
-                                <span className="text-[8px] mt-2 text-stone-400 uppercase font-black tracking-widest">Add Photo</span>
+                                <ImageIcon className="text-muted-foreground group-hover:text-gold transition-colors duration-700" size={32} />
+                                <span className="text-[8px] mt-3 text-muted-foreground uppercase font-bold tracking-widest opacity-60">Add Photo</span>
                             </button>
                         )}
                     </div>
@@ -190,40 +204,39 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                         className="hidden"
                     />
 
-                    <div className="p-3 rounded-xl bg-amber-50/50 dark:bg-amber-900/10 border border-amber-100/50 dark:border-amber-900/20 flex gap-2">
-                        <AlertCircle size={14} className="text-amber-600 shrink-0" />
-                        <p className="text-[9px] text-amber-700 dark:text-amber-500 leading-tight italic">
+                    <div className="p-6 rounded-3xl bg-gold/5 border border-gold/10 flex gap-4 shadow-inner">
+                        <AlertCircle size={20} className="text-gold shrink-0 mt-1" />
+                        <p className="text-[10px] text-muted-foreground leading-relaxed italic opacity-80">
                             Help others by uploading photos of the bottle or the packaging. Max 5MB per image.
                         </p>
                     </div>
                 </div>
             </div>
 
-            <div className="flex justify-end gap-4 pt-4">
+            <div className="flex justify-end gap-6 pt-6 border-t border-border/50">
                 {onCancel && (
-                    <Button
+                    <button
                         type="button"
-
                         onClick={onCancel}
                         disabled={isSubmitting}
-                        className="text-[10px] uppercase font-bold tracking-[.2em] text-stone-400 hover:text-luxury-black"
+                        className="text-[10px] uppercase font-bold tracking-[.4em] text-muted-foreground hover:text-foreground transition-colors"
                     >
                         Cancel
-                    </Button>
+                    </button>
                 )}
                 <Button
                     type="submit"
                     disabled={isSubmitting || isUploading}
-                    className="rounded-full bg-gold hover:bg-gold/90 text-white px-10 h-12 text-[10px] uppercase font-black tracking-[.2em] shadow-lg shadow-gold/20"
+                    className="rounded-full bg-foreground dark:bg-gold hover:bg-gold/90 text-background dark:text-foreground px-12 h-14 text-[10px] uppercase font-bold tracking-[.4em] shadow-2xl hover:-translate-y-1 active:translate-y-0 transition-all duration-500"
                 >
                     {isSubmitting ? (
                         <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            <Loader2 className="mr-3 h-4 w-4 animate-spin" />
                             Sending...
                         </>
                     ) : isUploading ? (
                         <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            <Loader2 className="mr-3 h-4 w-4 animate-spin" />
                             Uploading...
                         </>
                     ) : (

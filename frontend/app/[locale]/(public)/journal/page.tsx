@@ -7,41 +7,15 @@ import { Header } from '@/components/common/header';
 import { ArrowUpRight, BookOpen } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
-const articles = [
-    {
-        category: "Olfactory Science",
-        title: "The Neural Mapping of Memory",
-        excerpt: "How our AI engine decodes the link between nostalgia and scent molecules to create deeply personal fragrances.",
-        date: "Jan 12, 2026",
-        image: "/luxury_perfume_hero_cinematic.png"
-    },
-    {
-        category: "Mastery",
-        title: "Grasse: The Heart of Extraction",
-        excerpt: "A look inside our solar-powered laboratories where traditional distillation meets computational precision.",
-        date: "Dec 15, 2025",
-        image: "/luxury_ai_scent_lab.png"
-    },
-    {
-        category: "Trends",
-        title: "The Rise of Nocturnal Florals",
-        excerpt: "Why the global shift towards deep, animalic jasmine and ink notes is defining the current generation of prestige scents.",
-        date: "Nov 28, 2025",
-        image: "/luxury_perfume_hero_cinematic.png"
-    },
-    {
-        category: "Experience",
-        title: "The Architecture of Sillage",
-        excerpt: "Understanding projection and how AI optimizes the volume of your scent based on your environment.",
-        date: "Nov 02, 2025",
-        image: "/luxury_ai_scent_lab.png"
-    }
-];
+// Articles data is now localized in en.json / vi.json
 
 export default function JournalPage() {
     const t = useTranslations('journal_page');
+    // For mapping through the translated articles array
+    const articleItems = t.raw('articles') as any[];
+    
     return (
-        <div className="min-h-screen bg-white dark:bg-zinc-950 transition-colors">
+        <div className="min-h-screen bg-background transition-colors">
             <Header />
 
             <main className="container mx-auto px-6 py-32 lg:py-40">
@@ -107,10 +81,10 @@ export default function JournalPage() {
                             {t('special_release')}
                         </span>
                         <h2 className="text-4xl md:text-6xl font-serif text-white max-w-3xl mb-6">
-                            Sustainable Synthesis: The Future of Raw Materials
+                            {t('featured_article.title')}
                         </h2>
                         <p className="text-stone-300 max-w-xl mb-8 font-light text-lg">
-                            How neural AI is predicting the next century of botanical rarity and how we're preserving it today.
+                            {t('featured_article.excerpt')}
                         </p>
                         <button className="flex items-center gap-3 text-white text-[10px] font-bold tracking-[.3em] uppercase group-hover:text-gold transition-colors">
                             {t('consume_story')} <ArrowUpRight size={18} />
@@ -120,7 +94,7 @@ export default function JournalPage() {
 
                 {/* Article Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-24">
-                    {articles.map((article, i) => (
+                    {articleItems.map((article, i) => (
                         <motion.article
                             key={article.title}
                             initial={{ opacity: 0, y: 30 }}

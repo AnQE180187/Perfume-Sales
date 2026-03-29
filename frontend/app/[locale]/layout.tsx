@@ -1,5 +1,5 @@
-import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
+import { NextIntlClientProvider, useMessages } from 'next-intl';
+import { getMessages, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/lib/i18n';
 import { ThemeProvider } from '@/components/common/theme-provider';
