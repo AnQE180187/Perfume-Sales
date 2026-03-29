@@ -23,25 +23,15 @@ class ProfileHeaderSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          bottom: BorderSide(
-            color: AppTheme.softTaupe.withValues(alpha: 0.3),
-            width: 0.5,
-          ),
-        ),
-      ),
+      padding: const EdgeInsets.fromLTRB(8, 12, 8, 12),
+      color: AppTheme.ivoryBackground,
       child: Row(
         children: [
           IconButton(
             onPressed: onBack,
-            icon: const Icon(Icons.arrow_back),
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
             color: AppTheme.deepCharcoal,
-            iconSize: 20,
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
+            padding: const EdgeInsets.all(8),
           ),
           Expanded(
             child: Center(
@@ -55,13 +45,39 @@ class ProfileHeaderSection extends StatelessWidget {
               ),
             ),
           ),
-          IconButton(
-            onPressed: onEdit,
-            icon: const Icon(Icons.edit_outlined),
-            color: AppTheme.deepCharcoal,
-            iconSize: 20,
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
+          // Edit button as a small pill
+          GestureDetector(
+            onTap: onEdit,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppTheme.accentGold.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: AppTheme.accentGold.withValues(alpha: 0.4),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.edit_outlined,
+                    size: 13,
+                    color: AppTheme.accentGold,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Sửa',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.accentGold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),

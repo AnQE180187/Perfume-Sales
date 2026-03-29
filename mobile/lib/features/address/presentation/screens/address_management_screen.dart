@@ -8,11 +8,25 @@ import '../../providers/address_providers.dart';
 import '../widgets/address_card.dart';
 import 'address_form_screen.dart';
 
-class AddressManagementScreen extends ConsumerWidget {
+class AddressManagementScreen extends ConsumerStatefulWidget {
   const AddressManagementScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AddressManagementScreen> createState() =>
+      _AddressManagementScreenState();
+}
+
+class _AddressManagementScreenState
+    extends ConsumerState<AddressManagementScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Re-fetch on each screen open so users always see latest addresses.
+    Future.microtask(() => ref.read(addressListProvider.notifier).reload());
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final addressesAsync = ref.watch(addressListProvider);
     final selectedAddress = ref.watch(selectedAddressProvider);
 
@@ -45,7 +59,7 @@ class AddressManagementScreen extends ConsumerWidget {
           );
 
           if (addresses.isEmpty) {
-            return _AddressEmptyState(onAdd: () => _openForm(context));
+            return const _AddressEmptyState();
           }
 
           final nonDefault = addresses
@@ -250,9 +264,7 @@ class _AddressErrorState extends StatelessWidget {
 }
 
 class _AddressEmptyState extends StatelessWidget {
-  final VoidCallback onAdd;
-
-  const _AddressEmptyState({required this.onAdd});
+  const _AddressEmptyState();
 
   @override
   Widget build(BuildContext context) {
@@ -281,11 +293,6 @@ class _AddressEmptyState extends StatelessWidget {
                 fontWeight: FontWeight.w500,
                 color: AppTheme.mutedSilver,
               ),
-            ),
-            const SizedBox(height: 16),
-            FilledButton(
-              onPressed: onAdd,
-              child: const Text('+ Thêm địa chỉ mới'),
             ),
           ],
         ),

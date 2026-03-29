@@ -61,7 +61,7 @@ class ClearCartModal extends StatelessWidget {
             // Title
             Text(
               'Xóa toàn bộ giỏ hàng?',
-              style: GoogleFonts.cormorantGaramond(
+              style: GoogleFonts.playfairDisplay(
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
                 color: AppTheme.deepCharcoal,

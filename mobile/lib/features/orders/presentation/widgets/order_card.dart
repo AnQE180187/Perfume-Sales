@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/routing/app_routes.dart';
+import '../../../../core/theme/app_text_style.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/currency_utils.dart';
 import '../../models/order.dart';
@@ -64,15 +67,16 @@ class OrderCard extends StatelessWidget {
                   const SizedBox(height: 12),
                   Text(
                     order.code,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: AppTextStyle.titleMd(color: AppTheme.deepCharcoal),
                   ),
                   const SizedBox(height: 12),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _ProductImage(url: previewItem?.productImage ?? ''),
+                      _ProductImage(
+                        url: previewItem?.productImage ?? '',
+                        productId: previewItem?.productId ?? '',
+                      ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
@@ -82,8 +86,9 @@ class OrderCard extends StatelessWidget {
                               previewItem?.productName ?? 'Perfume item',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                                style: Theme.of(context).textTheme.bodyLarge
-                                  ?.copyWith(fontWeight: FontWeight.w600),
+                              style: AppTextStyle.titleMd(
+                                color: AppTheme.deepCharcoal,
+                              ),
                             ),
                             const SizedBox(height: 4),
                             Text(
@@ -94,12 +99,10 @@ class OrderCard extends StatelessWidget {
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              '${order.itemCount} item${order.itemCount > 1 ? 's' : ''} • ${formatVND(order.finalAmount)}',
-                              style: Theme.of(context).textTheme.bodyLarge
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: AppTheme.deepCharcoal,
-                                  ),
+                              '${order.itemCount} sản phẩm • ${formatVND(order.finalAmount)}',
+                              style: AppTextStyle.priceSm(
+                                color: AppTheme.accentGold,
+                              ),
                             ),
                           ],
                         ),
@@ -121,21 +124,22 @@ class OrderCard extends StatelessWidget {
     final showTrack = variant == OrderCardVariant.active && onTrack != null;
     final isCancelled = order.status == OrderStatus.cancelled;
     final ctaLabel = showTrack
-        ? 'Track Order'
+        ? 'Theo dõi'
         : isCancelled
-        ? 'View Details'
-        : 'Review';
+        ? 'Xem chi tiết'
+        : 'Đánh giá';
 
     return Row(
       children: [
         TextButton(
           onPressed: onViewDetail ?? onTap,
-          child: const Text('View Details'),
+          child: const Text('Xem chi tiết'),
         ),
         const Spacer(),
         ElevatedButton(
-          onPressed:
-              showTrack ? onTrack : (isCancelled ? onViewDetail : onReview),
+          onPressed: showTrack
+              ? onTrack
+              : (isCancelled ? onViewDetail : onReview),
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           ),
@@ -148,29 +152,55 @@ class OrderCard extends StatelessWidget {
 
 class _ProductImage extends StatelessWidget {
   final String url;
+  final String productId;
 
-  const _ProductImage({required this.url});
+  const _ProductImage({required this.url, required this.productId});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 62,
-      height: 62,
+    final image = Container(
+      width: 88,
+      height: 88,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.softTaupe),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.35)),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.accentGold.withValues(alpha: 0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         child: url.isEmpty
-            ? const Icon(Icons.inventory_2_outlined)
+            ? const Center(
+                child: Icon(
+                  Icons.inventory_2_outlined,
+                  size: 32,
+                  color: AppTheme.softTaupe,
+                ),
+              )
             : Image.network(
                 url,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) =>
-                    const Icon(Icons.inventory_2_outlined),
+                errorBuilder: (_, __, ___) => const Center(
+                  child: Icon(
+                    Icons.inventory_2_outlined,
+                    size: 32,
+                    color: AppTheme.softTaupe,
+                  ),
+                ),
               ),
       ),
+    );
+
+    if (productId.isEmpty) return image;
+
+    return GestureDetector(
+      onTap: () => context.push(AppRoutes.productDetailWithId(productId)),
+      child: image,
     );
   }
 }

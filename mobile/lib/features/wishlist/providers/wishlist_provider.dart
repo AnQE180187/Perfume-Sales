@@ -8,53 +8,54 @@ final List<Product> _mockWishlist = [
     name: 'NOIR ÉLIXIR',
     brand: 'LUMINA',
     price: 280.0,
-    imageUrl: 'https://images.unsplash.com/photo-1541643600914-78b084683601?q=80&w=1000&auto=format&fit=crop',
+    imageUrl:
+        'https://images.unsplash.com/photo-1541643600914-78b084683601?q=80&w=1000&auto=format&fit=crop',
     rating: 4.8,
     reviews: 124,
-    notes: ['Oud', 'Black Pepper', 'Amber'], description: '',
+    notes: ['Oud', 'Black Pepper', 'Amber'],
+    description: '',
   ),
   Product(
     id: 'prod_2',
     name: 'ROSE POUDRÉE',
     brand: 'LUMINA',
     price: 240.0,
-    imageUrl: 'https://images.unsplash.com/photo-1594035910387-fea4779426e9?q=80&w=1000&auto=format&fit=crop',
+    imageUrl:
+        'https://images.unsplash.com/photo-1594035910387-fea4779426e9?q=80&w=1000&auto=format&fit=crop',
     rating: 4.9,
     reviews: 89,
-    notes: ['Damask Rose', 'Vanilla', 'Iris'], description: '',
+    notes: ['Damask Rose', 'Vanilla', 'Iris'],
+    description: '',
   ),
 ];
 
-class WishlistNotifier extends StateNotifier<List<Product>> {
-  WishlistNotifier() : super([]);
-
-  // Initialize with optional mock data
-  void init([List<Product>? initialData]) {
-    state = initialData ?? [];
+class WishlistNotifier extends AsyncNotifier<List<Product>> {
+  @override
+  Future<List<Product>> build() async {
+    // Simulates an API call; replace with real service call in production
+    await Future.delayed(const Duration(milliseconds: 400));
+    return List.from(_mockWishlist);
   }
 
-  void toggle(Product product) {
-    if (state.any((p) => p.id == product.id)) {
-      // Remove
-      state = state.where((p) => p.id != product.id).toList();
+  Future<void> toggle(Product product) async {
+    final current = state.value ?? [];
+    if (current.any((p) => p.id == product.id)) {
+      state = AsyncData(current.where((p) => p.id != product.id).toList());
     } else {
-      // Add
-      state = [...state, product];
+      state = AsyncData([...current, product]);
     }
   }
 
   bool contains(String productId) {
-    return state.any((p) => p.id == productId);
+    return state.value?.any((p) => p.id == productId) ?? false;
   }
 
   void remove(String productId) {
-    state = state.where((p) => p.id != productId).toList();
+    final current = state.value ?? [];
+    state = AsyncData(current.where((p) => p.id != productId).toList());
   }
 }
 
-final wishlistProvider = StateNotifierProvider<WishlistNotifier, List<Product>>((ref) {
-  final notifier = WishlistNotifier();
-  // Initialize with some mock data for demo
-  notifier.init(_mockWishlist);
-  return notifier;
-});
+final wishlistProvider = AsyncNotifierProvider<WishlistNotifier, List<Product>>(
+  WishlistNotifier.new,
+);

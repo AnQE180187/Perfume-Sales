@@ -1,200 +1,32 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_async_widget.dart';
+import '../../../core/widgets/shimmer_loading.dart';
+import '../models/alert.dart';
+import '../providers/alerts_provider.dart';
 
-enum _AlertFilter { all, unread, orders, offers, account }
-
-enum _AlertCategory { order, offer, account }
-
-class _AlertItem {
-  final String id;
-  final String title;
-  final String message;
-  final String timeLabel;
-  final _AlertCategory category;
-  final bool isUnread;
-  final String? actionLabel;
-  final Color accentColor;
-
-  const _AlertItem({
-    required this.id,
-    required this.title,
-    required this.message,
-    required this.timeLabel,
-    required this.category,
-    required this.isUnread,
-    this.actionLabel,
-    required this.accentColor,
-  });
-
-  _AlertItem copyWith({bool? isUnread}) {
-    return _AlertItem(
-      id: id,
-      title: title,
-      message: message,
-      timeLabel: timeLabel,
-      category: category,
-      isUnread: isUnread ?? this.isUnread,
-      actionLabel: actionLabel,
-      accentColor: accentColor,
-    );
-  }
-}
-
-class AlertsScreen extends StatefulWidget {
+class AlertsScreen extends ConsumerWidget {
   const AlertsScreen({super.key});
 
   @override
-  State<AlertsScreen> createState() => _AlertsScreenState();
-}
-
-class _AlertsScreenState extends State<AlertsScreen> {
-  late List<_AlertItem> _alerts;
-  _AlertFilter _activeFilter = _AlertFilter.all;
-  bool _orderUpdatesEnabled = true;
-  bool _offerUpdatesEnabled = true;
-  bool _accountAlertsEnabled = false;
-
-  static const List<_AlertItem> _seedAlerts = [
-    _AlertItem(
-      id: 'ord-1',
-      title: 'Đơn hàng của bạn đang được đóng gói',
-      message:
-          'No. 07 Velvet Rose đã vào giai đoạn hoàn thiện cuối cùng và sẽ được chuẩn bị giao trong tối nay.',
-      timeLabel: '2 phút trước',
-      category: _AlertCategory.order,
-      isUnread: true,
-      actionLabel: 'Theo dõi đơn',
-      accentColor: Color(0xFFD4AF37),
-    ),
-    _AlertItem(
-      id: 'off-1',
-      title: 'Ưu đãi riêng vừa được mở',
-      message:
-          'Ưu đãi 12% đang chờ bạn cho lần mua nước hoa tiếp theo đến hết nửa đêm hôm nay.',
-      timeLabel: '18 phút trước',
-      category: _AlertCategory.offer,
-      isUnread: true,
-      actionLabel: 'Dùng ưu đãi',
-      accentColor: Color(0xFFB9824A),
-    ),
-    _AlertItem(
-      id: 'acc-1',
-      title: 'Sản phẩm yêu thích đã có hàng lại',
-      message:
-          'Maison Lumiere Ambre bản 50ml đã có hàng trở lại và được giữ cho bạn trong 6 giờ tới.',
-      timeLabel: 'Hôm nay, 09:24',
-      category: _AlertCategory.account,
-      isUnread: true,
-      actionLabel: 'Xem sản phẩm',
-      accentColor: Color(0xFF7D8F69),
-    ),
-    _AlertItem(
-      id: 'ord-2',
-      title: 'Đơn vị vận chuyển đã xác nhận lịch ngày mai',
-      message:
-          'Đơn hàng gần nhất của bạn dự kiến sẽ được giao trong khoảng 10:00 đến 13:00 và cần ký nhận.',
-      timeLabel: 'Hôm qua',
-      category: _AlertCategory.order,
-      isUnread: false,
-      actionLabel: 'Xem vận chuyển',
-      accentColor: Color(0xFF8A7D6A),
-    ),
-    _AlertItem(
-      id: 'off-2',
-      title: 'Bài viết tuyển chọn mới',
-      message:
-          'Khám phá ba mùi hương trầm ấm cho buổi tối do chuyên gia tư vấn mùi hương tuyển chọn cho mùa mưa.',
-      timeLabel: 'Thứ Ba',
-      category: _AlertCategory.offer,
-      isUnread: false,
-      actionLabel: 'Đọc bài viết',
-      accentColor: Color(0xFFA15C45),
-    ),
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    _alerts = _seedAlerts;
-  }
-
-  List<_AlertItem> get _filteredAlerts {
-    switch (_activeFilter) {
-      case _AlertFilter.all:
-        return _alerts;
-      case _AlertFilter.unread:
-        return _alerts.where((alert) => alert.isUnread).toList();
-      case _AlertFilter.orders:
-        return _alerts
-            .where((alert) => alert.category == _AlertCategory.order)
-            .toList();
-      case _AlertFilter.offers:
-        return _alerts
-            .where((alert) => alert.category == _AlertCategory.offer)
-            .toList();
-      case _AlertFilter.account:
-        return _alerts
-            .where((alert) => alert.category == _AlertCategory.account)
-            .toList();
-    }
-  }
-
-  int get _unreadCount => _alerts.where((alert) => alert.isUnread).length;
-
-  Future<void> _refreshAlerts() async {
-    await Future<void>.delayed(const Duration(milliseconds: 700));
-    if (!mounted) return;
-    setState(() {
-      _alerts = _alerts.map((alert) => alert).toList();
-    });
-  }
-
-  void _markAllAsRead() {
-    setState(() {
-      _alerts = _alerts
-          .map((alert) => alert.copyWith(isUnread: false))
-          .toList();
-    });
-  }
-
-  void _openAlert(_AlertItem selectedAlert) {
-    setState(() {
-      _alerts = _alerts
-          .map(
-            (alert) => alert.id == selectedAlert.id
-                ? alert.copyWith(isUnread: false)
-                : alert,
-          )
-          .toList();
-    });
-
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return _AlertDetailSheet(
-          alert: selectedAlert.copyWith(isUnread: false),
-        );
-      },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final alerts = _filteredAlerts;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final prefs = ref.watch(alertsPrefsProvider);
+    final alertsAsync = ref.watch(alertsProvider);
 
     return Scaffold(
       backgroundColor: AppTheme.ivoryBackground,
       body: SafeArea(
         bottom: false,
         child: RefreshIndicator(
-          onRefresh: _refreshAlerts,
+          onRefresh: () => ref.read(alertsProvider.notifier).refresh(),
           color: AppTheme.accentGold,
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
+              //  Header
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
@@ -228,26 +60,12 @@ class _AlertsScreenState extends State<AlertsScreen> {
                               ],
                             ),
                           ),
-                          TextButton(
-                            onPressed: _unreadCount == 0
-                                ? null
-                                : _markAllAsRead,
-                            child: Text(
-                              'Đánh dấu đã đọc',
-                              style: GoogleFonts.montserrat(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                                color: _unreadCount == 0
-                                    ? AppTheme.mutedSilver
-                                    : AppTheme.accentGold,
-                              ),
-                            ),
-                          ),
+                          _MarkAllReadButton(alertsAsync: alertsAsync),
                         ],
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        'Theo dõi đơn hàng, ưu đãi riêng và hoạt động tài khoản trong một hộp thư gọn gàng.',
+                        'Theo dõi đơn hàng, ưu đãi riêng và hoạt động tài khoản.',
                         style: GoogleFonts.montserrat(
                           fontSize: 13,
                           height: 1.6,
@@ -256,116 +74,183 @@ class _AlertsScreenState extends State<AlertsScreen> {
                         ),
                       ),
                       const SizedBox(height: 18),
-                      _AlertsHeroCard(
-                        unreadCount: _unreadCount,
-                        totalCount: _alerts.length,
-                      ),
+                      _AlertsHeroCard(alertsAsync: alertsAsync),
                       const SizedBox(height: 18),
-                      _NotificationPreferencesCard(
-                        orderUpdatesEnabled: _orderUpdatesEnabled,
-                        offerUpdatesEnabled: _offerUpdatesEnabled,
-                        accountAlertsEnabled: _accountAlertsEnabled,
-                        onOrderChanged: (value) {
-                          setState(() => _orderUpdatesEnabled = value);
-                        },
-                        onOffersChanged: (value) {
-                          setState(() => _offerUpdatesEnabled = value);
-                        },
-                        onAccountChanged: (value) {
-                          setState(() => _accountAlertsEnabled = value);
-                        },
-                      ),
+                      _NotificationPreferencesCard(prefs: prefs),
                       const SizedBox(height: 18),
-                      SizedBox(
-                        height: 40,
-                        child: ListView(
-                          scrollDirection: Axis.horizontal,
-                          children: [
-                            _FilterChip(
-                              label: 'Tất cả',
-                              isSelected: _activeFilter == _AlertFilter.all,
-                              onTap: () => setState(
-                                () => _activeFilter = _AlertFilter.all,
-                              ),
-                            ),
-                            _FilterChip(
-                              label: 'Chưa đọc',
-                              count: _unreadCount,
-                              isSelected: _activeFilter == _AlertFilter.unread,
-                              onTap: () => setState(
-                                () => _activeFilter = _AlertFilter.unread,
-                              ),
-                            ),
-                            _FilterChip(
-                              label: 'Đơn hàng',
-                              isSelected: _activeFilter == _AlertFilter.orders,
-                              onTap: () => setState(
-                                () => _activeFilter = _AlertFilter.orders,
-                              ),
-                            ),
-                            _FilterChip(
-                              label: 'Ưu đãi',
-                              isSelected: _activeFilter == _AlertFilter.offers,
-                              onTap: () => setState(
-                                () => _activeFilter = _AlertFilter.offers,
-                              ),
-                            ),
-                            _FilterChip(
-                              label: 'Tài khoản',
-                              isSelected: _activeFilter == _AlertFilter.account,
-                              onTap: () => setState(
-                                () => _activeFilter = _AlertFilter.account,
-                              ),
-                            ),
-                          ],
-                        ),
+                      _FilterChipsRow(
+                        activeFilter: prefs.activeFilter,
+                        unreadCount:
+                            alertsAsync.value
+                                ?.where((a) => a.isUnread)
+                                .length ??
+                            0,
                       ),
                       const SizedBox(height: 18),
                     ],
                   ),
                 ),
               ),
-              if (alerts.isEmpty)
-                const SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: _EmptyAlertsState(),
-                )
-              else
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
-                  sliver: SliverList.list(
-                    children: [
-                      const _SectionLabel(title: 'Mới hôm nay'),
-                      const SizedBox(height: 12),
-                      for (final alert in alerts.where(
-                        (item) =>
-                            item.timeLabel != 'Hôm qua' &&
-                            item.timeLabel != 'Thứ Ba',
-                      )) ...[
-                        _AlertCard(
-                          alert: alert,
-                          onTap: () => _openAlert(alert),
+
+              //  Alerts body via AppAsyncWidget
+              SliverToBoxAdapter(
+                child: AppAsyncWidget<List<Alert>>(
+                  value: alertsAsync,
+                  onRetry: () => ref.invalidate(alertsProvider),
+                  loadingBuilder: () => Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+                    child: Column(
+                      children: List.generate(
+                        4,
+                        (_) => const Padding(
+                          padding: EdgeInsets.only(bottom: 12),
+                          child: ShimmerCard(height: 130),
                         ),
-                        const SizedBox(height: 12),
-                      ],
-                      const _SectionLabel(title: 'Trước đó'),
-                      const SizedBox(height: 12),
-                      for (final alert in alerts.where(
-                        (item) =>
-                            item.timeLabel == 'Hôm qua' ||
-                            item.timeLabel == 'Thứ Ba',
-                      )) ...[
-                        _AlertCard(
-                          alert: alert,
-                          onTap: () => _openAlert(alert),
-                        ),
-                        const SizedBox(height: 12),
-                      ],
-                    ],
+                      ),
+                    ),
                   ),
+                  dataBuilder: (alerts) {
+                    final filtered = _applyFilter(alerts, prefs.activeFilter);
+                    if (filtered.isEmpty) {
+                      return const _EmptyAlertsView();
+                    }
+                    return _AlertsListView(
+                      alerts: filtered,
+                      onTap: (alert) {
+                        ref.read(alertsProvider.notifier).markAsRead(alert.id);
+                        _showDetail(context, alert);
+                      },
+                    );
+                  },
                 ),
+              ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  List<Alert> _applyFilter(List<Alert> alerts, AlertFilter filter) {
+    switch (filter) {
+      case AlertFilter.all:
+        return alerts;
+      case AlertFilter.unread:
+        return alerts.where((a) => a.isUnread).toList();
+      case AlertFilter.orders:
+        return alerts.where((a) => a.category == AlertCategory.order).toList();
+      case AlertFilter.offers:
+        return alerts.where((a) => a.category == AlertCategory.offer).toList();
+      case AlertFilter.account:
+        return alerts
+            .where((a) => a.category == AlertCategory.account)
+            .toList();
+    }
+  }
+
+  void _showDetail(BuildContext context, Alert alert) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _AlertDetailSheet(alert: alert),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Body widgets
+// ---------------------------------------------------------------------------
+
+class _EmptyAlertsView extends StatelessWidget {
+  const _EmptyAlertsView();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 300,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.notifications_none_rounded,
+              size: 64,
+              color: AppTheme.mutedSilver.withValues(alpha: 0.3),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Không có thông báo nào',
+              style: GoogleFonts.playfairDisplay(
+                fontSize: 20,
+                fontWeight: FontWeight.w400,
+                color: AppTheme.deepCharcoal.withValues(alpha: 0.7),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AlertsListView extends StatelessWidget {
+  final List<Alert> alerts;
+  final void Function(Alert) onTap;
+  const _AlertsListView({required this.alerts, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final todayAlerts = alerts.where((a) => a.isToday).toList();
+    final olderAlerts = alerts.where((a) => !a.isToday).toList();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (todayAlerts.isNotEmpty) ...[
+            _SectionLabel(title: 'Mới hôm nay'),
+            const SizedBox(height: 12),
+            for (final alert in todayAlerts) ...[
+              _AlertCard(alert: alert, onTap: () => onTap(alert)),
+              const SizedBox(height: 12),
+            ],
+          ],
+          if (olderAlerts.isNotEmpty) ...[
+            _SectionLabel(title: 'Trước đó'),
+            const SizedBox(height: 12),
+            for (final alert in olderAlerts) ...[
+              _AlertCard(alert: alert, onTap: () => onTap(alert)),
+              const SizedBox(height: 12),
+            ],
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Sub-widgets
+// ---------------------------------------------------------------------------
+
+class _MarkAllReadButton extends ConsumerWidget {
+  final AsyncValue<List<Alert>> alertsAsync;
+  const _MarkAllReadButton({required this.alertsAsync});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final unread = alertsAsync.value?.where((a) => a.isUnread).length ?? 0;
+    return TextButton(
+      onPressed: unread == 0
+          ? null
+          : () => ref.read(alertsProvider.notifier).markAllAsRead(),
+      child: Text(
+        'Đánh dấu đã đọc',
+        style: GoogleFonts.montserrat(
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+          color: unread == 0 ? AppTheme.mutedSilver : AppTheme.accentGold,
         ),
       ),
     );
@@ -373,13 +258,14 @@ class _AlertsScreenState extends State<AlertsScreen> {
 }
 
 class _AlertsHeroCard extends StatelessWidget {
-  final int unreadCount;
-  final int totalCount;
-
-  const _AlertsHeroCard({required this.unreadCount, required this.totalCount});
+  final AsyncValue<List<Alert>> alertsAsync;
+  const _AlertsHeroCard({required this.alertsAsync});
 
   @override
   Widget build(BuildContext context) {
+    final total = alertsAsync.value?.length ?? 0;
+    final unread = alertsAsync.value?.where((a) => a.isUnread).length ?? 0;
+
     return Container(
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
@@ -412,7 +298,7 @@ class _AlertsHeroCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  unreadCount == 0 ? 'Bạn đã xem hết' : '$unreadCount chưa đọc',
+                  unread == 0 ? 'Bạn đã xem hết' : '$unread chưa đọc',
                   style: GoogleFonts.montserrat(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
@@ -439,7 +325,7 @@ class _AlertsHeroCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            '$totalCount cập nhật gần đây được gom lại tại đây để bạn không bỏ lỡ điều gì quan trọng.',
+            '$total cập nhật gần đây được gom lại tại đây.',
             style: GoogleFonts.montserrat(
               fontSize: 12,
               height: 1.6,
@@ -453,25 +339,13 @@ class _AlertsHeroCard extends StatelessWidget {
   }
 }
 
-class _NotificationPreferencesCard extends StatelessWidget {
-  final bool orderUpdatesEnabled;
-  final bool offerUpdatesEnabled;
-  final bool accountAlertsEnabled;
-  final ValueChanged<bool> onOrderChanged;
-  final ValueChanged<bool> onOffersChanged;
-  final ValueChanged<bool> onAccountChanged;
-
-  const _NotificationPreferencesCard({
-    required this.orderUpdatesEnabled,
-    required this.offerUpdatesEnabled,
-    required this.accountAlertsEnabled,
-    required this.onOrderChanged,
-    required this.onOffersChanged,
-    required this.onAccountChanged,
-  });
+class _NotificationPreferencesCard extends ConsumerWidget {
+  final AlertsPrefs prefs;
+  const _NotificationPreferencesCard({required this.prefs});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final notifier = ref.read(alertsPrefsProvider.notifier);
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -483,22 +357,22 @@ class _NotificationPreferencesCard extends StatelessWidget {
           _PreferenceRow(
             title: 'Cập nhật đơn hàng',
             subtitle: 'Xác nhận giao hàng, chuẩn bị đơn và thanh toán',
-            value: orderUpdatesEnabled,
-            onChanged: onOrderChanged,
+            value: prefs.orderUpdatesEnabled,
+            onChanged: notifier.toggleOrderUpdates,
           ),
           Divider(color: AppTheme.softTaupe.withValues(alpha: 0.8), height: 28),
           _PreferenceRow(
             title: 'Ưu đãi riêng',
-            subtitle: 'Ưu đãi thành viên, gói giới hạn và mã giảm giá đã lưu',
-            value: offerUpdatesEnabled,
-            onChanged: onOffersChanged,
+            subtitle: 'Ưu đãi thành viên, gói giới hạn và mã giảm giá',
+            value: prefs.offerUpdatesEnabled,
+            onChanged: notifier.toggleOfferUpdates,
           ),
           Divider(color: AppTheme.softTaupe.withValues(alpha: 0.8), height: 28),
           _PreferenceRow(
             title: 'Cảnh báo tài khoản',
             subtitle: 'Thông báo có hàng lại và nhắc nhở hoạt động hồ sơ',
-            value: accountAlertsEnabled,
-            onChanged: onAccountChanged,
+            value: prefs.accountAlertsEnabled,
+            onChanged: notifier.toggleAccountAlerts,
           ),
         ],
       ),
@@ -511,7 +385,6 @@ class _PreferenceRow extends StatelessWidget {
   final String subtitle;
   final bool value;
   final ValueChanged<bool> onChanged;
-
   const _PreferenceRow({
     required this.title,
     required this.subtitle,
@@ -551,7 +424,7 @@ class _PreferenceRow extends StatelessWidget {
         const SizedBox(width: 12),
         Switch.adaptive(
           value: value,
-          activeColor: AppTheme.accentGold,
+          activeThumbColor: AppTheme.accentGold,
           onChanged: onChanged,
         ),
       ],
@@ -559,13 +432,60 @@ class _PreferenceRow extends StatelessWidget {
   }
 }
 
-class _FilterChip extends StatelessWidget {
+class _FilterChipsRow extends ConsumerWidget {
+  final AlertFilter activeFilter;
+  final int unreadCount;
+  const _FilterChipsRow({
+    required this.activeFilter,
+    required this.unreadCount,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final notifier = ref.read(alertsPrefsProvider.notifier);
+    return SizedBox(
+      height: 40,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: [
+          _Chip(
+            label: 'Tất cả',
+            isSelected: activeFilter == AlertFilter.all,
+            onTap: () => notifier.setFilter(AlertFilter.all),
+          ),
+          _Chip(
+            label: 'Chưa đọc',
+            count: unreadCount,
+            isSelected: activeFilter == AlertFilter.unread,
+            onTap: () => notifier.setFilter(AlertFilter.unread),
+          ),
+          _Chip(
+            label: 'Đơn hàng',
+            isSelected: activeFilter == AlertFilter.orders,
+            onTap: () => notifier.setFilter(AlertFilter.orders),
+          ),
+          _Chip(
+            label: 'Ưu đãi',
+            isSelected: activeFilter == AlertFilter.offers,
+            onTap: () => notifier.setFilter(AlertFilter.offers),
+          ),
+          _Chip(
+            label: 'Tài khoản',
+            isSelected: activeFilter == AlertFilter.account,
+            onTap: () => notifier.setFilter(AlertFilter.account),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Chip extends StatelessWidget {
   final String label;
   final int? count;
   final bool isSelected;
   final VoidCallback onTap;
-
-  const _FilterChip({
+  const _Chip({
     required this.label,
     this.count,
     required this.isSelected,
@@ -631,7 +551,6 @@ class _FilterChip extends StatelessWidget {
 
 class _SectionLabel extends StatelessWidget {
   final String title;
-
   const _SectionLabel({required this.title});
 
   @override
@@ -649,9 +568,8 @@ class _SectionLabel extends StatelessWidget {
 }
 
 class _AlertCard extends StatelessWidget {
-  final _AlertItem alert;
+  final Alert alert;
   final VoidCallback onTap;
-
   const _AlertCard({required this.alert, required this.onTap});
 
   @override
@@ -693,10 +611,7 @@ class _AlertCard extends StatelessWidget {
                   color: alert.accentColor.withValues(alpha: 0.14),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(
-                  _iconForCategory(alert.category),
-                  color: alert.accentColor,
-                ),
+                child: Icon(alert.icon, color: alert.accentColor),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -737,62 +652,55 @@ class _AlertCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    Row(
                       children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 9,
-                                vertical: 5,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppTheme.ivoryBackground,
-                                borderRadius: BorderRadius.circular(999),
-                              ),
-                              child: Text(
-                                _labelForCategory(alert.category),
-                                style: GoogleFonts.montserrat(
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.w700,
-                                  color: alert.accentColor,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                alert.timeLabel,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.montserrat(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppTheme.mutedSilver,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        if (alert.actionLabel != null) ...[
-                          const SizedBox(height: 8),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: Text(
-                              alert.actionLabel!,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.montserrat(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                color: AppTheme.deepCharcoal,
-                              ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 9,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppTheme.ivoryBackground,
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Text(
+                            alert.categoryLabel,
+                            style: GoogleFonts.montserrat(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w700,
+                              color: alert.accentColor,
                             ),
                           ),
-                        ],
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            alert.timeLabel,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.montserrat(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.mutedSilver,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
+                    if (alert.actionLabel != null) ...[
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          alert.actionLabel!,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.deepCharcoal,
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -805,8 +713,7 @@ class _AlertCard extends StatelessWidget {
 }
 
 class _AlertDetailSheet extends StatelessWidget {
-  final _AlertItem alert;
-
+  final Alert alert;
   const _AlertDetailSheet({required this.alert});
 
   @override
@@ -841,144 +748,64 @@ class _AlertDetailSheet extends StatelessWidget {
                 color: alert.accentColor.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(18),
               ),
-              child: Icon(
-                _iconForCategory(alert.category),
-                color: alert.accentColor,
-              ),
+              child: Icon(alert.icon, color: alert.accentColor),
             ),
             const SizedBox(height: 16),
             Text(
               alert.title,
               style: GoogleFonts.playfairDisplay(
-                fontSize: 28,
+                fontSize: 24,
                 fontWeight: FontWeight.w600,
                 color: AppTheme.deepCharcoal,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              alert.message,
+              alert.timeLabel,
               style: GoogleFonts.montserrat(
-                fontSize: 13,
-                height: 1.7,
-                fontWeight: FontWeight.w500,
-                color: AppTheme.deepCharcoal.withValues(alpha: 0.74),
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.mutedSilver,
               ),
             ),
             const SizedBox(height: 16),
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(999),
+            Text(
+              alert.message,
+              style: GoogleFonts.montserrat(
+                fontSize: 14,
+                height: 1.7,
+                fontWeight: FontWeight.w400,
+                color: AppTheme.deepCharcoal.withValues(alpha: 0.8),
+              ),
+            ),
+            if (alert.actionLabel != null) ...[
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.accentGold,
+                    foregroundColor: AppTheme.primaryDb,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
                   ),
                   child: Text(
-                    _labelForCategory(alert.category),
+                    alert.actionLabel!,
                     style: GoogleFonts.montserrat(
-                      fontSize: 10,
+                      fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: alert.accentColor,
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  alert.timeLabel,
-                  style: GoogleFonts.montserrat(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.mutedSilver,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(alert.actionLabel ?? 'Đóng'),
               ),
-            ),
+            ],
           ],
         ),
       ),
     );
-  }
-}
-
-class _EmptyAlertsState extends StatelessWidget {
-  const _EmptyAlertsState();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 28),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 92,
-            height: 92,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(28),
-            ),
-            child: const Icon(
-              Icons.notifications_off_outlined,
-              size: 34,
-              color: AppTheme.deepCharcoal,
-            ),
-          ),
-          const SizedBox(height: 22),
-          Text(
-            'Không có thông báo trong bộ lọc này.',
-            style: GoogleFonts.playfairDisplay(
-              fontSize: 28,
-              fontWeight: FontWeight.w600,
-              color: AppTheme.deepCharcoal,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Hãy thử bộ lọc khác hoặc bật thêm loại thông báo để khu vực này luôn hữu ích.',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.montserrat(
-              fontSize: 13,
-              height: 1.6,
-              fontWeight: FontWeight.w500,
-              color: AppTheme.mutedSilver,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-IconData _iconForCategory(_AlertCategory category) {
-  switch (category) {
-    case _AlertCategory.order:
-      return Icons.local_shipping_outlined;
-    case _AlertCategory.offer:
-      return Icons.local_offer_outlined;
-    case _AlertCategory.account:
-      return Icons.favorite_border_rounded;
-  }
-}
-
-String _labelForCategory(_AlertCategory category) {
-  switch (category) {
-    case _AlertCategory.order:
-      return 'Đơn hàng';
-    case _AlertCategory.offer:
-      return 'Ưu đãi';
-    case _AlertCategory.account:
-      return 'Tài khoản';
   }
 }

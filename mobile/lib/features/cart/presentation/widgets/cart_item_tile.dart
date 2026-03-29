@@ -196,7 +196,7 @@ class _ProductDetails extends StatelessWidget {
             Expanded(
               child: Text(
                 item.productName,
-                style: GoogleFonts.cormorantGaramond(
+                style: GoogleFonts.playfairDisplay(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: AppTheme.deepCharcoal,

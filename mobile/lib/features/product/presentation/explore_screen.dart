@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_async_widget.dart';
 import '../../../core/widgets/product_card.dart';
+import '../../../core/widgets/shimmer_loading.dart';
 import '../providers/product_provider.dart';
 
 class ExploreScreen extends ConsumerStatefulWidget {
@@ -71,58 +73,40 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
             // Products Grid
             Expanded(
-              child: productsAsync.when(
-                data: (products) {
-                  return GridView.builder(
+              child: AppAsyncWidget(
+                value: productsAsync,
+                onRetry: () => ref.invalidate(productsProvider),
+                loadingBuilder: () => SingleChildScrollView(
+                  child: ShimmerProductGrid(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 20,
                       vertical: 8,
                     ),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.60,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                        ),
-                    itemCount: products.length,
-                    itemBuilder: (context, index) {
-                      final product = products[index];
-                      return ProductCard(
-                        product: product,
-                        variant: ProductCardVariant.grid,
-                        badge: (product.rating ?? 0) >= 4.9
-                            ? 'ĐÁNH GIÁ CAO'
-                            : null,
-                        onTap: () => context.push('/product/${product.id}'),
-                      );
-                    },
-                  );
-                },
-                loading: () => const Center(
-                  child: CircularProgressIndicator(
-                    color: AppTheme.champagneGold,
                   ),
                 ),
-                error: (error, stack) => Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.error_outline,
-                        size: 48,
-                        color: AppTheme.mutedSilver,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Không thể tải danh sách sản phẩm',
-                        style: GoogleFonts.montserrat(
-                          fontSize: 14,
-                          color: AppTheme.mutedSilver,
-                        ),
-                      ),
-                    ],
+                dataBuilder: (products) => GridView.builder(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
                   ),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 0.60,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                  ),
+                  itemCount: products.length,
+                  itemBuilder: (context, index) {
+                    final product = products[index];
+                    return ProductCard(
+                      product: product,
+                      variant: ProductCardVariant.grid,
+                      badge: (product.rating ?? 0) >= 4.9
+                          ? 'ĐÁNH GIÁ CAO'
+                          : null,
+                      onTap: () => context.push('/product/${product.id}'),
+                    );
+                  },
                 ),
               ),
             ),
