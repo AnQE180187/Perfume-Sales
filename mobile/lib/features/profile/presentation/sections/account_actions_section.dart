@@ -14,7 +14,6 @@ import '../widgets/profile_action_tile.dart';
 class AccountActionsSection extends StatelessWidget {
   final VoidCallback onMyOrders;
   final VoidCallback onShippingAddresses;
-  final VoidCallback onPaymentMethods;
   final VoidCallback onAiPreferences;
   final String? activeShipmentsText;
 
@@ -22,7 +21,6 @@ class AccountActionsSection extends StatelessWidget {
     super.key,
     required this.onMyOrders,
     required this.onShippingAddresses,
-    required this.onPaymentMethods,
     required this.onAiPreferences,
     this.activeShipmentsText,
   });
@@ -49,11 +47,6 @@ class AccountActionsSection extends StatelessWidget {
                 icon: Icons.local_shipping_outlined,
                 title: 'Địa chỉ giao hàng',
                 onTap: onShippingAddresses,
-              ),
-              ProfileActionTile(
-                icon: Icons.payment_outlined,
-                title: 'Phương thức thanh toán',
-                onTap: onPaymentMethods,
               ),
               ProfileActionTile(
                 icon: Icons.tune_outlined,

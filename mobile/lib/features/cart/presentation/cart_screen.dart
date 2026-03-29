@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/widgets/luxury_button.dart';
 import '../providers/cart_provider.dart';
 import 'widgets/cart_item_tile.dart';
 import 'widgets/cart_summary_section.dart';
 import 'widgets/clear_cart_modal.dart';
+import 'widgets/price_summary.dart';
+import 'widgets/promo_code_section.dart';
 
 class CartScreen extends ConsumerStatefulWidget {
   const CartScreen({super.key});
@@ -18,6 +19,14 @@ class CartScreen extends ConsumerStatefulWidget {
 class _CartScreenState extends ConsumerState<CartScreen> {
   bool _selectAll = true;
   final Set<String> _selectedItems = {};
+  bool _showAIBanner = true;
+  final TextEditingController _promoController = TextEditingController();
+
+  @override
+  void dispose() {
+    _promoController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,10 +37,20 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       _selectedItems.addAll(cartState.items.map((item) => item.id));
     }
 
+    final selectedSubtotal = cartState.items
+        .where((item) => _selectedItems.contains(item.id))
+        .fold(0.0, (sum, item) => sum + item.subtotal);
+    final selectedDiscount = selectedSubtotal * cartState.promoDiscount;
+    final total = selectedSubtotal - selectedDiscount;
+
     return Scaffold(
       backgroundColor: const Color(0xFFFAF7F2),
       appBar: _buildAppBar(cartState),
-      body: cartState.items.isEmpty
+      body: cartState.isLoading && cartState.items.isEmpty
+          ? const Center(
+              child: CircularProgressIndicator(color: AppTheme.accentGold),
+            )
+          : cartState.items.isEmpty
           ? _buildEmptyCart()
           : Column(
               children: [
@@ -39,12 +58,17 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                   child: ListView(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
-                      vertical: 8,
+                      vertical: 12,
                     ),
                     children: [
-                      // AI Suggestion Banner
-                      _buildAISuggestionBanner(),
-                      const SizedBox(height: 16),
+                      // AI Upsell Banner (dismissible)
+                      if (_showAIBanner) ...[
+                        _AIUpsellBanner(
+                          onDismiss: () =>
+                              setState(() => _showAIBanner = false),
+                        ),
+                        const SizedBox(height: 12),
+                      ],
 
                       // Cart Items
                       ...cartState.items.map((item) {
@@ -70,22 +94,38 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                           },
                           onRemove: () {
                             ref.read(cartProvider.notifier).removeItem(item.id);
-                            _selectedItems.remove(item.id);
+                            setState(() => _selectedItems.remove(item.id));
                           },
                         );
                       }),
 
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
 
                       // Promo Code Section
-                      _buildPromoCodeSection(),
+                      PromoCodeSection(
+                        controller: _promoController,
+                        hasPromoCode: cartState.promoCode != null,
+                        promoCode: cartState.promoCode,
+                        promoDiscount: cartState.promoDiscount,
+                        isLoading: cartState.isLoading,
+                      ),
 
-                      const SizedBox(height: 100),
+                      const SizedBox(height: 12),
+
+                      // Price Breakdown
+                      if (_selectedItems.isNotEmpty)
+                        PriceSummary(
+                          subtotal: selectedSubtotal,
+                          discount: selectedDiscount,
+                          total: total,
+                        ),
+
+                      const SizedBox(height: 16),
                     ],
                   ),
                 ),
 
-                // Bottom Summary
+                // Sticky Checkout CTA
                 CartSummarySection(
                   cartState: cartState,
                   selectedItems: _selectedItems,
@@ -161,17 +201,87 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     );
   }
 
-  Widget _buildAISuggestionBanner() {
+  Widget _buildEmptyCart() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.shopping_bag_outlined,
+              size: 72,
+              color: AppTheme.mutedSilver.withValues(alpha: 0.4),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Giỏ hàng đang trống',
+              style: GoogleFonts.cormorantGaramond(
+                fontSize: 22,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.deepCharcoal,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Khám phá bộ sưu tập nước hoa cao cấp',
+              style: GoogleFonts.montserrat(
+                fontSize: 13,
+                color: AppTheme.mutedSilver,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.accentGold,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                ),
+                child: Text(
+                  'KHÁM PHÁ BỘ SƯU TẬP',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AIUpsellBanner extends StatelessWidget {
+  final VoidCallback onDismiss;
+  const _AIUpsellBanner({required this.onDismiss});
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
       decoration: BoxDecoration(
         color: const Color(0xFFFFF8E7),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.2)),
+        border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.25)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.auto_awesome, color: AppTheme.accentGold, size: 22),
+          const Icon(
+            Icons.auto_awesome_rounded,
+            color: AppTheme.accentGold,
+            size: 20,
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -180,118 +290,52 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                 Text(
                   'Gợi ý từ PerfumeGPT',
                   style: GoogleFonts.montserrat(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
                     color: AppTheme.deepCharcoal,
                   ),
                 ),
-                const SizedBox(height: 2),
                 Text(
-                  'Thêm mẫu thử Golden Amber để hoàn thiện lựa chọn của bạn.',
+                  'Thêm mẫu thử Golden Amber để hoàn thiện bộ sưu tập.',
                   style: GoogleFonts.montserrat(
                     fontSize: 11,
-                    fontWeight: FontWeight.w400,
-                    color: AppTheme.deepCharcoal.withValues(alpha: 0.7),
+                    color: AppTheme.deepCharcoal.withValues(alpha: 0.65),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 10),
-          ElevatedButton(
-            onPressed: () {
-              // Add sample to cart
-            },
-            style: ElevatedButton.styleFrom(
+          const SizedBox(width: 8),
+          TextButton(
+            onPressed: () {},
+            style: TextButton.styleFrom(
               backgroundColor: AppTheme.accentGold,
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
-              elevation: 0,
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
             child: Text(
-              'Thêm +\$5',
+              'Thêm',
               style: GoogleFonts.montserrat(
                 fontSize: 11,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPromoCodeSection() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Text(
-            'Bạn có mã khuyến mãi?',
-            style: GoogleFonts.montserrat(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: AppTheme.accentGold,
-            ),
-          ),
-          const Spacer(),
-          const Icon(
-            Icons.keyboard_arrow_down,
-            color: AppTheme.accentGold,
-            size: 20,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmptyCart() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.shopping_bag_outlined,
-            size: 80,
-            color: AppTheme.mutedSilver.withValues(alpha: 0.5),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'Giỏ hàng của bạn đang trống',
-            style: GoogleFonts.cormorantGaramond(
-              fontSize: 24,
-              fontWeight: FontWeight.w500,
-              color: AppTheme.deepCharcoal,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Khám phá bộ sưu tập tuyển chọn',
-            style: GoogleFonts.montserrat(
-              fontSize: 14,
-              color: AppTheme.mutedSilver,
-            ),
-          ),
-          const SizedBox(height: 32),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
-            child: LuxuryButton(
-              text: 'KHÁM PHÁ BỘ SƯU TẬP',
-              onPressed: () => Navigator.pop(context),
+          const SizedBox(width: 4),
+          GestureDetector(
+            onTap: onDismiss,
+            child: const Padding(
+              padding: EdgeInsets.all(4),
+              child: Icon(
+                Icons.close_rounded,
+                size: 16,
+                color: AppTheme.mutedSilver,
+              ),
             ),
           ),
         ],

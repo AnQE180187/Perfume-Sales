@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
+import '../utils/currency_utils.dart';
 import '../../features/product/models/product.dart';
 import 'luxury_button.dart';
 
-enum ProductCardVariant {
-  featured,
-  grid,
-  list,
-}
+enum ProductCardVariant { featured, grid, list }
 
 class ProductCard extends StatelessWidget {
   final Product product;
@@ -47,6 +44,7 @@ class ProductCard extends StatelessWidget {
         return _GridCard(
           product: product,
           badge: badge,
+          matchPercent: matchPercent,
           isFavorite: isFavorite,
           onTap: onTap,
           onFavoriteToggle: onFavoriteToggle,
@@ -102,7 +100,9 @@ class _FeaturedCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(20),
+              ),
               child: AspectRatio(
                 aspectRatio: 1,
                 child: Stack(
@@ -171,7 +171,7 @@ class _FeaturedCard extends StatelessWidget {
                     children: [
                       Flexible(
                         child: Text(
-                          '\$${product.price.toStringAsFixed(2)}',
+                          formatVND(product.price),
                           style: GoogleFonts.montserrat(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
@@ -217,6 +217,7 @@ class _FeaturedCard extends StatelessWidget {
 class _GridCard extends StatelessWidget {
   final Product product;
   final String? badge;
+  final int? matchPercent;
   final bool isFavorite;
   final VoidCallback? onTap;
   final VoidCallback? onFavoriteToggle;
@@ -224,6 +225,7 @@ class _GridCard extends StatelessWidget {
   const _GridCard({
     required this.product,
     this.badge,
+    this.matchPercent,
     required this.isFavorite,
     this.onTap,
     this.onFavoriteToggle,
@@ -251,45 +253,67 @@ class _GridCard extends StatelessWidget {
           children: [
             Expanded(
               child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                child: AspectRatio(
-                  aspectRatio: 1,
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      Image.network(
-                        product.imageUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
-                          color: const Color(0xFFF5F1ED),
-                          child: const Icon(
-                            Icons.image_outlined,
-                            size: 40,
-                            color: AppTheme.mutedSilver,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(20),
+                ),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.network(
+                      product.imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        color: const Color(0xFFF5F1ED),
+                        child: const Icon(
+                          Icons.image_outlined,
+                          size: 40,
+                          color: AppTheme.mutedSilver,
+                        ),
+                      ),
+                    ),
+                    if (badge != null)
+                      Positioned(
+                        left: 10,
+                        bottom: 10,
+                        child: _Badge(text: badge!),
+                      ),
+                    if (matchPercent != null)
+                      Positioned(
+                        left: 10,
+                        top: 10,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppTheme.accentGold,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            '$matchPercent%',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
-                      if (badge != null)
-                        Positioned(
-                          left: 10,
-                          bottom: 10,
-                          child: _Badge(text: badge!),
-                        ),
-                      Positioned(
-                        top: 10,
-                        right: 10,
-                        child: _FavoriteButton(
-                          isFavorite: isFavorite,
-                          onTap: onFavoriteToggle,
-                        ),
+                    Positioned(
+                      top: 10,
+                      right: 10,
+                      child: _FavoriteButton(
+                        isFavorite: isFavorite,
+                        onTap: onFavoriteToggle,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
@@ -305,7 +329,7 @@ class _GridCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 3),
                   Text(
                     product.name,
                     maxLines: 2,
@@ -316,42 +340,49 @@ class _GridCard extends StatelessWidget {
                       height: 1.15,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  if (product.notes.isNotEmpty) ...[
+                    const SizedBox(height: 5),
+                    Wrap(
+                      spacing: 4,
+                      runSpacing: 4,
+                      children: product.notes
+                          .take(2)
+                          .map((note) => _ScentTag(text: note))
+                          .toList(),
+                    ),
+                  ],
+                  const SizedBox(height: 6),
                   Row(
                     children: [
                       Flexible(
                         child: Text(
-                          '\$${product.price.toStringAsFixed(2)}',
+                          formatVND(product.price),
                           style: GoogleFonts.montserrat(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
                             color: AppTheme.accentGold,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const SizedBox(width: 4),
-                      if (product.rating != null)
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.star,
-                              size: 11,
-                              color: AppTheme.accentGold,
-                            ),
-                            const SizedBox(width: 2),
-                            Text(
-                              product.rating!.toStringAsFixed(1),
-                              style: GoogleFonts.montserrat(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w500,
-                                color: AppTheme.mutedSilver,
-                              ),
-                            ),
-                          ],
+                      if (product.rating != null) ...[
+                        const SizedBox(width: 6),
+                        const Icon(
+                          Icons.star,
+                          size: 11,
+                          color: AppTheme.accentGold,
                         ),
+                        const SizedBox(width: 2),
+                        Text(
+                          product.rating!.toStringAsFixed(1),
+                          style: GoogleFonts.montserrat(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                            color: AppTheme.mutedSilver,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ],
@@ -468,7 +499,7 @@ class _ListCard extends StatelessWidget {
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         Text(
-                          '\$${product.price.toStringAsFixed(2)}',
+                          formatVND(product.price),
                           style: GoogleFonts.montserrat(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
@@ -477,7 +508,10 @@ class _ListCard extends StatelessWidget {
                         ),
                         if (matchPercent != null)
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: AppTheme.accentGold.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
@@ -509,6 +543,31 @@ class _ListCard extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ScentTag extends StatelessWidget {
+  final String text;
+  const _ScentTag({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: AppTheme.softTaupe,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        text,
+        style: GoogleFonts.montserrat(
+          fontSize: 9,
+          fontWeight: FontWeight.w500,
+          color: AppTheme.deepCharcoal,
+          letterSpacing: 0.2,
         ),
       ),
     );

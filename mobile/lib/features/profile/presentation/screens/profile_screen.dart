@@ -65,7 +65,6 @@ class ProfileScreen extends ConsumerWidget {
                 AccountActionsSection(
                   onMyOrders: () => _handleMyOrders(context),
                   onShippingAddresses: () => _handleShippingAddresses(context),
-                  onPaymentMethods: () => _handlePaymentMethods(context),
                   onAiPreferences: () => _handleAiPreferences(context),
                   activeShipmentsText: '2 đơn đang giao',
                 ),
@@ -129,10 +128,6 @@ class ProfileScreen extends ConsumerWidget {
 
   void _handleShippingAddresses(BuildContext context) {
     context.push(AppRoutes.shippingAddresses);
-  }
-
-  void _handlePaymentMethods(BuildContext context) {
-    context.push(AppRoutes.profilePaymentMethods);
   }
 
   void _handleAiPreferences(BuildContext context) {

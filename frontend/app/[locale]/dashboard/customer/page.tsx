@@ -1,8 +1,7 @@
 'use client';
  
 import { AuthGuard } from '@/components/auth/auth-guard';
-import { Tag, Sparkles, ArrowUpRight, Zap, Coins, Inbox } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { Tag, Sparkles, ArrowUpRight, Zap, Coins, Inbox, MapPinned, User } from 'lucide-react';
 import Link from 'next/link';
  
 export default function CustomerDashboard() {
@@ -87,10 +86,12 @@ export default function CustomerDashboard() {
                 {/* Secondary Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {[
-                        { key: 'orders', icon: Inbox, href: "/dashboard/customer/orders", color: "text-blue-400" },
-                        { key: 'loyalty', icon: Coins, href: "/dashboard/customer/loyalty", color: "text-gold" },
-                        { key: 'ai_chat', icon: Zap, href: "/dashboard/customer/ai-chat", color: "text-ai" },
-                        { key: 'quiz', icon: Sparkles, href: "/dashboard/customer/quiz", color: "text-gold" }
+                        { label: "Profile", icon: User, href: "/dashboard/customer/profile", color: "text-purple-400" },
+                        { label: "Address Book", icon: MapPinned, href: "/dashboard/customer/addresses", color: "text-green-400" },
+                        { label: "My Orders", icon: Inbox, href: "/dashboard/customer/orders", color: "text-blue-400" },
+                        { label: "Loyalty", icon: Coins, href: "/dashboard/customer/loyalty", color: "text-gold" },
+                        { label: "AI Consultation", icon: Zap, href: "/dashboard/customer/ai-chat", color: "text-ai" },
+                        { label: "Quiz Results", icon: Sparkles, href: "/dashboard/customer/quiz", color: "text-gold" }
                     ].map((item, i) => (
                         <Link key={i} href={item.href}>
                             <div className="glass px-6 py-5 rounded-3xl border-border hover:border-gold/30 transition-all flex items-center gap-4 group">
