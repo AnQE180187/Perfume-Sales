@@ -6,6 +6,9 @@ class UserProfile {
   final String id;
   final String name;
   final String email;
+  final String? phone;
+  final String? gender;
+  final DateTime? dateOfBirth;
   final String? avatarUrl;
   final DateTime memberSince;
   final List<String> olfactoryTags;
@@ -15,6 +18,9 @@ class UserProfile {
     required this.id,
     required this.name,
     required this.email,
+    this.phone,
+    this.gender,
+    this.dateOfBirth,
     this.avatarUrl,
     required this.memberSince,
     this.olfactoryTags = const [],
@@ -31,6 +37,10 @@ class UserProfile {
         (json['full_name'] ?? json['fullName'] ?? json['name'] ?? 'Người dùng')
             as String;
     final email = (json['email'] ?? '') as String;
+    final phone = (json['phone']) as String?;
+    final gender = (json['gender']) as String?;
+    final dobStr = (json['date_of_birth'] ?? json['dateOfBirth']) as String?;
+    final dateOfBirth = dobStr != null ? DateTime.tryParse(dobStr) : null;
     final avatarUrl = (json['avatar_url'] ?? json['avatarUrl']) as String?;
     final createdAtStr = (json['created_at'] ?? json['createdAt']) as String?;
     final memberSince = createdAtStr != null
@@ -49,6 +59,9 @@ class UserProfile {
       id: id,
       name: name,
       email: email,
+      phone: phone,
+      gender: gender,
+      dateOfBirth: dateOfBirth,
       avatarUrl: avatarUrl,
       memberSince: memberSince,
       olfactoryTags: olfactoryTags,
@@ -61,6 +74,9 @@ class UserProfile {
       'id': id,
       'full_name': name,
       'email': email,
+      'phone': phone,
+      'gender': gender,
+      'date_of_birth': dateOfBirth?.toIso8601String(),
       'avatar_url': avatarUrl,
       'created_at': memberSince.toIso8601String(),
       'olfactory_tags': olfactoryTags,

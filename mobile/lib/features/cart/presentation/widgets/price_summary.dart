@@ -79,7 +79,7 @@ class PriceSummary extends StatelessWidget {
               ),
               Text(
                 formatVND(total),
-                style: GoogleFonts.cormorantGaramond(
+                style: GoogleFonts.playfairDisplay(
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
                   color: AppTheme.deepCharcoal,

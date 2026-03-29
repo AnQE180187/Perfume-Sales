@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/routing/app_routes.dart';
+import '../../../../core/theme/app_text_style.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/currency_utils.dart';
 import '../../models/order.dart';
@@ -40,9 +41,17 @@ class OrderDetailScreen extends ConsumerWidget {
               _ShippingAddress(order: order),
               const SizedBox(height: 12),
               paymentAsync.when(
-                data: (payment) => _PaymentInfo(paymentLabel: _paymentLabel(order, payment?.status.name.toUpperCase())),
-                loading: () => const _PaymentInfo(paymentLabel: 'Checking payment...'),
-                error: (_, __) => const _PaymentInfo(paymentLabel: 'Payment info unavailable'),
+                data: (payment) => _PaymentInfo(
+                  paymentLabel: _paymentLabel(
+                    order,
+                    payment?.status.name.toUpperCase(),
+                  ),
+                ),
+                loading: () =>
+                    const _PaymentInfo(paymentLabel: 'Checking payment...'),
+                error: (_, __) => const _PaymentInfo(
+                  paymentLabel: 'Payment info unavailable',
+                ),
               ),
               const SizedBox(height: 20),
               Row(
@@ -50,7 +59,8 @@ class OrderDetailScreen extends ConsumerWidget {
                   if (order.canTrack)
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () => context.push(AppRoutes.trackOrderWithId(order.id)),
+                        onPressed: () =>
+                            context.push(AppRoutes.trackOrderWithId(order.id)),
                         child: const Text('Track Order'),
                       ),
                     ),
@@ -59,7 +69,9 @@ class OrderDetailScreen extends ConsumerWidget {
                     child: OutlinedButton(
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Support will contact you shortly.')),
+                          const SnackBar(
+                            content: Text('Support will contact you shortly.'),
+                          ),
                         );
                       },
                       child: const Text('Contact Support'),
@@ -99,14 +111,19 @@ class _OrderSummaryCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   order.code,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700),
                 ),
               ),
               OrderStatusBadge(status: order.status),
             ],
           ),
           const SizedBox(height: 8),
-          Text('Placed on ${_formatDateTime(order.createdAt)}', style: Theme.of(context).textTheme.bodyMedium),
+          Text(
+            'Placed on ${_formatDateTime(order.createdAt)}',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
         ],
       ),
     );
@@ -130,17 +147,74 @@ class _ProductList extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Products', style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700)),
+          Text(
+            'Products',
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: 10),
-          ...order.items.map((item) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
+          ...order.items.map(
+            (item) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: GestureDetector(
+                onTap: item.productId.isNotEmpty
+                    ? () => context.push(
+                        AppRoutes.productDetailWithId(item.productId),
+                      )
+                    : null,
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
+                    // Product image
+                    Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppTheme.accentGold.withValues(alpha: 0.3),
+                        ),
+                        color: AppTheme.ivoryBackground,
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: item.productImage.isNotEmpty
+                            ? Image.network(
+                                item.productImage,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => const Center(
+                                  child: Icon(
+                                    Icons.inventory_2_outlined,
+                                    size: 24,
+                                    color: AppTheme.softTaupe,
+                                  ),
+                                ),
+                              )
+                            : const Center(
+                                child: Icon(
+                                  Icons.inventory_2_outlined,
+                                  size: 24,
+                                  color: AppTheme.softTaupe,
+                                ),
+                              ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // Product info
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(item.productName, maxLines: 1, overflow: TextOverflow.ellipsis),
+                          Text(
+                            item.productName,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTextStyle.titleMd(
+                              color: AppTheme.deepCharcoal,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
                           Text(
                             'x${item.quantity}${item.variantLabel.isEmpty ? '' : ' • ${item.variantLabel}'}',
                             style: Theme.of(context).textTheme.bodyMedium,
@@ -148,10 +222,16 @@ class _ProductList extends StatelessWidget {
                         ],
                       ),
                     ),
-                    Text(formatVND(item.totalPrice)),
+                    const SizedBox(width: 8),
+                    Text(
+                      formatVND(item.totalPrice),
+                      style: AppTextStyle.priceSm(color: AppTheme.deepCharcoal),
+                    ),
                   ],
                 ),
-              )),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -221,7 +301,12 @@ class _ShippingAddress extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Shipping address', style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700)),
+          Text(
+            'Shipping address',
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: 8),
           Text(order.recipientName),
           Text(order.phone, style: Theme.of(context).textTheme.bodyMedium),
@@ -249,7 +334,12 @@ class _PaymentInfo extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Text('Payment info', style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700)),
+          Text(
+            'Payment info',
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700),
+          ),
           const Spacer(),
           Text(paymentLabel, style: Theme.of(context).textTheme.bodyMedium),
         ],

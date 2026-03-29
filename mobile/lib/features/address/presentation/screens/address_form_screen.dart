@@ -3,11 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/app_input.dart';
+import '../../../../core/widgets/bottom_sheet_picker.dart';
 import '../../models/address.dart';
 import '../../models/address_form_state.dart';
 import '../../providers/address_providers.dart';
-import '../widgets/bottom_sheet_picker.dart';
-import '../widgets/input_field.dart';
 
 class AddressFormScreen extends ConsumerWidget {
   final Address? initialAddress;
@@ -124,14 +124,14 @@ class AddressFormScreen extends ConsumerWidget {
           const SizedBox(height: 10),
           _LabelSelector(selected: state.label, onChanged: notifier.setLabel),
           const SizedBox(height: 12),
-          InputField(
+          AppInput(
             label: 'Họ và tên',
             initialValue: state.recipientName,
             errorText: state.errorOf('recipientName'),
             onChanged: notifier.setRecipientName,
           ),
           const SizedBox(height: 12),
-          InputField(
+          AppInput(
             label: 'Số điện thoại',
             initialValue: state.phone,
             errorText: state.errorOf('phone'),
@@ -142,7 +142,7 @@ class AddressFormScreen extends ConsumerWidget {
           const SizedBox(height: 20),
           _SectionTitle(title: 'Địa chỉ giao hàng'),
           const SizedBox(height: 10),
-          InputField(
+          AppInput(
             label: 'Tỉnh / Thành phố',
             initialValue: provinceName,
             errorText: state.errorOf('provinceId'),
@@ -161,7 +161,7 @@ class AddressFormScreen extends ConsumerWidget {
                 : const Icon(Icons.expand_more_rounded),
           ),
           const SizedBox(height: 12),
-          InputField(
+          AppInput(
             label: 'Quận / Huyện',
             initialValue: districtName,
             errorText: state.errorOf('districtId'),
@@ -181,7 +181,7 @@ class AddressFormScreen extends ConsumerWidget {
                 : const Icon(Icons.expand_more_rounded),
           ),
           const SizedBox(height: 12),
-          InputField(
+          AppInput(
             label: 'Phường / Xã',
             initialValue: wardName,
             errorText: state.errorOf('wardCode'),
@@ -201,7 +201,7 @@ class AddressFormScreen extends ConsumerWidget {
                 : const Icon(Icons.expand_more_rounded),
           ),
           const SizedBox(height: 12),
-          InputField(
+          AppInput(
             label: 'Số nhà, tên đường',
             initialValue: state.detailAddress,
             errorText: state.errorOf('detailAddress'),
@@ -212,7 +212,7 @@ class AddressFormScreen extends ConsumerWidget {
           const SizedBox(height: 20),
           _SectionTitle(title: 'Thông tin bổ sung'),
           const SizedBox(height: 10),
-          InputField(
+          AppInput(
             label: 'Dịch vụ vận chuyển (tùy chọn)',
             initialValue: serviceName,
             readOnly: true,
@@ -231,7 +231,7 @@ class AddressFormScreen extends ConsumerWidget {
                 : const Icon(Icons.expand_more_rounded),
           ),
           const SizedBox(height: 12),
-          InputField(
+          AppInput(
             label: 'Ghi chú (tùy chọn)',
             initialValue: state.note,
             maxLines: 2,

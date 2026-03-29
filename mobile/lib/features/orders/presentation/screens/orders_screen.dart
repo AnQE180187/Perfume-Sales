@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/routing/app_routes.dart';
+import '../../../../core/theme/app_text_style.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/app_async_widget.dart';
+import '../../../../core/widgets/shimmer_loading.dart';
 import '../../models/order.dart';
 import '../../providers/order_provider.dart';
 import '../sections/active_orders_section.dart';
@@ -39,18 +42,31 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
     return Scaffold(
       backgroundColor: AppTheme.ivoryBackground,
       appBar: AppBar(
-        title: const Text('My Orders'),
+        title: Text(
+          'Đơn hàng của tôi',
+          style: AppTextStyle.displaySm(color: AppTheme.deepCharcoal),
+        ),
         centerTitle: true,
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
-            Tab(text: 'Active'),
-            Tab(text: 'Completed'),
+            Tab(text: 'Đang xử lý'),
+            Tab(text: 'Hoàn thành'),
           ],
         ),
       ),
-      body: orderState.when(
-        data: (state) => TabBarView(
+      body: AppAsyncWidget(
+        value: orderState,
+        onRetry: () => _refresh(),
+        loadingBuilder: () => ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: 5,
+          itemBuilder: (_, __) => const Padding(
+            padding: EdgeInsets.only(bottom: 14),
+            child: ShimmerCard(height: 148),
+          ),
+        ),
+        dataBuilder: (state) => TabBarView(
           controller: _tabController,
           children: [
             ActiveOrdersSection(
@@ -66,9 +82,6 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
             ),
           ],
         ),
-        loading: () => const _OrdersSkeleton(),
-        error: (error, _) =>
-            _ErrorView(message: error.toString(), onRetry: _refresh),
       ),
     );
   }
@@ -81,60 +94,5 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
 
   void _openTracking(Order order) {
     context.push(AppRoutes.trackOrderWithId(order.id));
-  }
-}
-
-class _OrdersSkeleton extends StatelessWidget {
-  const _OrdersSkeleton();
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: 5,
-      itemBuilder: (_, __) => Container(
-        margin: const EdgeInsets.only(bottom: 14),
-        height: 148,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.softTaupe),
-        ),
-      ),
-    );
-  }
-}
-
-class _ErrorView extends StatelessWidget {
-  final String message;
-  final Future<void> Function() onRetry;
-
-  const _ErrorView({required this.message, required this.onRetry});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.error_outline, size: 52),
-            const SizedBox(height: 12),
-            Text(
-              'Unable to load your orders',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 6),
-            Text(message, textAlign: TextAlign.center),
-            const SizedBox(height: 14),
-            ElevatedButton(onPressed: onRetry, child: const Text('Retry')),
-          ],
-        ),
-      ),
-    );
   }
 }

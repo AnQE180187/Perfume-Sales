@@ -25,13 +25,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   bool _showConfirmPassword = false;
   bool _acceptedTerms = false;
 
-  static const _bg = Color(0xFF070B14);
-  static const _panel = Color(0xFF121723);
-  static const _field = Color(0xFF1A202D);
-  static const _line = Color(0xFF2B3242);
-  static const _gold = Color(0xFFD0AE66);
-  static const _muted = Color(0xFF9CA5B9);
-
   @override
   void dispose() {
     _fullNameController.dispose();

@@ -26,26 +26,30 @@ class AiInsightCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Show at most 3 tags to keep card compact
+    final displayTags = olfactoryTags.take(3).toList();
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppTheme.deepCharcoal,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         image: const DecorationImage(
           image: NetworkImage(
             'https://images.unsplash.com/photo-1541544181051-e46607bc22a4?w=800',
           ),
           fit: BoxFit.cover,
-          opacity: 0.3,
+          opacity: 0.25,
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Badge row
           Row(
             children: [
-              Icon(Icons.auto_awesome, color: AppTheme.accentGold, size: 15),
+              Icon(Icons.auto_awesome, color: AppTheme.accentGold, size: 13),
               const SizedBox(width: 5),
               Text(
                 'PHÂN TÍCH AI',
@@ -58,81 +62,85 @@ class AiInsightCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
+          // Title
           Text(
             'Dấu ấn mùi hương của bạn',
             style: GoogleFonts.playfairDisplay(
-              fontSize: 19,
+              fontSize: 17,
               fontWeight: FontWeight.w600,
               color: Colors.white,
               height: 1.2,
             ),
           ),
-          const SizedBox(height: 6),
-          Text(
-            'Dựa trên hoạt động gần đây của bạn',
-            style: GoogleFonts.montserrat(
-              fontSize: 11,
-              fontWeight: FontWeight.w400,
-              color: Colors.white.withValues(alpha: 0.8),
-            ),
-          ),
-          const SizedBox(height: 14),
-          Wrap(
-            spacing: 7,
-            runSpacing: 7,
-            children: olfactoryTags.map((tag) {
-              return Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 13,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.3),
-                    width: 1,
+          const SizedBox(height: 10),
+          // Tags row — horizontal for compactness
+          Row(
+            children: [
+              ...displayTags.map(
+                (tag) => Padding(
+                  padding: const EdgeInsets.only(right: 7),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 11,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: Text(
+                      tag,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
+              ),
+              if (olfactoryTags.length > 3)
+                Text(
+                  '+${olfactoryTags.length - 3}',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 11,
+                    color: Colors.white.withValues(alpha: 0.55),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          // CTA Row
+          Row(
+            children: [
+              Expanded(
+                child: LuxuryButton(
+                  text: 'Tìm mùi hương tiếp theo',
+                  onPressed: onFindNextScent,
+                  trailingIcon: Icons.arrow_forward,
+                  height: 40,
+                ),
+              ),
+              const SizedBox(width: 12),
+              GestureDetector(
+                onTap: onViewScentProfile,
                 child: Text(
-                  tag,
+                  'Xem thêm',
                   style: GoogleFonts.montserrat(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
-                    color: Colors.white,
+                    color: Colors.white.withValues(alpha: 0.65),
+                    decoration: TextDecoration.underline,
+                    decorationColor: Colors.white.withValues(alpha: 0.45),
                   ),
                 ),
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 18),
-          LuxuryButton(
-            text: 'Tìm mùi hương tiếp theo',
-            onPressed: onFindNextScent,
-            trailingIcon: Icons.arrow_forward,
-            height: 44,
-          ),
-          const SizedBox(height: 10),
-          Center(
-            child: TextButton(
-              onPressed: onViewScentProfile,
-              style: TextButton.styleFrom(
-                padding: EdgeInsets.zero,
-                minimumSize: const Size(0, 0),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
-              child: Text(
-                'Xem hồ sơ mùi hương',
-                style: GoogleFonts.montserrat(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white.withValues(alpha: 0.7),
-                  decoration: TextDecoration.underline,
-                  decorationColor: Colors.white.withValues(alpha: 0.7),
-                ),
-              ),
-            ),
+            ],
           ),
         ],
       ),

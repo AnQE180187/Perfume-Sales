@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../providers/cart_provider.dart';
+import '../providers/cart_selection_provider.dart';
 import 'widgets/cart_item_tile.dart';
 import 'widgets/cart_summary_section.dart';
 import 'widgets/clear_cart_modal.dart';
@@ -17,8 +18,6 @@ class CartScreen extends ConsumerStatefulWidget {
 }
 
 class _CartScreenState extends ConsumerState<CartScreen> {
-  bool _selectAll = true;
-  final Set<String> _selectedItems = {};
   bool _showAIBanner = true;
   final TextEditingController _promoController = TextEditingController();
 
@@ -31,21 +30,22 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   @override
   Widget build(BuildContext context) {
     final cartState = ref.watch(cartProvider);
+    final selection = ref.watch(cartSelectionProvider);
 
-    // Initialize selected items
-    if (_selectedItems.isEmpty && cartState.items.isNotEmpty) {
-      _selectedItems.addAll(cartState.items.map((item) => item.id));
-    }
+    // Initialize selection when cart loads
+    ref
+        .read(cartSelectionProvider.notifier)
+        .initFromCart(cartState.items.map((e) => e.id).toList());
 
     final selectedSubtotal = cartState.items
-        .where((item) => _selectedItems.contains(item.id))
+        .where((item) => selection.selectedIds.contains(item.id))
         .fold(0.0, (sum, item) => sum + item.subtotal);
     final selectedDiscount = selectedSubtotal * cartState.promoDiscount;
     final total = selectedSubtotal - selectedDiscount;
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAF7F2),
-      appBar: _buildAppBar(cartState),
+      appBar: _buildAppBar(cartState, selection),
       body: cartState.isLoading && cartState.items.isEmpty
           ? const Center(
               child: CircularProgressIndicator(color: AppTheme.accentGold),
@@ -74,18 +74,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                       ...cartState.items.map((item) {
                         return CartItemTile(
                           item: item,
-                          isSelected: _selectedItems.contains(item.id),
+                          isSelected: selection.selectedIds.contains(item.id),
                           onSelectChanged: (selected) {
-                            setState(() {
-                              if (selected) {
-                                _selectedItems.add(item.id);
-                              } else {
-                                _selectedItems.remove(item.id);
-                              }
-                              _selectAll =
-                                  _selectedItems.length ==
-                                  cartState.items.length;
-                            });
+                            ref
+                                .read(cartSelectionProvider.notifier)
+                                .toggle(item.id, cartState.items.length);
                           },
                           onQuantityChanged: (quantity) {
                             ref
@@ -94,7 +87,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                           },
                           onRemove: () {
                             ref.read(cartProvider.notifier).removeItem(item.id);
-                            setState(() => _selectedItems.remove(item.id));
+                            ref
+                                .read(cartSelectionProvider.notifier)
+                                .removeId(item.id);
                           },
                         );
                       }),
@@ -113,7 +108,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                       const SizedBox(height: 12),
 
                       // Price Breakdown
-                      if (_selectedItems.isNotEmpty)
+                      if (selection.selectedIds.isNotEmpty)
                         PriceSummary(
                           subtotal: selectedSubtotal,
                           discount: selectedDiscount,
@@ -128,28 +123,31 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                 // Sticky Checkout CTA
                 CartSummarySection(
                   cartState: cartState,
-                  selectedItems: _selectedItems,
+                  selectedItems: selection.selectedIds,
                 ),
               ],
             ),
     );
   }
 
-  PreferredSizeWidget _buildAppBar(CartState cartState) {
+  PreferredSizeWidget _buildAppBar(
+    CartState cartState,
+    CartSelectionState selection,
+  ) {
     return AppBar(
       backgroundColor: const Color(0xFFFAF7F2),
       elevation: 0,
       leading: IconButton(
         icon: const Icon(
           Icons.arrow_back,
-          size: 20, // 👈 thêm dòng này
+          size: 20,
           color: AppTheme.deepCharcoal,
         ),
         onPressed: () => Navigator.pop(context),
       ),
       title: Text(
-        'Giỏ hàng (${cartState.items.length})',
-        style: GoogleFonts.cormorantGaramond(
+        'Gio hang (${cartState.items.length})',
+        style: GoogleFonts.playfairDisplay(
           fontSize: 18,
           fontWeight: FontWeight.w600,
           color: AppTheme.deepCharcoal,
@@ -158,17 +156,12 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       actions: [
         TextButton(
           onPressed: () {
-            setState(() {
-              if (_selectAll) {
-                _selectedItems.clear();
-              } else {
-                _selectedItems.addAll(cartState.items.map((item) => item.id));
-              }
-              _selectAll = !_selectAll;
-            });
+            ref
+                .read(cartSelectionProvider.notifier)
+                .toggleAll(cartState.items.map((e) => e.id).toList());
           },
           child: Text(
-            _selectAll ? 'Bỏ chọn hết' : 'Chọn tất cả',
+            selection.selectAll ? 'Bo chon het' : 'Chon tat ca',
             style: GoogleFonts.montserrat(
               fontSize: 11,
               fontWeight: FontWeight.w500,
@@ -182,13 +175,13 @@ class _CartScreenState extends ConsumerState<CartScreen> {
               context,
               onClearConfirmed: () {
                 ref.read(cartProvider.notifier).clearCart();
-                _selectedItems.clear();
+                ref.read(cartSelectionProvider.notifier).clear();
                 Navigator.pop(context);
               },
             );
           },
           child: Text(
-            'Xóa tất cả',
+            'Xoa tat ca',
             style: GoogleFonts.montserrat(
               fontSize: 11,
               fontWeight: FontWeight.w500,
@@ -215,8 +208,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             ),
             const SizedBox(height: 24),
             Text(
-              'Giỏ hàng đang trống',
-              style: GoogleFonts.cormorantGaramond(
+              'Gio hang dang trong',
+              style: GoogleFonts.playfairDisplay(
                 fontSize: 22,
                 fontWeight: FontWeight.w600,
                 color: AppTheme.deepCharcoal,
@@ -224,7 +217,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Khám phá bộ sưu tập nước hoa cao cấp',
+              'Kham pha bo suu tap nuoc hoa cao cap',
               style: GoogleFonts.montserrat(
                 fontSize: 13,
                 color: AppTheme.mutedSilver,
@@ -246,11 +239,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                   ),
                 ),
                 child: Text(
-                  'KHÁM PHÁ BỘ SƯU TẬP',
+                  'Kham pha ngay',
                   style: GoogleFonts.montserrat(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.5,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
                   ),
                 ),
               ),
@@ -264,78 +257,70 @@ class _CartScreenState extends ConsumerState<CartScreen> {
 
 class _AIUpsellBanner extends StatelessWidget {
   final VoidCallback onDismiss;
+
   const _AIUpsellBanner({required this.onDismiss});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF8E7),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.25)),
+        gradient: LinearGradient(
+          colors: [
+            AppTheme.accentGold.withValues(alpha: 0.08),
+            AppTheme.champagneGold.withValues(alpha: 0.12),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
-          const Icon(
-            Icons.auto_awesome_rounded,
-            color: AppTheme.accentGold,
-            size: 20,
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: AppTheme.accentGold.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.auto_awesome,
+              size: 18,
+              color: AppTheme.accentGold,
+            ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Gợi ý từ PerfumeGPT',
-                  style: GoogleFonts.montserrat(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.deepCharcoal,
-                  ),
-                ),
-                Text(
-                  'Thêm mẫu thử Golden Amber để hoàn thiện bộ sưu tập.',
+                  'Goi y tu PerfumeGPT',
                   style: GoogleFonts.montserrat(
                     fontSize: 11,
-                    color: AppTheme.deepCharcoal.withValues(alpha: 0.65),
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.accentGold,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Them mau thu Golden Amber de trai nghiem tron ven hon.',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: AppTheme.deepCharcoal,
+                    height: 1.4,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 8),
-          TextButton(
-            onPressed: () {},
-            style: TextButton.styleFrom(
-              backgroundColor: AppTheme.accentGold,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
-            child: Text(
-              'Thêm',
-              style: GoogleFonts.montserrat(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-          const SizedBox(width: 4),
           GestureDetector(
             onTap: onDismiss,
-            child: const Padding(
-              padding: EdgeInsets.all(4),
-              child: Icon(
-                Icons.close_rounded,
-                size: 16,
-                color: AppTheme.mutedSilver,
-              ),
+            child: const Icon(
+              Icons.close,
+              size: 16,
+              color: AppTheme.mutedSilver,
             ),
           ),
         ],

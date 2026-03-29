@@ -11,6 +11,7 @@ import '../../../core/widgets/scent_structure_section.dart';
 import '../../../core/widgets/product_story_section.dart';
 import '../../../core/widgets/product_bottom_cta.dart';
 import '../../cart/providers/cart_provider.dart';
+import '../../wishlist/providers/wishlist_provider.dart';
 import 'scent_structure_detail_screen.dart';
 import '../providers/product_provider.dart';
 import '../models/product.dart';
@@ -28,8 +29,6 @@ class ProductDetailScreen extends ConsumerStatefulWidget {
 
 class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
     with SingleTickerProviderStateMixin {
-  bool _isFavorite = false;
-  bool _isBookmarked = false;
   bool _isAIAnalysisExpanded = false;
   String _selectedSize = '100ml';
   late AnimationController _animationController;
@@ -145,20 +144,28 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                     ),
                     actions: [
                       FloatingIconButton(
-                        icon: _isBookmarked
-                            ? Icons.bookmark
-                            : Icons.bookmark_border,
-                        onTap: () =>
-                            setState(() => _isBookmarked = !_isBookmarked),
-                        isActive: _isBookmarked,
+                        icon: Icons.share_outlined,
+                        onTap: () {},
                       ),
                       const SizedBox(width: 8),
-                      FloatingIconButton(
-                        icon: _isFavorite
-                            ? Icons.favorite
-                            : Icons.favorite_border,
-                        onTap: () => setState(() => _isFavorite = !_isFavorite),
-                        isActive: _isFavorite,
+                      Consumer(
+                        builder: (context, ref, _) {
+                          final isFav =
+                              ref
+                                  .watch(wishlistProvider)
+                                  .valueOrNull
+                                  ?.any((p) => p.id == product.id) ??
+                              false;
+                          return FloatingIconButton(
+                            icon: isFav
+                                ? Icons.favorite
+                                : Icons.favorite_border,
+                            onTap: () => ref
+                                .read(wishlistProvider.notifier)
+                                .toggle(product),
+                            isActive: isFav,
+                          );
+                        },
                       ),
                       const SizedBox(width: 16),
                     ],
