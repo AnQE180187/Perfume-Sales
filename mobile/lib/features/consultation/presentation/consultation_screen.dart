@@ -11,13 +11,21 @@ class ConsultationScreen extends ConsumerStatefulWidget {
   const ConsultationScreen({super.key});
 
   @override
-  ConsumerState<ConsultationScreen> createState() =>
-      _ConsultationScreenState();
+  ConsumerState<ConsultationScreen> createState() => _ConsultationScreenState();
 }
 
 class _ConsultationScreenState extends ConsumerState<ConsultationScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize after first frame so the provider is ready
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(chatProvider.notifier).init();
+    });
+  }
 
   @override
   void dispose() {
@@ -64,37 +72,46 @@ class _ConsultationScreenState extends ConsumerState<ConsultationScreen> {
       ),
       child: Column(
         children: [
-          //  Header 
+          //  Header
           _ChatHeader(onClose: () => Navigator.pop(context)),
 
-          //  Messages 
+          //  Messages
           Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(20),
-              itemCount: chatState.messages.length +
-                  (chatState.isSending ? 1 : 0),
-              itemBuilder: (context, index) {
-                // Typing indicator
-                if (index == chatState.messages.length) {
-                  return const _TypingIndicator();
-                }
-                final message = chatState.messages[index];
-                return message.isAI
-                    ? AiMessageBubble(message: message)
-                    : UserMessageBubble(message: message);
-              },
-            ),
+            child: chatState.isInitializing
+                ? const Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        AppTheme.accentGold,
+                      ),
+                    ),
+                  )
+                : ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.all(20),
+                    itemCount:
+                        chatState.messages.length +
+                        (chatState.isSending ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      // Typing indicator
+                      if (index == chatState.messages.length) {
+                        return const _TypingIndicator();
+                      }
+                      final message = chatState.messages[index];
+                      return message.isAI
+                          ? AiMessageBubble(message: message)
+                          : UserMessageBubble(message: message);
+                    },
+                  ),
           ),
 
-          //  Error banner 
+          //  Error banner
           if (chatState.sendError != null)
             _ErrorBanner(
               message: chatState.sendError!,
               onDismiss: () => ref.read(chatProvider.notifier).clearError(),
             ),
 
-          //  Suggestion chips 
+          //  Suggestion chips
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             child: SingleChildScrollView(
@@ -105,7 +122,8 @@ class _ConsultationScreenState extends ConsumerState<ConsultationScreen> {
                     label: 'Gợi ý bất ngờ',
                     icon: Icons.casino_outlined,
                     onTap: () {
-                      _messageController.text = 'Gợi ý cho tôi một mùi hương bất ngờ';
+                      _messageController.text =
+                          'Gợi ý cho tôi một mùi hương bất ngờ';
                       _sendMessage();
                     },
                   ),
@@ -123,7 +141,8 @@ class _ConsultationScreenState extends ConsumerState<ConsultationScreen> {
                     label: 'Hương cho buổi tối',
                     icon: Icons.nightlight_outlined,
                     onTap: () {
-                      _messageController.text = 'Mùi hương phù hợp cho buổi tối';
+                      _messageController.text =
+                          'Mùi hương phù hợp cho buổi tối';
                       _sendMessage();
                     },
                   ),
@@ -132,7 +151,7 @@ class _ConsultationScreenState extends ConsumerState<ConsultationScreen> {
             ),
           ),
 
-          //  Input 
+          //  Input
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -147,17 +166,21 @@ class _ConsultationScreenState extends ConsumerState<ConsultationScreen> {
                   Expanded(
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 4),
+                        horizontal: 16,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: AppTheme.ivoryBackground,
                         borderRadius: BorderRadius.circular(24),
-                        border:
-                            Border.all(color: AppTheme.softTaupe, width: 1),
+                        border: Border.all(color: AppTheme.softTaupe, width: 1),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.mic_none,
-                              color: AppTheme.mutedSilver, size: 20),
+                          const Icon(
+                            Icons.mic_none,
+                            color: AppTheme.mutedSilver,
+                            size: 20,
+                          ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: TextField(
@@ -184,7 +207,9 @@ class _ConsultationScreenState extends ConsumerState<ConsultationScreen> {
                   ),
                   const SizedBox(width: 12),
                   GestureDetector(
-                    onTap: chatState.isSending ? null : _sendMessage,
+                    onTap: (chatState.isSending || chatState.isInitializing)
+                        ? null
+                        : _sendMessage,
                     child: Container(
                       width: 48,
                       height: 48,
@@ -200,11 +225,15 @@ class _ConsultationScreenState extends ConsumerState<ConsultationScreen> {
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
                                 valueColor: AlwaysStoppedAnimation<Color>(
-                                    AppTheme.primaryDb),
+                                  AppTheme.primaryDb,
+                                ),
                               ),
                             )
-                          : const Icon(Icons.arrow_upward_rounded,
-                              color: AppTheme.primaryDb, size: 24),
+                          : const Icon(
+                              Icons.arrow_upward_rounded,
+                              color: AppTheme.primaryDb,
+                              size: 24,
+                            ),
                     ),
                   ),
                 ],
@@ -242,8 +271,11 @@ class _ChatHeader extends StatelessWidget {
               color: AppTheme.accentGold,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(Icons.auto_awesome_rounded,
-                color: AppTheme.primaryDb, size: 22),
+            child: const Icon(
+              Icons.auto_awesome_rounded,
+              color: AppTheme.primaryDb,
+              size: 22,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -264,7 +296,9 @@ class _ChatHeader extends StatelessWidget {
                       width: 8,
                       height: 8,
                       decoration: const BoxDecoration(
-                          color: Colors.green, shape: BoxShape.circle),
+                        color: Colors.green,
+                        shape: BoxShape.circle,
+                      ),
                     ),
                     const SizedBox(width: 6),
                     Text(
@@ -344,8 +378,9 @@ class _ErrorBanner extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFFF453A).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border:
-            Border.all(color: const Color(0xFFFF453A).withValues(alpha: 0.3)),
+        border: Border.all(
+          color: const Color(0xFFFF453A).withValues(alpha: 0.3),
+        ),
       ),
       child: Row(
         children: [
@@ -362,8 +397,7 @@ class _ErrorBanner extends StatelessWidget {
           ),
           GestureDetector(
             onTap: onDismiss,
-            child: const Icon(Icons.close,
-                color: Color(0xFFFF453A), size: 16),
+            child: const Icon(Icons.close, color: Color(0xFFFF453A), size: 16),
           ),
         ],
       ),
