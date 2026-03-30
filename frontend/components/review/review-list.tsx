@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Review, reviewService } from '@/services/review.service';
 import StarRating from './star-rating';
-import { ThumbsUp, Flag, CheckCircle2, Loader2, Filter, SortAsc, ChevronDown, User } from 'lucide-react';
+import { ThumbsUp, Flag, CheckCircle2, Loader2, Filter, SortAsc, ChevronDown, User, Sparkles } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
@@ -32,7 +32,7 @@ const ReviewList: React.FC<ReviewListProps> = ({ productId }) => {
     const [skip, setSkip] = useState(0);
     const [ratingFilter, setRatingFilter] = useState<number | null>(null);
     const [sortBy, setSortBy] = useState<'newest' | 'highest' | 'lowest' | 'helpful'>('newest');
-    
+
     const take = 10;
 
     const fetchReviews = async () => {
@@ -70,10 +70,10 @@ const ReviewList: React.FC<ReviewListProps> = ({ productId }) => {
         try {
             await reviewService.react(reviewId, 'HELPFUL');
             toast.success(tNotify('helpful_success'));
-            setReviews(prev => prev.map(r => 
-                r.id === reviewId 
-                ? { ...r, _count: { reactions: (r._count?.reactions || 0) + 1 } } 
-                : r
+            setReviews(prev => prev.map(r =>
+                r.id === reviewId
+                    ? { ...r, _count: { reactions: (r._count?.reactions || 0) + 1 } }
+                    : r
             ));
         } catch (error: any) {
             toast.error(error.message || tNotify('failed_to_react'));
@@ -83,7 +83,7 @@ const ReviewList: React.FC<ReviewListProps> = ({ productId }) => {
     const handleReport = async (reviewId: string) => {
         const reason = window.prompt(t('reason_reporting'));
         if (!reason) return;
-        
+
         try {
             await reviewService.report(reviewId, reason);
             toast.success(tNotify('report_success'));
@@ -97,7 +97,7 @@ const ReviewList: React.FC<ReviewListProps> = ({ productId }) => {
         if (ratingFilter) {
             result = result.filter(r => r.rating === ratingFilter);
         }
-        
+
         switch (sortBy) {
             case 'highest': result.sort((a, b) => b.rating - a.rating); break;
             case 'lowest': result.sort((a, b) => a.rating - b.rating); break;
@@ -184,11 +184,11 @@ const ReviewList: React.FC<ReviewListProps> = ({ productId }) => {
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
-                
+
                 {ratingFilter && (
-                    <Button 
-                        variant="ghost" 
-                        size="sm" 
+                    <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => setRatingFilter(null)}
                         className="text-[10px] uppercase font-bold tracking-[.4em] text-muted-foreground hover:text-gold mr-4"
                     >
@@ -237,7 +237,7 @@ const ReviewList: React.FC<ReviewListProps> = ({ productId }) => {
                                     <div className="flex items-center gap-1">
                                         <StarRating rating={review.rating} readOnly size={16} />
                                     </div>
-                                    
+
                                     {review.content && (
                                         <p className="text-foreground/80 leading-[1.8] font-serif text-xl italic tracking-wide">
                                             "{review.content}"
@@ -266,7 +266,7 @@ const ReviewList: React.FC<ReviewListProps> = ({ productId }) => {
                                             <ThumbsUp size={16} className={review._count?.reactions ? 'fill-gold text-gold scale-110' : 'group-hover:scale-110 transition-transform'} />
                                             {t('helpful_count', { count: review._count?.reactions || 0 })}
                                         </button>
-                                        <button 
+                                        <button
                                             onClick={() => handleReport(review.id)}
                                             className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[.4em] text-muted-foreground hover:text-red-500 transition-all duration-500 opacity-0 group-hover:opacity-100 hover:tracking-[.6em]"
                                         >
@@ -285,10 +285,10 @@ const ReviewList: React.FC<ReviewListProps> = ({ productId }) => {
             {total > take && (
                 <div className="flex items-center justify-between pt-16 border-t border-border/50">
                     <p className="text-[10px] text-muted-foreground uppercase tracking-[.5em] font-bold opacity-50">
-                        {t('showing_count', { 
-                            start: skip + 1, 
-                            end: Math.min(skip + take, total), 
-                            total 
+                        {t('showing_count', {
+                            start: skip + 1,
+                            end: Math.min(skip + take, total),
+                            total
                         })}
                     </p>
                     <div className="flex gap-6">
@@ -296,7 +296,7 @@ const ReviewList: React.FC<ReviewListProps> = ({ productId }) => {
                             variant="outline"
                             size="sm"
                             className="rounded-full h-12 px-10 text-[10px] uppercase font-bold tracking-[.4em] border-border hover:border-gold hover:text-gold transition-all"
-                             disabled={skip === 0}
+                            disabled={skip === 0}
                             onClick={() => setSkip(Math.max(0, skip - take))}
                         >
                             {tCommon('previous')}

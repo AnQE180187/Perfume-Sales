@@ -77,10 +77,10 @@ export default function CollectionPage() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
                     >
-                        <span className="text-white/80 text-[10px] font-bold tracking-[.6em] uppercase mb-6 block font-serif italic">
+                        <span className="text-white/80 text-[10px] font-bold uppercase mb-6 block font-sans tracking-widest italic">
                             {t('badge')}
                         </span>
-                        <h1 className="text-7xl md:text-[10rem] font-serif text-white mb-8 leading-[0.85] tracking-tighter mix-blend-plus-lighter">
+                        <h1 className="text-6xl md:text-8xl lg:text-[10rem] font-heading text-white mb-8 leading-[1.3] tracking-tight mix-blend-plus-lighter text-balance break-keep">
                             {t('title')}
                         </h1>
                         <div className="w-24 h-px bg-gold/50 mx-auto blur-[1px]" />
@@ -97,7 +97,7 @@ export default function CollectionPage() {
                             <button
                                 key={cat}
                                 onClick={() => setActiveCategory(cat)}
-                                className={`text-[10px] font-bold tracking-[.4em] uppercase transition-all whitespace-nowrap cursor-pointer hover:tracking-[.6em] duration-500 ${activeCategory === cat
+                                className={`text-[10px] font-bold uppercase transition-all whitespace-nowrap cursor-pointer duration-500 tracking-wide ${activeCategory === cat
                                     ? 'text-gold'
                                     : 'text-muted-foreground hover:text-foreground'
                                     }`}
@@ -183,7 +183,7 @@ export default function CollectionPage() {
 
                                 <div className="text-center px-4">
                                     <Link href={`/collection/${product.id}`}>
-                                        <h3 className="text-4xl font-serif text-foreground mb-4 group-hover:text-gold group-hover:italic transition-all duration-700 tracking-tight leading-tight">
+                                        <h3 className="text-4xl font-serif text-foreground mb-4 group-hover:text-gold group-hover:italic transition-all duration-700 tracking-normal leading-tight">
                                             {product.name}
                                         </h3>
                                     </Link>

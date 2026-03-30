@@ -24,8 +24,10 @@ import { Input } from '@/components/ui/input';
 import { useTranslations, useLocale } from 'next-intl';
 
 export default function AdminReviewsPage() {
-    const t = useTranslations('admin.reviews');
+    const t = useTranslations('dashboard.admin.reviews');
     const tNotify = useTranslations('notifications');
+    const tReview = useTranslations('review');
+    const tCommon = useTranslations('common');
     const locale = useLocale();
     const dateLocale = locale === 'vi' ? vi : enUS;
 
@@ -126,7 +128,7 @@ export default function AdminReviewsPage() {
         <div className="p-10 space-y-12 animate-in fade-in duration-700">
             <header className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-8">
                 <div className="space-y-3">
-                    <h1 className="text-6xl font-serif text-foreground italic tracking-tight">{t('title')}</h1>
+                    <h1 className="text-6xl font-serif text-foreground italic tracking-normal leading-tight">{t('title')}</h1>
                     <p className="text-[10px] text-muted-foreground uppercase tracking-[.6em] font-black opacity-60">
                         {t('subtitle')}
                     </p>
@@ -177,7 +179,7 @@ export default function AdminReviewsPage() {
                         >
                             <option value="">{t('all_ratings')}</option>
                             {[5, 4, 3, 2, 1].map(star => (
-                                <option key={star} value={star}>{t('review:stars', { count: star })}</option>
+                                <option key={star} value={star}>{tReview('stars', { count: star })}</option>
                             ))}
                         </select>
                     </div>
@@ -315,7 +317,7 @@ export default function AdminReviewsPage() {
                                     disabled={skip === 0}
                                     onClick={() => setSkip(Math.max(0, skip - take))}
                                 >
-                                    {t('review:previous')}
+                                    {tCommon('previous')}
                                 </Button>
                                 <Button
                                     variant="outline"
@@ -323,7 +325,7 @@ export default function AdminReviewsPage() {
                                     disabled={skip + take >= total}
                                     onClick={() => setSkip(skip + take)}
                                 >
-                                    {t('review:next')}
+                                    {tCommon('next')}
                                 </Button>
                             </div>
                         </div>

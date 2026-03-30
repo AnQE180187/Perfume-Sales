@@ -76,7 +76,7 @@ export const Hero = ({ heroY: parentHeroY, heroScale: parentHeroScale, heroOpaci
                     </motion.span>
 
                     {/* Headline */}
-                    <h1 className="text-7xl md:text-9xl font-serif mb-8 leading-[0.9] tracking-tighter">
+                    <h1 className="text-7xl md:text-9xl font-serif mb-8 leading-[1.2] tracking-normal">
                         {t('title')}
                     </h1>
 

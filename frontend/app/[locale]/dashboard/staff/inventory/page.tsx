@@ -302,8 +302,8 @@ export default function StaffInventory() {
                                     </label>
                                     <div className="text-xs font-heading">
                                         {selectedVariant
-                                            ? variants.find(v => v.id === selectedVariant)?.name ??
-                                              t('operations.none')}
+                                            ? variants.find(v => v.id === selectedVariant)?.name || t('operations.none')
+                                            : t('operations.none')}
                                     </div>
                                 </div>
 

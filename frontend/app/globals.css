@@ -3,6 +3,11 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/**
+ * Tailwind v4 configuration in CSS
+ * Mapping next/font variables to Tailwind font-family utilities.
+ * Using Be Vietnam Pro (Variable) for ALL fonts to ensure perfect Vietnamese diacritics.
+ */
 @theme inline {
   /* Brand Colors */
   --color-gold: #C5A059;
@@ -12,8 +17,13 @@
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  
+  /* Vietnamese optimized font mapping */
+  --font-sans: var(--font-be-vietnam), sans-serif;
+  --font-body: var(--font-be-vietnam), sans-serif;
+  --font-heading: var(--font-be-vietnam), sans-serif;
+  --font-serif: var(--font-be-vietnam), sans-serif;
+  
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -33,7 +43,6 @@
   --color-destructive: var(--destructive);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--gold);
-  /* Map accent to gold */
   --color-muted-foreground: var(--muted-foreground);
   --color-muted: var(--muted);
   --color-secondary-foreground: var(--secondary-foreground);
@@ -103,16 +112,61 @@
 
   body {
     @apply bg-background text-foreground;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: 'liga' 1, 'calt' 1, 'kern' 1;
+    font-synthesis: none;
   }
 
-  /* Hide number input spinners */
-  input::-webkit-outer-spin-button,
-  input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading font-medium;
+    text-rendering: optimizeLegibility;
+  }
+}
+
+/**
+ * VIETNAMESE TYPOGRAPHY RESET (NUCLEAR OPTION)
+ * Target: Forced fixes when html[lang="vi"] is active.
+ * Ensures "Thiết Yếu" remains as a single unit without decomposed gaps.
+ */
+html[lang="vi"] {
+  --font-sans: var(--font-be-vietnam), sans-serif !important;
+  --font-serif: var(--font-be-vietnam), sans-serif !important;
+  --font-heading: var(--font-be-vietnam), sans-serif !important;
+}
+
+html[lang="vi"] *,
+html[lang="vi"] .uppercase,
+html[lang="vi"] [class*="tracking-"] {
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  font-synthesis: none !important;
+  font-variant-ligatures: common-ligatures !important;
+}
+
+/* Specific small tweaks for clarity in Vietnamese UI */
+html[lang="vi"] .text-\[8px\],
+html[lang="vi"] .text-\[9px\],
+html[lang="vi"] .text-\[10px\] {
+  letter-spacing: 0.01em !important;
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-white/40 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_0_rgba(0,0,0,0.05)];
   }
 
-  input[type=number] {
-    -moz-appearance: textfield;
+  .dark .glass {
+    @apply bg-black/40 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.2)];
+  }
+
+  .gold-gradient {
+    background: linear-gradient(135deg, #9A7B3F 0%, #C5A059 50%, #E5C992 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .gold-btn-gradient {
+    background: linear-gradient(to bottom, #E5C992, #C5A059, #9A7B3F);
   }
 }
