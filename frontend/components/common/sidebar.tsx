@@ -32,7 +32,7 @@ export const Sidebar = () => {
         const shared = [
             { icon: LayoutDashboard, label: commonT('dashboard'), href: `/dashboard/${role.toLowerCase()}` },
             { icon: User, label: commonT('profile'), href: '/dashboard/profile' },
-            { icon: MessageSquare, label: 'Chat', href: '/dashboard/chat' },
+            { icon: MessageSquare, label: navT('shared.chat'), href: '/dashboard/chat' },
         ];
 
         const customer = [
@@ -55,11 +55,11 @@ export const Sidebar = () => {
         const admin = [
             { icon: Users, label: navT('admin.users'), href: '/dashboard/admin/users' },
             { icon: ShieldCheck, label: navT('admin.rbac'), href: '/dashboard/admin/rbac' },
-            { icon: Store, label: 'Quầy / Cửa hàng', href: '/dashboard/admin/stores' },
-            { icon: Warehouse, label: 'Tồn kho theo quầy', href: '/dashboard/admin/stores/stock' },
+            { icon: Store, label: navT('admin.stores'), href: '/dashboard/admin/stores' },
+            { icon: Warehouse, label: navT('admin.stock'), href: '/dashboard/admin/stores/stock' },
             { icon: Package, label: navT('admin.products'), href: '/dashboard/admin/products' },
-            { icon: FolderTree, label: 'Catalog', href: '/dashboard/admin/catalog' },
-            { icon: MessageSquare, label: 'Reviews', href: '/dashboard/admin/reviews' },
+            { icon: FolderTree, label: navT('admin.catalog'), href: '/dashboard/admin/catalog' },
+            { icon: MessageSquare, label: navT('admin.reviews'), href: '/dashboard/admin/reviews' },
             { icon: Tag, label: navT('admin.promotions'), href: '/dashboard/admin/marketing/promotions' },
             { icon: Receipt, label: commonT('orders'), href: '/dashboard/admin/orders' },
             { icon: BarChart3, label: navT('admin.analytics'), href: '/dashboard/admin/analytics' },
@@ -135,8 +135,12 @@ export const Sidebar = () => {
                         {user?.name?.substring(0, 2) || 'AI'}
                     </div>
                     <div className="flex-1 overflow-hidden">
-                        <p className="text-xs font-heading text-foreground truncate uppercase tracking-tighter">{user?.name || 'Explorer'}</p>
-                        <p className="text-[10px] text-muted-foreground truncate uppercase tracking-widest mt-0.5">{user?.role || 'Guest'}</p>
+                        <p className="text-xs font-heading text-foreground truncate uppercase tracking-tighter">
+                            {user?.name || useTranslations('dashboard.user')('explorer')}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground truncate uppercase tracking-widest mt-0.5">
+                            {user?.role || useTranslations('dashboard.user')('guest')}
+                        </p>
                     </div>
                 </div>
 

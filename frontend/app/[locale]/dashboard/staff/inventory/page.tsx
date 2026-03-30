@@ -3,10 +3,12 @@
 import { AuthGuard } from '@/components/auth/auth-guard';
 import { Box, RefreshCw, AlertTriangle, Activity, Loader2, Store } from 'lucide-react';
 import { useEffect, useState, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { staffInventoryService, type StaffInventoryOverview, type StaffInventoryLog } from '@/services/staff-inventory.service';
 import { storesService, type Store as StoreType } from '@/services/stores.service';
 
 export default function StaffInventory() {
+    const t = useTranslations('dashboard.inventory');
     const [myStores, setMyStores] = useState<StoreType[]>([]);
     const [selectedStoreId, setSelectedStoreId] = useState<string>('');
     const [overview, setOverview] = useState<StaffInventoryOverview | null>(null);
@@ -29,7 +31,7 @@ export default function StaffInventory() {
             if (list.length && !selectedStoreId) setSelectedStoreId(list[0].id);
             if (list.length === 0) setLoading(false);
         } catch {
-            setError('Không tải được danh sách quầy');
+            setError(t('errors.load_stores'));
             setLoading(false);
         }
     }, []);
@@ -46,7 +48,7 @@ export default function StaffInventory() {
             const data = await staffInventoryService.getOverview(selectedStoreId);
             setOverview(data);
         } catch (e: any) {
-            setError(e.message || 'Failed to load inventory overview');
+            setError(e.message || t('errors.load_overview'));
         } finally {
             setLoading(false);
         }
@@ -89,7 +91,7 @@ export default function StaffInventory() {
             setImportReason('');
             void loadLogs(selectedVariant);
         } catch (e: any) {
-            setError(e.message || 'Failed to import stock');
+            setError(e.message || t('errors.import_failed'));
         } finally {
             setSubmitting(false);
         }
@@ -106,7 +108,7 @@ export default function StaffInventory() {
             setAdjustReason('');
             void loadLogs(selectedVariant);
         } catch (e: any) {
-            setError(e.message || 'Failed to adjust stock');
+            setError(e.message || t('errors.adjust_failed'));
         } finally {
             setSubmitting(false);
         }
@@ -125,8 +127,8 @@ export default function StaffInventory() {
         <AuthGuard allowedRoles={['staff', 'admin']}>
             <main className="p-8 space-y-8">
                 <header className="mb-4">
-                    <h1 className="text-4xl font-heading gold-gradient mb-2 uppercase tracking-tighter">Boutique Stock</h1>
-                    <p className="text-muted-foreground font-body text-sm uppercase tracking-widest">Inventory Oversight & Adjustments</p>
+                    <h1 className="text-4xl font-heading gold-gradient mb-2 uppercase tracking-tighter">{t('title')}</h1>
+                    <p className="text-muted-foreground font-body text-sm uppercase tracking-widest">{t('subtitle')}</p>
                 </header>
 
                 {error && (
@@ -137,32 +139,32 @@ export default function StaffInventory() {
 
                 <div className="mb-6 flex items-center gap-4">
                     <Store className="w-5 h-5 text-gold" />
-                    <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Quầy:</label>
+                    <label className="text-[10px] uppercase tracking-widest text-muted-foreground">{t('store')}:</label>
                     <select
                         value={selectedStoreId}
                         onChange={(e) => setSelectedStoreId(e.target.value)}
                         className="rounded-xl border border-border bg-background px-4 py-2 text-sm font-heading uppercase tracking-wider focus:border-gold/60"
                     >
-                        <option value="">-- Chọn quầy --</option>
+                        <option value="">{t('select_store')}</option>
                         {myStores.map((s) => (
                             <option key={s.id} value={s.id}>{s.name}</option>
                         ))}
                     </select>
                     {!myStores.length && !loading && (
-                        <span className="text-xs text-muted-foreground">Chưa được gán quầy. Liên hệ Admin.</span>
+                        <span className="text-xs text-muted-foreground">{t('no_store_assigned')}</span>
                     )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
                     {loading ? (
                         <div className="col-span-full flex items-center justify-center py-10 text-muted-foreground text-sm">
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Loading inventory…
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" /> {t('loading')}
                         </div>
                     ) : (
                         <>
                             <div className="glass p-8 rounded-[2.5rem] border-border hover:border-gold/30 transition-all group">
                                 <div className="flex justify-between items-start mb-4">
-                                    <h3 className="text-muted-foreground text-[10px] uppercase tracking-[0.3em] font-heading">Total Units</h3>
+                                    <h3 className="text-muted-foreground text-[10px] uppercase tracking-[0.3em] font-heading">{t('total_units')}</h3>
                                     <Box className="w-5 h-5 text-gold" />
                                 </div>
                                 <p className="text-4xl font-heading text-foreground">
@@ -171,8 +173,8 @@ export default function StaffInventory() {
                             </div>
                             <div className="glass p-8 rounded-[2.5rem] border-border hover:border-gold/30 transition-all group">
                                 <div className="flex justify-between items-start mb-4">
-                                    <h3 className="text-muted-foreground text-[10px] uppercase tracking-[0.3em] font-heading">Low Stock</h3>
-                                    <AlertTriangle className="w-5 h-5 text-amber-500" />
+                                    <h3 className="text-muted-foreground text-[10px] uppercase tracking-[0.3em] font-heading">{t('low_stock')}</h3>
+                                    <AlertTriangle className="w-5 h-5 text-warning" />
                                 </div>
                                 <p className="text-4xl font-heading text-foreground">
                                     {stats?.lowStockCount ?? 0}
@@ -180,13 +182,13 @@ export default function StaffInventory() {
                             </div>
                             <div className="glass p-8 rounded-[2.5rem] border-border hover:border-gold/30 transition-all group">
                                 <div className="flex justify-between items-start mb-4">
-                                    <h3 className="text-muted-foreground text-[10px] uppercase tracking-[0.3em] font-heading">Recent Refill</h3>
+                                    <h3 className="text-muted-foreground text-[10px] uppercase tracking-[0.3em] font-heading">{t('recent_refill')}</h3>
                                     <RefreshCw className="w-5 h-5 text-gold" />
                                 </div>
                                 <p className="text-sm font-heading text-foreground">
                                     {stats?.latestImportAt
                                         ? new Date(stats.latestImportAt).toLocaleString('vi-VN')
-                                        : 'No imports yet'}
+                                        : t('no_imports_yet')}
                                 </p>
                             </div>
                         </>
@@ -195,20 +197,20 @@ export default function StaffInventory() {
 
                 {!selectedStoreId ? (
                     <div className="glass rounded-[2.5rem] p-12 text-center text-muted-foreground">
-                        Chọn quầy ở trên để xem và thao tác tồn kho.
+                        {t('select_store_to_view')}
                     </div>
                 ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Variants & stock table */}
                     <div className="lg:col-span-2 glass rounded-[2.5rem] border-border overflow-hidden">
                         <div className="p-6 border-b border-border flex items-center justify-between gap-4">
-                            <h2 className="font-heading text-lg uppercase tracking-widest">Stock Ledger</h2>
+                            <h2 className="font-heading text-lg uppercase tracking-widest">{t('stock_ledger')}</h2>
                             <div className="flex items-center gap-3">
                                 <input
                                     type="text"
                                     value={variantFilter}
                                     onChange={(e) => setVariantFilter(e.target.value)}
-                                    placeholder="Filter by product or brand…"
+                                    placeholder={t('filter_placeholder')}
                                     className="text-xs rounded-full border border-border bg-background px-4 py-2 outline-none focus:border-gold/60"
                                 />
                             </div>
@@ -216,11 +218,11 @@ export default function StaffInventory() {
                         <div className="p-6 max-h-[480px] overflow-y-auto custom-scrollbar">
                             {loading ? (
                                 <div className="flex items-center justify-center py-10 text-muted-foreground text-sm">
-                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Loading…
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" /> {t('loading')}
                                 </div>
                             ) : filteredVariants.length === 0 ? (
                                 <div className="text-sm text-muted-foreground text-center py-10">
-                                    No variants found.
+                                    {t('logs.no_logs')}
                                 </div>
                             ) : (
                                 <div className="space-y-3">
@@ -239,8 +241,8 @@ export default function StaffInventory() {
                                                 }}
                                                 className={`w-full flex items-center justify-between p-4 rounded-3xl border transition-all text-left ${
                                                     isSelected
-                                                        ? 'border-gold bg-gold/5'
-                                                        : 'bg-secondary/10 border border-border/50 hover:border-gold/40'
+                                                        ? 'border-gold bg-gold/5 shadow-[0_0_20px_rgba(197,160,89,0.1)]'
+                                                        : 'bg-card border border-border/50 hover:border-gold/40'
                                                 }`}
                                             >
                                                 <div>
@@ -254,24 +256,24 @@ export default function StaffInventory() {
                                                 <div className="flex items-center gap-8">
                                                     <div className="text-right">
                                                         <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">
-                                                            Quantity
+                                                            {t('quantity')}
                                                         </p>
                                                         <p className="font-heading">{row.stock}</p>
                                                     </div>
                                                     <div
                                                         className={`px-3 py-1.5 rounded-full border text-[8px] uppercase tracking-widest font-bold ${
                                                             row.stock === 0
-                                                                ? 'bg-stone-500/10 border-stone-500/30 text-stone-500'
+                                                                ? 'bg-error/10 border-error/30 text-error'
                                                                 : isLow
-                                                                ? 'bg-amber-500/10 border-amber-500/30 text-amber-500'
-                                                                : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500'
+                                                                ? 'bg-warning/10 border-warning/30 text-warning'
+                                                                : 'bg-success/10 border-success/30 text-success'
                                                         }`}
                                                     >
                                                         {row.stock === 0
-                                                            ? 'Out'
+                                                            ? t('status.out')
                                                             : isLow
-                                                            ? 'Low'
-                                                            : 'Optimal'}
+                                                            ? t('status.low')
+                                                            : t('status.optimal')}
                                                     </div>
                                                 </div>
                                             </button>
@@ -287,29 +289,28 @@ export default function StaffInventory() {
                         {/* Forms */}
                         <div className="glass rounded-[2rem] border-border p-6 space-y-4">
                             <h3 className="font-heading text-sm uppercase tracking-widest mb-2 flex items-center gap-2">
-                                <Activity className="w-4 h-4 text-gold" /> Stock Operations
+                                <Activity className="w-4 h-4 text-gold" /> {t('operations.title')}
                             </h3>
                             <p className="text-[11px] text-muted-foreground mb-2">
-                                Select a variant from the ledger to import or adjust stock.
+                                {t('operations.desc')}
                             </p>
 
                             <div className="space-y-3">
                                 <div>
                                     <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
-                                        Selected Variant
+                                        {t('operations.selected_variant')}
                                     </label>
                                     <div className="text-xs font-heading">
                                         {selectedVariant
-                                            ? variants.find(v => v.id === selectedVariant)?.name ??
-                                              selectedVariant
-                                            : 'None'}
+                                            ? variants.find(v => v.id === selectedVariant)?.name || t('operations.none')
+                                            : t('operations.none')}
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3 mt-2">
                                     <div className="space-y-2">
                                         <label className="block text-[10px] uppercase tracking-widest text-muted-foreground">
-                                            Import Quantity
+                                            {t('operations.import_qty')}
                                         </label>
                                         <input
                                             type="number"
@@ -323,7 +324,7 @@ export default function StaffInventory() {
                                             value={importReason}
                                             onChange={(e) => setImportReason(e.target.value)}
                                             className="w-full text-xs rounded-xl border border-border bg-background px-3 py-2 outline-none focus:border-gold/60"
-                                            placeholder="Reason (optional)"
+                                            placeholder={t('operations.import_reason')}
                                         />
                                         <button
                                             type="button"
@@ -331,12 +332,12 @@ export default function StaffInventory() {
                                             disabled={!selectedVariant || importQty <= 0 || submitting}
                                             className="w-full mt-1 py-2.5 rounded-full bg-gold text-primary-foreground text-[10px] font-heading uppercase tracking-widest disabled:opacity-50"
                                         >
-                                            {submitting ? 'Processing…' : 'Import'}
+                                            {submitting ? t('processing') : t('operations.import_btn')}
                                         </button>
                                     </div>
                                     <div className="space-y-2">
                                         <label className="block text-[10px] uppercase tracking-widest text-muted-foreground">
-                                            Adjust Delta
+                                            {t('operations.adjust_delta')}
                                         </label>
                                         <input
                                             type="number"
@@ -350,7 +351,7 @@ export default function StaffInventory() {
                                             value={adjustReason}
                                             onChange={(e) => setAdjustReason(e.target.value)}
                                             className="w-full text-xs rounded-xl border border-border bg-background px-3 py-2 outline-none focus:border-gold/60"
-                                            placeholder="Reason"
+                                            placeholder={t('operations.adjust_reason')}
                                         />
                                         <button
                                             type="button"
@@ -358,7 +359,7 @@ export default function StaffInventory() {
                                             disabled={!selectedVariant || adjustDelta === 0 || submitting}
                                             className="w-full mt-1 py-2.5 rounded-full bg-secondary text-foreground text-[10px] font-heading uppercase tracking-widest disabled:opacity-50"
                                         >
-                                            {submitting ? 'Processing…' : 'Adjust'}
+                                            {submitting ? t('processing') : t('operations.adjust_btn')}
                                         </button>
                                     </div>
                                 </div>
@@ -369,7 +370,7 @@ export default function StaffInventory() {
                         <div className="glass rounded-[2rem] border-border p-6 max-h-[260px] overflow-y-auto custom-scrollbar">
                             <div className="flex items-center justify-between mb-3">
                                 <h3 className="font-heading text-sm uppercase tracking-widest">
-                                    Recent Inventory Logs
+                                    {t('logs.title')}
                                 </h3>
                                 {loadingLogs && (
                                     <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />
@@ -377,7 +378,7 @@ export default function StaffInventory() {
                             </div>
                             {logs.length === 0 ? (
                                 <div className="text-xs text-muted-foreground">
-                                    No inventory logs yet.
+                                    {t('logs.no_logs')}
                                 </div>
                             ) : (
                                 <div className="space-y-2 text-[11px]">

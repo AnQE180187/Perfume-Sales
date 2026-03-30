@@ -1,6 +1,7 @@
 'use client';
 
 import { AuthGuard } from '@/components/auth/auth-guard';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import {
     Search, ShoppingCart, CreditCard, Plus, Minus, Receipt, QrCode,
@@ -21,6 +22,7 @@ function formatVND(n: number) {
 }
 
 export default function PosPage() {
+    const t = useTranslations('dashboard.pos');
     // Store
     const [myStores, setMyStores] = useState<StoreType[]>([]);
     const [selectedStoreId, setSelectedStoreId] = useState<string>('');
@@ -85,7 +87,7 @@ export default function PosPage() {
             const list = await staffPosService.searchProducts(term, storeId || undefined);
             setProducts(list);
         } catch (e: any) {
-            setError(e.message || 'Failed to load products');
+            setError(e.message || t('errors.load_products'));
         } finally {
             setLoadingProducts(false);
         }
@@ -130,7 +132,7 @@ export default function PosPage() {
             setOrder(created);
             return created;
         } catch (e: any) {
-            setError(e.message || 'Failed to create draft order');
+            setError(e.message || t('errors.create_draft'));
             throw e;
         } finally {
             setCreatingOrder(false);
@@ -145,7 +147,7 @@ export default function PosPage() {
 
     const handleAddVariant = async (variantId: string, variantStock: number) => {
         if (variantStock <= 0) {
-            setStockWarning('Sản phẩm đã hết hàng!');
+            setStockWarning(t('product_out_warning'));
             setTimeout(() => setStockWarning(null), 3000);
             return;
         }
@@ -154,7 +156,7 @@ export default function PosPage() {
             const existingItem = current.items?.find(i => i.variantId === variantId);
             const nextQty = (existingItem?.quantity ?? 0) + 1;
             if (nextQty > variantStock) {
-                setStockWarning(`Chỉ còn ${variantStock} sản phẩm trong kho!`);
+                setStockWarning(t('low_stock_warning', { count: variantStock }));
                 setTimeout(() => setStockWarning(null), 3000);
                 return;
             }
@@ -166,7 +168,7 @@ export default function PosPage() {
                 setStockWarning(e.response.data.message);
                 setTimeout(() => setStockWarning(null), 3000);
             } else {
-                setError(e?.response?.data?.message || e.message || 'Lỗi thêm sản phẩm');
+                setError(e?.response?.data?.message || e.message || t('errors.add_item'));
             }
         }
     };
@@ -187,7 +189,7 @@ export default function PosPage() {
                 setStockWarning(e.response.data.message);
                 setTimeout(() => setStockWarning(null), 3000);
             } else {
-                setError(e?.response?.data?.message || e.message || 'Failed to update quantity');
+                setError(e?.response?.data?.message || e.message || t('errors.update_qty'));
             }
         }
     };
@@ -202,7 +204,7 @@ export default function PosPage() {
             setCompletedOrder(paid);
             setShowReceipt(true);
         } catch (e: any) {
-            setError(e?.response?.data?.message || e.message || 'Failed to complete payment');
+            setError(e?.response?.data?.message || e.message || t('errors.pay_cash'));
         } finally {
             setPaying(false);
         }
@@ -217,7 +219,7 @@ export default function PosPage() {
             setQrPayment(payment);
             startQrPolling(order.id);
         } catch (e: any) {
-            setError(e?.response?.data?.message || e.message || 'Failed to create QR payment');
+            setError(e?.response?.data?.message || e.message || t('errors.create_qr'));
         } finally {
             setPaying(false);
         }
@@ -253,7 +255,7 @@ export default function PosPage() {
                 setOrder(updated);
             }
         } catch (e: any) {
-            setError(e?.response?.data?.message || e.message || 'Lỗi tra cứu khách hàng');
+            setError(e?.response?.data?.message || e.message || t('errors.lookup_customer'));
         } finally {
             setLookingUpCustomer(false);
         }
@@ -270,7 +272,7 @@ export default function PosPage() {
                 notes: aiNotes || undefined,
             });
             setAiResults(res.recommendations);
-            if (res.recommendations.length === 0) setAiError('AI không tìm được sản phẩm phù hợp.');
+            if (res.recommendations.length === 0) setAiError(t('ai.no_results'));
         } catch (e: any) {
             setAiError(e?.response?.data?.message || e.message || 'AI consultation failed');
         } finally {
@@ -318,7 +320,7 @@ export default function PosPage() {
                         <div className="flex items-center gap-4 flex-1 min-w-0">
                             <div className="flex items-center gap-2 shrink-0">
                                 <Store className="w-4 h-4 text-gold" />
-                                <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Quầy:</label>
+                                <label className="text-[10px] uppercase tracking-widest text-muted-foreground">{t('store')}:</label>
                                 <select
                                     value={order?.storeId ?? selectedStoreId}
                                     onChange={(e) => {
@@ -327,7 +329,7 @@ export default function PosPage() {
                                     disabled={!!order}
                                     className="rounded-lg border border-border bg-background px-3 py-2 text-xs font-heading uppercase tracking-wider focus:border-gold/60 disabled:opacity-70"
                                 >
-                                    <option value="">-- Chọn quầy --</option>
+                                    <option value="">{t('select_store')}</option>
                                     {myStores.map((s) => (
                                         <option key={s.id} value={s.id}>{s.name}</option>
                                     ))}
@@ -339,7 +341,7 @@ export default function PosPage() {
                                     type="text"
                                     value={search}
                                     onChange={handleSearchChange}
-                                    placeholder="Search products, SKU or scan barcode..."
+                                    placeholder={t('search_placeholder')}
                                     className="w-full bg-background border border-border rounded-full py-3.5 pl-12 pr-4 text-sm focus:border-gold/50 outline-none transition-all shadow-sm"
                                 />
                             </div>
@@ -349,10 +351,10 @@ export default function PosPage() {
                     {/* Product Grid */}
                     <div className="flex-1 overflow-y-auto p-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 custom-scrollbar">
                         {loadingProducts ? (
-                            <div className="col-span-full text-center text-muted-foreground text-sm">Loading products…</div>
+                            <div className="col-span-full text-center text-muted-foreground text-sm">{t('loading_products')}</div>
                         ) : products.length === 0 ? (
                             <div className="col-span-full text-center text-muted-foreground text-sm">
-                                {selectedStoreId ? 'Không có sản phẩm nào trong quầy này.' : 'Vui lòng chọn quầy để xem sản phẩm.'}
+                                {selectedStoreId ? t('no_products.empty_store') : t('no_products.select_store')}
                             </div>
                         ) : (
                             products.flatMap((p) =>
@@ -376,8 +378,8 @@ export default function PosPage() {
                                                 ) : (
                                                     <div className="absolute inset-0 bg-gradient-to-tr from-gold/10 to-transparent flex items-center justify-center text-muted-foreground text-[10px] uppercase tracking-widest">No Image</div>
                                                 )}
-                                                <div className={`absolute bottom-3 left-3 px-2 py-1 bg-background/80 backdrop-blur-md rounded-lg text-[9px] uppercase font-heading border ${isOut ? 'text-red-500 border-red-500/20' : isLow ? 'text-amber-500 border-amber-500/20' : 'text-gold border-gold/10'}`}>
-                                                    {isOut ? '⛔ Hết hàng' : isLow ? `⚠ Còn ${v.stock}` : `Stock: ${v.stock}`}
+                                                <div className={`absolute bottom-3 left-3 px-2 py-1 bg-background/80 backdrop-blur-md rounded-lg text-[9px] uppercase font-heading border ${isOut ? 'text-error border-error/20' : isLow ? 'text-warning border-warning/20' : 'text-gold border-gold/10'}`}>
+                                                    {isOut ? `⛔ ${t('out_of_stock')}` : isLow ? `⚠ ${t('low_stock_warning', { count: v.stock })}` : `Stock: ${v.stock}`}
                                                 </div>
                                             </div>
                                             <h3 className="font-heading text-sm mb-1 line-clamp-1 uppercase tracking-tight">{p.name}</h3>
@@ -388,7 +390,7 @@ export default function PosPage() {
                                                 <button
                                                     onClick={() => handleAddVariant(v.id, v.stock)}
                                                     disabled={creatingOrder || isOrderCompleted || isOut}
-                                                    className={`p-3 rounded-xl transition-all disabled:opacity-50 ${isOut ? 'bg-red-500/10 text-red-500 cursor-not-allowed' : 'bg-gold/10 text-gold group-hover:bg-gold group-hover:text-primary-foreground'}`}
+                                                    className={`p-3 rounded-xl transition-all disabled:opacity-50 ${isOut ? 'bg-error/10 text-error cursor-not-allowed' : 'bg-gold/10 text-gold group-hover:bg-gold group-hover:text-primary-foreground'}`}
                                                 >
                                                     <Plus className="w-4 h-4" />
                                                 </button>
@@ -403,42 +405,42 @@ export default function PosPage() {
                     {/* AI Consultation Panel */}
                     <div className="border-t border-border bg-secondary/10 shrink-0">
                         <button type="button" onClick={() => setShowAiPanel(!showAiPanel)} className="w-full px-8 py-3 flex items-center justify-between text-[10px] font-heading uppercase tracking-[0.2em] text-gold hover:bg-gold/5 transition-all">
-                            <span className="flex items-center gap-2"><Sparkles className="w-4 h-4" /> AI Consultant</span>
+                            <span className="flex items-center gap-2"><Sparkles className="w-4 h-4" /> {t('ai.title')}</span>
                             {showAiPanel ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
                         </button>
                         <AnimatePresence>
                             {showAiPanel && (
                                 <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                                     <div className="px-8 pb-6 space-y-3">
-                                        <p className="text-[10px] text-muted-foreground">Nhập thông tin khách hàng để AI gợi ý sản phẩm phù hợp.</p>
+                                        <p className="text-[10px] text-muted-foreground">{t('ai.desc')}</p>
                                         <div className="grid grid-cols-2 gap-3">
                                             <select value={aiGender} onChange={e => setAiGender(e.target.value)} className="text-xs rounded-xl border border-border bg-background px-3 py-2 outline-none focus:border-gold/60">
-                                                <option value="">Giới tính</option>
-                                                <option value="male">Nam</option>
-                                                <option value="female">Nữ</option>
-                                                <option value="unisex">Unisex</option>
+                                                <option value="">{t('ai.gender')}</option>
+                                                <option value="male">{t('ai.genders.male')}</option>
+                                                <option value="female">{t('ai.genders.female')}</option>
+                                                <option value="unisex">{t('ai.genders.unisex')}</option>
                                             </select>
                                             <select value={aiOccasion} onChange={e => setAiOccasion(e.target.value)} className="text-xs rounded-xl border border-border bg-background px-3 py-2 outline-none focus:border-gold/60">
-                                                <option value="">Dịp sử dụng</option>
-                                                <option value="daily">Hàng ngày</option>
-                                                <option value="office">Công sở</option>
-                                                <option value="date">Hẹn hò</option>
-                                                <option value="party">Tiệc tùng</option>
-                                                <option value="gift">Tặng quà</option>
-                                                <option value="sport">Thể thao</option>
+                                                <option value="">{t('ai.occasion')}</option>
+                                                <option value="daily">{t('ai.occasions.daily')}</option>
+                                                <option value="office">{t('ai.occasions.office')}</option>
+                                                <option value="date">{t('ai.occasions.date')}</option>
+                                                <option value="party">{t('ai.occasions.party')}</option>
+                                                <option value="gift">{t('ai.occasions.gift')}</option>
+                                                <option value="sport">{t('ai.occasions.sport')}</option>
                                             </select>
                                         </div>
                                         <div className="grid grid-cols-2 gap-3">
-                                            <input type="number" value={aiBudget || ''} onChange={e => setAiBudget(Number(e.target.value) || 0)} placeholder="Ngân sách (VND)" className="text-xs rounded-xl border border-border bg-background px-3 py-2 outline-none focus:border-gold/60" />
-                                            <input type="text" value={aiNotes} onChange={e => setAiNotes(e.target.value)} placeholder="Ghi chú thêm…" className="text-xs rounded-xl border border-border bg-background px-3 py-2 outline-none focus:border-gold/60" />
+                                            <input type="number" value={aiBudget || ''} onChange={e => setAiBudget(Number(e.target.value) || 0)} placeholder={t('ai.budget')} className="text-xs rounded-xl border border-border bg-background px-3 py-2 outline-none focus:border-gold/60" />
+                                            <input type="text" value={aiNotes} onChange={e => setAiNotes(e.target.value)} placeholder={t('ai.notes')} className="text-xs rounded-xl border border-border bg-background px-3 py-2 outline-none focus:border-gold/60" />
                                         </div>
                                         <button onClick={handleAiConsult} disabled={aiLoading} className="w-full py-2.5 rounded-full bg-gold text-primary-foreground text-[10px] font-heading uppercase tracking-widest disabled:opacity-50 flex items-center justify-center gap-2">
-                                            {aiLoading ? <><Loader2 className="w-3 h-3 animate-spin" /> Đang tư vấn…</> : <><Sparkles className="w-3 h-3" /> Gợi ý sản phẩm</>}
+                                            {aiLoading ? <><Loader2 className="w-3 h-3 animate-spin" /> {t('ai.consulting')}</> : <><Sparkles className="w-3 h-3" /> {t('ai.consult_btn')}</>}
                                         </button>
                                         {aiError && <p className="text-[10px] text-red-500">{aiError}</p>}
                                         {aiResults.length > 0 && (
                                             <div className="space-y-2 pt-2">
-                                                <p className="text-[9px] uppercase tracking-widest text-muted-foreground font-heading">AI gợi ý:</p>
+                                                <p className="text-[9px] uppercase tracking-widest text-muted-foreground font-heading">{t('ai.results_title')}</p>
                                                 {aiResults.map((r, i) => (
                                                     <div key={i} className="glass rounded-2xl p-3 border-border space-y-1">
                                                         <div className="flex justify-between items-start">
@@ -450,7 +452,7 @@ export default function PosPage() {
                                                         </div>
                                                         <p className="text-[10px] text-muted-foreground italic">{r.reason}</p>
                                                         <button onClick={() => handleAddAiRecommendation(r.variantId)} disabled={!r.variantId || isOrderCompleted} className="text-[9px] font-heading uppercase tracking-widest text-gold hover:text-foreground transition-colors disabled:opacity-50 flex items-center gap-1 pt-1">
-                                                            <Plus className="w-3 h-3" /> Add to Bill
+                                                            <Plus className="w-3 h-3" /> {t('ai.add_to_bill')}
                                                         </button>
                                                     </div>
                                                 ))}
@@ -467,10 +469,10 @@ export default function PosPage() {
                 <div className="w-[420px] flex flex-col bg-secondary/10 shrink-0 p-8 shadow-2xl z-10 transition-colors">
                     <div className="flex items-center gap-3 mb-4">
                         <ShoppingCart className="w-6 h-6 text-gold" />
-                        <h2 className="font-heading text-lg uppercase tracking-[0.2em]">Active Bin</h2>
+                        <h2 className="font-heading text-lg uppercase tracking-[0.2em]">{t('cart.title')}</h2>
                         {isOrderCompleted && (
-                            <span className="ml-auto px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 text-[9px] font-heading uppercase tracking-widest flex items-center gap-1">
-                                <CheckCircle className="w-3 h-3" /> Paid
+                            <span className="ml-auto px-3 py-1 rounded-full bg-success/10 border border-success/30 text-success text-[9px] font-heading uppercase tracking-widest flex items-center gap-1">
+                                <CheckCircle className="w-3 h-3" /> {t('cart.paid')}
                             </span>
                         )}
                     </div>
@@ -479,7 +481,7 @@ export default function PosPage() {
                     <div className="mb-4 space-y-2">
                         <div className="flex items-center gap-2">
                             <Phone className="w-3.5 h-3.5 text-gold" />
-                            <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-heading">Khách hàng</span>
+                            <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-heading">{t('cart.customer')}</span>
                         </div>
                         {!isOrderCompleted && (
                             <div className="flex gap-2">
@@ -487,7 +489,7 @@ export default function PosPage() {
                                     type="tel"
                                     value={customerPhone}
                                     onChange={e => { setCustomerPhone(e.target.value); setLoyaltyInfo(null); }}
-                                    placeholder="Nhập SĐT khách hàng…"
+                                    placeholder={t('cart.phone_placeholder')}
                                     disabled={isOrderCompleted}
                                     className="flex-1 bg-background border border-border rounded-xl py-2 px-3 text-xs outline-none focus:border-gold/50 transition-all"
                                 />
@@ -497,7 +499,7 @@ export default function PosPage() {
                                     className="px-3 py-2 rounded-xl bg-gold/10 text-gold text-[9px] font-heading uppercase tracking-widest hover:bg-gold/20 disabled:opacity-50 transition-all flex items-center gap-1"
                                 >
                                     {lookingUpCustomer ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
-                                    Tra cứu
+                                    {t('cart.lookup_btn')}
                                 </button>
                             </div>
                         )}
@@ -511,26 +513,26 @@ export default function PosPage() {
                                         <>
                                             <div className="flex items-center gap-2">
                                                 <p className="font-heading text-xs uppercase tracking-widest truncate">{loyaltyInfo.fullName ?? loyaltyInfo.phone}</p>
-                                                <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 text-[8px] font-heading uppercase">Thành viên</span>
+                                                <span className="px-1.5 py-0.5 rounded-full bg-success/10 text-success text-[8px] font-heading uppercase">{t('cart.member')}</span>
                                             </div>
                                             <div className="flex items-center gap-1 mt-0.5">
-                                                <Award className="w-3 h-3 text-amber-500" />
-                                                <span className="text-[10px] text-amber-500 font-heading">{loyaltyInfo.loyaltyPoints} điểm tích lũy</span>
+                                                <Award className="w-3 h-3 text-gold" />
+                                                <span className="text-[10px] text-gold font-heading">{t('cart.points', { count: loyaltyInfo.loyaltyPoints })}</span>
                                             </div>
                                         </>
                                     ) : (
                                         <>
                                             <div className="flex items-center gap-2">
-                                                <p className="font-heading text-xs uppercase tracking-widest">Khách vãng lai</p>
-                                                <span className="px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-500 text-[8px] font-heading uppercase">Chưa đăng ký</span>
+                                                <p className="font-heading text-xs uppercase tracking-widest">{t('cart.guest')}</p>
+                                                <span className="px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-500 text-[8px] font-heading uppercase">{t('cart.guest')}</span>
                                             </div>
                                             {loyaltyInfo.loyaltyPoints > 0 ? (
                                                 <div className="flex items-center gap-1 mt-0.5">
-                                                    <Award className="w-3 h-3 text-amber-500" />
-                                                    <span className="text-[10px] text-amber-500 font-heading">{loyaltyInfo.loyaltyPoints} điểm đang chờ</span>
+                                                    <Award className="w-3 h-3 text-gold" />
+                                                    <span className="text-[10px] text-gold font-heading">{t('cart.pending_points', { count: loyaltyInfo.loyaltyPoints })}</span>
                                                 </div>
                                             ) : (
-                                                <p className="text-[9px] text-muted-foreground mt-0.5">Điểm sẽ được tích khi thanh toán. Đăng ký tài khoản để sử dụng.</p>
+                                                <p className="text-[9px] text-muted-foreground mt-0.5">{t('cart.guest_desc')}</p>
                                             )}
                                         </>
                                     )}
@@ -574,56 +576,56 @@ export default function PosPage() {
                             ))}
                         </AnimatePresence>
                         {!order?.items.length && (
-                            <div className="text-xs text-muted-foreground text-center mt-8">No items in the bin. Search and add products from the left.</div>
+                            <div className="text-xs text-muted-foreground text-center mt-8">{t('cart.no_items')}</div>
                         )}
                     </div>
 
                     {/* Totals & Payment */}
                     <div className="space-y-4 border-t border-border pt-8 mt-auto">
                         <div className="flex justify-between text-muted-foreground text-[10px] uppercase tracking-widest font-heading">
-                            <span>Subtotal</span><span>{formatVND(subtotal)}</span>
+                            <span>{t('cart.subtotal')}</span><span>{formatVND(subtotal)}</span>
                         </div>
                         <div className="flex justify-between text-2xl font-heading pt-4 text-foreground">
-                            <span className="tracking-tighter uppercase">Total</span>
+                            <span className="tracking-tighter uppercase">{t('cart.total')}</span>
                             <span className="text-gold">{formatVND(subtotal)}</span>
                         </div>
 
                         {isOrderCompleted ? (
                             <div className="grid grid-cols-2 gap-4 mt-6">
                                 <button onClick={() => { setCompletedOrder(order); setShowReceipt(true); }} className="py-4 glass border-border rounded-2xl font-heading text-[9px] uppercase tracking-[0.2em] hover:border-gold/50 transition-all flex flex-col items-center gap-2">
-                                    <Printer className="w-4 h-4 text-gold" /> View Receipt
+                                    <Printer className="w-4 h-4 text-gold" /> {t('cart.receipt_btn')}
                                 </button>
                                 <button onClick={handleNewOrder} className="py-4 bg-gold text-primary-foreground font-heading font-bold rounded-2xl text-[9px] uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-gold/20 flex flex-col items-center gap-2">
-                                    <Plus className="w-4 h-4" /> New Order
+                                    <Plus className="w-4 h-4" /> {t('cart.new_order_btn')}
                                 </button>
                             </div>
                         ) : (
                             <>
                                 <div className="mt-6 flex gap-2 text-[9px] font-heading uppercase tracking-[0.2em]">
-                                    <button type="button" onClick={() => setPaymentMethod('CASH')} className={`flex-1 py-2 rounded-full border ${paymentMethod === 'CASH' ? 'border-gold bg-gold/10 text-gold' : 'border-border text-muted-foreground'}`}>Cash</button>
-                                    <button type="button" onClick={() => setPaymentMethod('QR')} className={`flex-1 py-2 rounded-full border flex items-center justify-center gap-1 ${paymentMethod === 'QR' ? 'border-gold bg-gold/10 text-gold' : 'border-border text-muted-foreground'}`}><QrCode className="w-3 h-3" /> QR Pay</button>
+                                    <button type="button" onClick={() => setPaymentMethod('CASH')} className={`flex-1 py-2 rounded-full border ${paymentMethod === 'CASH' ? 'border-gold bg-gold/10 text-gold shadow-[0_4px_12px_rgba(197,160,89,0.1)]' : 'border-border text-muted-foreground'}`}>{t('cart.cash_btn')}</button>
+                                    <button type="button" onClick={() => setPaymentMethod('QR')} className={`flex-1 py-2 rounded-full border flex items-center justify-center gap-1 ${paymentMethod === 'QR' ? 'border-gold bg-gold/10 text-gold shadow-[0_4px_12px_rgba(197,160,89,0.1)]' : 'border-border text-muted-foreground'}`}><QrCode className="w-3 h-3" /> {t('cart.qr_btn')}</button>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4 mt-6">
                                     <button className="py-4 glass border-border rounded-2xl font-heading text-[9px] uppercase tracking-[0.2em] hover:border-gold/50 transition-all flex flex-col items-center gap-2" disabled>
-                                        <Receipt className="w-4 h-4 text-gold" /> Hold
+                                        <Receipt className="w-4 h-4 text-gold" /> {t('cart.hold_btn')}
                                     </button>
                                     {paymentMethod === 'CASH' ? (
                                         <button onClick={handlePayCash} disabled={!order || !order.items.length || paying} className="py-4 bg-gold text-primary-foreground font-heading font-bold rounded-2xl text-[9px] uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-gold/20 flex flex-col items-center gap-2 disabled:opacity-50">
-                                            <CreditCard className="w-4 h-4" /> {paying ? 'Processing…' : 'Charge Cash'}
+                                            <CreditCard className="w-4 h-4" /> {paying ? t('cart.processing') : t('cart.charge_cash')}
                                         </button>
                                     ) : (
                                         <button onClick={handleCreateQrPayment} disabled={!order || !order.items.length || paying} className="py-4 bg-gold text-primary-foreground font-heading font-bold rounded-2xl text-[9px] uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-gold/20 flex flex-col items-center gap-2 disabled:opacity-50">
-                                            <QrCode className="w-4 h-4" /> {paying ? 'Generating…' : qrPayment ? 'Show QR Again' : 'Generate QR'}
+                                            <QrCode className="w-4 h-4" /> {paying ? t('cart.generating') : qrPayment ? t('cart.show_qr_again') : t('cart.generate_qr')}
                                         </button>
                                     )}
                                 </div>
                                 {paymentMethod === 'QR' && qrPayment && (
                                     <div className="mt-6 space-y-2 text-[10px]">
-                                        <div className="flex items-center gap-2 text-emerald-500">
-                                            <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                            <span className="font-heading uppercase tracking-[0.2em]">Waiting for payment…</span>
+                                        <div className="flex items-center gap-2 text-success">
+                                            <span className="inline-block w-2 h-2 rounded-full bg-success animate-pulse" />
+                                            <span className="font-heading uppercase tracking-[0.2em]">{t('cart.waiting_payment')}</span>
                                         </div>
-                                        <a href={qrPayment.checkoutUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center px-4 py-2 rounded-full border border-gold text-gold text-[9px] font-heading uppercase tracking-[0.2em] hover:bg-gold/10">Open PayOS Checkout</a>
+                                        <a href={qrPayment.checkoutUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center px-4 py-2 rounded-full border border-gold text-gold text-[9px] font-heading uppercase tracking-[0.2em] hover:bg-gold/10 group"><Sparkles className="w-3 h-3 mr-2 group-hover:animate-spin" /> {t('cart.open_payos')}</a>
                                     </div>
                                 )}
                             </>
@@ -638,9 +640,9 @@ export default function PosPage() {
                             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="bg-background border border-border rounded-[2.5rem] p-10 max-w-md w-full shadow-2xl relative">
                                 <button onClick={() => setShowReceipt(false)} className="absolute top-6 right-6 p-2 rounded-full hover:bg-secondary transition-colors"><X className="w-4 h-4 text-muted-foreground" /></button>
                                 <div className="text-center mb-8">
-                                    <div className="w-16 h-16 mx-auto bg-emerald-500/10 rounded-full flex items-center justify-center mb-4"><CheckCircle className="w-8 h-8 text-emerald-500" /></div>
-                                    <h2 className="font-heading text-2xl uppercase tracking-tighter mb-1">Payment Complete</h2>
-                                    <p className="text-xs text-muted-foreground uppercase tracking-widest">Order {completedOrder.code}</p>
+                                    <div className="w-16 h-16 mx-auto bg-success/10 rounded-full flex items-center justify-center mb-4"><CheckCircle className="w-8 h-8 text-success" /></div>
+                                    <h2 className="font-heading text-2xl uppercase tracking-tighter mb-1">{t('receipt.complete')}</h2>
+                                    <p className="text-xs text-muted-foreground uppercase tracking-widest">{t('receipt.order')} {completedOrder.code}</p>
                                 </div>
                                 {/* Customer info on receipt */}
                                 {(completedOrder.user || loyaltyInfo) && (
@@ -651,16 +653,16 @@ export default function PosPage() {
                                                 <>
                                                     <p className="font-heading text-[10px] uppercase tracking-widest">{completedOrder.user.fullName ?? completedOrder.user.phone}</p>
                                                     <div className="flex items-center gap-1">
-                                                        <Award className="w-3 h-3 text-amber-500" />
-                                                        <span className="text-[10px] text-amber-500 font-heading">+{Math.floor(completedOrder.finalAmount / 10000)} điểm tích lũy</span>
+                                                        <Award className="w-3 h-3 text-gold" />
+                                                        <span className="text-[10px] text-gold font-heading">{t('receipt.earned_points', { count: Math.floor(completedOrder.finalAmount / 10000) })}</span>
                                                     </div>
                                                 </>
                                             ) : loyaltyInfo && !loyaltyInfo.registered ? (
                                                 <>
                                                     <p className="font-heading text-[10px] uppercase tracking-widest">Khách vãng lai — {loyaltyInfo.phone}</p>
                                                     <div className="flex items-center gap-1">
-                                                        <Award className="w-3 h-3 text-amber-500" />
-                                                        <span className="text-[10px] text-amber-500 font-heading">+{Math.floor(completedOrder.finalAmount / 10000)} điểm (đăng ký để sử dụng)</span>
+                                                        <Award className="w-3 h-3 text-gold" />
+                                                        <span className="text-[10px] text-gold font-heading">{t('receipt.earned_points', { count: Math.floor(completedOrder.finalAmount / 10000) })} {t('receipt.reg_to_use')}</span>
                                                     </div>
                                                 </>
                                             ) : null}
@@ -680,18 +682,18 @@ export default function PosPage() {
                                     ))}
                                 </div>
                                 <div className="border-t border-border pt-4 space-y-2">
-                                    <div className="flex justify-between text-[10px] uppercase tracking-widest text-muted-foreground font-heading"><span>Subtotal</span><span>{formatVND(completedOrder.totalAmount)}</span></div>
+                                    <div className="flex justify-between text-[10px] uppercase tracking-widest text-muted-foreground font-heading"><span>{t('receipt.subtotal')}</span><span>{formatVND(completedOrder.totalAmount)}</span></div>
                                     {completedOrder.discountAmount > 0 && (
-                                        <div className="flex justify-between text-[10px] uppercase tracking-widest text-emerald-500 font-heading"><span>Discount</span><span>-{formatVND(completedOrder.discountAmount)}</span></div>
+                                        <div className="flex justify-between text-[10px] uppercase tracking-widest text-success font-heading"><span>{t('receipt.discount')}</span><span>-{formatVND(completedOrder.discountAmount)}</span></div>
                                     )}
-                                    <div className="flex justify-between text-xl font-heading pt-2"><span className="uppercase tracking-tighter">Total</span><span className="text-gold">{formatVND(completedOrder.finalAmount)}</span></div>
+                                    <div className="flex justify-between text-xl font-heading pt-2"><span className="uppercase tracking-tighter">{t('receipt.total')}</span><span className="text-gold">{formatVND(completedOrder.finalAmount)}</span></div>
                                 </div>
                                 <div className="mt-4 text-center text-[10px] text-muted-foreground uppercase tracking-widest font-heading">
                                     {completedOrder.store?.name ?? 'POS'} • {new Date().toLocaleString('vi-VN')}
                                 </div>
                                 <div className="mt-8 grid grid-cols-2 gap-3">
-                                    <button onClick={() => setShowReceipt(false)} className="py-3 glass border-border rounded-2xl font-heading text-[9px] uppercase tracking-[0.2em] hover:border-gold/50 transition-all">Close</button>
-                                    <button onClick={() => { setShowReceipt(false); handleNewOrder(); }} className="py-3 bg-gold text-primary-foreground font-heading font-bold rounded-2xl text-[9px] uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-gold/20">New Order</button>
+                                    <button onClick={() => setShowReceipt(false)} className="py-3 glass border-border rounded-2xl font-heading text-[9px] uppercase tracking-[0.2em] hover:border-gold/50 transition-all">{t('receipt.close_btn')}</button>
+                                    <button onClick={() => { setShowReceipt(false); handleNewOrder(); }} className="py-3 bg-gold text-primary-foreground font-heading font-bold rounded-2xl text-[9px] uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-gold/20">{t('receipt.new_order_btn')}</button>
                                 </div>
                             </motion.div>
                         </motion.div>

@@ -23,6 +23,9 @@ import { ChatModule } from './chat/chat.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { AiModule } from './ai/ai.module';
 import { FavoritesModule } from './favorites/favorites.module';
+import { AddressesModule } from './addresses/addresses.module';
+import { GHNModule } from './ghn/ghn.module';
+import { ShippingModule } from './shipping/shipping.module';
 
 @Module({
   imports: [
@@ -49,6 +52,9 @@ import { FavoritesModule } from './favorites/favorites.module';
     ReviewsModule,
     AiModule,
     FavoritesModule,
+    AddressesModule,
+    GHNModule,
+    ShippingModule,
   ],
 
   controllers: [AppController],

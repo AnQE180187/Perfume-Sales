@@ -56,7 +56,7 @@ export const Header = () => {
                 className={cn(
                     "fixed top-0 left-0 right-0 z-50 transition-all duration-700",
                     isScrolled
-                        ? "py-4 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl border-b border-stone-100 dark:border-white/5 shadow-sm"
+                        ? "py-4 bg-background/80 backdrop-blur-xl border-b border-border shadow-sm"
                         : "py-8 bg-transparent"
                 )}
             >
@@ -64,7 +64,7 @@ export const Header = () => {
                     <div className="flex items-center justify-between">
                         {/* Logo */}
                         <Link href="/" className="relative z-50 group">
-                            <h1 className="text-2xl md:text-3xl font-serif tracking-[0.3em] font-bold text-luxury-black dark:text-white transition-colors">
+                            <h1 className="text-2xl md:text-3xl font-serif tracking-[0.3em] font-bold text-foreground transition-colors">
                                 AURA
                             </h1>
                             <div className={cn(
@@ -83,7 +83,7 @@ export const Header = () => {
                                         "text-[10px] font-bold tracking-[.3em] uppercase transition-all cursor-pointer relative group",
                                         pathname === item.href
                                             ? "text-gold"
-                                            : "text-luxury-black dark:text-white hover:text-gold"
+                                            : "text-foreground hover:text-gold"
                                     )}
                                 >
                                     {item.name}
@@ -100,7 +100,7 @@ export const Header = () => {
                             <div className="flex items-center gap-1 md:gap-2">
                                 <Link
                                     href="/search"
-                                    className="p-2 text-luxury-black dark:text-white hover:text-gold transition-colors cursor-pointer"
+                                    className="p-2 text-foreground hover:text-gold transition-colors cursor-pointer"
                                 >
                                     <Search size={20} strokeWidth={1.5} />
                                 </Link>
@@ -110,7 +110,7 @@ export const Header = () => {
 
                                 <Link
                                     href="/cart"
-                                    className="p-2 text-luxury-black dark:text-white hover:text-gold transition-colors relative cursor-pointer"
+                                    className="p-2 text-foreground hover:text-gold transition-colors relative cursor-pointer"
                                 >
                                     <ShoppingBag size={20} strokeWidth={1.5} />
                                     {cartCount > 0 && (
@@ -125,13 +125,13 @@ export const Header = () => {
                                 </Link>
 
                                 {isAuthenticated ? (
-                                    <div className="flex items-center gap-2 md:gap-4 pl-2 md:pl-4 border-l border-stone-100 dark:border-white/10 transition-colors ml-2">
+                                    <div className="flex items-center gap-2 md:gap-4 pl-2 md:pl-4 border-l border-border transition-colors ml-2">
 
                                         <Link
                                             href="/dashboard/profile"
                                             className="hidden md:flex flex-col items-end group"
                                         >
-                                            <span className="text-[9px] font-bold text-luxury-black dark:text-white uppercase tracking-widest">
+                                            <span className="text-[9px] font-bold text-foreground uppercase tracking-widest">
                                                 {user?.name?.split(' ')[0] || t('member')}
                                             </span>
                                             <span className="text-[8px] text-gold font-bold uppercase tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity">
@@ -149,14 +149,14 @@ export const Header = () => {
                                 ) : (
                                     <Link
                                         href="/login"
-                                        className="ml-2 md:ml-4 px-4 md:px-6 py-2 md:py-2.5 border border-stone-200 dark:border-white/10 rounded-full text-[9px] font-bold tracking-[.2em] uppercase text-luxury-black dark:text-white hover:bg-luxury-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all shadow-sm"
+                                        className="ml-2 md:ml-4 px-4 md:px-6 py-2 md:py-2.5 border border-border rounded-full text-[9px] font-bold tracking-[.2em] uppercase text-foreground hover:bg-foreground hover:text-background dark:hover:bg-foreground dark:hover:text-background transition-all shadow-sm"
                                     >
                                         {t('login')}
                                     </Link>
                                 )}
 
                                 <button
-                                    className="lg:hidden p-2 text-luxury-black dark:text-white cursor-pointer ml-2"
+                                    className="lg:hidden p-2 text-foreground cursor-pointer ml-2"
                                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                                 >
                                     {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -173,7 +173,7 @@ export const Header = () => {
                             initial={{ opacity: 0, y: -20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}
-                            className="absolute top-full left-0 right-0 bg-white dark:bg-zinc-950 border-b border-stone-100 dark:border-white/10 p-8 flex flex-col gap-6 lg:hidden shadow-2xl transition-colors"
+                            className="absolute top-full left-0 right-0 bg-background border-b border-border p-8 flex flex-col gap-6 lg:hidden shadow-2xl transition-colors"
                         >
                             {menuItems.map((item) => (
                                 <Link
@@ -198,7 +198,7 @@ export const Header = () => {
 
                             {/* Mobile Language Switch & Theme Toggle */}
                             <div className="flex items-center justify-between pt-6 border-t border-stone-100 dark:border-white/10">
-                                <span className="text-[10px] font-bold tracking-widest uppercase text-stone-400">Settings</span>
+                                <span className="text-[10px] font-bold tracking-widest uppercase text-stone-400">{t('settings')}</span>
                                 <div className="flex items-center gap-4">
                                     <LanguageSwitch />
                                     <ThemeToggle />
@@ -212,7 +212,7 @@ export const Header = () => {
                                             className="text-xs font-bold tracking-[.3em] uppercase text-gold hover:text-gold/80 transition-colors flex items-center justify-between group pt-4 border-t border-stone-100 dark:border-white/10"
                                             onClick={() => setIsMobileMenuOpen(false)}
                                         >
-                                            Admin Dashboard
+                                            {t('admin_dashboard')}
                                             <ChevronRight size={14} />
                                         </Link>
                                     )}
@@ -222,7 +222,7 @@ export const Header = () => {
                                             className="text-xs font-bold tracking-[.3em] uppercase text-gold hover:text-gold/80 transition-colors flex items-center justify-between group pt-4 border-t border-stone-100 dark:border-white/10"
                                             onClick={() => setIsMobileMenuOpen(false)}
                                         >
-                                            Staff Dashboard
+                                            {t('staff_dashboard')}
                                             <ChevronRight size={14} />
                                         </Link>
                                     )}

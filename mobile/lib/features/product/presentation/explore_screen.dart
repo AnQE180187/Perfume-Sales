@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/app_async_widget.dart';
 import '../../../core/widgets/product_card.dart';
+import '../../../core/widgets/shimmer_loading.dart';
 import '../providers/product_provider.dart';
 
 class ExploreScreen extends ConsumerStatefulWidget {
@@ -14,9 +16,6 @@ class ExploreScreen extends ConsumerStatefulWidget {
 }
 
 class _ExploreScreenState extends ConsumerState<ExploreScreen> {
-  String _selectedFilter = 'TẤT CẢ';
-  final List<String> _filters = ['TẤT CẢ', 'CẢM XÚC', 'DỊP DÙNG', 'MÙA', 'GIÁ'];
-
   @override
   Widget build(BuildContext context) {
     final productsAsync = ref.watch(productsProvider);
@@ -72,112 +71,42 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               ),
             ),
 
-            // Filter Chips
-            SizedBox(
-              height: 50,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                itemCount: _filters.length,
-                itemBuilder: (context, index) {
-                  final filter = _filters[index];
-                  final isSelected = _selectedFilter == filter;
-
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: ChoiceChip(
-                      label: Text(filter),
-                      selected: isSelected,
-                      onSelected: (selected) {
-                        setState(() {
-                          _selectedFilter = filter;
-                        });
-                      },
-                      labelStyle: GoogleFonts.montserrat(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 1.2,
-                        color: isSelected
-                            ? AppTheme.primaryDb
-                            : AppTheme.mutedSilver,
-                      ),
-                      backgroundColor: AppTheme.creamWhite,
-                      selectedColor: AppTheme.champagneGold,
-                      side: BorderSide(
-                        color: isSelected
-                            ? AppTheme.champagneGold
-                            : AppTheme.softTaupe,
-                        width: 1,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
             // Products Grid
             Expanded(
-              child: productsAsync.when(
-                data: (products) {
-                  return GridView.builder(
+              child: AppAsyncWidget(
+                value: productsAsync,
+                onRetry: () => ref.invalidate(productsProvider),
+                loadingBuilder: () => SingleChildScrollView(
+                  child: ShimmerProductGrid(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 20,
                       vertical: 8,
                     ),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.62,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                        ),
-                    itemCount: products.length,
-                    itemBuilder: (context, index) {
-                      final product = products[index];
-                      return ProductCard(
-                        product: product,
-                        variant: ProductCardVariant.grid,
-                        badge: (product.rating ?? 0) >= 4.9
-                            ? 'ĐÁNH GIÁ CAO'
-                            : null,
-                        onTap: () => context.push('/product/${product.id}'),
-                      );
-                    },
-                  );
-                },
-                loading: () => const Center(
-                  child: CircularProgressIndicator(
-                    color: AppTheme.champagneGold,
                   ),
                 ),
-                error: (error, stack) => Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.error_outline,
-                        size: 48,
-                        color: AppTheme.mutedSilver,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Không thể tải danh sách sản phẩm',
-                        style: GoogleFonts.montserrat(
-                          fontSize: 14,
-                          color: AppTheme.mutedSilver,
-                        ),
-                      ),
-                    ],
+                dataBuilder: (products) => GridView.builder(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
                   ),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 0.60,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                  ),
+                  itemCount: products.length,
+                  itemBuilder: (context, index) {
+                    final product = products[index];
+                    return ProductCard(
+                      product: product,
+                      variant: ProductCardVariant.grid,
+                      badge: (product.rating ?? 0) >= 4.9
+                          ? 'ĐÁNH GIÁ CAO'
+                          : null,
+                      onTap: () => context.push('/product/${product.id}'),
+                    );
+                  },
                 ),
               ),
             ),

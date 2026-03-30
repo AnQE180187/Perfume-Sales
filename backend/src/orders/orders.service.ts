@@ -68,7 +68,10 @@ export class OrdersService {
     }
 
     const shippingFee = dto.shippingFee ?? 0;
-    const finalAmount = Math.max(0, finalAmountBeforeLoyalty - loyaltyDiscount + shippingFee);
+    const finalAmount = Math.max(
+      0,
+      finalAmountBeforeLoyalty - loyaltyDiscount + shippingFee,
+    );
     const actualDiscountAmount = discountAmount + loyaltyDiscount;
 
     const order = await this.prisma.$transaction(async (tx) => {
@@ -124,7 +127,11 @@ export class OrdersService {
       return created;
     });
 
-    if (dto.paymentMethod === 'COD' && order.shippingDistrictId && order.shippingWardCode) {
+    if (
+      dto.paymentMethod === 'COD' &&
+      order.shippingDistrictId &&
+      order.shippingWardCode
+    ) {
       try {
         await this.shippingService.createGhnShipment(order.id);
       } catch (e) {
@@ -139,7 +146,18 @@ export class OrdersService {
     const orders = await this.prisma.order.findMany({
       where: { userId },
       include: {
-        items: { include: { variant: { include: { product: true } }, review: true } },
+        items: {
+          include: {
+            variant: {
+              include: {
+                product: {
+                  include: { images: { orderBy: { order: 'asc' }, take: 1 } },
+                },
+              },
+            },
+            review: true,
+          },
+        },
         promotions: true,
       },
       orderBy: { createdAt: 'desc' },
@@ -160,7 +178,18 @@ export class OrdersService {
         skip,
         take,
         include: {
-          items: { include: { variant: { include: { product: true } }, review: true } },
+          items: {
+            include: {
+              variant: {
+                include: {
+                  product: {
+                    include: { images: { orderBy: { order: 'asc' }, take: 1 } },
+                  },
+                },
+              },
+              review: true,
+            },
+          },
           user: true,
           promotions: { include: { promotionCode: true } },
         },
@@ -191,7 +220,16 @@ export class OrdersService {
       where: { id, userId },
       include: {
         items: {
-          include: { variant: { include: { product: true } }, review: true },
+          include: {
+            variant: {
+              include: {
+                product: {
+                  include: { images: { orderBy: { order: 'asc' }, take: 1 } },
+                },
+              },
+            },
+            review: true,
+          },
         },
         promotions: { include: { promotionCode: true } },
       },
@@ -212,7 +250,16 @@ export class OrdersService {
       where: { id },
       include: {
         items: {
-          include: { variant: { include: { product: true } }, review: true },
+          include: {
+            variant: {
+              include: {
+                product: {
+                  include: { images: { orderBy: { order: 'asc' }, take: 1 } },
+                },
+              },
+            },
+            review: true,
+          },
         },
         user: true,
         promotions: { include: { promotionCode: true } },

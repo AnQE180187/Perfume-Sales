@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/currency_utils.dart';
 import '../../models/cart_item.dart';
 
 class CartItemTile extends StatelessWidget {
@@ -25,186 +27,270 @@ class CartItemTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+      child: Dismissible(
+        key: Key('cart-item-${item.id}'),
+        direction: DismissDirection.endToStart,
+        background: _SwipeBg(),
+        onDismissed: (_) {
+          HapticFeedback.mediumImpact();
+          onRemove();
+        },
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-        ],
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              _Checkbox(
+                isSelected: isSelected,
+                onTap: () => onSelectChanged(!isSelected),
+              ),
+              const SizedBox(width: 10),
+              _ProductImage(imageUrl: item.productImage),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _ProductDetails(
+                  item: item,
+                  isSample: isSample,
+                  onQuantityChanged: onQuantityChanged,
+                  onRemove: onRemove,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    );
+  }
+}
+
+class _SwipeBg extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: Alignment.centerRight,
+      padding: const EdgeInsets.only(right: 24),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFF4444),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: const Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Selection Checkbox
-          _buildCheckbox(),
-          const SizedBox(width: 12),
-
-          // Product Image
-          _buildProductImage(),
-          const SizedBox(width: 12),
-
-          // Product Info
-          Expanded(child: _buildProductInfo()),
-
-          // Delete Button
-          _buildDeleteButton(),
+          Icon(Icons.delete_outline_rounded, color: Colors.white, size: 26),
+          SizedBox(height: 4),
+          Text(
+            'Xóa',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildCheckbox() {
+class _Checkbox extends StatelessWidget {
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _Checkbox({required this.isSelected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => onSelectChanged(!isSelected),
+      onTap: onTap,
       child: Container(
-        width: 24,
-        height: 24,
+        width: 22,
+        height: 22,
         decoration: BoxDecoration(
           color: isSelected ? AppTheme.accentGold : Colors.transparent,
           shape: BoxShape.circle,
           border: Border.all(
             color: isSelected ? AppTheme.accentGold : AppTheme.softTaupe,
-            width: 2,
+            width: 1.5,
           ),
         ),
         child: isSelected
-            ? const Icon(Icons.check, color: Colors.white, size: 16)
+            ? const Icon(Icons.check, color: Colors.white, size: 14)
             : null,
       ),
     );
   }
+}
 
-  Widget _buildProductImage() {
-    return Container(
-      width: 70,
-      height: 70,
-      decoration: BoxDecoration(
+class _ProductImage extends StatelessWidget {
+  final String imageUrl;
+  const _ProductImage({required this.imageUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: 76,
+        height: 76,
         color: AppTheme.ivoryBackground,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
         child: Image.network(
-          item.productImage,
+          imageUrl,
           fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return const Center(
-              child: Icon(
-                Icons.image_outlined,
-                color: AppTheme.mutedSilver,
-                size: 28,
-              ),
-            );
-          },
+          errorBuilder: (_, __, ___) => const Center(
+            child: Icon(
+              Icons.image_outlined,
+              color: AppTheme.mutedSilver,
+              size: 28,
+            ),
+          ),
         ),
       ),
     );
   }
+}
 
-  Widget _buildProductInfo() {
+class _ProductDetails extends StatelessWidget {
+  final CartItem item;
+  final bool isSample;
+  final ValueChanged<int> onQuantityChanged;
+  final VoidCallback onRemove;
+
+  const _ProductDetails({
+    required this.item,
+    required this.isSample,
+    required this.onQuantityChanged,
+    required this.onRemove,
+  });
+
+  bool get _hasVariantInfo =>
+      (item.variant ?? '').isNotEmpty || (item.size ?? '').isNotEmpty;
+
+  String get _variantInfo {
+    final parts = <String>[
+      if ((item.variant ?? '').isNotEmpty) item.variant!,
+      if ((item.size ?? '').isNotEmpty) item.size!,
+    ];
+    return parts.join(' • ');
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Title & Badge
         Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
               child: Text(
                 item.productName,
-                style: GoogleFonts.cormorantGaramond(
-                  fontSize: 16,
+                style: GoogleFonts.playfairDisplay(
+                  fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: AppTheme.deepCharcoal,
-                  height: 1.2,
+                  height: 1.3,
                 ),
-                maxLines: 1,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            if (isSample) ...[
-              const SizedBox(width: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: AppTheme.accentGold.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  'MẪU THỬ',
-                  style: GoogleFonts.montserrat(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.5,
-                    color: AppTheme.accentGold,
-                  ),
-                ),
-              ),
-            ],
+            if (isSample) ...[const SizedBox(width: 6), const _SampleBadge()],
           ],
         ),
-        const SizedBox(height: 2),
-
-        // Notes & Size
-        Text(
-          '${item.variant ?? ''} • ${item.size ?? ''}',
-          style: GoogleFonts.montserrat(
-            fontSize: 11,
-            fontWeight: FontWeight.w400,
-            color: AppTheme.mutedSilver,
+        if (_hasVariantInfo) ...[
+          const SizedBox(height: 3),
+          Text(
+            _variantInfo,
+            style: GoogleFonts.montserrat(
+              fontSize: 11,
+              color: AppTheme.mutedSilver,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        const SizedBox(height: 6),
-
+        ],
+        const SizedBox(height: 8),
         Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Price & Limit
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    isSample
-                        ? 'Miễn phí'
-                        : '\$${item.price.toStringAsFixed(2)}',
-                    style: GoogleFonts.montserrat(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.accentGold,
-                    ),
-                  ),
-                  if (isSample)
-                    Text(
-                      'Giới hạn 1',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w400,
-                        color: AppTheme.mutedSilver,
-                      ),
-                    ),
-                ],
+            Text(
+              isSample ? 'Miễn phí' : formatVND(item.price),
+              style: GoogleFonts.montserrat(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.accentGold,
               ),
             ),
-
-            // Quantity Control
-            _buildQuantityControl(),
+            const Spacer(),
+            _InlineQty(
+              quantity: item.quantity,
+              canDecrease: item.quantity > 1,
+              canIncrease: !isSample || item.quantity < 1,
+              onDecrease: () => onQuantityChanged(item.quantity - 1),
+              onIncrease: () => onQuantityChanged(item.quantity + 1),
+            ),
           ],
         ),
       ],
     );
   }
+}
 
-  Widget _buildQuantityControl() {
-    final maxQuantity = isSample ? 1 : 99;
+class _SampleBadge extends StatelessWidget {
+  const _SampleBadge();
 
+  @override
+  Widget build(BuildContext context) {
     return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: AppTheme.accentGold.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        'MẪU THỬ',
+        style: GoogleFonts.montserrat(
+          fontSize: 8,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.5,
+          color: AppTheme.accentGold,
+        ),
+      ),
+    );
+  }
+}
+
+class _InlineQty extends StatelessWidget {
+  final int quantity;
+  final bool canDecrease;
+  final bool canIncrease;
+  final VoidCallback onDecrease;
+  final VoidCallback onIncrease;
+
+  const _InlineQty({
+    required this.quantity,
+    required this.canDecrease,
+    required this.canIncrease,
+    required this.onDecrease,
+    required this.onIncrease,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 32,
       decoration: BoxDecoration(
         color: AppTheme.ivoryBackground,
         borderRadius: BorderRadius.circular(16),
@@ -212,64 +298,60 @@ class CartItemTile extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _buildQuantityButton(
+          _QtyBtn(
             icon: Icons.remove,
-            onTap: item.quantity > 1
-                ? () => onQuantityChanged(item.quantity - 1)
-                : null,
+            active: canDecrease,
+            onTap: canDecrease ? onDecrease : null,
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Text(
-              '${item.quantity}',
-              style: GoogleFonts.montserrat(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: AppTheme.deepCharcoal,
+          SizedBox(
+            width: 28,
+            child: Center(
+              child: Text(
+                '$quantity',
+                style: GoogleFonts.montserrat(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.deepCharcoal,
+                ),
               ),
             ),
           ),
-          _buildQuantityButton(
+          _QtyBtn(
             icon: Icons.add,
-            onTap: item.quantity < maxQuantity
-                ? () => onQuantityChanged(item.quantity + 1)
-                : null,
+            active: canIncrease,
+            onTap: canIncrease ? onIncrease : null,
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildQuantityButton({
-    required IconData icon,
-    required VoidCallback? onTap,
-  }) {
+class _QtyBtn extends StatelessWidget {
+  final IconData icon;
+  final bool active;
+  final VoidCallback? onTap;
+
+  const _QtyBtn({
+    required this.icon,
+    required this.active,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
-      child: Container(
-        width: 28,
-        height: 28,
-        alignment: Alignment.center,
+      child: SizedBox(
+        width: 30,
+        height: 32,
         child: Icon(
           icon,
           size: 14,
-          color: onTap != null ? AppTheme.deepCharcoal : AppTheme.mutedSilver,
+          color: active ? AppTheme.deepCharcoal : AppTheme.mutedSilver,
         ),
       ),
-    );
-  }
-
-  Widget _buildDeleteButton() {
-    return IconButton(
-      onPressed: onRemove,
-      icon: const Icon(
-        Icons.delete_outline,
-        color: AppTheme.mutedSilver,
-        size: 18,
-      ),
-      padding: const EdgeInsets.all(4),
-      constraints: const BoxConstraints(),
     );
   }
 }

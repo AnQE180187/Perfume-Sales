@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
+import '../models/review.dart';
+import '../providers/review_provider.dart';
 
-class ReviewsScreen extends StatelessWidget {
+enum _ReviewFilter { all, withImages, verified }
+
+class ReviewsScreen extends ConsumerStatefulWidget {
   final String productId;
   final String productName;
 
@@ -13,7 +18,49 @@ class ReviewsScreen extends StatelessWidget {
   });
 
   @override
+  ConsumerState<ReviewsScreen> createState() => _ReviewsScreenState();
+}
+
+class _ReviewsScreenState extends ConsumerState<ReviewsScreen> {
+  _ReviewFilter _activeFilter = _ReviewFilter.all;
+
+  List<ReviewItem> _applyFilter(List<ReviewItem> items) {
+    switch (_activeFilter) {
+      case _ReviewFilter.withImages:
+        return items.where((r) => r.images.isNotEmpty).toList();
+      case _ReviewFilter.verified:
+        return items.where((r) => r.isVerified).toList();
+      case _ReviewFilter.all:
+        return items;
+    }
+  }
+
+  String _timeAgo(DateTime dt) {
+    final diff = DateTime.now().difference(dt);
+    if (diff.inDays >= 365) {
+      final y = (diff.inDays / 365).floor();
+      return '$y năm trước';
+    } else if (diff.inDays >= 30) {
+      final m = (diff.inDays / 30).floor();
+      return '$m tháng trước';
+    } else if (diff.inDays >= 7) {
+      final w = (diff.inDays / 7).floor();
+      return '$w tuần trước';
+    } else if (diff.inDays >= 1) {
+      return '${diff.inDays} ngày trước';
+    } else if (diff.inHours >= 1) {
+      return '${diff.inHours} giờ trước';
+    } else {
+      return 'Vừa xong';
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final statsAsync = ref.watch(reviewStatsProvider(widget.productId));
+    final listAsync = ref.watch(reviewListProvider(widget.productId));
+    final summaryAsync = ref.watch(reviewSummaryProvider(widget.productId));
+
     return Scaffold(
       backgroundColor: AppTheme.ivoryBackground,
       appBar: AppBar(
@@ -34,236 +81,338 @@ class ReviewsScreen extends StatelessWidget {
         centerTitle: true,
       ),
       body: ListView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
         children: [
-          // PerfumeGPT Insight Card
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: AppTheme.accentGold.withValues(alpha: 0.06),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: AppTheme.accentGold.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    Icons.auto_awesome_rounded,
-                    color: AppTheme.accentGold,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'GÓC NHÌN PERFUMEGPT',
-                        style: GoogleFonts.montserrat(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 1,
-                          color: AppTheme.accentGold,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        '92% người mua đề xuất mùi hương này cho buổi tối, đặc biệt yêu thích tổ hợp oud nhiều lớp cùng lớp hương vanilla ấm áp lưu lại sau cùng. Độ lưu hương là điểm được nhắc đến nhiều nhất.',
-                        style: GoogleFonts.montserrat(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w400,
-                          height: 1.5,
-                          color: AppTheme.deepCharcoal.withValues(alpha: 0.85),
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 24),
-
-          // Rating Summary
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Column(
+          // ── AI Insight Card ──────────────────────────────────────
+          summaryAsync.when(
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
+            data: (summary) {
+              if (summary == null || summary.summary.isEmpty) {
+                return const SizedBox.shrink();
+              }
+              return Column(
                 children: [
-                  Text(
-                    '4.8',
-                    style: GoogleFonts.playfairDisplay(
-                      fontSize: 64,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.deepCharcoal,
-                      height: 1,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: List.generate(5, (index) {
-                      return Icon(
-                        index < 4 ? Icons.star : Icons.star_half,
-                        color: AppTheme.accentGold,
-                        size: 18,
-                      );
-                    }),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    '128 đánh giá đã xác thực',
-                    style: GoogleFonts.montserrat(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w400,
-                      color: AppTheme.mutedSilver,
-                    ),
-                  ),
+                  _AiInsightCard(summary: summary.summary),
+                  const SizedBox(height: 24),
                 ],
+              );
+            },
+          ),
+
+          // ── Rating Summary ───────────────────────────────────────
+          statsAsync.when(
+            loading: () => const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 32),
+                child: CircularProgressIndicator(color: AppTheme.accentGold),
               ),
-              const SizedBox(width: 32),
-              Expanded(
-                child: Column(
-                  children: [
-                    _RatingBar(
-                      label: 'Độ lưu hương',
-                      value: 0.85,
-                      subtitle: 'TRUNG BÌNH - LÂU',
-                    ),
-                    const SizedBox(height: 10),
-                    _RatingBar(
-                      label: 'Độ tỏa hương',
-                      value: 0.9,
-                      subtitle: 'MẠNH',
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            ),
+            error: (_, __) => const SizedBox.shrink(),
+            data: (stats) => _RatingSummary(stats: stats),
           ),
 
           const SizedBox(height: 24),
 
-          // Filter Tabs
+          // ── Filter Tabs ──────────────────────────────────────────
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                _FilterChip(label: 'Tất cả đánh giá', isSelected: true),
+                _FilterChipWidget(
+                  label: 'Tất cả đánh giá',
+                  isSelected: _activeFilter == _ReviewFilter.all,
+                  onTap: () =>
+                      setState(() => _activeFilter = _ReviewFilter.all),
+                ),
                 const SizedBox(width: 8),
-                _FilterChip(label: 'Có hình ảnh', isSelected: false),
+                _FilterChipWidget(
+                  label: 'Có hình ảnh',
+                  isSelected: _activeFilter == _ReviewFilter.withImages,
+                  onTap: () =>
+                      setState(() => _activeFilter = _ReviewFilter.withImages),
+                ),
                 const SizedBox(width: 8),
-                _FilterChip(label: 'Người mua xác thực', isSelected: false),
+                _FilterChipWidget(
+                  label: 'Người mua xác thực',
+                  isSelected: _activeFilter == _ReviewFilter.verified,
+                  onTap: () =>
+                      setState(() => _activeFilter = _ReviewFilter.verified),
+                ),
               ],
             ),
           ),
 
           const SizedBox(height: 24),
 
-          // Reviews List
-          _ReviewCard(
-            name: 'Isabella V.',
-            timeAgo: '2 ngày trước',
-            isVerified: true,
-            rating: 5,
-            tags: ['LƯU HƯƠNG TỐT', 'PHÙ HỢP BUỔI TỐI'],
-            review:
-                'Thật sự ấn tượng. Mở đầu là citrus sắc nét nhưng lớp hương sau khô xuống thành vanilla ấm áp bao bọc. Lưu trên da tôi khoảng 6 giờ, rất hợp cho một buổi hẹn tối.',
-            helpful: 12,
+          // ── Review List ─────────────────────────────────────────
+          listAsync.when(
+            loading: () => const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 48),
+                child: CircularProgressIndicator(color: AppTheme.accentGold),
+              ),
+            ),
+            error: (e, _) => Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 48),
+                child: Text(
+                  'Không thể tải đánh giá',
+                  style: GoogleFonts.montserrat(color: AppTheme.mutedSilver),
+                ),
+              ),
+            ),
+            data: (response) {
+              final filtered = _applyFilter(response.items);
+              if (filtered.isEmpty) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 48),
+                    child: Column(
+                      children: [
+                        const Icon(
+                          Icons.rate_review_outlined,
+                          size: 48,
+                          color: AppTheme.mutedSilver,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Chưa có đánh giá nào',
+                          style: GoogleFonts.montserrat(
+                            color: AppTheme.mutedSilver,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+              return Column(
+                children: filtered
+                    .map(
+                      (review) => Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: _ReviewCard(
+                          review: review,
+                          timeAgo: _timeAgo(review.createdAt),
+                        ),
+                      ),
+                    )
+                    .toList(),
+              );
+            },
           ),
-
-          const SizedBox(height: 16),
-
-          _ReviewCard(
-            name: 'Marc D.',
-            timeAgo: '1 tuần trước',
-            isVerified: true,
-            rating: 4,
-            tags: ['TỎA HƯƠNG RÕ'],
-            review:
-                'Mùi hương rất ổn, nam tính rõ rệt nhưng hơi mạnh nếu dùng trong văn phòng. Độ tỏa hương lớn, ai cũng biết bạn vừa bước vào phòng. Nên dùng tiết chế.',
-            helpful: 5,
-            imageUrl:
-                'https://images.unsplash.com/photo-1541643600914-78b084683601?w=200',
-          ),
-
-          const SizedBox(height: 16),
-
-          _ReviewCard(
-            name: 'Elena S.',
-            timeAgo: '3 tuần trước',
-            isVerified: true,
-            rating: 5,
-            tags: [],
-            review:
-                'Hoàn hảo cho những buổi hẹn hò. Chai màu vàng cầm rất chắc tay và tạo cảm giác cực kỳ sang trọng. Rất đáng thử. Đúng kiểu mùi hương của sự đắt giá.',
-            helpful: 24,
-          ),
-
-          const SizedBox(height: 32),
         ],
       ),
     );
   }
 }
 
-class _RatingBar extends StatelessWidget {
-  final String label;
-  final double value;
-  final String subtitle;
+// ══════════════════════════════════════════════════════════════
+// Sub-widgets
+// ══════════════════════════════════════════════════════════════
 
-  const _RatingBar({
-    required this.label,
-    required this.value,
-    required this.subtitle,
-  });
+class _AiInsightCard extends StatefulWidget {
+  final String summary;
+  const _AiInsightCard({required this.summary});
+
+  @override
+  State<_AiInsightCard> createState() => _AiInsightCardState();
+}
+
+class _AiInsightCardState extends State<_AiInsightCard> {
+  bool _expanded = false;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppTheme.accentGold.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: AppTheme.accentGold.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              Icons.auto_awesome_rounded,
+              color: AppTheme.accentGold,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'GÓC NHÌN PERFUMEGPT',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 1,
+                    color: AppTheme.accentGold,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                GestureDetector(
+                  onTap: () => setState(() => _expanded = !_expanded),
+                  child: Text(
+                    widget.summary,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      height: 1.5,
+                      color: AppTheme.deepCharcoal.withValues(alpha: 0.85),
+                    ),
+                    maxLines: _expanded ? null : 2,
+                    overflow: _expanded
+                        ? TextOverflow.visible
+                        : TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RatingSummary extends StatelessWidget {
+  final ReviewStats stats;
+  const _RatingSummary({required this.stats});
+
+  @override
+  Widget build(BuildContext context) {
+    if (stats.total == 0) {
+      return Text(
+        'Chưa có đánh giá nào cho sản phẩm này.',
+        style: GoogleFonts.montserrat(
+          fontSize: 13,
+          color: AppTheme.mutedSilver,
+        ),
+      );
+    }
+
+    final starsFilled = stats.average.floor();
+    final hasHalf = (stats.average - starsFilled) >= 0.5;
+
+    return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        // Left: big number + stars + label
+        Column(
           children: [
             Text(
-              label,
-              style: GoogleFonts.montserrat(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
+              stats.average.toStringAsFixed(1),
+              style: GoogleFonts.playfairDisplay(
+                fontSize: 64,
+                fontWeight: FontWeight.w600,
                 color: AppTheme.deepCharcoal,
+                height: 1,
               ),
             ),
+            const SizedBox(height: 10),
+            Row(
+              children: List.generate(5, (i) {
+                if (i < starsFilled) {
+                  return const Icon(
+                    Icons.star,
+                    color: AppTheme.accentGold,
+                    size: 18,
+                  );
+                } else if (i == starsFilled && hasHalf) {
+                  return const Icon(
+                    Icons.star_half,
+                    color: AppTheme.accentGold,
+                    size: 18,
+                  );
+                } else {
+                  return const Icon(
+                    Icons.star_border,
+                    color: AppTheme.accentGold,
+                    size: 18,
+                  );
+                }
+              }),
+            ),
+            const SizedBox(height: 6),
             Text(
-              subtitle,
+              '${stats.total} đánh giá đã xác thực',
               style: GoogleFonts.montserrat(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.6,
-                color: AppTheme.accentGold,
+                fontSize: 11,
+                color: AppTheme.mutedSilver,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 5),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(3),
-          child: LinearProgressIndicator(
-            value: value,
-            minHeight: 6,
-            backgroundColor: AppTheme.softTaupe.withValues(alpha: 0.3),
-            valueColor: const AlwaysStoppedAnimation<Color>(
-              AppTheme.accentGold,
-            ),
+
+        const SizedBox(width: 24),
+
+        // Right: distribution bars 5→1
+        Expanded(
+          child: Column(
+            children: [5, 4, 3, 2, 1].map((star) {
+              final count = stats.distribution[star] ?? 0;
+              final ratio = stats.total > 0 ? count / stats.total : 0.0;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(
+                  children: [
+                    Text(
+                      '$star',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 11,
+                        color: AppTheme.mutedSilver,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(
+                      Icons.star,
+                      size: 10,
+                      color: AppTheme.accentGold,
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(3),
+                        child: LinearProgressIndicator(
+                          value: ratio.toDouble(),
+                          minHeight: 6,
+                          backgroundColor: AppTheme.softTaupe.withValues(
+                            alpha: 0.3,
+                          ),
+                          valueColor: const AlwaysStoppedAnimation<Color>(
+                            AppTheme.accentGold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    SizedBox(
+                      width: 24,
+                      child: Text(
+                        '$count',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 10,
+                          color: AppTheme.mutedSilver,
+                        ),
+                        textAlign: TextAlign.right,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
           ),
         ),
       ],
@@ -271,29 +420,37 @@ class _RatingBar extends StatelessWidget {
   }
 }
 
-class _FilterChip extends StatelessWidget {
+class _FilterChipWidget extends StatelessWidget {
   final String label;
   final bool isSelected;
+  final VoidCallback onTap;
 
-  const _FilterChip({required this.label, required this.isSelected});
+  const _FilterChipWidget({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: isSelected ? AppTheme.primaryDb : AppTheme.creamWhite,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isSelected ? AppTheme.primaryDb : AppTheme.softTaupe,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? AppTheme.primaryDb : AppTheme.creamWhite,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? AppTheme.primaryDb : AppTheme.softTaupe,
+          ),
         ),
-      ),
-      child: Text(
-        label,
-        style: GoogleFonts.montserrat(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: isSelected ? AppTheme.creamWhite : AppTheme.deepCharcoal,
+        child: Text(
+          label,
+          style: GoogleFonts.montserrat(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: isSelected ? AppTheme.creamWhite : AppTheme.deepCharcoal,
+          ),
         ),
       ),
     );
@@ -301,28 +458,16 @@ class _FilterChip extends StatelessWidget {
 }
 
 class _ReviewCard extends StatelessWidget {
-  final String name;
+  final ReviewItem review;
   final String timeAgo;
-  final bool isVerified;
-  final int rating;
-  final List<String> tags;
-  final String review;
-  final int helpful;
-  final String? imageUrl;
 
-  const _ReviewCard({
-    required this.name,
-    required this.timeAgo,
-    required this.isVerified,
-    required this.rating,
-    required this.tags,
-    required this.review,
-    required this.helpful,
-    this.imageUrl,
-  });
+  const _ReviewCard({required this.review, required this.timeAgo});
 
   @override
   Widget build(BuildContext context) {
+    final name = review.user.fullName;
+    final initial = name.isNotEmpty ? name[0].toUpperCase() : '?';
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -332,19 +477,25 @@ class _ReviewCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Header: avatar + name/meta + stars
           Row(
             children: [
               CircleAvatar(
                 radius: 18,
                 backgroundColor: AppTheme.softTaupe.withValues(alpha: 0.4),
-                child: Text(
-                  name[0],
-                  style: GoogleFonts.playfairDisplay(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.accentGold,
-                  ),
-                ),
+                backgroundImage: review.user.avatarUrl != null
+                    ? NetworkImage(review.user.avatarUrl!)
+                    : null,
+                child: review.user.avatarUrl == null
+                    ? Text(
+                        initial,
+                        style: GoogleFonts.playfairDisplay(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.accentGold,
+                        ),
+                      )
+                    : null,
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -366,13 +517,12 @@ class _ReviewCard extends StatelessWidget {
                           timeAgo,
                           style: GoogleFonts.montserrat(
                             fontSize: 10,
-                            fontWeight: FontWeight.w400,
                             color: AppTheme.mutedSilver,
                           ),
                         ),
-                        if (isVerified) ...[
+                        if (review.isVerified) ...[
                           const SizedBox(width: 6),
-                          Text(
+                          const Text(
                             '•',
                             style: TextStyle(
                               fontSize: 10,
@@ -395,84 +545,84 @@ class _ReviewCard extends StatelessWidget {
                 ),
               ),
               Row(
-                children: List.generate(5, (index) {
-                  return Icon(
-                    index < rating ? Icons.star : Icons.star_border,
+                children: List.generate(
+                  5,
+                  (i) => Icon(
+                    i < review.rating ? Icons.star : Icons.star_border,
                     color: AppTheme.accentGold,
                     size: 14,
-                  );
-                }),
+                  ),
+                ),
               ),
             ],
           ),
 
-          if (tags.isNotEmpty) ...[
+          // Content
+          if (review.content != null && review.content!.isNotEmpty) ...[
             const SizedBox(height: 10),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: AppTheme.accentGold.withValues(alpha: 0.3),
-                ),
-                borderRadius: BorderRadius.circular(10),
+            Text(
+              review.content!,
+              style: GoogleFonts.montserrat(
+                fontSize: 13,
+                fontWeight: FontWeight.w400,
+                height: 1.6,
+                color: AppTheme.deepCharcoal,
               ),
-              child: Text(
-                tags.first,
-                style: GoogleFonts.montserrat(
-                  fontSize: 9,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.6,
-                  color: AppTheme.accentGold,
+            ),
+          ],
+
+          // Images
+          if (review.images.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            SizedBox(
+              height: 100,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: review.images.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                itemBuilder: (_, i) => ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    review.images[i].imageUrl,
+                    width: 100,
+                    height: 100,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      width: 100,
+                      height: 100,
+                      color: AppTheme.softTaupe.withValues(alpha: 0.3),
+                      child: const Icon(
+                        Icons.image_outlined,
+                        color: AppTheme.mutedSilver,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
           ],
 
-          const SizedBox(height: 10),
-
-          Text(
-            review,
-            style: GoogleFonts.montserrat(
-              fontSize: 13,
-              fontWeight: FontWeight.w400,
-              height: 1.6,
-              color: AppTheme.deepCharcoal,
-            ),
-          ),
-
-          if (imageUrl != null) ...[
-            const SizedBox(height: 10),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                imageUrl!,
-                height: 100,
-                width: 100,
-                fit: BoxFit.cover,
-              ),
-            ),
-          ],
-
-          const SizedBox(height: 12),
-
-          Row(
-            children: [
-              Icon(
-                Icons.favorite_border,
-                size: 14,
-                color: AppTheme.mutedSilver,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                '$helpful người thấy hữu ích',
-                style: GoogleFonts.montserrat(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w400,
+          // Helpful
+          if (review.helpfulCount > 0) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                const Icon(
+                  Icons.favorite_border,
+                  size: 14,
                   color: AppTheme.mutedSilver,
                 ),
-              ),
-            ],
-          ),
+                const SizedBox(width: 4),
+                Text(
+                  '${review.helpfulCount} người thấy hữu ích',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 11,
+                    color: AppTheme.mutedSilver,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );

@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 
 class ScentStructureDetailScreen extends StatelessWidget {
-  final String? heroTag;
   final String productName;
   final List<String>? notes;
   final List<String>? topNotes;
@@ -13,7 +12,6 @@ class ScentStructureDetailScreen extends StatelessWidget {
 
   const ScentStructureDetailScreen({
     super.key,
-    this.heroTag,
     required this.productName,
     this.notes,
     required this.topNotes,
@@ -101,13 +99,7 @@ class ScentStructureDetailScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 6, 16, 28),
         children: [
-          if (heroTag != null)
-            Hero(
-              tag: heroTag!,
-              child: Material(color: Colors.transparent, child: summaryCard),
-            )
-          else
-            summaryCard,
+          summaryCard,
           const SizedBox(height: 14),
           _ScentLayerDetailCard(
             title: 'Top Notes',

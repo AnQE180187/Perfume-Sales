@@ -206,10 +206,10 @@ class _DropCapParagraph extends StatelessWidget {
               const SizedBox(height: 12),
               Text(
                 restOfText,
-                style: GoogleFonts.cormorantGaramond(
-                  fontSize: 17,
+                style: GoogleFonts.montserrat(
+                  fontSize: 15,
                   fontWeight: FontWeight.w400,
-                  height: 1.7,
+                  height: 1.75,
                   color: AppTheme.deepCharcoal,
                 ),
               ),
@@ -230,10 +230,10 @@ class _BodyText extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: GoogleFonts.cormorantGaramond(
-        fontSize: 17,
+      style: GoogleFonts.montserrat(
+        fontSize: 15,
         fontWeight: FontWeight.w400,
-        height: 1.7,
+        height: 1.75,
         color: AppTheme.deepCharcoal,
       ),
     );
@@ -314,8 +314,8 @@ class _EditorialImage extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             caption,
-            style: GoogleFonts.cormorantGaramond(
-              fontSize: 13,
+            style: GoogleFonts.montserrat(
+              fontSize: 12,
               fontStyle: FontStyle.italic,
               color: AppTheme.mutedSilver,
             ),

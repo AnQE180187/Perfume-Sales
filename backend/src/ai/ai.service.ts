@@ -1,208 +1,224 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { GoogleGenAI } from '@google/genai';
 import { PrismaService } from '../prisma/prisma.service';
-import axios from 'axios';
-import { ConversationType } from '@prisma/client';
-
-export interface AiTextReply {
-  text: string;
-}
-
-export interface AiProductRecommendation {
-  productId: string;
-  name: string;
-  reason: string;
-  price?: number;
-}
 
 @Injectable()
 export class AiService {
-  private readonly apiKey: string;
-  private readonly model: string;
+  private readonly logger = new Logger(AiService.name);
+  private ai: GoogleGenAI;
+  private model: string;
 
   constructor(
+    private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
-    private readonly config: ConfigService,
   ) {
-    this.apiKey = this.config.get<string>('GEMINI_API_KEY', '');
-    this.model = this.config.get<string>('GEMINI_MODEL', 'gemini-3.0-flash');
+    const apiKey = this.configService.get<string>('GEMINI_API_KEY');
+    this.model =
+      this.configService.get<string>('GEMINI_MODEL') || 'gemini-3-flash-preview';
+
+    if (!apiKey) {
+      this.logger.warn('GEMINI_API_KEY is not set – AI features will fail');
+    }
+    this.ai = new GoogleGenAI({ apiKey });
   }
 
-  private buildPerfumeConsultPrompt(message: string) {
-    return `Bạn là chuyên gia tư vấn nước hoa của PerfumeGPT.
-Khách đang hỏi/tâm sự: "${message}".
-
-Hãy:
-- Trả lời thân thiện bằng tiếng Việt.
-- Nếu phù hợp, gợi ý 2–3 phong cách mùi hương (không cần ID sản phẩm thật).
-
-Định dạng JSON như sau, không thêm chữ nào ngoài JSON:
-{
-  "text": "câu trả lời tự nhiên bằng tiếng Việt",
-  "recommendations": [
-    { "productId": "virtual-1", "name": "Gợi ý 1", "reason": "Lý do ..." }
-  ]
-}`;
-  }
-
-  private buildMarketingPrompt(message: string) {
-    return `Bạn là trợ lý marketing nước hoa của PerfumeGPT.
-Admin hỏi: "${message}".
-
-Hãy trả lời bằng tiếng Việt, tập trung vào:
-- insight khách hàng nước hoa,
-- gợi ý chiến dịch,
-- ý tưởng nội dung.
-
-Định dạng JSON, không thêm chữ nào ngoài JSON:
-{
-  "text": "phân tích & gợi ý chiến lược bằng tiếng Việt"
-}`;
-  }
-
-  private async callGemini(prompt: string): Promise<string> {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent?key=${this.apiKey}`;
-
+  // ──────────────────────────────────────────────────────
+  // Review summarisation (called by ReviewsService)
+  // ──────────────────────────────────────────────────────
+  async summarizeProductReviews(productId: string): Promise<void> {
     try {
-      const res = await axios.post(
-        url,
-        {
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 1024,
+      const reviews = await this.prisma.review.findMany({
+        where: { productId, isHidden: false },
+        select: { rating: true, content: true },
+        take: 100,
+        orderBy: { createdAt: 'desc' },
+      });
+
+      if (reviews.length === 0) return;
+
+      const reviewTexts = reviews
+        .map((r) => `Rating: ${r.rating}/5. ${r.content ?? ''}`)
+        .join('\n');
+
+      const prompt = `Summarize the following product reviews.
+Return a JSON object with keys: summary, pros, cons, keywords, sentiment.
+Only return the JSON, no markdown fences.
+
+Reviews:
+${reviewTexts}`;
+
+      const response = await this.ai.models.generateContent({
+        model: this.model,
+        contents: prompt,
+      });
+
+      const text = response.text ?? '{}';
+      let parsed: Record<string, string> = {};
+      try {
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) parsed = JSON.parse(jsonMatch[0]);
+      } catch {
+        /* not valid JSON – use raw text */
+      }
+
+      await this.prisma.reviewSummary.upsert({
+        where: { productId },
+        create: {
+          productId,
+          summary: parsed.summary ?? text,
+          pros: parsed.pros ?? '',
+          cons: parsed.cons ?? '',
+          keywords: parsed.keywords ?? '',
+          sentiment: parsed.sentiment ?? 'NEUTRAL',
+        },
+        update: {
+          summary: parsed.summary ?? text,
+          pros: parsed.pros ?? '',
+          cons: parsed.cons ?? '',
+          keywords: parsed.keywords ?? '',
+          sentiment: parsed.sentiment ?? 'NEUTRAL',
+        },
+      });
+    } catch (error) {
+      this.logger.error('Failed to summarize reviews', error);
+    }
+  }
+
+  // ──────────────────────────────────────────────────────
+  // Perfume Consultant (Customer & Staff AI)
+  // ──────────────────────────────────────────────────────
+
+  /** Simple in-memory cache so we don't query DB on every single message */
+  private productCatalogCache: { data: string; expiresAt: number } | null =
+    null;
+
+  private async getProductCatalog(): Promise<string> {
+    const now = Date.now();
+    if (this.productCatalogCache && this.productCatalogCache.expiresAt > now) {
+      return this.productCatalogCache.data;
+    }
+
+    const products = await this.prisma.product.findMany({
+      where: { isActive: true },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        gender: true,
+        longevity: true,
+        concentration: true,
+        brand: { select: { name: true } },
+        category: { select: { name: true } },
+        scentFamily: { select: { name: true } },
+        notes: {
+          select: {
+            note: { select: { name: true, type: true } },
           },
         },
-        { timeout: 15000 },
-      );
-
-      return res.data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
-    } catch (err: any) {
-      const message = err?.response?.data?.error?.message ?? err.message;
-      throw new InternalServerErrorException(`AI request failed: ${message}`);
-    }
-  }
-
-  private extractJson(raw: string): any {
-    try {
-      let jsonStr = raw.trim();
-      const match = raw.match(/```(?:json)?\s*([\s\S]*?)```/);
-      if (match) jsonStr = match[1].trim();
-      return JSON.parse(jsonStr);
-    } catch {
-      return null;
-    }
-  }
-
-  async replyForConversation(
-    conversationId: string,
-    type: ConversationType,
-    lastUserMessage: string,
-    userId?: string,
-  ): Promise<{ text: string; recommendations?: AiProductRecommendation[]; raw: string }> {
-    const prompt =
-      type === ConversationType.CUSTOMER_AI
-        ? this.buildPerfumeConsultPrompt(lastUserMessage)
-        : this.buildMarketingPrompt(lastUserMessage);
-
-    const raw = await this.callGemini(prompt);
-    const parsed = this.extractJson(raw) ?? {};
-
-    const text: string = parsed.text ?? lastUserMessage;
-    const recommendations: AiProductRecommendation[] | undefined = Array.isArray(
-      parsed.recommendations,
-    )
-      ? parsed.recommendations.map((r: any) => ({
-          productId: r.productId ?? '',
-          name: r.name ?? '',
-          reason: r.reason ?? '',
-          price: typeof r.price === 'number' ? r.price : undefined,
-        }))
-      : undefined;
-
-    // Log
-    await this.prisma.aiRequestLog.create({
-      data: {
-        userId: userId ?? null,
-        type: type === ConversationType.CUSTOMER_AI ? 'CHAT_CUSTOMER_AI' : 'CHAT_ADMIN_AI',
-        request: prompt,
-        response: raw,
-        status: 'SUCCESS',
-      },
-    });
-
-    return { text, recommendations, raw };
-  }
-
-  private buildReviewSummaryPrompt(productName: string, reviews: { rating: number; content: string }[]) {
-    const reviewsText = reviews
-      .map((r, i) => `Đánh giá ${i + 1} (${r.rating} sao): ${r.content}`)
-      .join('\n');
-
-    return `Bạn là chuyên gia phân tích phản hồi khách hàng cho PerfumeGPT.
-Dưới đây là các đánh giá của khách hàng về sản phẩm nước hoa: "${productName}".
-
-Các đánh giá:
-${reviewsText}
-
-Hãy tổng hợp các đánh giá này thành:
-1. Một đoạn tóm tắt ngắn gọn.
-2. Danh sách ưu điểm (Pros).
-3. Danh sách nhược điểm (Cons).
-4. Các từ khóa nổi bật (Keywords).
-5. Cảm xúc chung (Sentiment: POSITIVE, NEUTRAL, hoặc NEGATIVE).
-
-Định dạng JSON như sau, không thêm chữ nào ngoài JSON:
-{
-  "summary": "tóm tắt...",
-  "pros": "ưu điểm 1, ưu điểm 2...",
-  "cons": "nhược điểm 1, nhược điểm 2...",
-  "keywords": "từ khóa 1, từ khóa 2...",
-  "sentiment": "POSITIVE/NEUTRAL/NEGATIVE"
-}`;
-  }
-
-  async summarizeProductReviews(productId: string) {
-    const product = await this.prisma.product.findUnique({
-      where: { id: productId },
-      include: {
-        reviews: {
-          where: { isHidden: false },
-          take: 50,
-          select: { rating: true, content: true },
+        variants: {
+          where: { isActive: true },
+          select: { name: true, price: true, stock: true },
+          orderBy: { price: 'asc' },
         },
       },
+      take: 100, // limit to keep prompt manageable
     });
 
-    if (!product || product.reviews.length === 0) return null;
+    const catalog = products
+      .map((p) => {
+        const prices = p.variants.map(
+          (v) => `${v.name}: ${v.price.toLocaleString()}₫ (stock: ${v.stock})`,
+        );
+        const notes = p.notes.map(
+          (n) => `${n.note.type}: ${n.note.name}`,
+        );
+        return [
+          `[ID: ${p.id}] ${p.name}`,
+          `  Brand: ${p.brand.name}`,
+          p.category ? `  Category: ${p.category.name}` : null,
+          p.scentFamily ? `  Scent Family: ${p.scentFamily.name}` : null,
+          p.gender ? `  Gender: ${p.gender}` : null,
+          p.concentration ? `  Concentration: ${p.concentration}` : null,
+          p.longevity ? `  Longevity: ${p.longevity}` : null,
+          notes.length > 0 ? `  Notes: ${notes.join(', ')}` : null,
+          prices.length > 0 ? `  Variants: ${prices.join(' | ')}` : null,
+          p.description ? `  Description: ${p.description.slice(0, 150)}` : null,
+          `  URL slug: ${p.slug}`,
+        ]
+          .filter(Boolean)
+          .join('\n');
+      })
+      .join('\n\n');
 
-    const prompt = this.buildReviewSummaryPrompt(
-      product.name,
-      product.reviews.map((r) => ({ rating: r.rating, content: r.content ?? '' })),
-    );
+    // Cache for 5 minutes
+    this.productCatalogCache = { data: catalog, expiresAt: now + 5 * 60 * 1000 };
+    return catalog;
+  }
 
-    const raw = await this.callGemini(prompt);
-    const parsed = this.extractJson(raw);
+  async perfumeConsult(
+    userMessage: string,
+    history: Array<{ role: string; text: string }>,
+  ): Promise<string> {
+    const catalog = await this.getProductCatalog();
 
-    if (!parsed) return null;
+    const systemPrompt = `You are "PerfumeGPT", an expert fragrance consultant for our perfume store.
 
-    return this.prisma.reviewSummary.upsert({
-      where: { productId },
-      update: {
-        summary: parsed.summary,
-        pros: parsed.pros,
-        cons: parsed.cons,
-        keywords: parsed.keywords,
-        sentiment: parsed.sentiment,
-      },
-      create: {
-        productId,
-        summary: parsed.summary,
-        pros: parsed.pros,
-        cons: parsed.cons,
-        keywords: parsed.keywords,
-        sentiment: parsed.sentiment,
-      },
+IMPORTANT RULES:
+- You can ONLY recommend products that exist in our catalog below.
+- NEVER invent product names or prices.
+- Respond in the same language the user writes in (Vietnamese or English).
+- When recommending products, return a JSON object:
+  { "text": "<your warm explanation>", "recommendations": [{ "productId": "<actual ID>", "name": "<exact product name>", "reason": "<why this suits them>", "price": "<lowest variant price as number>" }] }
+- If the question is general (e.g. greetings, fragrance knowledge), reply in plain text.
+- Be concise, warm, and knowledgeable.
+- If no products match the user's request, say so honestly and suggest alternatives from the catalog.
+
+═══════════════════════════════════════
+OUR PRODUCT CATALOG (${catalog ? 'available' : 'empty'}):
+═══════════════════════════════════════
+${catalog || '(No products currently in system)'}
+═══════════════════════════════════════`;
+
+    const contents = [
+      systemPrompt,
+      ...history.map((h) => `${h.role}: ${h.text}`),
+      `USER: ${userMessage}`,
+    ].join('\n');
+
+    const response = await this.ai.models.generateContent({
+      model: this.model,
+      contents,
     });
+
+    return response.text ?? 'Sorry, I could not generate a response.';
+  }
+
+  // ──────────────────────────────────────────────────────
+  // Marketing Advisor (Admin AI)
+  // ──────────────────────────────────────────────────────
+  async marketingAdvise(
+    adminMessage: string,
+    history: Array<{ role: string; text: string }>,
+  ): Promise<string> {
+    const systemPrompt = `You are "PerfumeGPT Marketing", a marketing advisor for a perfume shop.
+Rules:
+- Respond in the same language the admin writes in.
+- Give actionable marketing insights, promotions ideas, and strategy tips.
+- Be professional and data-oriented when possible.`;
+
+    const contents = [
+      systemPrompt,
+      ...history.map((h) => `${h.role}: ${h.text}`),
+      `ADMIN: ${adminMessage}`,
+    ].join('\n');
+
+    const response = await this.ai.models.generateContent({
+      model: this.model,
+      contents,
+    });
+
+    return response.text ?? 'Sorry, I could not generate a response.';
   }
 }

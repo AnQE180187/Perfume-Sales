@@ -1,526 +1,523 @@
-# AI Chat System Design
+# Chat System Development Plan (AI + User Chat)
 
 **Project:** AI-Powered Perfume Sales & Personalized Consultation System
+**Scope:**
 
-This document describes the design of the **AI Chat subsystem**, which includes two specialized AI agents:
-
-1. **Customer AI – Perfume Consultant**
-2. **Admin AI – Marketing Assistant**
-
-Although both use the same chat infrastructure, they serve **different users, data sources, and objectives**.
+* User ↔ User Chat (Customer, Admin, Staff)
+* AI Chat (Customer AI + Admin AI + Staff uses Customer AI)
+* Hybrid architecture: **WebSocket (user chat) + HTTP (AI chat)**
 
 ---
 
-# 1. AI Chat Overview
+# 1. Core Feature Definition
 
-The system integrates AI into the chat module to support two key functions:
+## 1.1 Roles & Chat Capabilities
 
-| AI Agent    | Target User | Purpose                                                 |
-| ----------- | ----------- | ------------------------------------------------------- |
-| Customer AI | Customer    | Recommend perfumes and answer fragrance questions       |
-| Admin AI    | Admin       | Provide marketing insights and business recommendations |
+### Customer
 
-Both AI agents operate within the same **conversation framework** but use different prompts, data contexts, and tools.
+* Chat with Admin
+* Chat with AI (Perfume Consultant)
 
 ---
 
-# 2. Customer AI – Perfume Consultant
+### Admin
 
-## 2.1 Purpose
-
-The Customer AI acts as a **virtual perfume consultant**, similar to a salesperson in a perfume store.
-
-Its primary goals are:
-
-* Help customers choose suitable perfumes
-* Reduce decision fatigue
-* Provide fragrance knowledge
-* Increase product conversion
+* Chat with Customer
+* Chat with Staff
+* Chat with AI (Marketing Assistant)
 
 ---
 
-# 2.2 Data Sources
+### Staff
 
-Customer AI should only use **customer-facing data**.
+* Chat with Admin
+* **Use Customer AI (Perfume Consultant)**
 
-### Product Catalog
+---
 
-Key product attributes:
+## 1.2 Chat Matrix
 
-```
-name
-brand
-price
-gender
-scentFamily
-topNotes
-middleNotes
-baseNotes
-longevity
-description
+| From     | To                              |
+| -------- | ------------------------------- |
+| Customer | Admin, AI (Perfume)             |
+| Admin    | Customer, Staff, AI (Marketing) |
+| Staff    | Admin, AI (Perfume)             |
+
+---
+
+# 2. Conversation Types (Core)
+
+System supports exactly **4 conversation types**:
+
+```id="chat-types"
+CUSTOMER_ADMIN
+CUSTOMER_AI
+ADMIN_STAFF
+ADMIN_AI
 ```
 
 ---
 
-### Customer Profile
+## Special Rule
 
-Customer preferences can improve recommendations.
+* Staff uses **CUSTOMER_AI type**
+* BUT UI is placed inside **Admin Dashboard (internal tool)**
 
-```
-gender
-age
-budget
-favorite scent family
-purchase history
-quiz results
+---
+
+# 3. Architecture Overview
+
+## 3.1 Communication Model
+
+```text
+User ↔ User Chat      → WebSocket (Realtime)
+User ↔ AI Chat        → HTTP API (Request–Response)
 ```
 
 ---
 
-### Context Data
+## 3.2 System Components
 
-Optional contextual information:
-
-```
-season
-weather
-occasion
-```
-
----
-
-# 2.3 Supported Customer Intents
-
-Customer AI must detect and respond to several main intent types.
-
----
-
-## Intent 1 — Perfume Recommendation
-
-Customers ask the AI to suggest perfumes.
-
-Examples:
-
-```
-recommend a perfume for summer
-perfume under 1.5 million
-sweet perfume for women
-```
-
-AI tasks:
-
-1. Understand customer preferences
-2. Filter product catalog
-3. Select 3–5 suitable perfumes
-4. Explain why they match
-
----
-
-## Intent 2 — Fragrance Education
-
-Customers want to learn about perfume concepts.
-
-Examples:
-
-```
-what is a woody scent
-difference between EDT and EDP
-which perfumes last the longest
-```
-
-AI should explain the concept and optionally recommend example perfumes.
-
----
-
-## Intent 3 — Product Comparison
-
-Customers compare perfumes.
-
-Examples:
-
-```
-Dior Sauvage vs Bleu de Chanel
-which one is better for office
-```
-
-AI compares:
-
-```
-scent profile
-longevity
-strength
-occasion suitability
+```text
+Frontend
+   ├── Customer Website
+   │     └── Chat Widget (AI + Admin)
+   │
+   ├── Admin Dashboard
+   │     ├── Customer Chats
+   │     ├── Staff Chats
+   │     ├── AI Marketing Chat
+   │     └── AI Perfume (internal tool for staff)
+   │
+Backend (NestJS)
+   ├── Chat Module (WebSocket)
+   ├── AI Module (HTTP)
+   ├── Database (PostgreSQL + Prisma)
 ```
 
 ---
 
-## Intent 4 — Personal Advisor
+# 4. UI/UX Design
 
-Customers may describe vague preferences.
+## 4.1 Customer UI
 
-Examples:
+### Chat Widget (Floating)
 
-```
-I want a perfume for a date
-I like sweet smells but not too strong
-```
+* Located at homepage (bottom-right)
+* Supports:
 
-AI should infer preferences and recommend suitable perfumes.
+  * Chat with AI (primary)
+  * Chat with Admin (secondary)
 
----
+### Features
 
-# 2.4 Processing Flow
+* quick action buttons:
 
-Customer AI processing pipeline:
-
-```
-Customer Message
-      │
-Intent Detection
-      │
-Query Product Database
-      │
-Send Context to AI
-      │
-AI Reasoning
-      │
-Structured Response
-```
-
-Important rule:
-
-**AI must only recommend perfumes that exist in the database.**
+  * Recommend perfume
+  * Under 1 million
+  * For summer
+* product cards inside chat
+* lightweight interaction
 
 ---
 
-# 2.5 Response Format
+## 4.2 Admin Dashboard
 
-The AI should return structured responses instead of free text.
+### Inbox Structure
 
-Example response:
-
+```id="admin-ui"
+Inbox
+ ├── Customer Chats
+ ├── Staff Chats
+ ├── AI Marketing Assistant
+ └── AI Perfume Consultant (internal use)
 ```
+
+---
+
+## 4.3 Staff UI
+
+* Uses **Admin Dashboard UI**
+* Can:
+
+  * chat with Admin
+  * use AI Perfume Consultant (same as customer AI)
+
+---
+
+# 5. Database Design
+
+## 5.1 Conversation
+
+```id="conv"
+id
+type
+createdAt
+updatedAt
+```
+
+---
+
+## 5.2 ConversationParticipant
+
+```id="participant"
+id
+conversationId
+userId
+role
+```
+
+---
+
+## 5.3 Message
+
+```id="msg"
+id
+conversationId
+senderId
+senderType (USER | AI)
+type (TEXT | PRODUCT_CARD | SYSTEM)
+content (JSON)
+createdAt
+```
+
+---
+
+# 6. Backend Development Plan
+
+---
+
+# Phase 1 — Database
+
+* Define Prisma schema
+* Create migrations
+* Seed sample conversations
+
+---
+
+# Phase 2 — Core Chat Module
+
+## APIs
+
+```id="api"
+POST /conversations
+GET /conversations
+GET /messages
+POST /messages
+```
+
+---
+
+## Services
+
+### ConversationService
+
+* create conversation
+* fetch conversations by user
+
+---
+
+### MessageService
+
+* save message
+* fetch messages (pagination)
+
+---
+
+### ChatService
+
+* route messages
+* handle logic for:
+
+  * user chat
+  * AI chat
+
+---
+
+# Phase 3 — WebSocket (User Chat Only)
+
+## Events
+
+Client → Server
+
+```id="ws-client"
+joinConversation
+sendMessage
+typing
+markAsRead
+```
+
+Server → Client
+
+```id="ws-server"
+messageReceived
+userTyping
+messageRead
+```
+
+---
+
+## Responsibilities
+
+* manage connections
+* join rooms
+* broadcast messages
+
+---
+
+# Phase 4 — AI Module (HTTP-based)
+
+---
+
+## Endpoints
+
+### Customer AI & Staff AI (same service)
+
+```id="ai-customer"
+POST /ai/customer-chat
+```
+
+---
+
+### Admin AI
+
+```id="ai-admin"
+POST /ai/admin-chat
+```
+
+---
+
+## AI Services
+
+### PerfumeConsultantService
+
+Used by:
+
+* Customer
+* Staff
+
+Responsibilities:
+
+* detect intent
+* query product database
+* generate recommendations
+
+---
+
+### MarketingAdvisorService
+
+Used by:
+
+* Admin
+
+Responsibilities:
+
+* analyze business data
+* suggest strategies
+
+---
+
+# 7. AI Request/Response
+
+## Request
+
+```id="ai-req"
 {
-  "intent": "recommendation",
-  "products": [
+  "message": "...",
+  "conversationId": "...",
+  "context": {
+    "userProfile": {}
+  }
+}
+```
+
+---
+
+## Response
+
+```id="ai-res"
+{
+  "type": "PRODUCT_CARD",
+  "data": [
     {
-      "productId": "p123",
-      "reason": "Fresh citrus scent perfect for hot weather"
-    },
-    {
-      "productId": "p456",
-      "reason": "Light floral fragrance ideal for daily wear"
+      "productId": "...",
+      "reason": "..."
     }
   ]
 }
 ```
 
-Frontend converts this into **product cards inside the chat UI**.
+---
+
+# 8. Message Flow
 
 ---
 
-# 2.6 Conversation Memory
+## 8.1 User Chat
 
-Customer AI should maintain short-term conversation memory.
-
-Possible stored preferences:
-
-```
-preferred scent family
-budget range
-gender preference
-occasion preference
-```
-
-Example:
-
-Customer says:
-
-```
-I like sweet perfumes
-```
-
-Later asks:
-
-```
-recommend something for daily use
-```
-
-AI should prioritize **sweet perfumes**.
-
----
-
-# 3. Admin AI – Marketing Assistant
-
-## 3.1 Purpose
-
-Admin AI acts as a **business intelligence assistant** for the perfume store.
-
-It helps administrators analyze business data and make better decisions.
-
-Primary goals:
-
-* Analyze sales trends
-* Provide marketing recommendations
-* Suggest promotions
-* Support business strategy
-
----
-
-# 3.2 Data Sources
-
-Admin AI requires **business and analytics data**.
-
----
-
-### Sales Data
-
-```
-productId
-quantitySold
-revenue
-date
+```id="flow-user"
+Client → WebSocket → Gateway
+        → ChatService
+        → Save DB
+        → Broadcast
 ```
 
 ---
 
-### Customer Behavior
+## 8.2 AI Chat
 
-```
-popular scent families
-customer age groups
-repeat purchase rate
-```
-
----
-
-### Review Data
-
-```
-rating
-review text
-sentiment
+```id="flow-ai"
+Client → HTTP → AI Controller
+        → AI Service
+        → Save message
+        → Return response
 ```
 
 ---
 
-### Inventory Data
+# 9. Permissions
 
-```
-stock level
-expiry date
-restock threshold
+| Role     | Customer | Admin | Staff | AI               |
+| -------- | -------- | ----- | ----- | ---------------- |
+| Customer | ❌        | ✅     | ❌     | ✅                |
+| Admin    | ✅        | ❌     | ✅     | ✅                |
+| Staff    | ❌        | ✅     | ❌     | ✅ (Perfume only) |
+
+---
+
+# 10. AI Agent Tasks (for Codex)
+
+---
+
+## Task 1
+
+Generate Prisma schema for chat tables.
+
+---
+
+## Task 2
+
+Generate Chat Module:
+
+* ChatService
+* ConversationService
+* MessageService
+
+---
+
+## Task 3
+
+Implement WebSocket Gateway:
+
+* connection handling
+* messaging events
+
+---
+
+## Task 4
+
+Implement REST APIs for:
+
+* conversations
+* messages
+
+---
+
+## Task 5
+
+Implement AI endpoints:
+
+* /ai/customer-chat
+* /ai/admin-chat
+
+---
+
+## Task 6
+
+Implement AI services:
+
+* PerfumeConsultantService
+* MarketingAdvisorService
+
+---
+
+## Task 7
+
+Implement message types:
+
+* TEXT
+* PRODUCT_CARD
+* SYSTEM
+
+---
+
+## Task 8
+
+Add permission guards.
+
+---
+
+## Task 9
+
+Implement pagination & optimization.
+
+---
+
+# 11. Timeline
+
+| Phase          | Duration |
+| -------------- | -------- |
+| Database       | 1 day    |
+| Backend Core   | 2 days   |
+| WebSocket      | 2 days   |
+| AI Integration | 2 days   |
+| Frontend       | 3–4 days |
+| Testing        | 2 days   |
+
+**Total: 10–13 days**
+
+---
+
+# 12. Final Architecture Summary
+
+```text
+Customer Chat (AI)        → HTTP (Chat Widget - Homepage)
+Staff AI Chat             → HTTP (Dashboard)
+Admin AI                  → HTTP (Dashboard)
+
+User ↔ User Chat          → WebSocket
+
+=> Hybrid system (optimized UX + simple backend)
 ```
 
 ---
 
-# 3.3 Supported Admin Tasks
+# 13. Key Design Decisions
+
+* AI chat uses HTTP (no WebSocket required)
+* User chat uses WebSocket for realtime
+* Customer UI uses floating chat widget
+* Admin/Staff use dashboard chat
+* Staff reuses Customer AI (no separate AI)
 
 ---
 
-## Task 1 — Sales Analysis
+# 14. Out of Scope (MVP)
 
-Example question:
-
-```
-Top selling perfumes this month
-```
-
-AI returns ranked products based on sales data.
+* AI streaming
+* voice chat
+* advanced AI memory
+* realtime AI push notifications
 
 ---
 
-## Task 2 — Trend Analysis
+# 15. Summary
 
-Example question:
+The chat system is designed as a **hybrid communication platform**:
 
-```
-Which scent family is trending?
-```
+* Realtime communication for human users
+* Simple request-response for AI
+* Role-based chat boundaries
+* Optimized UI per user type
 
-AI analyzes customer purchase patterns.
-
-Example result:
-
-```
-Floral: 42%
-Woody: 30%
-Fresh: 18%
-```
-
----
-
-## Task 3 — Promotion Suggestions
-
-Example question:
-
-```
-Which perfumes should we promote for summer?
-```
-
-AI suggests products based on:
-
-* seasonal suitability
-* sales performance
-* customer preferences
-
----
-
-## Task 4 — Marketing Campaign Ideas
-
-Example:
-
-```
-Give me a marketing campaign idea for summer
-```
-
-AI output:
-
-```
-Summer Fresh Campaign
-
-Promote citrus fragrances
-Offer bundle discounts
-Provide free travel-size samples
-```
-
----
-
-## Task 5 — Inventory Insights
-
-Example question:
-
-```
-Which perfumes may run out soon?
-```
-
-AI checks inventory levels and warns about low stock.
-
----
-
-# 3.4 Admin AI Processing Flow
-
-```
-Admin Message
-      │
-Intent Detection
-      │
-Retrieve Analytics Data
-      │
-Build Context
-      │
-Send Context to AI
-      │
-AI Generates Insights
-```
-
----
-
-# 3.5 Admin AI Response Format
-
-Admin AI responses typically include:
-
-* analysis
-* recommendation
-* strategy suggestion
-
-Example:
-
-```
-Top perfume trends for summer:
-
-1. Citrus fragrances
-2. Aquatic scents
-3. Light floral perfumes
-
-Recommendation:
-Promote fresh fragrances during hot weather campaigns.
-```
-
----
-
-# 4. Differences Between the Two AI Agents
-
-| Feature      | Customer AI               | Admin AI                    |
-| ------------ | ------------------------- | --------------------------- |
-| Primary Role | Perfume consultant        | Marketing strategist        |
-| Target User  | Customer                  | Admin                       |
-| Main Data    | Product catalog           | Sales + analytics           |
-| Output       | Product recommendations   | Business insights           |
-| Goal         | Increase sales conversion | Improve marketing decisions |
-
----
-
-# 5. AI Agent Architecture
-
-The system should use **two specialized AI agents** instead of a single generic AI.
-
-Recommended agents:
-
-```
-PerfumeConsultantAgent
-MarketingAnalystAgent
-```
-
-Each agent uses:
-
-* different prompts
-* different context data
-* different tools
-
----
-
-# 6. AI Tool Integration (Advanced)
-
-AI agents can use internal tools to query system data.
-
-Example tools:
-
-```
-searchPerfume
-filterByBudget
-filterByScent
-getTopSellingPerfumes
-getInventoryStatus
-```
-
-Example flow:
-
-```
-User: recommend perfume under 1 million
-
-AI → tool: filterByBudget(1000000)
-AI → tool: searchPerfume("fresh scent")
-
-AI generates recommendations
-```
-
-This approach enables the AI to produce **accurate results based on real system data**.
-
----
-
-# 7. Future Improvements
-
-Possible enhancements for the AI chat system:
-
-* AI conversation summarization
-* AI sentiment analysis on reviews
-* AI upselling recommendations
-* AI personalized promotions
-* AI demand forecasting
-* multilingual AI support
-
----
-
-# 8. Summary
-
-The AI Chat System consists of two specialized agents:
-
-Customer AI focuses on **personalized perfume consultation**, while Admin AI focuses on **data-driven marketing insights**.
-
-Separating these agents ensures:
-
-* better response quality
-* clearer system design
-* easier future expansion
-* more realistic AI behavior for different user roles.
+This ensures fast development, clear architecture, and scalability for future upgrades.

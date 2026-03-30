@@ -1,210 +1,228 @@
-enum OrderStatus {
-  pending,
-  confirmed,
-  processing,
-  shipped,
-  outForDelivery,
-  delivered,
-  cancelled,
-  refunded;
+import 'order_item.dart';
 
-  String get displayName {
+enum OrderStatus { pending, confirmed, processing, shipped, completed, cancelled }
+
+enum PaymentStatus { pending, paid, failed, refunded }
+
+enum ShipmentStatus {
+  pending,
+  pickedUp,
+  inTransit,
+  delivered,
+  failed,
+  returned,
+}
+
+extension OrderStatusX on OrderStatus {
+  String get label {
     switch (this) {
       case OrderStatus.pending:
-        return 'Chờ xử lý';
+        return 'Order placed';
       case OrderStatus.confirmed:
-        return 'Đã xác nhận';
+        return 'Confirmed';
       case OrderStatus.processing:
-        return 'Đang xử lý';
+        return 'Preparing';
       case OrderStatus.shipped:
-        return 'Đã gửi hàng';
-      case OrderStatus.outForDelivery:
-        return 'Đang giao hàng';
-      case OrderStatus.delivered:
-        return 'Đã giao';
+        return 'Out for delivery';
+      case OrderStatus.completed:
+        return 'Delivered';
       case OrderStatus.cancelled:
-        return 'Đã hủy';
-      case OrderStatus.refunded:
-        return 'Đã hoàn tiền';
+        return 'Cancelled';
     }
   }
 
   String get description {
     switch (this) {
       case OrderStatus.pending:
-        return 'Đơn hàng của bạn đang được tiếp nhận';
+        return 'Chung toi da nhan duoc don hang cua ban.';
       case OrderStatus.confirmed:
-        return 'Đơn hàng đã được xác nhận và đang chuẩn bị';
+        return 'Thanh toan da xac nhan, don hang dang duoc sap xep.';
       case OrderStatus.processing:
-        return 'Đang đóng gói đơn hàng của bạn';
+        return 'Don hang dang duoc dong goi tai kho.';
       case OrderStatus.shipped:
-        return 'Đơn hàng đang trên đường đến bạn';
-      case OrderStatus.outForDelivery:
-        return 'Dự kiến giao trong hôm nay';
-      case OrderStatus.delivered:
-        return 'Đơn hàng đã được giao thành công';
+        return 'Don hang dang tren duong giao den ban.';
+      case OrderStatus.completed:
+        return 'Don hang da giao thanh cong.';
       case OrderStatus.cancelled:
-        return 'Đơn hàng đã bị hủy';
-      case OrderStatus.refunded:
-        return 'Yêu cầu hoàn tiền đã được xử lý';
+        return 'Don hang da bi huy.';
     }
   }
+
+  bool get isActive {
+    return this != OrderStatus.completed && this != OrderStatus.cancelled;
+  }
 }
 
-class OrderItem {
-  final String productId;
-  final String productName;
-  final String productImage;
-  final double price;
-  final int quantity;
-  final String? size;
+class ShipmentInfo {
+  final String id;
+  final String provider;
+  final String? trackingCode;
+  final String? ghnOrderCode;
+  final ShipmentStatus status;
+  final DateTime updatedAt;
 
-  OrderItem({
-    required this.productId,
-    required this.productName,
-    required this.productImage,
-    required this.price,
-    required this.quantity,
-    this.size,
+  const ShipmentInfo({
+    required this.id,
+    required this.provider,
+    required this.trackingCode,
+    required this.ghnOrderCode,
+    required this.status,
+    required this.updatedAt,
   });
 
-  double get subtotal => price * quantity;
-
-  factory OrderItem.fromJson(Map<String, dynamic> json) {
-    return OrderItem(
-      productId: json['product_id'] as String,
-      productName: json['product_name'] as String,
-      productImage: json['product_image'] as String,
-      price: (json['price'] as num).toDouble(),
-      quantity: json['quantity'] as int,
-      size: json['size'] as String?,
+  factory ShipmentInfo.fromJson(Map<String, dynamic> json) {
+    return ShipmentInfo(
+      id: (json['id'] ?? '').toString(),
+      provider: (json['provider'] ?? '').toString(),
+      trackingCode: json['trackingCode']?.toString(),
+      ghnOrderCode: json['ghnOrderCode']?.toString(),
+      status: _parseShipmentStatus(json['status']),
+      updatedAt: _parseDate(json['updatedAt']),
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'product_id': productId,
-      'product_name': productName,
-      'product_image': productImage,
-      'price': price,
-      'quantity': quantity,
-      'size': size,
-    };
-  }
-}
-
-class OrderTimeline {
-  final OrderStatus status;
-  final DateTime timestamp;
-  final String? note;
-
-  OrderTimeline({required this.status, required this.timestamp, this.note});
-
-  factory OrderTimeline.fromJson(Map<String, dynamic> json) {
-    return OrderTimeline(
-      status: OrderStatus.values.firstWhere(
-        (e) => e.name == json['status'],
-        orElse: () => OrderStatus.pending,
-      ),
-      timestamp: DateTime.parse(json['timestamp'] as String),
-      note: json['note'] as String?,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'status': status.name,
-      'timestamp': timestamp.toIso8601String(),
-      'note': note,
-    };
   }
 }
 
 class Order {
   final String id;
-  final String orderNumber;
+  final String code;
   final DateTime createdAt;
+  final DateTime updatedAt;
   final OrderStatus status;
-  final List<OrderItem> items;
-  final List<OrderTimeline> timeline;
-  final double subtotal;
-  final double discount;
+  final PaymentStatus paymentStatus;
+  final double totalAmount;
+  final double discountAmount;
+  final double finalAmount;
   final double shippingFee;
-  final double total;
   final String shippingAddress;
-  final String? trackingNumber;
-  final String? shippingProvider; // GHN, GHTK
-  final String paymentMethod;
+  final String recipientName;
+  final String phone;
+  final List<OrderItem> items;
+  final List<ShipmentInfo> shipments;
 
-  Order({
+  const Order({
     required this.id,
-    required this.orderNumber,
+    required this.code,
     required this.createdAt,
+    required this.updatedAt,
     required this.status,
-    required this.items,
-    required this.timeline,
-    required this.subtotal,
-    required this.discount,
+    required this.paymentStatus,
+    required this.totalAmount,
+    required this.discountAmount,
+    required this.finalAmount,
     required this.shippingFee,
-    required this.total,
     required this.shippingAddress,
-    this.trackingNumber,
-    this.shippingProvider,
-    required this.paymentMethod,
+    required this.recipientName,
+    required this.phone,
+    required this.items,
+    required this.shipments,
   });
 
-  int get itemCount => items.fold(0, (sum, item) => sum + item.quantity);
+  int get itemCount => items.fold<int>(0, (sum, item) => sum + item.quantity);
 
-  bool get canCancel =>
-      status == OrderStatus.pending || status == OrderStatus.confirmed;
-  bool get canReorder =>
-      status == OrderStatus.delivered || status == OrderStatus.cancelled;
-  bool get canTrack =>
-      trackingNumber != null &&
-      (status == OrderStatus.shipped || status == OrderStatus.outForDelivery);
+  OrderItem? get previewItem => items.isEmpty ? null : items.first;
 
-  factory Order.fromJson(Map<String, dynamic> json) {
+  ShipmentInfo? get latestShipment {
+    if (shipments.isEmpty) return null;
+    final sorted = [...shipments]..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    return sorted.first;
+  }
+
+  bool get canTrack => status == OrderStatus.shipped || latestShipment != null;
+
+  bool get isCompletedBucket {
+    return status == OrderStatus.completed || status == OrderStatus.cancelled;
+  }
+
+  factory Order.fromJson(Map<String, dynamic> json, {List<ShipmentInfo>? shipments}) {
+    final itemsRaw = json['items'];
+    final itemList = itemsRaw is List ? itemsRaw : const <dynamic>[];
     return Order(
-      id: json['id'] as String,
-      orderNumber: json['order_number'] as String,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      status: OrderStatus.values.firstWhere(
-        (e) => e.name == json['status'],
-        orElse: () => OrderStatus.pending,
-      ),
-      items: (json['items'] as List)
-          .map((item) => OrderItem.fromJson(item))
+      id: (json['id'] ?? '').toString(),
+      code: (json['code'] ?? json['orderCode'] ?? '').toString(),
+      createdAt: _parseDate(json['createdAt']),
+      updatedAt: _parseDate(json['updatedAt']),
+      status: _parseOrderStatus(json['status']),
+      paymentStatus: _parsePaymentStatus(json['paymentStatus']),
+      totalAmount: _readDouble(json['totalAmount']),
+      discountAmount: _readDouble(json['discountAmount']),
+      finalAmount: _readDouble(json['finalAmount']),
+      shippingFee: _readDouble(json['shippingFee']),
+      shippingAddress: (json['shippingAddress'] ?? '').toString(),
+      recipientName: (json['recipientName'] ?? '').toString(),
+      phone: (json['phone'] ?? '').toString(),
+      items: itemList
+          .whereType<Map>()
+          .map((item) => OrderItem.fromJson(item.map((k, v) => MapEntry(k.toString(), v))))
           .toList(),
-      timeline: (json['timeline'] as List)
-          .map((t) => OrderTimeline.fromJson(t))
-          .toList(),
-      subtotal: (json['subtotal'] as num).toDouble(),
-      discount: (json['discount'] as num).toDouble(),
-      shippingFee: (json['shipping_fee'] as num).toDouble(),
-      total: (json['total'] as num).toDouble(),
-      shippingAddress: json['shipping_address'] as String,
-      trackingNumber: json['tracking_number'] as String?,
-      shippingProvider: json['shipping_provider'] as String?,
-      paymentMethod: json['payment_method'] as String,
+      shipments: shipments ?? const <ShipmentInfo>[],
     );
   }
+}
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'order_number': orderNumber,
-      'created_at': createdAt.toIso8601String(),
-      'status': status.name,
-      'items': items.map((item) => item.toJson()).toList(),
-      'timeline': timeline.map((t) => t.toJson()).toList(),
-      'subtotal': subtotal,
-      'discount': discount,
-      'shipping_fee': shippingFee,
-      'total': total,
-      'shipping_address': shippingAddress,
-      'tracking_number': trackingNumber,
-      'shipping_provider': shippingProvider,
-      'payment_method': paymentMethod,
-    };
+OrderStatus _parseOrderStatus(dynamic raw) {
+  final value = (raw ?? '').toString().trim().toUpperCase();
+  switch (value) {
+    case 'CONFIRMED':
+      return OrderStatus.confirmed;
+    case 'PROCESSING':
+      return OrderStatus.processing;
+    case 'SHIPPED':
+      return OrderStatus.shipped;
+    case 'COMPLETED':
+      return OrderStatus.completed;
+    case 'CANCELLED':
+      return OrderStatus.cancelled;
+    case 'PENDING':
+    default:
+      return OrderStatus.pending;
   }
+}
+
+PaymentStatus _parsePaymentStatus(dynamic raw) {
+  final value = (raw ?? '').toString().trim().toUpperCase();
+  switch (value) {
+    case 'PAID':
+      return PaymentStatus.paid;
+    case 'FAILED':
+      return PaymentStatus.failed;
+    case 'REFUNDED':
+      return PaymentStatus.refunded;
+    case 'PENDING':
+    default:
+      return PaymentStatus.pending;
+  }
+}
+
+ShipmentStatus _parseShipmentStatus(dynamic raw) {
+  final value = (raw ?? '').toString().trim().toUpperCase();
+  switch (value) {
+    case 'PICKED_UP':
+      return ShipmentStatus.pickedUp;
+    case 'IN_TRANSIT':
+      return ShipmentStatus.inTransit;
+    case 'DELIVERED':
+      return ShipmentStatus.delivered;
+    case 'FAILED':
+      return ShipmentStatus.failed;
+    case 'RETURNED':
+      return ShipmentStatus.returned;
+    case 'PENDING':
+    default:
+      return ShipmentStatus.pending;
+  }
+}
+
+double _readDouble(dynamic value) {
+  if (value is double) return value;
+  if (value is num) return value.toDouble();
+  if (value is String) return double.tryParse(value) ?? 0;
+  return 0;
+}
+
+DateTime _parseDate(dynamic value) {
+  if (value is DateTime) return value.toLocal();
+  if (value is String) {
+    return DateTime.tryParse(value)?.toLocal() ?? DateTime.now();
+  }
+  return DateTime.now();
 }

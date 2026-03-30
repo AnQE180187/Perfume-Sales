@@ -2,18 +2,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/payment_method.dart';
 import '../services/payment_service.dart';
 
-// Payment Service Provider
-final paymentServiceProvider = Provider<PaymentService>(
-  (ref) => PaymentService(),
-);
-
 // Available Payment Methods Provider
 final paymentMethodsProvider = Provider<List<PaymentMethod>>((ref) {
   return [
-    PaymentMethod(type: PaymentMethodType.vnpay, isEnabled: true),
-    PaymentMethod(type: PaymentMethodType.momo, isEnabled: true),
     PaymentMethod(
+      id: 'payos',
+      type: PaymentMethodType.payos,
+      label: 'Thanh toan online (PayOS)',
+      description: 'QR / chuyen khoan nhanh',
+      isEnabled: true,
+    ),
+    PaymentMethod(
+      id: 'cod',
       type: PaymentMethodType.cod,
+      label: 'Thanh toan khi nhan hang (COD)',
+      description: 'Thanh toan khi nhan hang',
       isDefault: true,
       isEnabled: true,
     ),
@@ -105,6 +108,14 @@ class PaymentActions {
             message:
                 response['message'] as String? ??
                 'Đã tạo đơn thanh toán khi nhận hàng',
+          );
+
+        case PaymentMethodType.payos:
+          // PayOS is handled directly in CheckoutNotifier via CheckoutApiService.
+          // Reaching here would be a logic error, but return a safe fallback.
+          return PaymentResult(
+            success: false,
+            message: 'PayOS được xử lý qua màn hình thanh toán.',
           );
       }
     } catch (e) {

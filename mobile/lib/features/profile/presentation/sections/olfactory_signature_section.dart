@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import '../widgets/ai_insight_card.dart';
 
 /// Olfactory Signature Section
-/// 
+///
 /// Wrapper section for AI insight card with proper spacing.
-/// 
+///
 /// Why this is a section:
 /// - Provides consistent spacing around AI card
 /// - Makes it easy to add/remove card from profile
@@ -24,7 +24,7 @@ class OlfactorySignatureSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 24),
+      padding: const EdgeInsets.symmetric(vertical: 16),
       child: AiInsightCard(
         olfactoryTags: olfactoryTags,
         onFindNextScent: onFindNextScent,

@@ -1,399 +1,307 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-    Tag, Plus, Trash2, Calendar, Target,
-    Zap, AlertCircle, CheckCircle2, XCircle,
-    Loader2, Search, ArrowLeft, MoreHorizontal
-} from 'lucide-react';
-import { promotionService } from '@/services/promotion.service';
 import { AuthGuard } from '@/components/auth/auth-guard';
-import { cn } from '@/lib/utils';
-import Link from 'next/link';
+import { promotionService } from '@/services/promotion.service';
+import { Tag, Plus, Loader2, Trash2, ShieldCheck, Zap, TrendingUp, X } from 'lucide-react';
+import { useEffect, useState, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 
-export default function PromotionsManagement() {
-    const [promos, setPromos] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-    const [search, setSearch] = useState('');
+export default function PromotionsAdmin() {
+  const t = useTranslations('dashboard.admin.promotions');
+  const [promos, setPromos] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [form, setForm] = useState({
+    code: '',
+    description: '',
+    discountType: 'PERCENTAGE',
+    discountValue: 0,
+    maxRedemptions: 100,
+    startDate: new Date().toISOString().split('T')[0],
+    endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+  });
+  const [submitting, setSubmitting] = useState(false);
 
-    // Form state
-    const [formData, setFormData] = useState({
-        code: '',
-        description: '',
-        discountType: 'PERCENTAGE',
-        discountValue: 0,
-        minOrderAmount: 0,
-        maxDiscount: 0,
-        usageLimit: 0,
-        startDate: '',
-        endDate: '',
-    });
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [error, setError] = useState('');
+  const fetchPromos = useCallback(async () => {
+    setLoading(true);
+    try {
+      const list = await promotionService.findAll();
+      setPromos(list);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-    useEffect(() => {
-        fetchPromos();
-    }, []);
+  useEffect(() => {
+    fetchPromos();
+  }, [fetchPromos]);
 
-    const fetchPromos = async () => {
-        setLoading(true);
-        try {
-            const data = await promotionService.findAll();
-            setPromos(data);
-        } catch (err) {
-            console.error('Failed to fetch promos:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      await promotionService.create({
+        ...form,
+        discountValue: Number(form.discountValue),
+        maxRedemptions: Number(form.maxRedemptions),
+        startDate: new Date(form.startDate).toISOString(),
+        endDate: new Date(form.endDate).toISOString(),
+      });
+      setIsModalOpen(false);
+      fetchPromos();
+    } catch (e) {
+      alert(t('modals.error_create'));
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
-    const handleDelete = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this promotion?')) return;
-        try {
-            await promotionService.remove(id);
-            setPromos(prev => prev.filter(p => p.id !== id));
-        } catch (err) {
-            alert('Delete failed');
-        }
-    };
+  const handleDelete = async (id: string) => {
+    if (!confirm(t('delete_confirm'))) return;
+    try {
+      await promotionService.remove(id);
+      fetchPromos();
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-        setError('');
-        try {
-            const payload = {
-                ...formData,
-                discountValue: Number(formData.discountValue),
-                minOrderAmount: formData.minOrderAmount ? Number(formData.minOrderAmount) : undefined,
-                maxDiscount: formData.maxDiscount ? Number(formData.maxDiscount) : undefined,
-                usageLimit: formData.usageLimit ? Number(formData.usageLimit) : undefined,
-                startDate: new Date(formData.startDate).toISOString(),
-                endDate: new Date(formData.endDate).toISOString(),
-            };
-            await promotionService.create(payload);
-            setIsCreateModalOpen(false);
-            fetchPromos();
-            setFormData({
-                code: '',
-                description: '',
-                discountType: 'PERCENTAGE',
-                discountValue: 0,
-                minOrderAmount: 0,
-                maxDiscount: 0,
-                usageLimit: 0,
-                startDate: '',
-                endDate: '',
-            });
-        } catch (err: any) {
-            setError(err.response?.data?.message || 'Failed to create promotion');
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
+  const isExpired = (endDate: string) => new Date(endDate) < new Date();
 
-    const filteredPromos = promos.filter(p =>
-        p.code.toLowerCase().includes(search.toLowerCase()) ||
-        p.description?.toLowerCase().includes(search.toLowerCase())
-    );
-
-    return (
-        <AuthGuard allowedRoles={['admin']}>
-            <div className="flex flex-col gap-10 py-10 px-8 max-w-7xl mx-auto">
-                {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div className="flex items-center gap-6">
-                        <Link href="/dashboard/admin/marketing" className="p-3 bg-white dark:bg-zinc-900 border border-stone-100 dark:border-white/5 rounded-2xl hover:border-gold transition-all group">
-                            <ArrowLeft size={18} className="text-stone-500 group-hover:text-gold" />
-                        </Link>
-                        <div>
-                            <h1 className="text-4xl font-serif text-luxury-black dark:text-white mb-2 italic">
-                                Promotions <span className="font-sans font-bold not-italic">Engine</span>
-                            </h1>
-                            <p className="text-[10px] text-stone-500 uppercase tracking-[.4em] font-bold">
-                                Neural Rewards & Incentives Control
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-4">
-                        <div className="relative group">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 group-hover:text-gold transition-colors" size={16} />
-                            <input
-                                type="text"
-                                placeholder="Search codes..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className="bg-white dark:bg-zinc-900 border border-stone-200 dark:border-white/10 rounded-2xl py-3 pl-12 pr-6 text-xs outline-none focus:border-gold transition-all w-64 shadow-sm"
-                            />
-                        </div>
-                        <button
-                            onClick={() => setIsCreateModalOpen(true)}
-                            className="bg-luxury-black dark:bg-white text-white dark:text-luxury-black px-6 py-3 rounded-2xl text-[10px] font-bold uppercase tracking-widest flex items-center gap-3 hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-luxury-black/10 dark:shadow-white/5"
-                        >
-                            <Plus size={16} />
-                            Create Promo
-                        </button>
-                    </div>
-                </div>
-
-                {/* Stats Summary */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="glass bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-stone-200 dark:border-white/10">
-                        <div className="flex justify-between items-start mb-4">
-                            <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-stone-400">Total Codes</h3>
-                            <Tag className="text-gold" size={18} />
-                        </div>
-                        <p className="text-3xl font-serif italic text-luxury-black dark:text-white">{promos.length}</p>
-                    </div>
-                    <div className="glass bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-stone-200 dark:border-white/10">
-                        <div className="flex justify-between items-start mb-4">
-                            <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-stone-400">Active Now</h3>
-                            <Zap className="text-emerald-500" size={18} />
-                        </div>
-                        <p className="text-3xl font-serif italic text-luxury-black dark:text-white">
-                            {promos.filter(p => p.isActive && new Date(p.endDate) > new Date()).length}
-                        </p>
-                    </div>
-                    <div className="glass bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-stone-200 dark:border-white/10">
-                        <div className="flex justify-between items-start mb-4">
-                            <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-stone-400">Total Redemptions</h3>
-                            <Target className="text-blue-500" size={18} />
-                        </div>
-                        <p className="text-3xl font-serif italic text-luxury-black dark:text-white">
-                            {promos.reduce((acc, p) => acc + p.usedCount, 0)}
-                        </p>
-                    </div>
-                </div>
-
-                {/* List Table */}
-                <div className="glass bg-white dark:bg-zinc-900 rounded-[3rem] border border-stone-200 dark:border-white/10 overflow-hidden shadow-xl">
-                    <div className="overflow-x-auto">
-                        <table className="w-full border-collapse">
-                            <thead>
-                                <tr className="border-b border-stone-100 dark:border-white/5 bg-stone-50/50 dark:bg-white/[0.02]">
-                                    <th className="px-8 py-6 text-left text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400">Code</th>
-                                    <th className="px-8 py-6 text-left text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400">Discount</th>
-                                    <th className="px-8 py-6 text-left text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400">Conditions</th>
-                                    <th className="px-8 py-6 text-left text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400">Redeemed</th>
-                                    <th className="px-8 py-6 text-left text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400">Validity</th>
-                                    <th className="px-8 py-6 text-left text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400">Status</th>
-                                    <th className="px-8 py-6 text-right text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-stone-100 dark:divide-white/5">
-                                {loading ? (
-                                    Array(5).fill(0).map((_, i) => (
-                                        <tr key={i} className="animate-pulse">
-                                            <td colSpan={7} className="px-8 py-10 h-24" />
-                                        </tr>
-                                    ))
-                                ) : filteredPromos.map((promo) => {
-                                    const isActive = promo.isActive && new Date(promo.endDate) > new Date() && new Date(promo.startDate) <= new Date();
-                                    return (
-                                        <motion.tr
-                                            key={promo.id}
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
-                                            className="hover:bg-stone-50/80 dark:hover:bg-white/[0.02] transition-colors group"
-                                        >
-                                            <td className="px-8 py-6">
-                                                <div className="flex flex-col">
-                                                    <span className="text-xs font-bold text-luxury-black dark:text-white uppercase tracking-widest">{promo.code}</span>
-                                                    <span className="text-[10px] text-stone-400 truncate max-w-[150px]">{promo.description}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-8 py-6">
-                                                <span className="text-sm font-serif text-luxury-black dark:text-white italic">
-                                                    {promo.discountType === 'PERCENTAGE'
-                                                        ? `${promo.discountValue}% OFF`
-                                                        : new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(promo.discountValue)}
-                                                </span>
-                                            </td>
-                                            <td className="px-8 py-6">
-                                                <div className="space-y-1">
-                                                    {promo.minOrderAmount && (
-                                                        <p className="text-[9px] text-stone-500 uppercase font-bold tracking-tight">Min Order: {new Intl.NumberFormat('vi-VN').format(promo.minOrderAmount)}đ</p>
-                                                    )}
-                                                    {promo.maxDiscount && (
-                                                        <p className="text-[9px] text-stone-500 uppercase font-bold tracking-tight">Max: {new Intl.NumberFormat('vi-VN').format(promo.maxDiscount)}đ</p>
-                                                    )}
-                                                </div>
-                                            </td>
-                                            <td className="px-8 py-6">
-                                                <div className="flex flex-col">
-                                                    <span className="text-xs font-bold text-luxury-black dark:text-white">{promo.usedCount}</span>
-                                                    <span className="text-[8px] uppercase tracking-tighter text-stone-400">Limit: {promo.usageLimit || '∞'}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-8 py-6">
-                                                <div className="flex items-center gap-2 text-stone-500">
-                                                    <Calendar size={12} />
-                                                    <span className="text-[9px] uppercase font-bold tracking-widest">
-                                                        {new Date(promo.endDate).toLocaleDateString('vi-VN')}
-                                                    </span>
-                                                </div>
-                                            </td>
-                                            <td className="px-8 py-6">
-                                                <div className={cn(
-                                                    "inline-flex items-center gap-2 px-3 py-1 rounded-full border text-[9px] font-bold uppercase tracking-widest",
-                                                    isActive
-                                                        ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
-                                                        : "bg-red-500/10 text-red-600 border-red-500/20"
-                                                )}>
-                                                    <div className={cn("w-1 h-1 rounded-full", isActive ? "bg-emerald-500" : "bg-red-500")} />
-                                                    {isActive ? 'Active' : 'Expired'}
-                                                </div>
-                                            </td>
-                                            <td className="px-8 py-6 text-right">
-                                                <button
-                                                    onClick={() => handleDelete(promo.id)}
-                                                    className="p-2.5 rounded-xl border border-stone-200 dark:border-white/10 text-stone-400 hover:border-red-500/50 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100"
-                                                >
-                                                    <Trash2 size={14} />
-                                                </button>
-                                            </td>
-                                        </motion.tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                {/* Create Modal */}
-                <AnimatePresence>
-                    {isCreateModalOpen && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                className="absolute inset-0 bg-black/60 backdrop-blur-md"
-                                onClick={() => setIsCreateModalOpen(false)}
-                            />
-                            <motion.div
-                                initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                                animate={{ scale: 1, opacity: 1, y: 0 }}
-                                exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                                className="relative w-full max-w-xl bg-white dark:bg-zinc-950 rounded-[3rem] border border-stone-200 dark:border-white/10 shadow-2xl overflow-hidden"
-                            >
-                                <div className="p-10">
-                                    <div className="flex justify-between items-center mb-10 pb-8 border-b border-stone-100 dark:border-white/5">
-                                        <div>
-                                            <h3 className="text-xl font-bold uppercase tracking-widest text-luxury-black dark:text-white">Forge New Promo</h3>
-                                            <p className="text-[10px] text-stone-400 uppercase tracking-[.3em] font-bold mt-1">Configure Incentive Logic</p>
-                                        </div>
-                                        <button onClick={() => setIsCreateModalOpen(false)} className="p-3 text-stone-400 hover:text-luxury-black dark:hover:text-white transition-colors">
-                                            <XCircle size={24} strokeWidth={1.5} />
-                                        </button>
-                                    </div>
-
-                                    <form onSubmit={handleSubmit} className="space-y-6">
-                                        <div className="grid grid-cols-2 gap-6">
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-bold uppercase tracking-widest text-stone-400 ml-1">CODE</label>
-                                                <input
-                                                    required
-                                                    type="text"
-                                                    value={formData.code}
-                                                    onChange={e => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                                                    className="w-full h-14 bg-stone-50 dark:bg-zinc-900 border border-stone-100 dark:border-white/5 rounded-2xl px-6 text-xs font-bold focus:ring-1 focus:ring-gold outline-none transition-all"
-                                                    placeholder="AURA20"
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-bold uppercase tracking-widest text-stone-400 ml-1">DISCOUNT TYPE</label>
-                                                <select
-                                                    value={formData.discountType}
-                                                    onChange={e => setFormData({ ...formData, discountType: e.target.value })}
-                                                    className="w-full h-14 bg-stone-50 dark:bg-zinc-900 border border-stone-100 dark:border-white/5 rounded-2xl px-6 text-xs font-bold outline-none cursor-pointer"
-                                                >
-                                                    <option value="PERCENTAGE">PERCENTAGE (%)</option>
-                                                    <option value="FIXED_AMOUNT">FIXED AMOUNT (VNĐ)</option>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-bold uppercase tracking-widest text-stone-400 ml-1">DESCRIPTION</label>
-                                            <textarea
-                                                value={formData.description}
-                                                onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                                className="w-full h-24 bg-stone-50 dark:bg-zinc-900 border border-stone-100 dark:border-white/5 rounded-2xl px-6 py-4 text-xs focus:ring-1 focus:ring-gold outline-none transition-all resize-none"
-                                                placeholder="Enter promo details..."
-                                            />
-                                        </div>
-
-                                        <div className="grid grid-cols-2 gap-6">
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-bold uppercase tracking-widest text-stone-400 ml-1">VALUE</label>
-                                                <input
-                                                    required
-                                                    type="number"
-                                                    value={formData.discountValue}
-                                                    onChange={e => setFormData({ ...formData, discountValue: Number(e.target.value) })}
-                                                    className="w-full h-14 bg-stone-50 dark:bg-zinc-900 border border-stone-100 dark:border-white/5 rounded-2xl px-6 text-xs font-bold outline-none"
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-bold uppercase tracking-widest text-stone-400 ml-1">USAGE LIMIT</label>
-                                                <input
-                                                    type="number"
-                                                    value={formData.usageLimit}
-                                                    onChange={e => setFormData({ ...formData, usageLimit: Number(e.target.value) })}
-                                                    className="w-full h-14 bg-stone-50 dark:bg-zinc-900 border border-stone-100 dark:border-white/5 rounded-2xl px-6 text-xs font-bold outline-none"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-2 gap-6">
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-bold uppercase tracking-widest text-stone-400 ml-1">START DATE</label>
-                                                <input
-                                                    required
-                                                    type="date"
-                                                    value={formData.startDate}
-                                                    onChange={e => setFormData({ ...formData, startDate: e.target.value })}
-                                                    className="w-full h-14 bg-stone-50 dark:bg-zinc-900 border border-stone-100 dark:border-white/5 rounded-2xl px-6 text-xs font-bold outline-none"
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-bold uppercase tracking-widest text-stone-400 ml-1">END DATE</label>
-                                                <input
-                                                    required
-                                                    type="date"
-                                                    value={formData.endDate}
-                                                    onChange={e => setFormData({ ...formData, endDate: e.target.value })}
-                                                    className="w-full h-14 bg-stone-50 dark:bg-zinc-900 border border-stone-100 dark:border-white/5 rounded-2xl px-6 text-xs font-bold outline-none"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        {error && (
-                                            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl flex items-center gap-3 text-red-500 text-[10px] font-bold uppercase tracking-widest">
-                                                <AlertCircle size={16} />
-                                                {error}
-                                            </motion.div>
-                                        )}
-
-                                        <button
-                                            type="submit"
-                                            disabled={isSubmitting}
-                                            className="w-full h-16 bg-luxury-black dark:bg-white text-white dark:text-luxury-black rounded-2xl font-bold uppercase tracking-[.3em] text-[10px] hover:scale-[1.01] active:scale-[0.98] transition-all disabled:opacity-50 mt-4 flex items-center justify-center gap-3"
-                                        >
-                                            {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : <Zap size={18} />}
-                                            Activate Protocol
-                                        </button>
-                                    </form>
-                                </div>
-                            </motion.div>
-                        </div>
-                    )}
-                </AnimatePresence>
+  return (
+    <AuthGuard allowedRoles={['admin']}>
+      <main className="p-8 pb-20 max-w-7xl mx-auto">
+        <header className="mb-16 flex flex-col md:flex-row md:items-end justify-between gap-8">
+          <div>
+            <div className="flex items-center gap-3 text-gold mb-4">
+              <Zap size={18} />
+              <span className="text-[10px] font-bold tracking-[.4em] uppercase italic">{t('title')}</span>
             </div>
-        </AuthGuard>
-    );
+            <h1 className="text-5xl font-heading gold-gradient uppercase tracking-tighter mb-2">
+              {t('subtitle')}
+            </h1>
+          </div>
+
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center gap-4 bg-foreground dark:bg-gold text-background dark:text-foreground px-10 py-5 rounded-full font-heading text-[10px] uppercase tracking-[.3em] font-bold hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-gold/20"
+          >
+            <Plus size={16} strokeWidth={3} />
+            {t('modals.create_title')}
+          </button>
+        </header>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+          {[
+            { label: t('stats.total'), value: promos.length, icon: Tag, color: 'text-stone-400' },
+            { label: t('stats.active'), value: promos.filter(p => !isExpired(p.endDate)).length, icon: ShieldCheck, color: 'text-emerald-500' },
+            { label: t('stats.redemptions'), value: promos.reduce((acc, p) => acc + p.redemptionsCount, 0), icon: TrendingUp, color: 'text-gold' },
+          ].map((stat, i) => (
+             <div key={i} className="glass p-10 rounded-[3rem] border-border relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gold/5 blur-[60px] pointer-events-none" />
+                <div className="flex items-center justify-between mb-4">
+                  <stat.icon size={20} className={stat.color} />
+                  <span className="text-3xl font-serif text-foreground">{stat.value}</span>
+                </div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{stat.label}</p>
+             </div>
+          ))}
+        </div>
+
+        <div className="glass rounded-[3.5rem] border-border overflow-hidden shadow-2xl bg-background/30">
+          <table className="w-full text-left font-body text-sm border-collapse">
+            <thead className="bg-secondary/30 text-muted-foreground border-b border-border">
+              <tr>
+                <th className="px-10 py-8 text-[10px] uppercase tracking-widest font-heading">{t('table.code')}</th>
+                <th className="px-10 py-8 text-[10px] uppercase tracking-widest font-heading">{t('table.discount')}</th>
+                <th className="px-10 py-8 text-[10px] uppercase tracking-widest font-heading">{t('table.conditions')}</th>
+                <th className="px-10 py-8 text-[10px] uppercase tracking-widest font-heading">{t('table.redeemed')}</th>
+                <th className="px-10 py-8 text-[10px] uppercase tracking-widest font-heading">{t('table.validity')}</th>
+                <th className="px-10 py-8 text-[10px] uppercase tracking-widest font-heading">{t('table.status')}</th>
+                <th className="px-10 py-8 text-[10px] uppercase tracking-widest font-heading text-right">{t('table.actions')}</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border/50">
+              {loading ? (
+                <tr>
+                  <td colSpan={7} className="px-10 py-24 text-center">
+                    <Loader2 className="w-8 h-8 animate-spin text-gold mx-auto" />
+                    <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground mt-4">Syncing Ledger...</p>
+                  </td>
+                </tr>
+              ) : promos.map((p) => (
+                <tr key={p.id} className="hover:bg-white/[0.02] transition-colors group">
+                  <td className="px-10 py-10">
+                    <span className="font-heading text-lg tracking-wider text-foreground group-hover:text-gold transition-colors">{p.code}</span>
+                    <p className="text-[9px] text-muted-foreground font-mono mt-1 opacity-60 truncate max-w-[150px]">{p.description}</p>
+                  </td>
+                  <td className="px-10 py-10">
+                    <span className="text-xl font-serif text-gold">
+                      {p.discountType === 'PERCENTAGE' ? `${p.discountValue}%` : `-${new Intl.NumberFormat('vi-VN').format(p.discountValue)}`}
+                    </span>
+                  </td>
+                  <td className="px-10 py-10">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                       {p.redemptionsCount} / {p.maxRedemptions}
+                    </span>
+                  </td>
+                  <td className="px-10 py-10">
+                    <div className="w-full max-w-[80px] h-1.5 bg-secondary rounded-full overflow-hidden">
+                       <div 
+                         className="h-full bg-gold transition-all duration-1000 ease-out" 
+                         style={{ width: `${Math.min((p.redemptionsCount / p.maxRedemptions) * 100, 100)}%` }}
+                       />
+                    </div>
+                  </td>
+                  <td className="px-10 py-10">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[9px] font-bold uppercase tracking-widest text-foreground">
+                        {new Date(p.startDate).toLocaleDateString()}
+                      </span>
+                      <span className="text-[9px] text-muted-foreground">→ {new Date(p.endDate).toLocaleDateString()}</span>
+                    </div>
+                  </td>
+                  <td className="px-10 py-10">
+                    <span className={`px-4 py-1.5 rounded-full text-[8px] uppercase tracking-[.2em] font-bold border transition-colors ${
+                      isExpired(p.endDate) 
+                        ? 'bg-stone-500/10 text-stone-500 border-border' 
+                        : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                    }`}>
+                      {isExpired(p.endDate) ? t('status.expired') : t('status.active')}
+                    </span>
+                  </td>
+                  <td className="px-10 py-10 text-right">
+                    <button
+                      onClick={() => handleDelete(p.id)}
+                      className="p-3 text-muted-foreground hover:text-red-500 hover:glass rounded-xl transition-all opacity-0 group-hover:opacity-100"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* CREATE MODAL */}
+        <AnimatePresence>
+          {isModalOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-6"
+            >
+              <motion.div
+                initial={{ scale: 0.9, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.9, y: 20 }}
+                className="glass rounded-[4rem] border border-white/10 p-12 md:p-16 w-full max-w-3xl bg-background/50 relative overflow-hidden"
+              >
+                 <div className="absolute top-0 right-0 w-64 h-64 bg-gold/10 blur-[120px] pointer-events-none" />
+                 <button onClick={() => setIsModalOpen(false)} className="absolute top-10 right-10 p-3 hover:glass rounded-full text-muted-foreground transition-all">
+                    <X size={24} />
+                 </button>
+
+                <h2 className="text-4xl font-heading gold-gradient uppercase tracking-tighter mb-2 italic">
+                  {t('modals.create_title')}
+                </h2>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-[.4em] font-bold mb-12">{t('modals.create_subtitle')}</p>
+
+                <form onSubmit={handleSubmit} className="space-y-10">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <div className="space-y-4">
+                      <label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground ml-1">{t('modals.code')}</label>
+                      <input
+                        required
+                        value={form.code}
+                        onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })}
+                        className="w-full h-16 bg-white/5 border border-white/5 rounded-[1.5rem] px-8 text-xs font-bold uppercase tracking-widest outline-none focus:border-gold/50 transition-all"
+                        placeholder="e.g. AURA20"
+                      />
+                    </div>
+                    <div className="space-y-4">
+                      <label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground ml-1">{t('modals.type')}</label>
+                      <select
+                        value={form.discountType}
+                        onChange={(e) => setForm({ ...form, discountType: e.target.value })}
+                        className="w-full h-16 bg-white/5 border border-white/5 rounded-[1.5rem] px-8 text-xs font-bold uppercase tracking-widest outline-none focus:border-gold/50 transition-all appearance-none"
+                      >
+                        <option value="PERCENTAGE">{t('types.percentage')}</option>
+                        <option value="FIXED">{t('types.fixed')}</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-4">
+                      <label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground ml-1">{t('modals.value')}</label>
+                      <input
+                        type="number"
+                        required
+                        value={form.discountValue}
+                        onChange={(e) => setForm({ ...form, discountValue: Number(e.target.value) })}
+                        className="w-full h-16 bg-white/5 border border-white/5 rounded-[1.5rem] px-8 text-xs font-bold tracking-widest outline-none focus:border-gold/50 transition-all"
+                      />
+                    </div>
+                    <div className="space-y-4">
+                      <label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground ml-1">{t('modals.limit')}</label>
+                      <input
+                        type="number"
+                        required
+                        value={form.maxRedemptions}
+                        onChange={(e) => setForm({ ...form, maxRedemptions: Number(e.target.value) })}
+                        className="w-full h-16 bg-white/5 border border-white/5 rounded-[1.5rem] px-8 text-xs font-bold tracking-widest outline-none focus:border-gold/50 transition-all"
+                      />
+                    </div>
+
+                    <div className="space-y-4">
+                      <label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground ml-1">{t('modals.start')}</label>
+                      <input
+                        type="date"
+                        required
+                        value={form.startDate}
+                        onChange={(e) => setForm({ ...form, startDate: e.target.value })}
+                        className="w-full h-16 bg-white/5 border border-white/5 rounded-[1.5rem] px-8 text-xs font-bold tracking-widest outline-none focus:border-gold/50 transition-all invert dark:invert-0"
+                      />
+                    </div>
+                    <div className="space-y-4">
+                      <label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground ml-1">{t('modals.end')}</label>
+                      <input
+                        type="date"
+                        required
+                        value={form.endDate}
+                        onChange={(e) => setForm({ ...form, endDate: e.target.value })}
+                        className="w-full h-16 bg-white/5 border border-white/5 rounded-[1.5rem] px-8 text-xs font-bold tracking-widest outline-none focus:border-gold/50 transition-all invert dark:invert-0"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground ml-1">{t('modals.desc')}</label>
+                    <textarea
+                      value={form.description}
+                      onChange={(e) => setForm({ ...form, description: e.target.value })}
+                      className="w-full h-32 bg-white/5 border border-white/5 rounded-[1.5rem] p-8 text-xs font-medium outline-none focus:border-gold/50 transition-all resize-none"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="w-full h-20 rounded-[2rem] bg-gold text-black font-heading text-[11px] uppercase tracking-[.4em] font-bold hover:scale-[1.02] active:scale-95 transition-all shadow-2xl shadow-gold/20 disabled:opacity-50"
+                  >
+                    {submitting ? t('modals.submitting') : t('modals.submit')}
+                  </button>
+                </form>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
+    </AuthGuard>
+  );
 }
