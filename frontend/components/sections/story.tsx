@@ -41,13 +41,13 @@ export const Story = () => {
                         {/* Badge */}
                         <div className="flex items-center gap-3 text-gold mb-8">
                             <Sparkles size={20} />
-                            <span className="text-[10px] font-bold tracking-[.4em] uppercase italic">
+                            <span className="text-[10px] font-bold uppercase tracking-widest italic">
                                 {t('badge')}
                             </span>
                         </div>
 
                         {/* Heading */}
-                        <h2 className="text-5xl md:text-7xl font-serif mb-10 leading-[1.1] text-foreground transition-colors">
+                        <h2 className="text-5xl md:text-7xl font-heading mb-10 leading-[1.1] text-foreground transition-colors">
                             {t('title')}
                         </h2>
 
@@ -71,7 +71,7 @@ export const Story = () => {
                                         <feature.icon size={28} strokeWidth={1} />
                                     </div>
                                     <div className="flex-1">
-                                        <h4 className="text-lg font-serif text-foreground mb-2 transition-colors uppercase tracking-widest">
+                                        <h4 className="text-lg font-serif text-foreground mb-2 transition-colors uppercase">
                                             {feature.title}
                                         </h4>
                                         <p className="text-muted-foreground text-sm leading-relaxed transition-colors font-light italic">
@@ -85,7 +85,7 @@ export const Story = () => {
                         {/* CTA */}
                         <Link
                             href="/customer/consultation"
-                            className="group px-12 py-5 border-2 border-foreground dark:border-gold text-foreground hover:bg-foreground dark:hover:bg-gold hover:text-background dark:hover:text-background rounded-full font-bold tracking-[.3em] uppercase text-[10px] transition-all inline-flex items-center gap-4"
+                            className="group px-12 py-5 border-2 border-foreground dark:border-gold text-foreground hover:bg-foreground dark:hover:bg-gold hover:text-background dark:hover:text-background rounded-full font-bold uppercase text-[10px] transition-all inline-flex items-center gap-4"
                         >
                             {t('cta')}
                             <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />
