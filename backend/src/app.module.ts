@@ -22,6 +22,7 @@ import { StoresModule } from './stores/stores.module';
 import { ChatModule } from './chat/chat.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { AiModule } from './ai/ai.module';
+import { FavoritesModule } from './favorites/favorites.module';
 import { AddressesModule } from './addresses/addresses.module';
 import { GHNModule } from './ghn/ghn.module';
 import { ShippingModule } from './shipping/shipping.module';
@@ -50,6 +51,7 @@ import { ShippingModule } from './shipping/shipping.module';
     ChatModule,
     ReviewsModule,
     AiModule,
+    FavoritesModule,
     AddressesModule,
     GHNModule,
     ShippingModule,

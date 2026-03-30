@@ -39,7 +39,7 @@ export const Sidebar = () => {
             { icon: BrainCircuit, label: navT('customer.quiz'), href: '/dashboard/customer/quiz' },
 
 
-            { icon: Heart, label: commonT('favorites'), href: '/favorite' },
+            { icon: Heart, label: commonT('favorites'), href: '/dashboard/customer/favorite' },
             { icon: ClipboardList, label: commonT('orders'), href: '/dashboard/customer/orders' },
             { icon: Coins, label: navT('customer.loyalty'), href: '/dashboard/customer/loyalty' },
             { icon: Tag, label: navT('customer.promotions'), href: '/dashboard/customer/promotions' },

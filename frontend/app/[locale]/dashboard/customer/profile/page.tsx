@@ -1,11 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+
+import { useEffect, useState } from 'react';
+
 import { useTranslations } from 'next-intl';
+
 import Image from 'next/image';
 import { Link } from '@/lib/i18n';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Header } from '@/components/common/header';
+import { favoriteService, type FavoriteItem } from '@/services/favorite.service';
 import {
     Sparkles, History, Heart, Award, Settings, ShoppingBag,
     Crown, TrendingUp, ChevronRight, Camera, X, CheckCircle2
@@ -38,7 +42,29 @@ const MOCK_ORDERS = [
 export default function ProfilePage() {
     const t = useTranslations('dashboard.profile');
     const [activeTab, setActiveTab] = useState('dna');
+    const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
     const user = MOCK_USER;
+
+    useEffect(() => {
+        const syncFavorites = async () => {
+            try {
+                const data = await favoriteService.getFavorites();
+                setFavorites(data);
+            } catch {
+                setFavorites([]);
+            }
+        };
+        void syncFavorites();
+
+        window.addEventListener(favoriteService.eventName, syncFavorites);
+        return () => window.removeEventListener(favoriteService.eventName, syncFavorites);
+    }, []);
+
+    const handleRemoveFavorite = async (productId: string) => {
+        await favoriteService.removeProduct(productId);
+        const updated = await favoriteService.getFavorites();
+        setFavorites(updated);
+    };
 
     return (
         <div className="min-h-screen bg-background text-foreground transition-colors selection:bg-gold/30">
@@ -203,7 +229,7 @@ export default function ProfilePage() {
 
                                         <Link
                                             href="/customer/consultation"
-                                            className="block p-16 rounded-[4rem] glass border-gold/10 flex flex-col md:flex-row items-center justify-between hover:border-gold/30 hover:bg-gold/5 transition-all group/cta relative overflow-hidden"
+                                            className="p-12 rounded-[3.5rem] bg-stone-100 dark:bg-white/5 border border-stone-100 dark:border-white/5 flex items-center justify-between hover:border-gold transition-all"
                                         >
                                             <div className="absolute inset-0 bg-gradient-to-r from-gold/5 via-transparent to-transparent opacity-0 group-hover/cta:opacity-100 transition-opacity" />
                                             <div className="flex items-center gap-10 relative z-10 text-center md:text-left">
