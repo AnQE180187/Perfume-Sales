@@ -1,14 +1,20 @@
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
 import { ChatController } from './chat.controller';
-import { ChatGateway } from './chat.gateway';
-import { ChatService } from './chat.service';
+import { ChatService } from './services/chat.service';
+import { ConversationService } from './services/conversation.service';
+import { MessageService } from './services/message.service';
+import { ChatGateway } from './gateways/chat.gateway';
 import { AiModule } from '../ai/ai.module';
 
 @Module({
-  imports: [JwtModule.register({}), AiModule],
+  imports: [AiModule],
   controllers: [ChatController],
-  providers: [ChatService, ChatGateway],
+  providers: [
+    ChatService,
+    ConversationService,
+    MessageService,
+    ChatGateway,
+  ],
+  exports: [ChatService],
 })
 export class ChatModule {}
-

@@ -1,57 +1,116 @@
-import { Controller, Get, Post, Body, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Query,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { RolesGuard } from '../auth/roles.guard';
-import { ChatService } from './chat.service';
-import { CreateConversationDto } from './dto/create-conversation.dto';
-import { SendMessageDto } from './dto/send-message.dto';
+import { ChatService } from './services/chat.service';
+import { ConversationService } from './services/conversation.service';
+import { MessageService } from './services/message.service';
+import { PrismaService } from '../prisma/prisma.service';
+import { ConversationType, MessageType } from '@prisma/client';
 
 @Controller('chat')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard)
 export class ChatController {
-  constructor(private readonly chatService: ChatService) {}
+  constructor(
+    private readonly chatService: ChatService,
+    private readonly conversationService: ConversationService,
+    private readonly messageService: MessageService,
+    private readonly prisma: PrismaService,
+  ) {}
 
+  // ───── GET /chat/contacts ─────
   @Get('contacts')
-  listContacts(
+  async getContacts(
     @Req() req: any,
     @Query('search') search?: string,
     @Query('take') take?: string,
   ) {
-    const user = req.user as { userId: string; role: string };
-    return this.chatService.listContacts(user, search, take ? Number(take) : undefined);
+    const userRole: string = req.user.role;
+
+    const where: any = {};
+
+    if (search) {
+      where.OR = [
+        { fullName: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    // Permission matrix: who can I see?
+    if (userRole === 'CUSTOMER') {
+      where.role = 'ADMIN';
+    } else if (userRole === 'STAFF') {
+      where.role = 'ADMIN';
+    } else if (userRole === 'ADMIN') {
+      where.role = { in: ['CUSTOMER', 'STAFF'] };
+    }
+
+    return this.prisma.user.findMany({
+      where,
+      take: take ? parseInt(take, 10) : 50,
+      select: { id: true, email: true, fullName: true, role: true },
+    });
   }
 
+  // ───── GET /chat/conversations ─────
   @Get('conversations')
-  listConversations(@Req() req: any) {
-    const user = req.user as { userId: string };
-    return this.chatService.listConversations(user.userId);
+  async getConversations(@Req() req: any) {
+    return this.conversationService.listByUser(req.user.userId);
   }
 
+  // ───── POST /chat/conversations ─────
   @Post('conversations')
-  createConversation(@Req() req: any, @Body() dto: CreateConversationDto) {
-    const user = req.user as { userId: string; role: string };
-    return this.chatService.createConversation(dto, user);
+  async createConversation(
+    @Req() req: any,
+    @Body('type') type: ConversationType,
+    @Body('otherUserId') otherUserId?: string,
+  ) {
+    return this.conversationService.create(
+      type,
+      req.user.userId,
+      otherUserId,
+    );
   }
 
+  // ───── GET /chat/messages ─────
   @Get('messages')
-  getMessages(
+  async getMessages(
     @Req() req: any,
     @Query('conversationId') conversationId: string,
     @Query('cursor') cursor?: string,
     @Query('take') take?: string,
   ) {
-    const user = req.user as { userId: string };
-    return this.chatService.getMessages({
+    // Validate participation first
+    await this.conversationService.getByIdOrFail(
       conversationId,
-      userId: user.userId,
+      req.user.userId,
+    );
+    return this.messageService.list(
+      conversationId,
+      take ? parseInt(take, 10) : 50,
       cursor,
-      take: take ? Number(take) : undefined,
-    });
+    );
   }
 
+  // ───── POST /chat/messages ─────
   @Post('messages')
-  sendMessage(@Req() req: any, @Body() dto: SendMessageDto) {
-    const user = req.user as { userId: string; role: string };
-    return this.chatService.sendMessage(dto, user);
+  async sendMessage(
+    @Req() req: any,
+    @Body('conversationId') conversationId: string,
+    @Body('type') type: MessageType,
+    @Body('content') content: any,
+  ) {
+    return this.chatService.processMessage(
+      req.user.userId,
+      conversationId,
+      type,
+      content,
+    );
   }
 }
-
