@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { Link } from '@/lib/i18n';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Header } from '@/components/common/header';
+import { favoriteService, type FavoriteItem } from '@/services/favorite.service';
 import {
     Sparkles, History, Heart, Award, Settings, ShoppingBag,
     Crown, TrendingUp, ChevronRight, Camera, Edit2
@@ -36,7 +37,29 @@ const MOCK_ORDERS = [
 
 export default function ProfilePage() {
     const [activeTab, setActiveTab] = useState('dna');
+    const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
     const user = MOCK_USER;
+
+    useEffect(() => {
+        const syncFavorites = async () => {
+            try {
+                const data = await favoriteService.getFavorites();
+                setFavorites(data);
+            } catch {
+                setFavorites([]);
+            }
+        };
+        void syncFavorites();
+
+        window.addEventListener(favoriteService.eventName, syncFavorites);
+        return () => window.removeEventListener(favoriteService.eventName, syncFavorites);
+    }, []);
+
+    const handleRemoveFavorite = async (productId: string) => {
+        await favoriteService.removeProduct(productId);
+        const updated = await favoriteService.getFavorites();
+        setFavorites(updated);
+    };
 
     return (
         <div className="min-h-screen bg-stone-50 dark:bg-zinc-950 transition-colors">
@@ -199,7 +222,7 @@ export default function ProfilePage() {
 
                                         <Link
                                             href="/customer/consultation"
-                                            className="block p-12 rounded-[3.5rem] bg-stone-100 dark:bg-white/5 border border-stone-100 dark:border-white/5 flex items-center justify-between hover:border-gold transition-all"
+                                            className="p-12 rounded-[3.5rem] bg-stone-100 dark:bg-white/5 border border-stone-100 dark:border-white/5 flex items-center justify-between hover:border-gold transition-all"
                                         >
                                             <div className="flex items-center gap-8">
                                                 <div className="w-14 h-14 rounded-2xl bg-white dark:bg-zinc-800 flex items-center justify-center text-gold shadow-sm">
@@ -329,10 +352,96 @@ export default function ProfilePage() {
                                     </motion.div>
                                 )}
 
-                                {/* Other tabs with placeholder */}
-                                {(activeTab === 'favorites' || activeTab === 'rewards') && (
+                                {activeTab === 'favorites' && (
                                     <motion.div
-                                        key={activeTab}
+                                        key="favorites"
+                                        initial={{ opacity: 0, x: 20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -20 }}
+                                        className="space-y-8"
+                                    >
+                                        <h2 className="text-4xl font-serif text-luxury-black dark:text-white">
+                                            Your <span className="italic">Favorites</span>
+                                        </h2>
+
+                                        {favorites.length === 0 ? (
+                                            <div className="p-24 text-center bg-white dark:bg-zinc-900 rounded-[4rem] border border-stone-100 dark:border-white/5">
+                                                <h3 className="text-3xl font-serif mb-4 italic text-stone-300">
+                                                    No favorites yet
+                                                </h3>
+                                                <p className="text-[10px] uppercase font-bold tracking-[.3em] text-stone-500 mb-8">
+                                                    Tap the heart on product detail to save here
+                                                </p>
+                                                <Link
+                                                    href="/collection"
+                                                    className="inline-flex px-10 py-4 rounded-full bg-luxury-black dark:bg-gold text-white text-[10px] font-bold tracking-[.2em] uppercase"
+                                                >
+                                                    Explore Collection
+                                                </Link>
+                                            </div>
+                                        ) : (
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                {favorites.map((item) => (
+                                                    <div
+                                                        key={item.id}
+                                                        className="bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-stone-100 dark:border-white/5 overflow-hidden"
+                                                    >
+                                                        <div className="aspect-5/4 bg-stone-100 dark:bg-white/5 relative">
+                                                            {item.imageUrl ? (
+                                                                <Image
+                                                                    src={item.imageUrl}
+                                                                    alt={item.name}
+                                                                    fill
+                                                                    className="object-cover"
+                                                                />
+                                                            ) : null}
+                                                        </div>
+                                                        <div className="p-6 space-y-4">
+                                                            <div className="flex items-start justify-between gap-3">
+                                                                <div>
+                                                                    <p className="text-[10px] text-stone-400 uppercase tracking-widest font-bold">
+                                                                        {item.brandName || 'Brand'}
+                                                                    </p>
+                                                                    <h3 className="text-xl font-serif text-luxury-black dark:text-white">
+                                                                        {item.name}
+                                                                    </h3>
+                                                                    {item.variantName ? (
+                                                                        <p className="text-[10px] text-stone-400 uppercase tracking-widest mt-1">
+                                                                            Size: {item.variantName}
+                                                                        </p>
+                                                                    ) : null}
+                                                                </div>
+                                                                {typeof item.price === 'number' && (
+                                                                    <span className="text-sm font-bold text-gold">
+                                                                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.price)}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex gap-3">
+                                                                <Link
+                                                                    href={`/collection/${item.id}`}
+                                                                    className="flex-1 px-5 py-3 rounded-2xl bg-luxury-black dark:bg-gold text-white text-[10px] font-bold tracking-[.2em] uppercase text-center"
+                                                                >
+                                                                    View
+                                                                </Link>
+                                                                <button
+                                                                    onClick={() => handleRemoveFavorite(item.id)}
+                                                                    className="px-5 py-3 rounded-2xl border border-stone-200 dark:border-white/10 text-[10px] font-bold tracking-[.2em] uppercase text-stone-500 hover:text-red-500 hover:border-red-300 transition-colors"
+                                                                >
+                                                                    Remove
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </motion.div>
+                                )}
+
+                                {activeTab === 'rewards' && (
+                                    <motion.div
+                                        key="rewards"
                                         initial={{ opacity: 0, x: 20 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         exit={{ opacity: 0, x: -20 }}

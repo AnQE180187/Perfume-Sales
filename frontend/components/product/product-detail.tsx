@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ShoppingBag, Heart, ShieldCheck, Sparkles, BrainCircuit } from 'lucide-react';
 import { type Product, type ProductVariant } from '@/services/product.service';
 import { cartService } from '@/services/cart.service';
+import { favoriteService } from '@/services/favorite.service';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import ReviewList from '../review/review-list';
 import ReviewSummaryView from '../review/review-summary';
 import StarRating from '../review/star-rating';
@@ -17,8 +19,28 @@ export default function ProductDetail({ product }: { product: Product }) {
         product.variants?.[0] || null
     );
     const [loading, setLoading] = useState(false);
+    const [favoriteLoading, setFavoriteLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
+    const [isFavorite, setIsFavorite] = useState(false);
+
+    useEffect(() => {
+        if (!isAuthenticated) return;
+
+        let mounted = true;
+        favoriteService
+            .isFavorite(product.id)
+            .then((value) => {
+                if (mounted) setIsFavorite(value);
+            })
+            .catch(() => {
+                if (mounted) setIsFavorite(false);
+            });
+
+        return () => {
+            mounted = false;
+        };
+    }, [isAuthenticated, product.id]);
 
     const handleAddToCart = async () => {
         if (!isAuthenticated) {
@@ -44,12 +66,41 @@ export default function ProductDetail({ product }: { product: Product }) {
     const fmt = (n: number) =>
         new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n);
 
+    const handleToggleFavorite = async () => {
+        if (!isAuthenticated) {
+            toast.error('Vui long dang nhap de luu san pham yeu thich');
+            router.push('/login');
+            return;
+        }
+
+        if (favoriteLoading) return;
+        if (!selectedVariant && !isFavorite) {
+            toast.error('Vui long chon dung tich truoc khi them yeu thich');
+            return;
+        }
+
+        setFavoriteLoading(true);
+        try {
+            const nextFavorite = await favoriteService.toggleProduct(product.id, isFavorite, selectedVariant?.id);
+            setIsFavorite(nextFavorite);
+            if (nextFavorite) {
+                toast.success('Đã thêm sản phẩm vào mục yêu thích');
+            } else {
+                toast.success('Đã xóa sản phẩm khỏi mục yêu thích');
+            }
+        } catch (e: unknown) {
+            toast.error((e as Error).message || 'Khong the cap nhat muc yeu thich');
+        } finally {
+            setFavoriteLoading(false);
+        }
+    };
+
     return (
         <div className="space-y-24">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-20">
                 {/* Visual Section */}
                 <div className="space-y-6">
-                    <div className="aspect-[4/5] glass rounded-[3rem] border-border overflow-hidden relative group">
+                    <div className="aspect-4/5 glass rounded-[3rem] border-border overflow-hidden relative group">
                         {product.images?.length ? (
                             <img
                                 src={product.images[0].url}
@@ -61,8 +112,8 @@ export default function ProductDetail({ product }: { product: Product }) {
                                 Visual Data Unavailable
                             </div>
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-tr from-gold/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-                        <div className="absolute inset-x-0 bottom-0 p-12 text-center bg-gradient-to-t from-background/80 to-transparent">
+                        <div className="absolute inset-0 bg-linear-to-tr from-gold/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+                        <div className="absolute inset-x-0 bottom-0 p-12 text-center bg-linear-to-t from-background/80 to-transparent">
                             <span className="text-gold font-heading tracking-[0.5em] uppercase text-[10px] animate-pulse inline-flex items-center gap-3">
                                 <Sparkles className="w-4 h-4" /> Neural Scanning Active
                             </span>
@@ -210,8 +261,14 @@ export default function ProductDetail({ product }: { product: Product }) {
                                 </>
                             )}
                         </button>
-                        <button className="w-16 h-16 glass border-border rounded-full flex items-center justify-center text-muted-foreground hover:text-red-400 group transition-all">
-                            <Heart className="w-5 h-5 group-hover:fill-red-400/20" />
+                        <button
+                            onClick={handleToggleFavorite}
+                            disabled={favoriteLoading}
+                            className={`w-16 h-16 glass border-border rounded-full flex items-center justify-center group transition-all ${isFavorite ? 'text-red-700 bg-red-500/10 border-red-400/50' : 'text-muted-foreground hover:text-red-400'
+                                }`}
+                            aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                        >
+                            <Heart className={`w-5 h-5 transition-all ${isFavorite ? 'fill-red-700/60' : 'group-hover:fill-red-400/20'}`} />
                         </button>
                     </div>
 

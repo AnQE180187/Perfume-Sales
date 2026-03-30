@@ -22,6 +22,7 @@ import { StoresModule } from './stores/stores.module';
 import { ChatModule } from './chat/chat.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { AiModule } from './ai/ai.module';
+import { FavoritesModule } from './favorites/favorites.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { AiModule } from './ai/ai.module';
     ChatModule,
     ReviewsModule,
     AiModule,
+    FavoritesModule,
   ],
 
   controllers: [AppController],
