@@ -33,8 +33,7 @@ export class ShippingService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly ghn: GHNService,
-    private readonly notificationsService: NotificationsService,
-  ) {}
+  ) { }
 
   async createGhnShipmentForUser(userId: string, orderId: string) {
     const order = await this.prisma.order.findFirst({
@@ -141,14 +140,14 @@ export class ShippingService {
 
     let shipment = orderCode
       ? await this.prisma.shipment.findFirst({
-          where: { ghnOrderCode: orderCode, provider: ShippingProvider.GHN },
-          include: { order: true },
-        })
+        where: { ghnOrderCode: orderCode, provider: ShippingProvider.GHN },
+        include: { order: true },
+      })
       : clientCode
         ? await this.prisma.shipment.findFirst({
-            where: { order: { code: clientCode } },
-            include: { order: true },
-          })
+          where: { order: { code: clientCode } },
+          include: { order: true },
+        })
         : null;
 
     if (!shipment) return;
@@ -203,103 +202,5 @@ export class ShippingService {
     });
     if (!order) return [];
     return this.getShipmentByOrderId(orderId);
-  }
-
-  // ── Admin methods ──────────────────────────────────────────
-
-  async listAllShipments(skip: number, take: number) {
-    const [data, total] = await Promise.all([
-      this.prisma.shipment.findMany({
-        skip,
-        take,
-        include: { order: { include: { user: true } } },
-        orderBy: { createdAt: 'desc' },
-      }),
-      this.prisma.shipment.count(),
-    ]);
-    return { data, total, skip, take, pages: Math.ceil(total / take) };
-  }
-
-  async createGhnShipmentAdmin(orderId: string) {
-    return this.createGhnShipment(orderId);
-  }
-
-  async syncShipmentStatus(shipmentId: string) {
-    const shipment = await this.prisma.shipment.findUnique({
-      where: { id: shipmentId },
-      include: { order: true },
-    });
-    if (!shipment) throw new NotFoundException('Shipment not found');
-    if (!shipment.ghnOrderCode)
-      throw new BadRequestException('Shipment has no GHN order code');
-
-    const detail = await this.ghn.getOrderDetail(shipment.ghnOrderCode);
-    const ghnStatus = detail.status?.toLowerCase();
-    const newStatus = ghnStatus
-      ? (GHN_STATUS_MAP[ghnStatus] ?? shipment.status)
-      : shipment.status;
-
-    const updated = await this.prisma.shipment.update({
-      where: { id: shipmentId },
-      data: {
-        status: newStatus,
-        rawProviderData: JSON.stringify({ ...detail, syncedAt: new Date() }),
-      },
-    });
-
-    // Auto-complete order if delivered
-    if (
-      newStatus === ShipmentStatus.DELIVERED &&
-      shipment.order.status !== 'COMPLETED'
-    ) {
-      await this.prisma.order.update({
-        where: { id: shipment.orderId },
-        data: { status: 'COMPLETED' },
-      });
-    }
-
-    return updated;
-  }
-
-  async cancelGhnShipment(orderId: string) {
-    const shipment = await this.prisma.shipment.findFirst({
-      where: { orderId, provider: ShippingProvider.GHN },
-    });
-    if (!shipment)
-      throw new NotFoundException('Shipment not found for this order');
-    if (!shipment.ghnOrderCode)
-      throw new BadRequestException('Shipment has no GHN order code');
-
-    await this.ghn.cancelOrder([shipment.ghnOrderCode]);
-
-    return this.prisma.shipment.update({
-      where: { id: shipment.id },
-      data: { status: ShipmentStatus.FAILED },
-    });
-  }
-
-  async getShipmentDetailAdmin(orderId: string) {
-    const shipments = await this.prisma.shipment.findMany({
-      where: { orderId },
-      orderBy: { createdAt: 'desc' },
-    });
-
-    const result: Array<(typeof shipments)[number] & { ghnDetail: any }> = [];
-    for (const s of shipments) {
-      let ghnDetail: any = null;
-      if (
-        s.ghnOrderCode &&
-        s.status !== ShipmentStatus.FAILED &&
-        s.status !== ShipmentStatus.DELIVERED
-      ) {
-        try {
-          ghnDetail = await this.ghn.getOrderDetail(s.ghnOrderCode);
-        } catch {
-          // GHN may be unavailable, continue without detail
-        }
-      }
-      result.push({ ...s, ghnDetail });
-    }
-    return result;
   }
 }
