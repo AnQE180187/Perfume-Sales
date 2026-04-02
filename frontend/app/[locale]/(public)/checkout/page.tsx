@@ -128,8 +128,10 @@ export default function CheckoutPage() {
             return;
         }
         ghnService.getServices(selectedAddress.districtId).then((s) => {
-            setServices(s);
-            if (s.length > 0) setSelectedServiceId(s[0].service_id);
+            // Filter chỉ lấy dịch vụ hàng nhẹ (service_type_id = 2) cho nước hoa
+            const lightServices = s.filter(service => service.service_type_id === 2);
+            setServices(lightServices);
+            if (lightServices.length > 0) setSelectedServiceId(lightServices[0].service_id);
             else setSelectedServiceId(null);
         }).catch(() => setServices([]));
     }, [selectedAddress?.districtId]);
@@ -304,23 +306,30 @@ export default function CheckoutPage() {
                                                 <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2 flex items-center gap-2">
                                                     Dịch vụ vận chuyển
                                                 </label>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    {services.map((s) => (
-                                                        <button
-                                                            key={s.service_id}
-                                                            onClick={() => setSelectedServiceId(s.service_id)}
-                                                            className={cn(
-                                                                "p-6 rounded-2xl border-2 text-left transition-all group",
-                                                                selectedServiceId === s.service_id
-                                                                    ? "border-gold bg-gold/5"
-                                                                    : "border-stone-100 dark:border-white/5 hover:border-gold/30"
-                                                            )}
-                                                        >
-                                                            <p className="text-xs font-bold text-luxury-black dark:text-white uppercase tracking-wider group-hover:text-gold transition-colors">{s.short_name}</p>
-                                                            <p className="text-[10px] text-stone-400 uppercase tracking-tighter mt-1">GHN Express</p>
-                                                        </button>
-                                                    ))}
-                                                </div>
+                                                {services.length > 1 ? (
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        {services.map((s) => (
+                                                            <button
+                                                                key={s.service_id}
+                                                                onClick={() => setSelectedServiceId(s.service_id)}
+                                                                className={cn(
+                                                                    "p-6 rounded-2xl border-2 text-left transition-all group",
+                                                                    selectedServiceId === s.service_id
+                                                                        ? "border-gold bg-gold/5"
+                                                                        : "border-stone-100 dark:border-white/5 hover:border-gold/30"
+                                                                )}
+                                                            >
+                                                                <p className="text-xs font-bold text-luxury-black dark:text-white uppercase tracking-wider group-hover:text-gold transition-colors">{s.short_name}</p>
+                                                                <p className="text-[10px] text-stone-400 uppercase tracking-tighter mt-1">GHN Express</p>
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <div className="p-4 bg-gold/5 rounded-2xl border border-gold/20">
+                                                        <p className="text-xs font-bold text-gold uppercase tracking-wider">{services[0]?.short_name}</p>
+                                                        <p className="text-[10px] text-stone-400 uppercase tracking-tighter mt-1">GHN Express - Hàng nhẹ</p>
+                                                    </div>
+                                                )}
 
                                                 <div className="flex items-center gap-3 pt-4 border-t border-stone-50 dark:border-white/5">
                                                     {loadingFee ? (

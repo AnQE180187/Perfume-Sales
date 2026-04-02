@@ -23,6 +23,8 @@ export type GHNCreateOrderResponse = {
     fee: { main_service: number; insurance: number;[key: string]: number };
 };
 
+
+
 @Injectable()
 export class GHNService {
     private readonly client: AxiosInstance;
@@ -38,9 +40,9 @@ export class GHNService {
         this.token = this.config.get<string>('SHIPPING_GHN_TOKEN') ?? '';
         this.shopId = parseInt(this.config.get<string>('SHIPPING_GHN_SHOP_ID') ?? '0', 10);
         const isDev = this.config.get('NODE_ENV') !== 'production';
-        this.baseUrl = isDev
+        this.baseUrl = this.config.get<string>('GHN_API_URL') || (isDev
             ? 'https://dev-online-gateway.ghn.vn/shiip/public-api'
-            : 'https://online-gateway.ghn.vn/shiip/public-api';
+            : 'https://online-gateway.ghn.vn/shiip/public-api');
 
         this.fromDistrictId = parseInt(this.config.get('SHIPPING_GHN_FROM_DISTRICT_ID') ?? '0', 10);
         this.fromWardCode = this.config.get('SHIPPING_GHN_FROM_WARD_CODE') ?? '';
@@ -101,7 +103,8 @@ export class GHNService {
         );
         if (res.data.code !== 200) throw new Error('GHN get services failed');
         const data = res.data.data;
-        return Array.isArray(data) ? data : [];
+        // Filter chỉ lấy dịch vụ hàng nhẹ (service_type_id = 2) cho nước hoa
+        return Array.isArray(data) ? data.filter(s => s.service_type_id === 2) : [];
     }
 
     async calculateFee(params: {
@@ -200,4 +203,6 @@ export class GHNService {
     isConfigured(): boolean {
         return !!this.token && !!this.shopId && this.fromDistrictId > 0 && !!this.fromWardCode;
     }
+
+
 }

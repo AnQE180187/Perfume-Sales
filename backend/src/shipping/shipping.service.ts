@@ -162,4 +162,64 @@ export class ShippingService {
     if (!order) return [];
     return this.getShipmentByOrderId(orderId);
   }
+
+  async listAllShipments(skip = 0, take = 10) {
+    const [data, total] = await Promise.all([
+      this.prisma.shipment.findMany({
+        skip,
+        take,
+        orderBy: { createdAt: 'desc' },
+        include: { order: true },
+      }),
+      this.prisma.shipment.count(),
+    ]);
+
+    return {
+      data,
+      total,
+      skip,
+      take,
+      pages: Math.ceil(total / Math.max(1, take)),
+    };
+  }
+
+  async createGhnShipmentAdmin(orderId: string) {
+    // Admin variant can create shipment for any order
+    return this.createGhnShipment(orderId);
+  }
+
+  async cancelGhnShipment(orderId: string) {
+    const shipment = await this.prisma.shipment.findFirst({
+      where: { orderId, provider: ShippingProvider.GHN },
+    });
+    if (!shipment) {
+      throw new NotFoundException('Shipment not found for order');
+    }
+
+    const updated = await this.prisma.shipment.update({
+      where: { id: shipment.id },
+      data: { status: ShipmentStatus.FAILED },
+    });
+
+    return updated;
+  }
+
+  async syncShipmentStatus(shipmentId: string) {
+    // GHN doesn't expose sync endpoint in this implementation.
+    // Return current shipment state or throw if missing.
+    const shipment = await this.prisma.shipment.findUnique({
+      where: { id: shipmentId },
+    });
+    if (!shipment) {
+      throw new NotFoundException('Shipment not found');
+    }
+    return shipment;
+  }
+
+  async getShipmentDetailAdmin(orderId: string) {
+    return this.prisma.shipment.findMany({
+      where: { orderId },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
 }
