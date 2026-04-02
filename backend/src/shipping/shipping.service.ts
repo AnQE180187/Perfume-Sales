@@ -1,7 +1,12 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { GHNService } from '../ghn/ghn.service';
 import { ShippingProvider, ShipmentStatus } from '@prisma/client';
+import { NotificationsService } from '../notifications/notifications.service';
 
 const GHN_STATUS_MAP: Record<string, ShipmentStatus> = {
   ready_to_pick: ShipmentStatus.PENDING,
@@ -11,7 +16,16 @@ const GHN_STATUS_MAP: Record<string, ShipmentStatus> = {
   delivered: ShipmentStatus.DELIVERED,
   cancel: ShipmentStatus.FAILED,
   return: ShipmentStatus.RETURNED,
-  'lost': ShipmentStatus.FAILED,
+  lost: ShipmentStatus.FAILED,
+};
+
+const SHIPMENT_STATUS_LABELS: Record<string, string> = {
+  PENDING: 'đang chờ lấy hàng',
+  PICKED_UP: 'đã lấy hàng',
+  IN_TRANSIT: 'đang vận chuyển',
+  DELIVERED: 'đã giao thành công',
+  FAILED: 'giao hàng thất bại',
+  RETURNED: 'đã hoàn hàng',
 };
 
 @Injectable()
@@ -29,7 +43,9 @@ export class ShippingService {
     return this.createGhnShipment(orderId);
   }
 
-  async createGhnShipment(orderId: string): Promise<{ shipmentId: string; orderCode: string; fee: number }> {
+  async createGhnShipment(
+    orderId: string,
+  ): Promise<{ shipmentId: string; orderCode: string; fee: number }> {
     if (!this.ghn.isConfigured()) {
       throw new BadRequestException('GHN chưa được cấu hình');
     }
@@ -41,8 +57,13 @@ export class ShippingService {
       },
     });
     if (!order) throw new NotFoundException('Order not found');
-    if (order.channel !== 'ONLINE') throw new BadRequestException('Chỉ đơn ONLINE mới tạo GHN');
-    if (!order.shippingDistrictId || !order.shippingWardCode || !order.shippingServiceId) {
+    if (order.channel !== 'ONLINE')
+      throw new BadRequestException('Chỉ đơn ONLINE mới tạo GHN');
+    if (
+      !order.shippingDistrictId ||
+      !order.shippingWardCode ||
+      !order.shippingServiceId
+    ) {
       throw new BadRequestException('Đơn chưa có đủ thông tin giao hàng');
     }
 
@@ -131,7 +152,9 @@ export class ShippingService {
 
     if (!shipment) return;
 
-    const newStatus = status ? GHN_STATUS_MAP[status] ?? shipment.status : shipment.status;
+    const newStatus = status
+      ? (GHN_STATUS_MAP[status] ?? shipment.status)
+      : shipment.status;
     await this.prisma.shipment.update({
       where: { id: shipment.id },
       data: {
@@ -139,6 +162,24 @@ export class ShippingService {
         rawProviderData: JSON.stringify({ ...payload, updatedAt: new Date() }),
       },
     });
+
+    // Notify user about shipping status change
+    if (shipment.order.userId && newStatus !== shipment.status) {
+      const label = SHIPMENT_STATUS_LABELS[newStatus] || newStatus;
+      this.notificationsService
+        .create({
+          userId: shipment.order.userId,
+          type: 'SHIPPING',
+          title: 'Cập nhật vận chuyển',
+          content: `Đơn hàng ${shipment.order.code} ${label}.`,
+          data: {
+            orderId: shipment.orderId,
+            orderCode: shipment.order.code,
+            shipmentStatus: newStatus,
+          },
+        })
+        .catch(() => {});
+    }
 
     if (newStatus === ShipmentStatus.DELIVERED && shipment.order.userId) {
       await this.prisma.order.update({

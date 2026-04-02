@@ -108,10 +108,20 @@ class AddressFormScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppTheme.ivoryBackground,
         elevation: 0,
+        centerTitle: false,
+        titleSpacing: 0,
+        leading: IconButton(
+          onPressed: () => Navigator.of(context).pop(),
+          icon: const Icon(
+            Icons.arrow_back,
+            color: AppTheme.deepCharcoal,
+            size: 24,
+          ),
+        ),
         title: Text(
           state.isEditing ? 'Chỉnh sửa địa chỉ' : 'Thêm địa chỉ mới',
           style: GoogleFonts.montserrat(
-            fontSize: 14,
+            fontSize: 18,
             fontWeight: FontWeight.w700,
             color: AppTheme.deepCharcoal,
           ),
@@ -253,21 +263,31 @@ class AddressFormScreen extends ConsumerWidget {
       bottomNavigationBar: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
           child: FilledButton(
             onPressed: state.canSubmit && !state.isSubmitting ? onSubmit : null,
             style: FilledButton.styleFrom(
               backgroundColor: AppTheme.deepCharcoal,
               disabledBackgroundColor: AppTheme.softTaupe,
-              minimumSize: const Size.fromHeight(52),
+              disabledForegroundColor: AppTheme.mutedSilver,
+              minimumSize: const Size.fromHeight(56),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(28),
+              ),
             ),
             child: state.isSubmitting
                 ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                   )
-                : Text(state.isEditing ? 'Cập nhật địa chỉ' : 'Lưu địa chỉ'),
+                : Text(
+                    state.isEditing ? 'Cập nhật địa chỉ' : 'Lưu địa chỉ',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
           ),
         ),
       ),
@@ -321,7 +341,7 @@ class _SectionTitle extends StatelessWidget {
     return Text(
       title,
       style: GoogleFonts.montserrat(
-        fontSize: 12,
+        fontSize: 15,
         fontWeight: FontWeight.w700,
         color: AppTheme.deepCharcoal,
       ),
@@ -337,26 +357,50 @@ class _LabelSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: AddressLabel.values.map((label) {
-        final active = selected == label;
-        return ChoiceChip(
-          label: Text(label.displayName),
-          selected: active,
-          onSelected: (_) => onChanged(label),
-          selectedColor: AppTheme.accentGold.withValues(alpha: 0.2),
-          side: BorderSide(
-            color: active ? AppTheme.accentGold : AppTheme.softTaupe,
-          ),
-          labelStyle: GoogleFonts.montserrat(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: active ? AppTheme.deepCharcoal : AppTheme.mutedSilver,
-          ),
-        );
-      }).toList(),
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: AddressLabel.values.map((label) {
+          final active = selected == label;
+          return Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: InkWell(
+              onTap: () => onChanged(label),
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: active
+                      ? AppTheme.accentGold.withValues(alpha: 0.1)
+                      : Colors.white,
+                  border: Border.all(
+                    color: active ? AppTheme.accentGold : AppTheme.softTaupe,
+                    width: 1,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (active) ...[
+                      const Icon(Icons.check, size: 16, color: AppTheme.accentGold),
+                      const SizedBox(width: 4),
+                    ],
+                    Text(
+                      label.displayName,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: active ? AppTheme.deepCharcoal : AppTheme.mutedSilver,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
     );
   }
 }

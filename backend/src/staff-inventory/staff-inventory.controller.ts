@@ -3,6 +3,8 @@ import {
   Body,
   Controller,
   Get,
+  Param,
+  ParseIntPipe,
   Post,
   Query,
   Req,
@@ -17,9 +19,7 @@ import { StaffInventoryService } from './staff-inventory.service';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('STAFF', 'ADMIN')
 export class StaffInventoryController {
-  constructor(
-    private readonly staffInventoryService: StaffInventoryService,
-  ) {}
+  constructor(private readonly staffInventoryService: StaffInventoryService) {}
 
   @Get()
   listOverview(@Req() req: any, @Query('storeId') storeId?: string) {
@@ -80,6 +80,17 @@ export class StaffInventoryController {
     );
   }
 
+  /** Staff: list my own inventory requests */
+  @Get('requests')
+  listMyRequests(@Req() req: any, @Query('storeId') storeId?: string) {
+    const user = req.user as { userId: string; role: string };
+    return this.staffInventoryService.listMyRequests(
+      user.userId,
+      user.role,
+      storeId,
+    );
+  }
+
   @Get('logs')
   getLogs(
     @Req() req: any,
@@ -96,3 +107,50 @@ export class StaffInventoryController {
   }
 }
 
+/** Admin-only endpoints for reviewing inventory requests */
+@Controller('admin/inventory/requests')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('ADMIN')
+export class AdminInventoryRequestController {
+  constructor(private readonly staffInventoryService: StaffInventoryService) {}
+
+  @Get()
+  listAll(
+    @Query('status') status?: string,
+    @Query('storeId') storeId?: string,
+    @Query('staffId') staffId?: string,
+  ) {
+    return this.staffInventoryService.listAllRequests({
+      status,
+      storeId,
+      staffId,
+    });
+  }
+
+  @Post(':id/approve')
+  approve(
+    @Req() req: any,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { note?: string },
+  ) {
+    const user = req.user as { userId: string };
+    return this.staffInventoryService.approveRequest(
+      id,
+      user.userId,
+      body.note,
+    );
+  }
+
+  @Post(':id/reject')
+  reject(
+    @Req() req: any,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { note: string },
+  ) {
+    const user = req.user as { userId: string };
+    if (!body.note?.trim()) {
+      throw new BadRequestException('Rejection reason is required');
+    }
+    return this.staffInventoryService.rejectRequest(id, user.userId, body.note);
+  }
+}

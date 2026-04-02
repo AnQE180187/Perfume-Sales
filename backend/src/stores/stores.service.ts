@@ -122,7 +122,9 @@ export class StoresService {
 
   /** Admin: assign staff to store */
   async assignStaff(storeId: string, userId: string) {
-    const store = await this.prisma.store.findUnique({ where: { id: storeId } });
+    const store = await this.prisma.store.findUnique({
+      where: { id: storeId },
+    });
     if (!store) throw new NotFoundException('Store not found');
 
     const user = await this.prisma.user.findUnique({
@@ -131,7 +133,9 @@ export class StoresService {
     });
     if (!user) throw new NotFoundException('User not found');
     if (user.role !== UserRoleEnum.STAFF) {
-      throw new BadRequestException('User must have role STAFF to be assigned to a store');
+      throw new BadRequestException(
+        'User must have role STAFF to be assigned to a store',
+      );
     }
 
     await this.prisma.userStore.upsert({
@@ -182,7 +186,11 @@ export class StoresService {
   }
 
   /** Ensure staff has access to store (throw if not) */
-  async ensureStaffCanAccessStore(userId: string, storeId: string, role: string) {
+  async ensureStaffCanAccessStore(
+    userId: string,
+    storeId: string,
+    role: string,
+  ) {
     if (role === UserRoleEnum.ADMIN) return;
     const assigned = await this.prisma.userStore.findUnique({
       where: { userId_storeId: { userId, storeId } },
@@ -204,7 +212,17 @@ export class StoresService {
         variant: {
           include: {
             product: {
-              select: { id: true, name: true, slug: true, brand: { select: { name: true } } },
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                brand: { select: { name: true } },
+                images: {
+                  select: { url: true },
+                  orderBy: { order: 'asc' },
+                  take: 1,
+                },
+              },
             },
           },
         },
@@ -214,7 +232,11 @@ export class StoresService {
 
     const byStore = new Map<
       string,
-      { store: { id: string; name: string; code: string | null }; variants: any[]; totalUnits: number }
+      {
+        store: { id: string; name: string; code: string | null };
+        variants: any[];
+        totalUnits: number;
+      }
     >();
     for (const ss of storeStocks) {
       const key = ss.storeId;
@@ -231,6 +253,7 @@ export class StoresService {
         variantName: ss.variant.name,
         productName: ss.variant.product.name,
         brandName: ss.variant.product.brand?.name ?? null,
+        imageUrl: ss.variant.product.images?.[0]?.url ?? null,
         quantity: ss.quantity,
         updatedAt: ss.updatedAt,
       });
@@ -257,7 +280,9 @@ export class StoresService {
     if (quantity <= 0) {
       throw new BadRequestException('Quantity must be greater than 0');
     }
-    const store = await this.prisma.store.findUnique({ where: { id: storeId } });
+    const store = await this.prisma.store.findUnique({
+      where: { id: storeId },
+    });
     if (!store) throw new NotFoundException('Store not found');
     const variant = await this.prisma.productVariant.findUnique({
       where: { id: variantId },
@@ -365,7 +390,9 @@ export class StoresService {
         variantId: it.variantId,
         quantity: Number(it.quantity),
       }))
-      .filter((it) => it.variantId && Number.isFinite(it.quantity) && it.quantity > 0);
+      .filter(
+        (it) => it.variantId && Number.isFinite(it.quantity) && it.quantity > 0,
+      );
 
     if (items.length === 0) {
       // Avoid 400s for empty/unfinished UI inputs; treat as no-op.
@@ -378,7 +405,9 @@ export class StoresService {
       select: { id: true },
     });
     const existing = new Set(variants.map((v) => v.id));
-    const missing = items.filter((i) => !existing.has(i.variantId)).map((i) => i.variantId);
+    const missing = items
+      .filter((i) => !existing.has(i.variantId))
+      .map((i) => i.variantId);
     if (missing.length) {
       throw new BadRequestException(`Variant not found: ${missing.join(', ')}`);
     }
@@ -386,9 +415,21 @@ export class StoresService {
     await this.prisma.$transaction(async (tx) => {
       for (const it of items) {
         await tx.storeStock.upsert({
-          where: { storeId_variantId: { storeId: dto.storeId, variantId: it.variantId } },
-          create: { storeId: dto.storeId, variantId: it.variantId, quantity: it.quantity },
-          update: { quantity: { increment: it.quantity }, updatedAt: new Date() },
+          where: {
+            storeId_variantId: {
+              storeId: dto.storeId,
+              variantId: it.variantId,
+            },
+          },
+          create: {
+            storeId: dto.storeId,
+            variantId: it.variantId,
+            quantity: it.quantity,
+          },
+          update: {
+            quantity: { increment: it.quantity },
+            updatedAt: new Date(),
+          },
         });
         await tx.inventoryLog.create({
           data: {
@@ -406,7 +447,11 @@ export class StoresService {
     return this.getStockOverview(dto.storeId);
   }
 
-  async batchTransferStock(dto: BatchTransferDto, userId: string, role: string) {
+  async batchTransferStock(
+    dto: BatchTransferDto,
+    userId: string,
+    role: string,
+  ) {
     if (dto.fromStoreId === dto.toStoreId) {
       throw new BadRequestException('From and to store must be different');
     }
@@ -421,7 +466,9 @@ export class StoresService {
         variantId: it.variantId,
         quantity: Number(it.quantity),
       }))
-      .filter((it) => it.variantId && Number.isFinite(it.quantity) && it.quantity > 0);
+      .filter(
+        (it) => it.variantId && Number.isFinite(it.quantity) && it.quantity > 0,
+      );
 
     if (items.length === 0) {
       return this.getStockOverview();
@@ -433,7 +480,9 @@ export class StoresService {
       select: { id: true },
     });
     const existing = new Set(variants.map((v) => v.id));
-    const missing = items.filter((i) => !existing.has(i.variantId)).map((i) => i.variantId);
+    const missing = items
+      .filter((i) => !existing.has(i.variantId))
+      .map((i) => i.variantId);
     if (missing.length) {
       throw new BadRequestException(`Variant not found: ${missing.join(', ')}`);
     }
@@ -446,12 +495,16 @@ export class StoresService {
       },
       select: { variantId: true, quantity: true },
     });
-    const stockByVariant = new Map(sourceStocks.map((s) => [s.variantId, s.quantity]));
+    const stockByVariant = new Map(
+      sourceStocks.map((s) => [s.variantId, s.quantity]),
+    );
     const insufficient: string[] = [];
     for (const it of items) {
       const available = stockByVariant.get(it.variantId) ?? 0;
       if (available < it.quantity) {
-        insufficient.push(`${it.variantId} (available ${available}, requested ${it.quantity})`);
+        insufficient.push(
+          `${it.variantId} (available ${available}, requested ${it.quantity})`,
+        );
       }
     }
     if (insufficient.length) {
@@ -471,16 +524,29 @@ export class StoresService {
       for (const it of items) {
         await tx.storeStock.update({
           where: {
-            storeId_variantId: { storeId: dto.fromStoreId, variantId: it.variantId },
+            storeId_variantId: {
+              storeId: dto.fromStoreId,
+              variantId: it.variantId,
+            },
           },
           data: { quantity: { decrement: it.quantity }, updatedAt: new Date() },
         });
         await tx.storeStock.upsert({
           where: {
-            storeId_variantId: { storeId: dto.toStoreId, variantId: it.variantId },
+            storeId_variantId: {
+              storeId: dto.toStoreId,
+              variantId: it.variantId,
+            },
           },
-          create: { storeId: dto.toStoreId, variantId: it.variantId, quantity: it.quantity },
-          update: { quantity: { increment: it.quantity }, updatedAt: new Date() },
+          create: {
+            storeId: dto.toStoreId,
+            variantId: it.variantId,
+            quantity: it.quantity,
+          },
+          update: {
+            quantity: { increment: it.quantity },
+            updatedAt: new Date(),
+          },
         });
         await tx.inventoryLog.create({
           data: {

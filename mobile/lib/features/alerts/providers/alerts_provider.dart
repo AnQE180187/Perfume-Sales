@@ -1,67 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/alert.dart';
-
-// ---------------------------------------------------------------------------
-// Mock seed — replace with real API call when backend is ready
-// ---------------------------------------------------------------------------
-const List<Alert> _mockAlerts = [
-  Alert(
-    id: 'ord-1',
-    title: 'Đơn hàng của bạn đang được đóng gói',
-    message:
-        'No. 07 Velvet Rose đã vào giai đoạn hoàn thiện cuối cùng và sẽ được chuẩn bị giao trong tối nay.',
-    timeLabel: '2 phút trước',
-    category: AlertCategory.order,
-    isUnread: true,
-    actionLabel: 'Theo dõi đơn',
-    accentColor: Color(0xFFD4AF37),
-  ),
-  Alert(
-    id: 'off-1',
-    title: 'Ưu đãi riêng vừa được mở',
-    message:
-        'Ưu đãi 12% đang chờ bạn cho lần mua nước hoa tiếp theo đến hết nửa đêm hôm nay.',
-    timeLabel: '18 phút trước',
-    category: AlertCategory.offer,
-    isUnread: true,
-    actionLabel: 'Dùng ưu đãi',
-    accentColor: Color(0xFFB9824A),
-  ),
-  Alert(
-    id: 'acc-1',
-    title: 'Sản phẩm yêu thích đã có hàng lại',
-    message:
-        'Maison Lumiere Ambre bản 50ml đã có hàng trở lại và được giữ cho bạn trong 6 giờ tới.',
-    timeLabel: 'Hôm nay, 09:24',
-    category: AlertCategory.account,
-    isUnread: true,
-    actionLabel: 'Xem sản phẩm',
-    accentColor: Color(0xFF7D8F69),
-  ),
-  Alert(
-    id: 'ord-2',
-    title: 'Đơn vị vận chuyển đã xác nhận lịch ngày mai',
-    message:
-        'Đơn hàng gần nhất của bạn dự kiến sẽ được giao trong khoảng 10:00 đến 13:00 và cần ký nhận.',
-    timeLabel: 'Hôm qua',
-    category: AlertCategory.order,
-    isUnread: false,
-    actionLabel: 'Xem vận chuyển',
-    accentColor: Color(0xFF8A7D6A),
-  ),
-  Alert(
-    id: 'off-2',
-    title: 'Bài viết tuyển chọn mới',
-    message:
-        'Khám phá ba mùi hương trầm ấm cho buổi tối do chuyên gia tư vấn mùi hương tuyển chọn cho mùa mưa.',
-    timeLabel: 'Thứ Ba',
-    category: AlertCategory.offer,
-    isUnread: false,
-    actionLabel: 'Đọc bài viết',
-    accentColor: Color(0xFFA15C45),
-  ),
-];
+import '../services/notification_service.dart';
 
 // ---------------------------------------------------------------------------
 // Notifier
@@ -69,12 +9,13 @@ const List<Alert> _mockAlerts = [
 class AlertsNotifier extends AsyncNotifier<List<Alert>> {
   @override
   Future<List<Alert>> build() async {
-    // TODO: replace with real API call:
-    // final client = ref.read(apiClientProvider);
-    // final response = await client.dio.get('/notifications');
-    // return (response.data as List).map(Alert.fromJson).toList();
-    await Future.delayed(const Duration(milliseconds: 500));
-    return List.from(_mockAlerts);
+    final service = ref.read(notificationServiceProvider);
+    try {
+      final response = await service.getNotifications(take: 50);
+      return response.data.map(Alert.fromNotification).toList();
+    } catch (_) {
+      return [];
+    }
   }
 
   Future<void> refresh() async {
@@ -82,7 +23,11 @@ class AlertsNotifier extends AsyncNotifier<List<Alert>> {
     state = await AsyncValue.guard(() => build());
   }
 
-  void markAsRead(String id) {
+  Future<void> markAsRead(String id) async {
+    final service = ref.read(notificationServiceProvider);
+    try {
+      await service.markAsRead(id);
+    } catch (_) {}
     final current = state.value;
     if (current == null) return;
     state = AsyncData(
@@ -90,7 +35,11 @@ class AlertsNotifier extends AsyncNotifier<List<Alert>> {
     );
   }
 
-  void markAllAsRead() {
+  Future<void> markAllAsRead() async {
+    final service = ref.read(notificationServiceProvider);
+    try {
+      await service.markAllAsRead();
+    } catch (_) {}
     final current = state.value;
     if (current == null) return;
     state = AsyncData(current.map((a) => a.copyWith(isUnread: false)).toList());
@@ -155,3 +104,13 @@ final alertsProvider = AsyncNotifierProvider<AlertsNotifier, List<Alert>>(
 final alertsPrefsProvider = NotifierProvider<AlertsPrefsNotifier, AlertsPrefs>(
   AlertsPrefsNotifier.new,
 );
+
+/// Provides the unread notification count
+final unreadCountProvider = FutureProvider<int>((ref) async {
+  final service = ref.watch(notificationServiceProvider);
+  try {
+    return await service.getUnreadCount();
+  } catch (_) {
+    return 0;
+  }
+});

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+import '../theme/app_theme.dart';
 
 class PickerItem<T> {
   final T value;
@@ -20,7 +23,7 @@ Future<T?> showBottomSheetPicker<T>({
     useSafeArea: true,
     backgroundColor: Colors.white,
     shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
     builder: (context) {
       return _BottomSheetPicker<T>(
@@ -65,35 +68,49 @@ class _BottomSheetPickerState<T> extends State<_BottomSheetPicker<T>> {
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 10, 8, 8),
+            padding: const EdgeInsets.fromLTRB(20, 16, 8, 8),
             child: Row(
               children: [
                 Expanded(
                   child: Text(
                     widget.title,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                      color: AppTheme.deepCharcoal.withValues(alpha: 0.8),
                     ),
                   ),
                 ),
                 IconButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.close),
+                  icon: const Icon(Icons.close, color: AppTheme.deepCharcoal, size: 24),
                 ),
               ],
             ),
           ),
           if (widget.enabledSearch)
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
               child: TextField(
                 decoration: InputDecoration(
                   hintText: 'Tìm kiếm',
-                  prefixIcon: const Icon(Icons.search),
+                  hintStyle: GoogleFonts.montserrat(color: AppTheme.mutedSilver),
+                  prefixIcon: const Icon(Icons.search, color: AppTheme.deepCharcoal, size: 22),
+                  filled: true,
+                  fillColor: Colors.white,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: AppTheme.softTaupe.withValues(alpha: 0.5)),
                   ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: AppTheme.softTaupe.withValues(alpha: 0.5)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppTheme.deepCharcoal),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 ),
                 onChanged: (value) => setState(() => _query = value),
               ),
@@ -101,14 +118,22 @@ class _BottomSheetPickerState<T> extends State<_BottomSheetPicker<T>> {
           Expanded(
             child: ListView.separated(
               itemCount: filtered.length,
-              separatorBuilder: (_, __) => const Divider(height: 1),
+              separatorBuilder: (_, __) => Divider(height: 1, color: AppTheme.softTaupe.withValues(alpha: 0.5)),
               itemBuilder: (context, index) {
                 final item = filtered[index];
                 final isSelected = item.value == widget.selected;
                 return ListTile(
-                  title: Text(item.label),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                  title: Text(
+                    item.label,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 16,
+                      fontWeight: isSelected ? FontWeight.w500 : FontWeight.w400,
+                      color: AppTheme.deepCharcoal,
+                    ),
+                  ),
                   trailing: isSelected
-                      ? const Icon(Icons.check_circle, color: Colors.amber)
+                      ? const Icon(Icons.check_circle, color: AppTheme.accentGold)
                       : null,
                   onTap: () => Navigator.of(context).pop(item.value),
                 );
