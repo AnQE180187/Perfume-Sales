@@ -78,7 +78,7 @@ export default function CheckoutPage() {
     const [cartItems, setCartItems] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
-    
+
     // Address state
     const [selectedAddress, setSelectedAddress] = useState<UserAddress | null>(null);
 
@@ -117,7 +117,7 @@ export default function CheckoutPage() {
 
         ghnService.isConfigured().then((r) => {
             if (r.configured) setGhnEnabled(true);
-        }).catch(() => {});
+        }).catch(() => { });
     }, [isAuthenticated, router]);
 
     // Fetch GHN services when district changes
@@ -292,10 +292,10 @@ export default function CheckoutPage() {
                                                     Địa chỉ giao hàng
                                                 </h2>
                                             </div>
-                                            
-                                            <AddressSelector 
+
+                                            <AddressSelector
                                                 selectedId={selectedAddress?.id}
-                                                onSelect={setSelectedAddress} 
+                                                onSelect={setSelectedAddress}
                                             />
                                         </div>
 
@@ -311,8 +311,8 @@ export default function CheckoutPage() {
                                                             onClick={() => setSelectedServiceId(s.service_id)}
                                                             className={cn(
                                                                 "p-6 rounded-2xl border-2 text-left transition-all group",
-                                                                selectedServiceId === s.service_id 
-                                                                    ? "border-gold bg-gold/5" 
+                                                                selectedServiceId === s.service_id
+                                                                    ? "border-gold bg-gold/5"
                                                                     : "border-stone-100 dark:border-white/5 hover:border-gold/30"
                                                             )}
                                                         >
