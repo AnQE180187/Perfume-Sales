@@ -4,8 +4,9 @@ import { AuthGuard } from '@/components/auth/auth-guard';
 import { userService } from '@/services/user.service';
 import { authService } from '@/services/auth.service';
 import { useAuthStore } from '@/store/auth.store';
-import { User, Mail, Shield, Edit2, Loader2, CheckCircle, Send, Phone } from 'lucide-react';
+import { User, Mail, Shield, Edit2, Loader2, CheckCircle, Send, Phone, Eye, EyeOff, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 type ProfileData = {
   id: string;
@@ -35,6 +36,19 @@ export default function ProfilePage() {
   const [editing, setEditing] = useState(false);
   const [sendingVerify, setSendingVerify] = useState(false);
   const [verifyMsg, setVerifyMsg] = useState<string | null>(null);
+
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
+  const [changePasswordLoading, setChangePasswordLoading] = useState(false);
+  const [changePasswordError, setChangePasswordError] = useState<string | null>(null);
+  const [changePasswordSuccess, setChangePasswordSuccess] = useState<string | null>(null);
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [changePasswordForm, setChangePasswordForm] = useState({
+    oldPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
   const [form, setForm] = useState({
     fullName: '',
     phone: '',
@@ -74,6 +88,62 @@ export default function ProfilePage() {
   useEffect(() => {
     loadProfile();
   }, []);
+
+  const openChangePassword = () => {
+    setChangePasswordError(null);
+    setChangePasswordForm({
+      oldPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+    });
+    setChangePasswordOpen(true);
+  };
+
+  const closeChangePassword = () => {
+    setChangePasswordOpen(false);
+    setChangePasswordLoading(false);
+    setChangePasswordError(null);
+    setChangePasswordSuccess(null);
+  };
+
+  const submitChangePassword = async () => {
+    if (changePasswordLoading) return;
+
+    setChangePasswordError(null);
+    setChangePasswordSuccess(null);
+
+    if (!changePasswordForm.oldPassword) {
+      setChangePasswordError('Vui lòng nhập mật khẩu cũ');
+      return;
+    }
+
+    if (!changePasswordForm.newPassword || changePasswordForm.newPassword.length < 6) {
+      setChangePasswordError('Mật khẩu mới phải có ít nhất 6 ký tự');
+      return;
+    }
+
+    if (changePasswordForm.newPassword !== changePasswordForm.confirmPassword) {
+      setChangePasswordError('Xác nhận mật khẩu mới không khớp');
+      return;
+    }
+
+    setChangePasswordLoading(true);
+    try {
+      await authService.changePassword({
+        oldPassword: changePasswordForm.oldPassword,
+        newPassword: changePasswordForm.newPassword,
+      });
+
+      toast.success('Đổi mật khẩu thành công!');
+      setChangePasswordSuccess('Đổi mật khẩu thành công!');
+      // Keep the modal open briefly so user can see confirmation.
+      setTimeout(() => closeChangePassword(), 800);
+    } catch (e: unknown) {
+      setChangePasswordError((e as Error).message || 'Không thể đổi mật khẩu!');
+    } finally {
+      setChangePasswordLoading(false);
+    }
+  };
 
   const handleResendVerification = async () => {
     setSendingVerify(true);
@@ -171,6 +241,18 @@ export default function ProfilePage() {
               <div className="flex items-center gap-4 text-xs font-body text-foreground">
                 <Shield className="w-4 h-4 text-emerald-500" />
                 <span>Tài khoản được bảo vệ</span>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={openChangePassword}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gold text-primary text-[10px] uppercase font-heading tracking-widest hover:scale-[1.01] transition-all disabled:opacity-50"
+                  disabled={changePasswordLoading}
+                >
+                  {changePasswordLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+                  Đổi Mật Khẩu
+                </button>
               </div>
             </div>
 
@@ -433,6 +515,155 @@ export default function ProfilePage() {
           </div>
         </div>
       </main>
+
+      {changePasswordOpen ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-6"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) closeChangePassword();
+          }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="w-full max-w-md glass rounded-[3rem] border border-gold/10 bg-background/70 shadow-2xl shadow-gold/10 p-6 md:p-10">
+            <div className="flex items-start justify-between gap-4 mb-6">
+              <div>
+                <h2 className="text-2xl font-heading text-foreground uppercase tracking-widest">
+                  Đổi mật khẩu
+                </h2>
+                <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                  Nhập mật khẩu cũ, mật khẩu mới và xác nhận lại.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={closeChangePassword}
+                className="w-6 h-6 p-0.5 rounded-full border border-border text-muted-foreground hover:text-foreground hover:border-gold hover:bg-gold/5 transition-colors"
+                aria-label="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {changePasswordError ? (
+              <div className="mb-4 p-3 rounded-2xl bg-destructive/10 text-destructive text-sm border border-destructive/20">
+                {changePasswordError}
+              </div>
+            ) : null}
+            {changePasswordSuccess ? (
+              <div className="mb-4 p-3 rounded-2xl bg-emerald-500/10 text-emerald-600 text-sm border border-emerald-500/20">
+                {changePasswordSuccess}
+              </div>
+            ) : null}
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400">
+                  Mật khẩu cũ
+                </label>
+                <div className="relative">
+                  <input
+                    type={showOldPassword ? 'text' : 'password'}
+                    value={changePasswordForm.oldPassword}
+                    onChange={(e) =>
+                      setChangePasswordForm((f) => ({ ...f, oldPassword: e.target.value }))
+                    }
+                    className="w-full bg-background/50 border border-border rounded-2xl py-3 px-4 pr-12 text-sm outline-none focus:border-gold transition-all"
+                    autoComplete="current-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowOldPassword((s) => !s)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label="Toggle old password visibility"
+                  >
+                    {showOldPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400">
+                  Mật khẩu mới
+                </label>
+                <div className="relative">
+                  <input
+                    type={showNewPassword ? 'text' : 'password'}
+                    value={changePasswordForm.newPassword}
+                    onChange={(e) =>
+                      setChangePasswordForm((f) => ({ ...f, newPassword: e.target.value }))
+                    }
+                    className="w-full bg-background/50 border border-border rounded-2xl py-3 px-4 pr-12 text-sm outline-none focus:border-gold transition-all"
+                    autoComplete="new-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword((s) => !s)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label="Toggle new password visibility"
+                  >
+                    {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400">
+                  Xác nhận mật khẩu mới
+                </label>
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    value={changePasswordForm.confirmPassword}
+                    onChange={(e) =>
+                      setChangePasswordForm((f) => ({
+                        ...f,
+                        confirmPassword: e.target.value,
+                      }))
+                    }
+                    className="w-full bg-background/50 border border-border rounded-2xl py-3 px-4 pr-12 text-sm outline-none focus:border-gold transition-all"
+                    autoComplete="new-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword((s) => !s)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label="Toggle confirm password visibility"
+                  >
+                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 mt-8">
+              <button
+                type="button"
+                onClick={closeChangePassword}
+                disabled={changePasswordLoading}
+                className="flex-1 px-4 py-3 rounded-2xl border border-border text-[10px] uppercase tracking-widest font-heading text-stone-500 hover:text-foreground hover:border-gold transition-colors disabled:opacity-50"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                onClick={() => void submitChangePassword()}
+                disabled={changePasswordLoading}
+                className="flex-1 px-4 py-3 rounded-2xl bg-gold text-primary-foreground text-[10px] uppercase tracking-widest font-heading hover:scale-[1.01] transition-all disabled:opacity-50"
+              >
+                {changePasswordLoading ? (
+                  <span className="inline-flex items-center justify-center gap-2">
+                    <Loader2 className="w-3 h-3 animate-spin" /> Dang doi...
+                  </span>
+                ) : (
+                  'Xác nhận'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </AuthGuard>
   );
 }
