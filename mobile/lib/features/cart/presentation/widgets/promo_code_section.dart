@@ -180,91 +180,175 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
             sizeFactor: _expandAnim,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Expanded(
-                    child: TextField(
-                      controller: widget.controller,
-                      textCapitalization: TextCapitalization.characters,
-                      decoration: InputDecoration(
-                        hintText: 'Nhập mã giảm giá',
-                        hintStyle: GoogleFonts.montserrat(
-                          fontSize: 13,
-                          color: AppTheme.mutedSilver,
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 12,
-                        ),
-                        filled: true,
-                        fillColor: AppTheme.ivoryBackground,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(
-                            color: AppTheme.accentGold.withValues(alpha: 0.5),
-                          ),
-                        ),
-                      ),
-                      style: GoogleFonts.montserrat(
-                        fontSize: 13,
-                        color: AppTheme.deepCharcoal,
-                      ),
-                      onSubmitted: (code) {
-                        if (code.isNotEmpty) {
-                          ref.read(cartProvider.notifier).applyPromoCode(code);
-                        }
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  SizedBox(
-                    height: 46,
-                    child: ElevatedButton(
-                      onPressed: widget.isLoading
-                          ? null
-                          : () {
-                              if (widget.controller.text.isNotEmpty) {
-                                ref
-                                    .read(cartProvider.notifier)
-                                    .applyPromoCode(widget.controller.text);
-                              }
-                            },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.accentGold,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 18),
-                      ),
-                      child: widget.isLoading
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : Text(
-                              'Áp dụng',
-                              style: GoogleFonts.montserrat(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: widget.controller,
+                          textCapitalization: TextCapitalization.characters,
+                          decoration: InputDecoration(
+                            hintText: 'Nhập mã giảm giá',
+                            hintStyle: GoogleFonts.montserrat(
+                              fontSize: 13,
+                              color: AppTheme.mutedSilver,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
+                            filled: true,
+                            fillColor: AppTheme.ivoryBackground,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide.none,
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(
+                                color: AppTheme.accentGold.withValues(alpha: 0.5),
                               ),
                             ),
-                    ),
+                          ),
+                          style: GoogleFonts.montserrat(
+                            fontSize: 13,
+                            color: AppTheme.deepCharcoal,
+                          ),
+                          onSubmitted: (code) {
+                            if (code.isNotEmpty) {
+                              ref.read(cartProvider.notifier).applyPromoCode(code);
+                            }
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      SizedBox(
+                        height: 46,
+                        child: ElevatedButton(
+                          onPressed: widget.isLoading
+                              ? null
+                              : () {
+                                  if (widget.controller.text.isNotEmpty) {
+                                    ref
+                                        .read(cartProvider.notifier)
+                                        .applyPromoCode(widget.controller.text);
+                                  }
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.accentGold,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 18),
+                          ),
+                          child: widget.isLoading
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : Text(
+                                  'Áp dụng',
+                                  style: GoogleFonts.montserrat(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ],
                   ),
+                  const SizedBox(height: 16),
+                  _buildPublicPromos(),
                 ],
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildPublicPromos() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'MÃ KHUYẾN MÃI CÓ SẴN',
+          style: GoogleFonts.montserrat(
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.2,
+            color: AppTheme.mutedSilver,
+          ),
+        ),
+        const SizedBox(height: 12),
+        _buildPromoItem('LUMINA10', 'Giảm 10% cho đơn hàng đầu tiên'),
+        const SizedBox(height: 8),
+        _buildPromoItem('WELCOME20', 'Siêu ưu đãi giảm 20% cho thành viên mới'),
+      ],
+    );
+  }
+
+  Widget _buildPromoItem(String code, String desc) {
+    return InkWell(
+      onTap: () {
+        widget.controller.text = code;
+        ref.read(cartProvider.notifier).applyPromoCode(code);
+      },
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          border: Border.all(color: AppTheme.softTaupe.withValues(alpha: 0.5)),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppTheme.accentGold.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(
+                  color: AppTheme.accentGold.withValues(alpha: 0.3),
+                  width: 1,
+                ),
+              ),
+              child: Text(
+                code,
+                style: GoogleFonts.montserrat(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.accentGold,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                desc,
+                style: GoogleFonts.montserrat(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: AppTheme.deepCharcoal,
+                ),
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right,
+              size: 20,
+              color: AppTheme.mutedSilver,
+            ),
+          ],
+        ),
       ),
     );
   }

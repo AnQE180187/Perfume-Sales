@@ -21,7 +21,7 @@ export class StaffPosService {
     private readonly prisma: PrismaService,
     private readonly paymentsService: PaymentsService,
     private readonly storesService: StoresService,
-  ) { }
+  ) {}
 
   /**
    * Search products **available in the given store** (filtered by StoreStock).
@@ -69,16 +69,14 @@ export class StaffPosService {
         variants: {
           where: storeId
             ? {
-              isActive: true,
-              storeStocks: {
-                some: { storeId, quantity: { gt: 0 } },
-              },
-            }
+                isActive: true,
+                storeStocks: {
+                  some: { storeId, quantity: { gt: 0 } },
+                },
+              }
             : { isActive: true },
           include: {
-            storeStocks: storeId
-              ? { where: { storeId } }
-              : false,
+            storeStocks: storeId ? { where: { storeId } } : false,
           },
         },
         brand: true,
@@ -158,7 +156,15 @@ export class StaffPosService {
         },
         payments: true,
         store: true,
-        user: { select: { id: true, fullName: true, phone: true, email: true, loyaltyPoints: true } },
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            phone: true,
+            email: true,
+            loyaltyPoints: true,
+          },
+        },
       },
     });
 
@@ -184,7 +190,11 @@ export class StaffPosService {
     customerPhone?: string,
   ) {
     if (storeId) {
-      await this.storesService.ensureStaffCanAccessStore(staffUserId, storeId, role);
+      await this.storesService.ensureStaffCanAccessStore(
+        staffUserId,
+        storeId,
+        role,
+      );
     }
 
     // Look up customer by phone
@@ -217,7 +227,14 @@ export class StaffPosService {
           include: { variant: { include: { product: true } } },
         },
         store: true,
-        user: { select: { id: true, fullName: true, phone: true, loyaltyPoints: true } },
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            phone: true,
+            loyaltyPoints: true,
+          },
+        },
       },
     });
 
@@ -227,7 +244,11 @@ export class StaffPosService {
   /**
    * Attach / change customer after order creation (before payment).
    */
-  async setCustomer(staffUserId: string, orderId: string, customerPhone: string) {
+  async setCustomer(
+    staffUserId: string,
+    orderId: string,
+    customerPhone: string,
+  ) {
     const order = await this.getStaffOrderOrThrow(staffUserId, orderId);
 
     const customer = await this.prisma.user.findFirst({
@@ -245,7 +266,14 @@ export class StaffPosService {
           include: { variant: { include: { product: true } } },
         },
         store: true,
-        user: { select: { id: true, fullName: true, phone: true, loyaltyPoints: true } },
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            phone: true,
+            loyaltyPoints: true,
+          },
+        },
       },
     });
 
@@ -372,7 +400,14 @@ export class StaffPosService {
           include: { variant: { include: { product: true } } },
         },
         store: true,
-        user: { select: { id: true, fullName: true, phone: true, loyaltyPoints: true } },
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            phone: true,
+            loyaltyPoints: true,
+          },
+        },
       },
     });
 
@@ -390,7 +425,12 @@ export class StaffPosService {
       if (order.storeId) {
         for (const item of order.items) {
           const current = await tx.storeStock.findUnique({
-            where: { storeId_variantId: { storeId: order.storeId!, variantId: item.variantId } },
+            where: {
+              storeId_variantId: {
+                storeId: order.storeId!,
+                variantId: item.variantId,
+              },
+            },
           });
           const qty = current?.quantity ?? 0;
           if (qty < item.quantity) {
@@ -399,9 +439,21 @@ export class StaffPosService {
             );
           }
           await tx.storeStock.upsert({
-            where: { storeId_variantId: { storeId: order.storeId!, variantId: item.variantId } },
-            create: { storeId: order.storeId!, variantId: item.variantId, quantity: -item.quantity },
-            update: { quantity: { decrement: item.quantity }, updatedAt: new Date() },
+            where: {
+              storeId_variantId: {
+                storeId: order.storeId!,
+                variantId: item.variantId,
+              },
+            },
+            create: {
+              storeId: order.storeId!,
+              variantId: item.variantId,
+              quantity: -item.quantity,
+            },
+            update: {
+              quantity: { decrement: item.quantity },
+              updatedAt: new Date(),
+            },
           });
           await tx.inventoryLog.create({
             data: {
@@ -484,7 +536,14 @@ export class StaffPosService {
         },
         payments: true,
         store: true,
-        user: { select: { id: true, fullName: true, phone: true, loyaltyPoints: true } },
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            phone: true,
+            loyaltyPoints: true,
+          },
+        },
       },
     });
 
@@ -507,5 +566,254 @@ export class StaffPosService {
       order.finalAmount,
       order.items,
     );
+  }
+
+  /**
+   * One-shot checkout: create order + items + pay in a single transaction.
+   * For CASH: order is created and paid immediately.
+   * For QR: order is created (PENDING), returns a QR payment link.
+   */
+  async checkout(
+    staffUserId: string,
+    role: string,
+    storeId: string,
+    items: { variantId: string; quantity: number }[],
+    paymentMethod: 'CASH' | 'QR',
+    customerPhone?: string,
+  ) {
+    if (!items || items.length === 0) {
+      throw new BadRequestException('Cart is empty');
+    }
+
+    await this.storesService.ensureStaffCanAccessStore(
+      staffUserId,
+      storeId,
+      role,
+    );
+
+    // Resolve customer
+    let customerId: string | undefined;
+    if (customerPhone) {
+      const customer = await this.prisma.user.findFirst({
+        where: { phone: customerPhone },
+      });
+      if (customer) customerId = customer.id;
+    }
+
+    // Validate stock & gather variant prices
+    const variantData: {
+      variantId: string;
+      quantity: number;
+      price: number;
+    }[] = [];
+
+    for (const item of items) {
+      if (item.quantity <= 0) continue;
+      const variant = await this.prisma.productVariant.findUnique({
+        where: { id: item.variantId },
+      });
+      if (!variant) {
+        throw new NotFoundException(`Variant ${item.variantId} not found`);
+      }
+
+      const storeStock = await this.prisma.storeStock.findUnique({
+        where: {
+          storeId_variantId: { storeId, variantId: item.variantId },
+        },
+      });
+      const available = storeStock?.quantity ?? 0;
+      if (item.quantity > available) {
+        throw new BadRequestException(
+          `Chỉ còn ${available} sản phẩm trong kho cho variant ${variant.name}`,
+        );
+      }
+
+      variantData.push({
+        variantId: item.variantId,
+        quantity: item.quantity,
+        price: variant.price,
+      });
+    }
+
+    if (variantData.length === 0) {
+      throw new BadRequestException('No valid items');
+    }
+
+    const totalAmount = variantData.reduce(
+      (sum, v) => sum + v.price * v.quantity,
+      0,
+    );
+
+    // Create order + items (and optionally pay) in a transaction
+    const order = await this.prisma.$transaction(async (tx) => {
+      const newOrder = await tx.order.create({
+        data: {
+          code: `POS-${Date.now()}`,
+          staffId: staffUserId,
+          storeId,
+          userId: customerId ?? undefined,
+          phone: customerPhone ?? undefined,
+          channel: OrderChannel.POS,
+          totalAmount,
+          discountAmount: 0,
+          finalAmount: totalAmount,
+          status:
+            paymentMethod === 'CASH'
+              ? OrderStatus.COMPLETED
+              : OrderStatus.PENDING,
+          paymentStatus:
+            paymentMethod === 'CASH'
+              ? PaymentStatus.PAID
+              : PaymentStatus.PENDING,
+        },
+      });
+
+      // Create items
+      for (const v of variantData) {
+        await tx.orderItem.create({
+          data: {
+            orderId: newOrder.id,
+            variantId: v.variantId,
+            quantity: v.quantity,
+            unitPrice: v.price,
+            totalPrice: v.price * v.quantity,
+          },
+        });
+      }
+
+      if (paymentMethod === 'CASH') {
+        // Deduct store stock & log
+        for (const v of variantData) {
+          await tx.storeStock.upsert({
+            where: {
+              storeId_variantId: { storeId, variantId: v.variantId },
+            },
+            create: {
+              storeId,
+              variantId: v.variantId,
+              quantity: -v.quantity,
+            },
+            update: {
+              quantity: { decrement: v.quantity },
+              updatedAt: new Date(),
+            },
+          });
+          await tx.inventoryLog.create({
+            data: {
+              variantId: v.variantId,
+              staffId: staffUserId,
+              storeId,
+              type: InventoryLogType.SALE_POS,
+              quantity: -v.quantity,
+              reason: `POS order ${newOrder.code}`,
+            },
+          });
+        }
+
+        // Create payment record
+        await tx.payment.create({
+          data: {
+            orderId: newOrder.id,
+            provider: PaymentProvider.COD,
+            amount: totalAmount,
+            status: PaymentStatus.PAID,
+          },
+        });
+
+        // Award loyalty points (1 pt per 10,000 VND)
+        const points = Math.floor(totalAmount / 10000);
+        if (points > 0) {
+          if (customerId) {
+            await tx.user.update({
+              where: { id: customerId },
+              data: { loyaltyPoints: { increment: points } },
+            });
+            await tx.loyaltyTransaction.create({
+              data: {
+                userId: customerId,
+                phone: customerPhone,
+                orderId: newOrder.id,
+                points,
+                reason: 'EARNED_FROM_ORDER',
+              },
+            });
+          } else if (customerPhone) {
+            await tx.loyaltyTransaction.create({
+              data: {
+                phone: customerPhone,
+                orderId: newOrder.id,
+                points,
+                reason: 'EARNED_FROM_ORDER',
+              },
+            });
+          }
+        }
+      }
+
+      return newOrder;
+    });
+
+    // For QR, generate payment link
+    if (paymentMethod === 'QR') {
+      const fullOrder = await this.prisma.order.findUnique({
+        where: { id: order.id },
+        include: {
+          items: {
+            include: { variant: { include: { product: true } } },
+          },
+        },
+      });
+      const numericCode = parseInt(order.code.replace(/\D/g, ''), 10);
+      const orderCode = Number.isFinite(numericCode) ? numericCode : Date.now();
+      const qrResult = await this.paymentsService.createPayOSPaymentLink(
+        order.id,
+        orderCode,
+        totalAmount,
+        fullOrder?.items ?? [],
+      );
+      return { order, ...qrResult };
+    }
+
+    // For CASH, return the complete order
+    const refreshed = await this.prisma.order.findUnique({
+      where: { id: order.id },
+      include: {
+        items: {
+          include: { variant: { include: { product: true } } },
+        },
+        payments: true,
+        store: true,
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            phone: true,
+            loyaltyPoints: true,
+          },
+        },
+      },
+    });
+
+    return refreshed;
+  }
+
+  async cancelOrder(staffUserId: string, orderId: string) {
+    const order = await this.getStaffOrderOrThrow(staffUserId, orderId);
+
+    await this.prisma.$transaction(async (tx) => {
+      // Delete all order items
+      await tx.orderItem.deleteMany({ where: { orderId: order.id } });
+
+      // Update order status to CANCELLED
+      await tx.order.update({
+        where: { id: order.id },
+        data: {
+          status: OrderStatus.CANCELLED,
+          paymentStatus: PaymentStatus.FAILED,
+        },
+      });
+    });
+
+    return { success: true, orderId: order.id };
   }
 }

@@ -177,10 +177,13 @@ class _ProductDetails extends StatelessWidget {
       (item.variant ?? '').isNotEmpty || (item.size ?? '').isNotEmpty;
 
   String get _variantInfo {
-    final parts = <String>[
-      if ((item.variant ?? '').isNotEmpty) item.variant!,
-      if ((item.size ?? '').isNotEmpty) item.size!,
-    ];
+    final parts = <String>[];
+    final v = item.variant ?? '';
+    final s = item.size ?? '';
+    
+    if (v.isNotEmpty) parts.add(v);
+    if (s.isNotEmpty && s != v) parts.add(s);
+    
     return parts.join(' • ');
   }
 

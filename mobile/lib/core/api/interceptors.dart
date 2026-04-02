@@ -15,14 +15,23 @@ class AuthInterceptor extends Interceptor {
     : _tokenStorage = tokenStorage,
       _dio = dio;
 
+  // Auth routes không cần token — gắn token hết hạn vào sẽ gây 401
+  static const _publicPaths = {
+    ApiEndpoints.login,
+    ApiEndpoints.register,
+    ApiEndpoints.refreshToken,
+  };
+
   @override
   void onRequest(
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    final token = await _tokenStorage.getAccessToken();
-    if (token != null) {
-      options.headers['Authorization'] = 'Bearer $token';
+    if (!_publicPaths.contains(options.path)) {
+      final token = await _tokenStorage.getAccessToken();
+      if (token != null) {
+        options.headers['Authorization'] = 'Bearer $token';
+      }
     }
     handler.next(options);
   }

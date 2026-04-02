@@ -90,7 +90,8 @@ class _OrderItemRow extends StatelessWidget {
                 children: [
                   if ((item.variant ?? '').isNotEmpty)
                     _TagChip(label: item.variant!),
-                  if ((item.size ?? '').isNotEmpty) _TagChip(label: item.size!),
+                  if ((item.size ?? '').isNotEmpty && item.size != item.variant)
+                    _TagChip(label: item.size!),
                   _TagChip(label: 'SL ${item.quantity}'),
                 ],
               ),

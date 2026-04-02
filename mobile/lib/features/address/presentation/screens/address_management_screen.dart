@@ -32,21 +32,38 @@ class _AddressManagementScreenState
 
     return Scaffold(
       backgroundColor: AppTheme.ivoryBackground,
-      appBar: AppBar(
-        backgroundColor: AppTheme.ivoryBackground,
-        elevation: 0,
-        centerTitle: true,
-        title: Text(
-          'QUẢN LÝ ĐỊA CHỈ GIAO HÀNG',
-          style: GoogleFonts.montserrat(
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 1.9,
-            color: AppTheme.deepCharcoal,
-          ),
-        ),
-      ),
-      body: addressesAsync.when(
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 8, 20, 0),
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      size: 18,
+                      color: AppTheme.deepCharcoal,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      'Sổ địa chỉ',
+                      style: GoogleFonts.playfairDisplay(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.deepCharcoal,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: addressesAsync.when(
         loading: () => const _AddressLoadingSkeleton(),
         error: (error, _) => _AddressErrorState(
           message: error.toString(),
@@ -70,16 +87,17 @@ class _AddressManagementScreenState
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
             children: [
               if (defaultAddress != null) ...[
-                Text(
-                  'ĐỊA CHỈ MẶC ĐỊNH',
-                  style: GoogleFonts.montserrat(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.4,
-                    color: AppTheme.mutedSilver,
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(
+                    'Địa chỉ mặc định',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: AppTheme.mutedSilver,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 8),
                 AddressCard(
                   address: defaultAddress,
                   selected: selectedAddress?.id == defaultAddress.id,
@@ -93,15 +111,17 @@ class _AddressManagementScreenState
                 ),
                 const SizedBox(height: 18),
               ],
-              Text(
-                'ĐỊA CHỈ ĐÃ LƯU',
-                style: GoogleFonts.montserrat(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1.4,
-                  color: AppTheme.mutedSilver,
-                ),
-              ),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      'Địa chỉ đã lưu',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: AppTheme.mutedSilver,
+                      ),
+                    ),
+                  ),
               const SizedBox(height: 8),
               ...nonDefault.map((address) {
                 return Padding(
@@ -122,18 +142,32 @@ class _AddressManagementScreenState
           );
         },
       ),
+    ),
+  ],
+),
+      ),
       bottomNavigationBar: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
           child: FilledButton.icon(
             onPressed: () => _openForm(context),
             style: FilledButton.styleFrom(
               backgroundColor: AppTheme.deepCharcoal,
-              minimumSize: const Size.fromHeight(52),
+              minimumSize: const Size.fromHeight(56),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(28),
+              ),
             ),
-            icon: const Icon(Icons.add),
-            label: const Text('+ Thêm địa chỉ mới'),
+            icon: const Icon(Icons.add, size: 20),
+            label: Text(
+              'Thêm địa chỉ mới',
+              style: GoogleFonts.montserrat(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ),
       ),

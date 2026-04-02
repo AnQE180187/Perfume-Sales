@@ -1,9 +1,13 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class LoyaltyService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationsService: NotificationsService,
+  ) {}
 
   // Calculation constants
   private readonly EARN_RATE = 10000; // 10,000đ = 1 point
@@ -50,6 +54,17 @@ export class LoyaltyService {
         },
       }),
     ]);
+
+    // Notify user about earned points
+    this.notificationsService
+      .create({
+        userId,
+        type: 'LOYALTY',
+        title: 'Nhận điểm thưởng',
+        content: `Bạn nhận được ${points} điểm thưởng từ đơn hàng.`,
+        data: { points, orderId },
+      })
+      .catch(() => {});
   }
 
   async redeemPoints(userId: string, points: number) {

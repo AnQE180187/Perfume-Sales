@@ -2,10 +2,27 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios, { AxiosInstance } from 'axios';
 
-export type GHNProvince = { ProvinceID: number; ProvinceName: string; Code: string };
-export type GHNDistrict = { DistrictID: number; ProvinceID: number; DistrictName: string; Code: string };
-export type GHNWard = { WardCode: string; DistrictID: number; WardName: string };
-export type GHNServiceOption = { service_id: number; short_name: string; service_type_id: number };
+export type GHNProvince = {
+    ProvinceID: number;
+    ProvinceName: string;
+    Code: string;
+};
+export type GHNDistrict = {
+    DistrictID: number;
+    ProvinceID: number;
+    DistrictName: string;
+    Code: string;
+};
+export type GHNWard = {
+    WardCode: string;
+    DistrictID: number;
+    WardName: string;
+};
+export type GHNServiceOption = {
+    service_id: number;
+    short_name: string;
+    service_type_id: number;
+};
 
 export type GHNFeeResponse = {
     total: number;
@@ -44,7 +61,10 @@ export class GHNService {
             ? 'https://dev-online-gateway.ghn.vn/shiip/public-api'
             : 'https://online-gateway.ghn.vn/shiip/public-api');
 
-        this.fromDistrictId = parseInt(this.config.get('SHIPPING_GHN_FROM_DISTRICT_ID') ?? '0', 10);
+        this.fromDistrictId = parseInt(
+            this.config.get('SHIPPING_GHN_FROM_DISTRICT_ID') ?? '0',
+            10,
+        );
         this.fromWardCode = this.config.get('SHIPPING_GHN_FROM_WARD_CODE') ?? '';
         this.returnPhone = this.config.get('SHIPPING_GHN_RETURN_PHONE') ?? '';
         this.returnAddress = this.config.get('SHIPPING_GHN_RETURN_ADDRESS') ?? '';
@@ -60,21 +80,27 @@ export class GHNService {
     }
 
     private ensureConfigured() {
-        if (!this.token || !this.shopId) throw new Error('GHN chưa được cấu hình (GHN_TOKEN, GHN_SHOP_ID)');
+        if (!this.token || !this.shopId)
+            throw new Error('GHN chưa được cấu hình (GHN_TOKEN, GHN_SHOP_ID)');
     }
 
     async getProvinces(): Promise<GHNProvince[]> {
         this.ensureConfigured();
-        const res = await this.client.get<{ code: number; data: GHNProvince[] }>('/master-data/province');
+        const res = await this.client.get<{ code: number; data: GHNProvince[] }>(
+            '/master-data/province',
+        );
         if (res.data.code !== 200) throw new Error('GHN get provinces failed');
         return Array.isArray(res.data.data) ? res.data.data : [];
     }
 
     async getDistricts(provinceId: number): Promise<GHNDistrict[]> {
         this.ensureConfigured();
-        const res = await this.client.get<{ code: number; data: GHNDistrict[] }>('/master-data/district', {
-            params: { province_id: provinceId },
-        });
+        const res = await this.client.get<{ code: number; data: GHNDistrict[] }>(
+            '/master-data/district',
+            {
+                params: { province_id: provinceId },
+            },
+        );
         if (res.data.code !== 200) throw new Error('GHN get districts failed');
         const data = res.data.data;
         return Array.isArray(data) ? data : [];
@@ -82,9 +108,12 @@ export class GHNService {
 
     async getWards(districtId: number): Promise<GHNWard[]> {
         this.ensureConfigured();
-        const res = await this.client.get<{ code: number; data: GHNWard[] }>('/master-data/ward', {
-            params: { district_id: districtId },
-        });
+        const res = await this.client.get<{ code: number; data: GHNWard[] }>(
+            '/master-data/ward',
+            {
+                params: { district_id: districtId },
+            },
+        );
         if (res.data.code !== 200) throw new Error('GHN get wards failed');
         const data = res.data.data;
         return Array.isArray(data) ? data : [];
@@ -137,7 +166,8 @@ export class GHNService {
                 insurance_value: params.insuranceValue ?? 0,
             },
         );
-        if (res.data.code !== 200) throw new Error(res.data['message'] ?? 'GHN calculate fee failed');
+        if (res.data.code !== 200)
+            throw new Error(res.data['message'] ?? 'GHN calculate fee failed');
         return res.data.data;
     }
 
@@ -190,19 +220,50 @@ export class GHNService {
             })),
         };
 
-        const res = await this.client.post<{ code: number; message?: string; data: GHNCreateOrderResponse }>(
-            '/v2/shipping-order/create',
-            payload,
-        );
+        const res = await this.client.post<{
+            code: number;
+            message?: string;
+            data: GHNCreateOrderResponse;
+        }>('/v2/shipping-order/create', payload);
         if (res.data.code !== 200) {
             throw new Error(res.data.message ?? 'GHN create order failed');
         }
         return res.data.data;
     }
 
-    isConfigured(): boolean {
-        return !!this.token && !!this.shopId && this.fromDistrictId > 0 && !!this.fromWardCode;
+    async getOrderDetail(orderCode: string): Promise<any> {
+        const res = await this.client.post<{
+            code: number;
+            message?: string;
+            data: any;
+        }>('/v2/shipping-order/detail', { order_code: orderCode });
+        if (res.data.code !== 200) {
+            throw new Error(res.data.message ?? 'GHN get order detail failed');
+        }
+        return res.data.data;
     }
+
+    async cancelOrder(orderCodes: string[]): Promise<any> {
+        const res = await this.client.post<{
+            code: number;
+            message?: string;
+            data: any;
+        }>('/v2/switch-status/cancel', { order_codes: orderCodes });
+        if (res.data.code !== 200) {
+            throw new Error(res.data.message ?? 'GHN cancel order failed');
+        }
+        return res.data.data;
+    }
+
+    isConfigured(): boolean {
+        return (
+            !!this.token &&
+            !!this.shopId &&
+            this.fromDistrictId > 0 &&
+            !!this.fromWardCode
+        );
+    }
+
 
 
 }
