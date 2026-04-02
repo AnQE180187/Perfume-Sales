@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../../core/theme/app_theme.dart';
 import '../../../../core/routing/app_routes.dart';
-import '../../../../core/widgets/luxury_button.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/currency_utils.dart';
 import '../../providers/cart_provider.dart';
 
 class CartSummarySection extends StatelessWidget {
@@ -22,114 +22,77 @@ class CartSummarySection extends StatelessWidget {
         .fold(0.0, (sum, item) => sum + item.subtotal);
   }
 
-  double get estimatedTax => selectedSubtotal * 0.08;
-  double get total => selectedSubtotal + estimatedTax;
+  double get selectedDiscount => selectedSubtotal * cartState.promoDiscount;
+  double get total => selectedSubtotal - selectedDiscount;
 
   @override
   Widget build(BuildContext context) {
+    final hasSelection = selectedItems.isNotEmpty;
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 12,
-            offset: const Offset(0, -2),
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 16,
+            offset: const Offset(0, -4),
           ),
         ],
       ),
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // 🎟 Voucher
-              InkWell(
-                borderRadius: BorderRadius.circular(12),
-                onTap: () {},
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 6),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.local_offer_outlined,
-                        size: 16,
-                        color: AppTheme.accentGold,
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+          child: Builder(
+            builder: (context) => GestureDetector(
+              onTap: hasSelection
+                  ? () => context.push(AppRoutes.checkout)
+                  : null,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                height: 52,
+                decoration: BoxDecoration(
+                  color: hasSelection
+                      ? AppTheme.accentGold
+                      : AppTheme.mutedSilver.withValues(alpha: 0.25),
+                  borderRadius: BorderRadius.circular(26),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      hasSelection
+                          ? 'Thanh toán'
+                          : 'Chọn sản phẩm để thanh toán',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: hasSelection
+                            ? Colors.white
+                            : AppTheme.mutedSilver,
+                      ),
+                    ),
+                    if (hasSelection) ...[
+                      Text(
+                        '  •  ${formatVND(total)}',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white.withValues(alpha: 0.9),
+                        ),
                       ),
                       const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          'Áp dụng ưu đãi',
-                          style: GoogleFonts.montserrat(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: AppTheme.deepCharcoal,
-                          ),
-                        ),
-                      ),
-                      Icon(
-                        Icons.chevron_right,
+                      const Icon(
+                        Icons.arrow_forward_rounded,
                         size: 18,
-                        color: AppTheme.mutedSilver,
+                        color: Colors.white,
                       ),
                     ],
-                  ),
+                  ],
                 ),
               ),
-
-              const Divider(height: 10),
-
-              // 💰 Total
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Tổng cộng',
-                        style: GoogleFonts.montserrat(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: AppTheme.deepCharcoal,
-                        ),
-                      ),
-                      Text(
-                        'USD',
-                        style: GoogleFonts.montserrat(
-                          fontSize: 10,
-                          color: AppTheme.mutedSilver,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Text(
-                    '\$${total.toStringAsFixed(2)}',
-                    style: GoogleFonts.cormorantGaramond(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.deepCharcoal,
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 8),
-
-              // 🟡 CTA
-              Builder(
-                builder: (context) => LuxuryButton(
-                  text: 'Tiến hành thanh toán',
-                  trailingIcon: Icons.arrow_forward,
-                  height: 42,
-                  onPressed: selectedItems.isEmpty
-                      ? null
-                      : () => context.push(AppRoutes.checkout),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),

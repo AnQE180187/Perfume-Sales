@@ -4,11 +4,13 @@ import '../theme/app_theme.dart';
 
 class ProductSizeSelector extends StatefulWidget {
   final String selectedSize;
+  final List<String>? sizes;
   final ValueChanged<String> onSizeChanged;
 
   const ProductSizeSelector({
     super.key,
     required this.selectedSize,
+    this.sizes,
     required this.onSizeChanged,
   });
 
@@ -17,8 +19,25 @@ class ProductSizeSelector extends StatefulWidget {
 }
 
 class _ProductSizeSelectorState extends State<ProductSizeSelector> {
+  List<String> get _sizes {
+    final dynamicSizes = widget.sizes;
+    if (dynamicSizes != null && dynamicSizes.isNotEmpty) {
+      return dynamicSizes;
+    }
+    return const ['10ml', '20ml', '50ml', '100ml'];
+  }
+
+  String? _labelFor(String size) {
+    if (widget.sizes != null && widget.sizes!.isNotEmpty) return null;
+    if (size == '10ml') return 'DÙNG THỬ';
+    if (size == '100ml') return 'TIẾT KIỆM NHẤT';
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final sizes = _sizes;
+
     return Transform.translate(
       offset: const Offset(0, -30),
       child: Padding(
@@ -37,39 +56,17 @@ class _ProductSizeSelectorState extends State<ProductSizeSelector> {
             const SizedBox(height: 14),
             Row(
               children: [
-                Expanded(
-                  child: _SizeOption(
-                    size: '10ml',
-                    label: 'DÙNG THỬ',
-                    isSelected: widget.selectedSize == '10ml',
-                    onTap: () => widget.onSizeChanged('10ml'),
+                for (var i = 0; i < sizes.length; i++) ...[
+                  Expanded(
+                    child: _SizeOption(
+                      size: sizes[i],
+                      label: _labelFor(sizes[i]),
+                      isSelected: widget.selectedSize == sizes[i],
+                      onTap: () => widget.onSizeChanged(sizes[i]),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _SizeOption(
-                    size: '20ml',
-                    isSelected: widget.selectedSize == '20ml',
-                    onTap: () => widget.onSizeChanged('20ml'),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _SizeOption(
-                    size: '50ml',
-                    isSelected: widget.selectedSize == '50ml',
-                    onTap: () => widget.onSizeChanged('50ml'),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _SizeOption(
-                    size: '100ml',
-                    label: 'TIẾT KIỆM NHẤT',
-                    isSelected: widget.selectedSize == '100ml',
-                    onTap: () => widget.onSizeChanged('100ml'),
-                  ),
-                ),
+                  if (i != sizes.length - 1) const SizedBox(width: 8),
+                ],
               ],
             ),
           ],

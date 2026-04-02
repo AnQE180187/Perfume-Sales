@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:perfume_gpt_app/l10n/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/currency_utils.dart';
 import '../models/payment_method.dart';
 import '../providers/payment_provider.dart';
 
@@ -93,7 +94,7 @@ class PaymentMethodScreen extends ConsumerWidget {
                       ).textTheme.bodyMedium?.copyWith(fontSize: 12),
                     ),
                     Text(
-                      '\$${amount.toStringAsFixed(2)}',
+                      formatVND(amount),
                       style: Theme.of(
                         context,
                       ).textTheme.displayMedium?.copyWith(fontSize: 24),
@@ -360,6 +361,10 @@ class _PaymentMethodCard extends StatelessWidget {
         icon = Icons.local_shipping_outlined;
         color = AppTheme.accentGold;
         break;
+      case PaymentMethodType.payos:
+        icon = Icons.qr_code_2_rounded;
+        color = const Color(0xFF0A68FF);
+        break;
     }
 
     return Icon(icon, color: color, size: 24);
@@ -373,6 +378,8 @@ class _PaymentMethodCard extends StatelessWidget {
         return l10n.momo;
       case PaymentMethodType.cod:
         return l10n.cod;
+      case PaymentMethodType.payos:
+        return 'PayOS';
     }
   }
 
@@ -384,6 +391,8 @@ class _PaymentMethodCard extends StatelessWidget {
         return 'Thanh toán bằng ví điện tử MoMo';
       case PaymentMethodType.cod:
         return 'Thanh toán khi nhận hàng';
+      case PaymentMethodType.payos:
+        return 'Quét mã QR hoặc chuyển khoản ngân hàng';
     }
   }
 }

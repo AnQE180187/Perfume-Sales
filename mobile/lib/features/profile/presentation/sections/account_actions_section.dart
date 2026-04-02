@@ -14,68 +14,74 @@ import '../widgets/profile_action_tile.dart';
 class AccountActionsSection extends StatelessWidget {
   final VoidCallback onMyOrders;
   final VoidCallback onShippingAddresses;
-  final VoidCallback onPaymentMethods;
   final VoidCallback onAiPreferences;
+  final VoidCallback? onPaymentMethods;
   final String? activeShipmentsText;
 
   const AccountActionsSection({
     super.key,
     required this.onMyOrders,
     required this.onShippingAddresses,
-    required this.onPaymentMethods,
     required this.onAiPreferences,
+    this.onPaymentMethods,
     this.activeShipmentsText,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const SizedBox(height: 18),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 4, bottom: 10),
+            child: Text(
+              'TÀI KHOẢN',
+              style: GoogleFonts.montserrat(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.1,
+                color: AppTheme.mutedSilver,
+              ),
+            ),
           ),
-          child: Column(
-            children: [
-              ProfileActionTile(
-                icon: Icons.shopping_bag_outlined,
-                title: 'Đơn hàng của tôi',
-                subtitle: activeShipmentsText,
-                onTap: onMyOrders,
-              ),
-              ProfileActionTile(
-                icon: Icons.local_shipping_outlined,
-                title: 'Địa chỉ giao hàng',
-                onTap: onShippingAddresses,
-              ),
-              ProfileActionTile(
-                icon: Icons.payment_outlined,
-                title: 'Phương thức thanh toán',
-                onTap: onPaymentMethods,
-              ),
-              ProfileActionTile(
-                icon: Icons.tune_outlined,
-                title: 'Tùy chọn AI',
-                onTap: onAiPreferences,
-              ),
-            ],
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Column(
+              children: [
+                ProfileActionTile(
+                  icon: Icons.shopping_bag_outlined,
+                  title: 'Đơn hàng của tôi',
+                  subtitle: activeShipmentsText,
+                  subtitleIsBadge: activeShipmentsText != null,
+                  onTap: onMyOrders,
+                ),
+                ProfileActionTile(
+                  icon: Icons.local_shipping_outlined,
+                  title: 'Địa chỉ giao hàng',
+                  onTap: onShippingAddresses,
+                ),
+                ProfileActionTile(
+                  icon: Icons.credit_card_outlined,
+                  title: 'Phương thức thanh toán',
+                  onTap: onPaymentMethods ?? () {},
+                ),
+                ProfileActionTile(
+                  icon: Icons.tune_outlined,
+                  title: 'Tùy chọn AI',
+                  onTap: onAiPreferences,
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
 
 /// Logout Section
-///
-/// Separated logout action with low visual emphasis.
-///
-/// Why this is separate:
-/// - Logout is destructive and should be visually distinct
-/// - Easy to customize logout behavior
-/// - Can add logout confirmation modal here
 class LogoutSection extends StatelessWidget {
   final VoidCallback onLogout;
 
@@ -84,27 +90,42 @@ class LogoutSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-      child: TextButton(
-        onPressed: onLogout,
-        style: TextButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          minimumSize: const Size(double.infinity, 0),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.logout, size: 14, color: AppTheme.mutedSilver),
-            const SizedBox(width: 7),
-            Text(
-              'Đăng xuất',
-              style: GoogleFonts.montserrat(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: AppTheme.mutedSilver,
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onLogout,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+            decoration: BoxDecoration(
+              color: Colors.red.withValues(alpha: 0.06),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.red.withValues(alpha: 0.15),
+                width: 1,
               ),
             ),
-          ],
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.logout_rounded,
+                  size: 15,
+                  color: Colors.red.shade400,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Đăng xuất',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.red.shade400,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

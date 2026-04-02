@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
     const t = useTranslations('auth.login');
+    const tCommon = useTranslations('common');
     const router = useRouter();
     const { login } = useAuth();
 
@@ -132,7 +133,7 @@ export default function LoginPage() {
                                             href="/forgot-password"
                                             className="text-[9px] font-bold tracking-widest uppercase text-stone-500 hover:text-gold transition-colors cursor-pointer"
                                         >
-                                            Forgot Password?
+                                            {tCommon('forgot_password')}
                                         </Link>
                                     </div>
                                     <div className="relative">
@@ -162,7 +163,7 @@ export default function LoginPage() {
                                 disabled={isLoading}
                                 className="w-full py-5 bg-luxury-black dark:bg-gold text-white rounded-full font-bold tracking-[.3em] uppercase text-[10px] shadow-2xl hover:bg-stone-800 dark:hover:bg-gold/80 transition-all flex items-center justify-center gap-4 group mb-10 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                {isLoading ? 'PROCESSING...' : t('sign_in')}
+                                {isLoading ? tCommon('processing').toUpperCase() : t('sign_in')}
                                 {!isLoading && <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />}
                             </button>
 

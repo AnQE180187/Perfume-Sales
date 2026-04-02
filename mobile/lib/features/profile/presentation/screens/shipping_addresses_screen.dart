@@ -769,10 +769,8 @@ class _AddressFormSheetState extends State<_AddressFormSheet> {
                   maxLines: 2,
                 ),
                 const SizedBox(height: 12),
-                SwitchListTile.adaptive(
+                ListTile(
                   contentPadding: EdgeInsets.zero,
-                  value: _isDefault,
-                  activeColor: AppTheme.accentGold,
                   title: Text(
                     'Đặt làm địa chỉ mặc định',
                     style: GoogleFonts.montserrat(
@@ -790,7 +788,12 @@ class _AddressFormSheetState extends State<_AddressFormSheet> {
                       color: AppTheme.mutedSilver,
                     ),
                   ),
-                  onChanged: (value) => setState(() => _isDefault = value),
+                  trailing: Switch.adaptive(
+                    value: _isDefault,
+                    activeThumbColor: AppTheme.accentGold,
+                    onChanged: (value) => setState(() => _isDefault = value),
+                  ),
+                  onTap: () => setState(() => _isDefault = !_isDefault),
                 ),
                 const SizedBox(height: 12),
                 LuxuryButton(

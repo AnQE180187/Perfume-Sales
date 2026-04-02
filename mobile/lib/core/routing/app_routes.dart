@@ -44,6 +44,7 @@ class AppRoutes {
   // ============================================
   static const String orders = '/orders';
   static const String orderDetail = '/orders/:id';
+  static const String trackOrder = '/orders/:id/track';
 
   // ============================================
   // SEARCH & DISCOVERY
@@ -61,6 +62,7 @@ class AppRoutes {
   // ============================================
   static const String shippingAddresses = '/shipping-addresses';
   static const String profilePaymentMethods = '/profile-payment-methods';
+  static const String profileEdit = '/profile-edit';
   static const String rewards = '/rewards';
   static const String quiz = '/quiz';
 
@@ -70,12 +72,17 @@ class AppRoutes {
 
   /// Build product detail route with ID
   static String productDetailWithId(String productId) {
-    return '/product?id=$productId';
+    return '/product/$productId';
   }
 
   /// Build order detail route with ID
   static String orderDetailWithId(String orderId) {
     return '/orders/$orderId';
+  }
+
+  /// Build order tracking route with ID
+  static String trackOrderWithId(String orderId) {
+    return '/orders/$orderId/track';
   }
 
   /// Build product story route with ID

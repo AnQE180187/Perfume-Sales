@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../providers/cart_provider.dart';
 
-class PromoCodeSection extends ConsumerWidget {
+class PromoCodeSection extends ConsumerStatefulWidget {
   final TextEditingController controller;
   final bool hasPromoCode;
   final String? promoCode;
@@ -20,30 +21,69 @@ class PromoCodeSection extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    if (hasPromoCode && promoCode != null) {
-      return _buildAppliedPromoCode(context, ref);
-    }
-    return _buildPromoCodeInput(context, ref);
+  ConsumerState<PromoCodeSection> createState() => _PromoCodeSectionState();
+}
+
+class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
+    with SingleTickerProviderStateMixin {
+  bool _isExpanded = false;
+  late final AnimationController _animController;
+  late final Animation<double> _expandAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 250),
+    );
+    _expandAnim = CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeInOut,
+    );
   }
 
-  Widget _buildAppliedPromoCode(BuildContext context, WidgetRef ref) {
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
+  void _toggle() {
+    setState(() => _isExpanded = !_isExpanded);
+    _isExpanded ? _animController.forward() : _animController.reverse();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.hasPromoCode && widget.promoCode != null) {
+      return _buildApplied();
+    }
+    return _buildExpandable();
+  }
+
+  Widget _buildApplied() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: AppTheme.champagneGold.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: AppTheme.champagneGold.withValues(alpha: 0.3),
-          width: 0.5,
-        ),
+        color: AppTheme.accentGold.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
-          const Icon(
-            Icons.local_offer_outlined,
-            color: AppTheme.accentGold,
-            size: 20,
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: AppTheme.accentGold.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.local_offer_rounded,
+              color: AppTheme.accentGold,
+              size: 16,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -51,80 +91,181 @@ class PromoCodeSection extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  promoCode!.toUpperCase(),
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  widget.promoCode!.toUpperCase(),
+                  style: GoogleFonts.montserrat(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
                     color: AppTheme.accentGold,
-                    fontSize: 12,
                   ),
                 ),
                 Text(
-                  'Đã áp dụng giảm ${(promoDiscount * 100).toInt()}%',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(fontSize: 11),
+                  'Giảm ${(widget.promoDiscount * 100).toInt()}% đã được áp dụng',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 11,
+                    color: AppTheme.mutedSilver,
+                  ),
                 ),
               ],
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.close, size: 18),
+            icon: const Icon(
+              Icons.close_rounded,
+              size: 18,
+              color: AppTheme.mutedSilver,
+            ),
             onPressed: () => ref.read(cartProvider.notifier).removePromoCode(),
+            tooltip: 'Xóa mã',
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildPromoCodeInput(BuildContext context, WidgetRef ref) {
-    return Row(
-      children: [
-        Expanded(
-          child: TextField(
-            controller: controller,
-            decoration: InputDecoration(
-              hintText: 'MÃ KHUYẾN MÃI',
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 14,
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(
-                  color: Theme.of(context).colorScheme.outline,
-                  width: 0.5,
-                ),
+  Widget _buildExpandable() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          InkWell(
+            onTap: _toggle,
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.local_offer_outlined,
+                    color: AppTheme.accentGold,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Bạn có mã khuyến mãi?',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: AppTheme.deepCharcoal,
+                      ),
+                    ),
+                  ),
+                  AnimatedRotation(
+                    duration: const Duration(milliseconds: 250),
+                    turns: _isExpanded ? 0.5 : 0,
+                    child: const Icon(
+                      Icons.keyboard_arrow_down,
+                      color: AppTheme.accentGold,
+                      size: 20,
+                    ),
+                  ),
+                ],
               ),
             ),
-            style: Theme.of(
-              context,
-            ).textTheme.bodyLarge?.copyWith(fontSize: 14),
           ),
-        ),
-        const SizedBox(width: 12),
-        OutlinedButton(
-          onPressed: () {
-            if (controller.text.isNotEmpty) {
-              ref.read(cartProvider.notifier).applyPromoCode(controller.text);
-            }
-          },
-          style: OutlinedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            side: BorderSide(color: Theme.of(context).primaryColor, width: 0.5),
+          SizeTransition(
+            sizeFactor: _expandAnim,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: widget.controller,
+                      textCapitalization: TextCapitalization.characters,
+                      decoration: InputDecoration(
+                        hintText: 'Nhập mã giảm giá',
+                        hintStyle: GoogleFonts.montserrat(
+                          fontSize: 13,
+                          color: AppTheme.mutedSilver,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 12,
+                        ),
+                        filled: true,
+                        fillColor: AppTheme.ivoryBackground,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(
+                            color: AppTheme.accentGold.withValues(alpha: 0.5),
+                          ),
+                        ),
+                      ),
+                      style: GoogleFonts.montserrat(
+                        fontSize: 13,
+                        color: AppTheme.deepCharcoal,
+                      ),
+                      onSubmitted: (code) {
+                        if (code.isNotEmpty) {
+                          ref.read(cartProvider.notifier).applyPromoCode(code);
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  SizedBox(
+                    height: 46,
+                    child: ElevatedButton(
+                      onPressed: widget.isLoading
+                          ? null
+                          : () {
+                              if (widget.controller.text.isNotEmpty) {
+                                ref
+                                    .read(cartProvider.notifier)
+                                    .applyPromoCode(widget.controller.text);
+                              }
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.accentGold,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 18),
+                      ),
+                      child: widget.isLoading
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Text(
+                              'Áp dụng',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-          child: isLoading
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : Text(
-                  'ÁP DỤNG',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.labelLarge?.copyWith(fontSize: 12),
-                ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

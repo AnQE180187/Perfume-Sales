@@ -1,4 +1,4 @@
-import api from '@/lib/axios';
+import api from "@/lib/axios";
 
 export type Order = {
   id: string;
@@ -12,7 +12,21 @@ export type Order = {
   phone?: string | null;
   userId?: string;
   user?: { id: string; name: string; email: string };
-  items?: { productId: string; unitPrice: number; quantity: number; totalPrice: number; product?: { name: string } }[];
+  items?: {
+    id: number;
+    productId: string;
+    variantId: string;
+    unitPrice: number;
+    quantity: number;
+    totalPrice: number;
+    review?: { id: number } | null;
+    product?: {
+      id: string;
+      name: string;
+      slug: string;
+      images?: { url: string }[];
+    };
+  }[];
   createdAt?: string;
   updatedAt?: string;
 };
@@ -37,24 +51,28 @@ export const orderService = {
     phone?: string;
     promotionCode?: string;
     redeemPoints?: number;
-    paymentMethod?: 'COD' | 'ONLINE';
+    paymentMethod?: "COD" | "ONLINE";
   }) {
-    return api.post<Order>('/orders', dto).then((r) => r.data);
+    return api.post<Order>("/orders", dto).then((r) => r.data);
   },
   listMy() {
-    return api.get<Order[]>('/orders').then((r) => r.data);
+    return api.get<Order[]>("/orders").then((r) => r.data);
   },
   getById(id: string) {
-    return api.get<Order>('/orders/' + id).then((r) => r.data);
+    return api.get<Order>("/orders/" + id).then((r) => r.data);
   },
   // Admin endpoints
   listAll(skip: number = 0, take: number = 10) {
-    return api.get<OrderListResponse>(`/orders/admin/all?skip=${skip}&take=${take}`).then((r) => r.data);
+    return api
+      .get<OrderListResponse>(`/orders/admin/all?skip=${skip}&take=${take}`)
+      .then((r) => r.data);
   },
   getAdminById(id: string) {
-    return api.get<Order>('/orders/admin/' + id).then((r) => r.data);
+    return api.get<Order>("/orders/admin/" + id).then((r) => r.data);
   },
   updateStatus(id: string, dto: { status?: string; paymentStatus?: string }) {
-    return api.post<Order>(`/orders/admin/${id}/status`, dto).then((r) => r.data);
+    return api
+      .post<Order>(`/orders/admin/${id}/status`, dto)
+      .then((r) => r.data);
   },
 };

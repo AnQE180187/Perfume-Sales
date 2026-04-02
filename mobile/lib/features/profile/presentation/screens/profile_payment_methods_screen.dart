@@ -497,7 +497,7 @@ class _ManagedPaymentCard extends StatelessWidget {
               const SizedBox(width: 12),
               Switch.adaptive(
                 value: method.isEnabled,
-                activeColor: AppTheme.accentGold,
+                activeThumbColor: AppTheme.accentGold,
                 onChanged: (value) => onToggleEnabled(value),
               ),
             ],
@@ -726,10 +726,8 @@ class _PaymentMethodSheetState extends State<_PaymentMethodSheet> {
                   maxLines: 3,
                 ),
                 const SizedBox(height: 12),
-                SwitchListTile.adaptive(
+                ListTile(
                   contentPadding: EdgeInsets.zero,
-                  value: _isDefault,
-                  activeColor: AppTheme.accentGold,
                   title: Text(
                     'Đặt làm mặc định',
                     style: GoogleFonts.montserrat(
@@ -747,12 +745,15 @@ class _PaymentMethodSheetState extends State<_PaymentMethodSheet> {
                       color: AppTheme.mutedSilver,
                     ),
                   ),
-                  onChanged: (value) => setState(() => _isDefault = value),
+                  trailing: Switch.adaptive(
+                    value: _isDefault,
+                    activeThumbColor: AppTheme.accentGold,
+                    onChanged: (value) => setState(() => _isDefault = value),
+                  ),
+                  onTap: () => setState(() => _isDefault = !_isDefault),
                 ),
-                SwitchListTile.adaptive(
+                ListTile(
                   contentPadding: EdgeInsets.zero,
-                  value: _isEnabled,
-                  activeColor: AppTheme.accentGold,
                   title: Text(
                     'Đang kích hoạt',
                     style: GoogleFonts.montserrat(
@@ -770,7 +771,12 @@ class _PaymentMethodSheetState extends State<_PaymentMethodSheet> {
                       color: AppTheme.mutedSilver,
                     ),
                   ),
-                  onChanged: (value) => setState(() => _isEnabled = value),
+                  trailing: Switch.adaptive(
+                    value: _isEnabled,
+                    activeThumbColor: AppTheme.accentGold,
+                    onChanged: (value) => setState(() => _isEnabled = value),
+                  ),
+                  onTap: () => setState(() => _isEnabled = !_isEnabled),
                 ),
                 const SizedBox(height: 12),
                 LuxuryButton(text: 'Lưu thay đổi', onPressed: _save),

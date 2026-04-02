@@ -28,7 +28,7 @@ export const Story = () => {
     ];
 
     return (
-        <section className="py-40 bg-stone-50 dark:bg-zinc-900/40 overflow-hidden transition-colors" id="ai-story">
+        <section className="py-40 bg-muted/30 overflow-hidden transition-colors" id="ai-story">
             <div className="container mx-auto px-6">
                 <div className="grid md:grid-cols-2 gap-24 items-center">
                     {/* Left: Content */}
@@ -41,18 +41,18 @@ export const Story = () => {
                         {/* Badge */}
                         <div className="flex items-center gap-3 text-gold mb-8">
                             <Sparkles size={20} />
-                            <span className="text-[10px] font-bold tracking-[.4em] uppercase italic">
+                            <span className="text-[10px] font-bold uppercase tracking-widest italic">
                                 {t('badge')}
                             </span>
                         </div>
 
                         {/* Heading */}
-                        <h2 className="text-5xl md:text-7xl font-serif mb-10 leading-[1.1] text-luxury-black dark:text-white transition-colors">
+                        <h2 className="text-5xl md:text-7xl font-heading mb-10 leading-[1.1] text-foreground transition-colors">
                             {t('title')}
                         </h2>
 
                         {/* Description */}
-                        <p className="text-xl text-stone-500 dark:text-stone-400 mb-14 leading-relaxed font-light transition-colors">
+                        <p className="text-xl text-muted-foreground mb-14 leading-relaxed font-light transition-colors">
                             {t('subtitle')}
                         </p>
 
@@ -67,14 +67,14 @@ export const Story = () => {
                                     transition={{ delay: i * 0.2 }}
                                     className="flex gap-6 group cursor-default"
                                 >
-                                    <div className="w-16 h-16 rounded-[1.5rem] bg-white dark:bg-zinc-800 shadow-sm border border-stone-100 dark:border-white/5 flex items-center justify-center text-gold group-hover:scale-110 group-hover:bg-gold group-hover:text-white transition-all duration-500">
+                                    <div className="w-16 h-16 rounded-[1.5rem] bg-card shadow-sm border border-border flex items-center justify-center text-gold group-hover:scale-110 group-hover:bg-gold group-hover:text-white transition-all duration-500">
                                         <feature.icon size={28} strokeWidth={1} />
                                     </div>
                                     <div className="flex-1">
-                                        <h4 className="text-lg font-serif text-luxury-black dark:text-white mb-2 transition-colors uppercase tracking-widest">
+                                        <h4 className="text-lg font-serif text-foreground mb-2 transition-colors uppercase">
                                             {feature.title}
                                         </h4>
-                                        <p className="text-stone-400 dark:text-stone-500 text-sm leading-relaxed transition-colors font-light italic">
+                                        <p className="text-muted-foreground text-sm leading-relaxed transition-colors font-light italic">
                                             {feature.desc}
                                         </p>
                                     </div>
@@ -85,7 +85,7 @@ export const Story = () => {
                         {/* CTA */}
                         <Link
                             href="/customer/consultation"
-                            className="group px-12 py-5 border-2 border-luxury-black dark:border-gold text-luxury-black dark:text-white hover:bg-luxury-black dark:hover:bg-gold hover:text-white rounded-full font-bold tracking-[.3em] uppercase text-[10px] transition-all inline-flex items-center gap-4"
+                            className="group px-12 py-5 border-2 border-foreground dark:border-gold text-foreground hover:bg-foreground dark:hover:bg-gold hover:text-background dark:hover:text-background rounded-full font-bold uppercase text-[10px] transition-all inline-flex items-center gap-4"
                         >
                             {t('cta')}
                             <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />
@@ -106,7 +106,7 @@ export const Story = () => {
                             fill
                             className="object-cover"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-luxury-black/60 to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-ebony/60 to-transparent" />
 
                         {/* Stats Card Overlay */}
                         <div className="absolute bottom-12 left-12 right-12 p-10 glass-dark backdrop-blur-xl rounded-[2.5rem] border border-white/10">

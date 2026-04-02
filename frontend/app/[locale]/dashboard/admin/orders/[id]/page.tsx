@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { Link, useRouter } from '@/lib/i18n';
 import { orderService, Order } from '@/services/order.service';
+import { shippingService, type Shipment } from '@/services/shipping.service';
 import {
     Package,
     ArrowLeft,
@@ -12,8 +13,23 @@ import {
     Phone,
     Mail,
     Calendar,
-    DollarSign,
+    Truck,
+    ExternalLink,
+    RefreshCw,
+    XCircle,
+    Plus,
 } from 'lucide-react';
+
+const TRACKING_URL = 'https://donhang.ghn.vn/?order_code=';
+
+const SHIPMENT_STATUS_CONFIG: Record<string, { label: string; color: string }> = {
+    PENDING: { label: 'Chờ lấy hàng', color: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' },
+    PICKED_UP: { label: 'Đã lấy hàng', color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' },
+    IN_TRANSIT: { label: 'Đang vận chuyển', color: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400' },
+    DELIVERED: { label: 'Đã giao', color: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' },
+    FAILED: { label: 'Thất bại / Hủy', color: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' },
+    RETURNED: { label: 'Hoàn hàng', color: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400' },
+};
 
 export default function AdminOrderDetailPage() {
     const router = useRouter();
@@ -21,7 +37,9 @@ export default function AdminOrderDetailPage() {
     const orderId = params?.id as string;
 
     const [order, setOrder] = useState<Order | null>(null);
+    const [shipments, setShipments] = useState<Shipment[]>([]);
     const [loading, setLoading] = useState(true);
+    const [shippingAction, setShippingAction] = useState<string | null>(null);
 
     useEffect(() => {
         if (orderId) {
@@ -32,12 +50,53 @@ export default function AdminOrderDetailPage() {
     const loadOrder = async () => {
         setLoading(true);
         try {
-            const data = await orderService.getAdminById(orderId);
+            const [data, ships] = await Promise.all([
+                orderService.getAdminById(orderId),
+                shippingService.getAdminDetail(orderId).catch(() => []),
+            ]);
             setOrder(data);
+            setShipments(ships);
         } catch (error) {
             console.error('Failed to load order:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleCreateShipment = async () => {
+        setShippingAction('creating');
+        try {
+            await shippingService.createGhnShipmentAdmin(orderId);
+            await loadOrder();
+        } catch (e: any) {
+            alert(e.response?.data?.message || e.message || 'Tạo đơn GHN thất bại');
+        } finally {
+            setShippingAction(null);
+        }
+    };
+
+    const handleCancelShipment = async () => {
+        if (!confirm('Bạn có chắc muốn hủy đơn vận chuyển GHN?')) return;
+        setShippingAction('cancelling');
+        try {
+            await shippingService.cancelShipment(orderId);
+            await loadOrder();
+        } catch (e: any) {
+            alert(e.response?.data?.message || e.message || 'Hủy đơn GHN thất bại');
+        } finally {
+            setShippingAction(null);
+        }
+    };
+
+    const handleSyncStatus = async (shipmentId: string) => {
+        setShippingAction('syncing');
+        try {
+            await shippingService.syncShipmentStatus(shipmentId);
+            await loadOrder();
+        } catch (e: any) {
+            alert(e.response?.data?.message || e.message || 'Đồng bộ trạng thái thất bại');
+        } finally {
+            setShippingAction(null);
         }
     };
 
@@ -70,7 +129,7 @@ export default function AdminOrderDetailPage() {
         PROCESSING: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400',
         CONFIRMED: 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400',
         SHIPPED: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400',
-        DELIVERED: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400',
+        COMPLETED: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400',
         CANCELLED: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400',
     };
 
@@ -86,7 +145,7 @@ export default function AdminOrderDetailPage() {
         PROCESSING: 'Đang Xử Lý',
         CONFIRMED: 'Đã Xác Nhận',
         SHIPPED: 'Đang Giao',
-        DELIVERED: 'Đã Giao',
+        COMPLETED: 'Hoàn Thành',
         CANCELLED: 'Đã Hủy',
     };
 
@@ -96,6 +155,9 @@ export default function AdminOrderDetailPage() {
         FAILED: 'Thanh Toán Thất Bại',
         REFUNDED: 'Đã Hoàn Tiền',
     };
+
+    const hasShipment = shipments.length > 0;
+    const canCreateShipment = !hasShipment && order.shippingAddress && order.status !== 'CANCELLED';
 
     return (
         <div className="min-h-screen bg-stone-50 dark:bg-zinc-950">
@@ -134,8 +196,7 @@ export default function AdminOrderDetailPage() {
                                     Trạng Thái Đơn
                                 </p>
                                 <span
-                                    className={`inline-block text-xs font-bold px-3 py-1 rounded-full ${statusColors[order.status] || statusColors.PENDING
-                                        }`}
+                                    className={`inline-block text-xs font-bold px-3 py-1 rounded-full ${statusColors[order.status] || statusColors.PENDING}`}
                                 >
                                     {statusLabels[order.status] || order.status}
                                 </span>
@@ -145,9 +206,7 @@ export default function AdminOrderDetailPage() {
                                     Trạng Thái Thanh Toán
                                 </p>
                                 <span
-                                    className={`inline-block text-xs font-bold px-3 py-1 rounded-full ${paymentStatusColors[order.paymentStatus] ||
-                                        paymentStatusColors.PENDING
-                                        }`}
+                                    className={`inline-block text-xs font-bold px-3 py-1 rounded-full ${paymentStatusColors[order.paymentStatus] || paymentStatusColors.PENDING}`}
                                 >
                                     {paymentLabels[order.paymentStatus] || order.paymentStatus}
                                 </span>
@@ -189,39 +248,31 @@ export default function AdminOrderDetailPage() {
                         </p>
                         <div className="space-y-3">
                             <div>
-                                <p className="text-xs text-stone-600 dark:text-stone-400 mb-1">
-                                    Tổng Tiền Hàng
-                                </p>
+                                <p className="text-xs text-stone-600 dark:text-stone-400 mb-1">Tổng Tiền Hàng</p>
                                 <p className="text-xl font-bold text-luxury-black dark:text-white">
-                                    {new Intl.NumberFormat('vi-VN', {
-                                        style: 'currency',
-                                        currency: 'VND',
-                                    }).format(order.totalAmount)}
+                                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.totalAmount)}
                                 </p>
                             </div>
                             {order.discountAmount > 0 && (
                                 <div>
-                                    <p className="text-xs text-stone-600 dark:text-stone-400 mb-1">
-                                        Giảm Giá
-                                    </p>
+                                    <p className="text-xs text-stone-600 dark:text-stone-400 mb-1">Giảm Giá</p>
                                     <p className="text-lg font-bold text-red-600">
-                                        -{' '}
-                                        {new Intl.NumberFormat('vi-VN', {
-                                            style: 'currency',
-                                            currency: 'VND',
-                                        }).format(order.discountAmount)}
+                                        - {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.discountAmount)}
+                                    </p>
+                                </div>
+                            )}
+                            {(order as any).shippingFee > 0 && (
+                                <div>
+                                    <p className="text-xs text-stone-600 dark:text-stone-400 mb-1">Phí Vận Chuyển</p>
+                                    <p className="text-lg font-bold text-stone-700 dark:text-stone-300">
+                                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format((order as any).shippingFee)}
                                     </p>
                                 </div>
                             )}
                             <div className="pt-3 border-t border-stone-200 dark:border-white/10">
-                                <p className="text-xs text-stone-600 dark:text-stone-400 mb-1">
-                                    Tổng Thanh Toán
-                                </p>
+                                <p className="text-xs text-stone-600 dark:text-stone-400 mb-1">Tổng Thanh Toán</p>
                                 <p className="text-2xl font-bold text-gold">
-                                    {new Intl.NumberFormat('vi-VN', {
-                                        style: 'currency',
-                                        currency: 'VND',
-                                    }).format(order.finalAmount)}
+                                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.finalAmount)}
                                 </p>
                             </div>
                         </div>
@@ -237,8 +288,142 @@ export default function AdminOrderDetailPage() {
                         </h2>
                     </div>
                     <p className="text-sm text-luxury-black dark:text-white">
-                        {order.shippingAddress}
+                        {order.shippingAddress || 'Không có địa chỉ'}
                     </p>
+                </div>
+
+                {/* Shipping / GHN Panel */}
+                <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-stone-100 dark:border-white/10 mb-8">
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                            <Truck className="text-gold" size={20} />
+                            <h2 className="text-xl font-serif font-bold text-luxury-black dark:text-white">
+                                Vận Chuyển GHN
+                            </h2>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            {canCreateShipment && (
+                                <button
+                                    onClick={handleCreateShipment}
+                                    disabled={!!shippingAction}
+                                    className="flex items-center gap-2 px-4 py-2 bg-gold text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-gold/80 transition disabled:opacity-50"
+                                >
+                                    {shippingAction === 'creating' ? (
+                                        <Loader2 size={14} className="animate-spin" />
+                                    ) : (
+                                        <Plus size={14} />
+                                    )}
+                                    Tạo đơn GHN
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    {hasShipment ? (
+                        <div className="space-y-4">
+                            {shipments.map((s) => {
+                                const statusStyle = SHIPMENT_STATUS_CONFIG[s.status] || SHIPMENT_STATUS_CONFIG.PENDING;
+                                return (
+                                    <div
+                                        key={s.id}
+                                        className="p-5 rounded-xl bg-stone-50 dark:bg-zinc-800 border border-stone-100 dark:border-white/5"
+                                    >
+                                        <div className="flex justify-between items-start gap-4 mb-4">
+                                            <div>
+                                                <p className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-1">
+                                                    Mã vận đơn GHN
+                                                </p>
+                                                <p className="font-mono font-bold text-luxury-black dark:text-white text-lg">
+                                                    {s.ghnOrderCode || s.trackingCode || '—'}
+                                                </p>
+                                            </div>
+                                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${statusStyle.color}`}>
+                                                {statusStyle.label}
+                                            </span>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                                            <div>
+                                                <p className="text-[10px] text-stone-400 uppercase tracking-wider mb-1">Nhà vận chuyển</p>
+                                                <p className="text-sm font-bold text-luxury-black dark:text-white">{s.provider}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] text-stone-400 uppercase tracking-wider mb-1">Phí vận chuyển</p>
+                                                <p className="text-sm font-bold text-luxury-black dark:text-white">
+                                                    {s.fee ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(s.fee) : '—'}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] text-stone-400 uppercase tracking-wider mb-1">Ngày tạo</p>
+                                                <p className="text-sm font-bold text-luxury-black dark:text-white">
+                                                    {new Date(s.createdAt).toLocaleDateString('vi-VN')}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] text-stone-400 uppercase tracking-wider mb-1">Cập nhật</p>
+                                                <p className="text-sm font-bold text-luxury-black dark:text-white">
+                                                    {new Date(s.updatedAt).toLocaleDateString('vi-VN')}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center gap-3 pt-4 border-t border-stone-200 dark:border-white/10">
+                                            {(s.trackingCode || s.ghnOrderCode) && (
+                                                <a
+                                                    href={`${TRACKING_URL}${s.ghnOrderCode || s.trackingCode}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="flex items-center gap-2 px-3 py-2 bg-stone-100 dark:bg-zinc-700 rounded-lg text-[10px] font-bold uppercase tracking-wider text-gold hover:text-gold/80 transition"
+                                                >
+                                                    <ExternalLink size={12} />
+                                                    Tra cứu GHN
+                                                </a>
+                                            )}
+                                            {s.status !== 'DELIVERED' && s.status !== 'FAILED' && s.status !== 'RETURNED' && (
+                                                <>
+                                                    <button
+                                                        onClick={() => handleSyncStatus(s.id)}
+                                                        disabled={!!shippingAction}
+                                                        className="flex items-center gap-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-blue-100 dark:hover:bg-blue-900/30 transition disabled:opacity-50"
+                                                    >
+                                                        {shippingAction === 'syncing' ? (
+                                                            <Loader2 size={12} className="animate-spin" />
+                                                        ) : (
+                                                            <RefreshCw size={12} />
+                                                        )}
+                                                        Đồng bộ trạng thái
+                                                    </button>
+                                                    {s.status === 'PENDING' && (
+                                                        <button
+                                                            onClick={handleCancelShipment}
+                                                            disabled={!!shippingAction}
+                                                            className="flex items-center gap-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-red-100 dark:hover:bg-red-900/30 transition disabled:opacity-50"
+                                                        >
+                                                            {shippingAction === 'cancelling' ? (
+                                                                <Loader2 size={12} className="animate-spin" />
+                                                            ) : (
+                                                                <XCircle size={12} />
+                                                            )}
+                                                            Hủy vận chuyển
+                                                        </button>
+                                                    )}
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <div className="text-center py-8">
+                            <Truck size={40} className="mx-auto text-stone-300 dark:text-stone-600 mb-4" />
+                            <p className="text-sm text-stone-500 dark:text-stone-400">
+                                {canCreateShipment
+                                    ? 'Chưa có đơn vận chuyển. Nhấn "Tạo đơn GHN" để tạo.'
+                                    : 'Không có thông tin vận chuyển.'}
+                            </p>
+                        </div>
+                    )}
                 </div>
 
                 {/* Order Items */}
@@ -259,19 +444,13 @@ export default function AdminOrderDetailPage() {
                                             {item.product?.name}
                                         </p>
                                         <p className="text-sm text-stone-600 dark:text-stone-400">
-                                            Số lượng: {item.quantity} × {' '}
-                                            {new Intl.NumberFormat('vi-VN', {
-                                                style: 'currency',
-                                                currency: 'VND',
-                                            }).format(item.unitPrice)}
+                                            Số lượng: {item.quantity} ×{' '}
+                                            {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.unitPrice)}
                                         </p>
                                     </div>
                                     <div className="text-right">
                                         <p className="font-bold text-luxury-black dark:text-white">
-                                            {new Intl.NumberFormat('vi-VN', {
-                                                style: 'currency',
-                                                currency: 'VND',
-                                            }).format(item.totalPrice)}
+                                            {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.totalPrice)}
                                         </p>
                                     </div>
                                 </div>

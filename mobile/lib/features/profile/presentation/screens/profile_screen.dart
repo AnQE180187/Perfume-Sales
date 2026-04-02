@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../auth/providers/auth_provider.dart';
+import '../../../loyalty/services/loyalty_service.dart';
 import '../../providers/profile_provider.dart';
 import '../sections/profile_header_section.dart';
 import '../sections/user_identity_section.dart';
@@ -52,6 +53,9 @@ class ProfileScreen extends ConsumerWidget {
                 // User identity
                 UserIdentitySection(profile: profile),
 
+                // Loyalty CTA
+                _LoyaltyCta(onTap: () => _handleLoyalty(context)),
+
                 // AI Olfactory Signature
                 if (profile.hasAiProfile)
                   OlfactorySignatureSection(
@@ -67,7 +71,7 @@ class ProfileScreen extends ConsumerWidget {
                   onShippingAddresses: () => _handleShippingAddresses(context),
                   onPaymentMethods: () => _handlePaymentMethods(context),
                   onAiPreferences: () => _handleAiPreferences(context),
-                  activeShipmentsText: '2 đơn đang giao',
+                  activeShipmentsText: '2 đang giao',
                 ),
 
                 // Logout
@@ -104,10 +108,7 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   void _handleEdit(BuildContext context, WidgetRef ref) {
-    // TODO: Navigate to edit profile screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Tính năng chỉnh sửa hồ sơ sẽ sớm có mặt')),
-    );
+    context.push(AppRoutes.profileEdit);
   }
 
   void _handleFindNextScent(BuildContext context, WidgetRef ref) {
@@ -125,6 +126,10 @@ class ProfileScreen extends ConsumerWidget {
   void _handleMyOrders(BuildContext context) {
     // Navigate to orders using GoRouter
     context.push(AppRoutes.orders);
+  }
+
+  void _handleLoyalty(BuildContext context) {
+    context.push(AppRoutes.rewards);
   }
 
   void _handleShippingAddresses(BuildContext context) {
@@ -213,6 +218,118 @@ class ProfileScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           Text('Lỗi khi tải hồ sơ: $error'),
         ],
+      ),
+    );
+  }
+}
+
+// ──────────────────────────────────────────────
+// Loyalty CTA Banner
+// ──────────────────────────────────────────────
+
+class _LoyaltyCta extends ConsumerWidget {
+  final VoidCallback onTap;
+
+  const _LoyaltyCta({required this.onTap});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final statusAsync = ref.watch(loyaltyStatusProvider);
+
+    final points = statusAsync.whenOrNull(data: (s) => s.points) ?? 0;
+    final tier = statusAsync.whenOrNull(data: (s) => s.tierName) ?? '';
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppTheme.deepCharcoal,
+                AppTheme.deepCharcoal.withValues(alpha: 0.88),
+              ],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.deepCharcoal.withValues(alpha: 0.15),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppTheme.accentGold.withValues(alpha: 0.15),
+                  border: Border.all(
+                    color: AppTheme.accentGold.withValues(alpha: 0.4),
+                    width: 1.5,
+                  ),
+                ),
+                child: Icon(
+                  Icons.workspace_premium_rounded,
+                  size: 20,
+                  color: AppTheme.accentGold,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Khách hàng thân thiết',
+                      style: TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    statusAsync.isLoading
+                        ? Text(
+                            'Đang tải...',
+                            style: TextStyle(
+                              fontFamily: 'Montserrat',
+                              fontSize: 11,
+                              color: Colors.white.withValues(alpha: 0.5),
+                            ),
+                          )
+                        : Text(
+                            points > 0
+                                ? '$points điểm  •  Hạng $tier'
+                                : 'Bắt đầu tích điểm ngay',
+                            style: TextStyle(
+                              fontFamily: 'Montserrat',
+                              fontSize: 11,
+                              color: AppTheme.accentGold.withValues(
+                                alpha: 0.85,
+                              ),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: Colors.white.withValues(alpha: 0.4),
+                size: 20,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

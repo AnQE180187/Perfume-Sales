@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/currency_utils.dart';
 import '../../../../core/widgets/luxury_button.dart';
 
 class ConfirmOrderSection extends StatelessWidget {
@@ -41,20 +42,15 @@ class ConfirmOrderSection extends StatelessWidget {
       ),
       child: Column(
         children: [
-          _PriceRow(
-            label: 'TIỀN HÀNG',
-            value: '\$${subtotal.toStringAsFixed(2)}',
-          ),
+          _PriceRow(label: 'TIỀN HÀNG', value: formatVND(subtotal)),
           const SizedBox(height: 8),
           _PriceRow(
             label: 'GIAO HÀNG',
-            value: shippingCost == 0
-                ? 'MIỄN PHÍ'
-                : '\$${shippingCost.toStringAsFixed(2)}',
+            value: shippingCost == 0 ? 'MIỄN PHÍ' : formatVND(shippingCost),
             valueColor: shippingCost == 0 ? AppTheme.accentGold : null,
           ),
           const SizedBox(height: 8),
-          _PriceRow(label: 'THUẾ', value: '\$${tax.toStringAsFixed(2)}'),
+          _PriceRow(label: 'THUẾ', value: formatVND(tax)),
           const SizedBox(height: 12),
           Divider(
             color: AppTheme.softTaupe.withValues(alpha: 0.5),
@@ -69,15 +65,16 @@ class ConfirmOrderSection extends StatelessWidget {
                 style: GoogleFonts.montserrat(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
-                  letterSpacing: 1.2,
+                  letterSpacing: 1.4,
                   color: AppTheme.deepCharcoal,
                 ),
               ),
               Text(
-                '\$${totalAmount.toStringAsFixed(2)}',
+                formatVND(totalAmount),
                 style: GoogleFonts.playfairDisplay(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 32,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.5,
                   color: AppTheme.deepCharcoal,
                 ),
               ),
@@ -85,7 +82,7 @@ class ConfirmOrderSection extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           LuxuryButton(
-            text: 'Xác nhận đơn hàng - \$${totalAmount.toStringAsFixed(2)}',
+            text: 'Xác nhận đơn hàng - ${formatVND(totalAmount)}',
             onPressed: canConfirm && !isSubmitting ? onConfirm : null,
             isLoading: isSubmitting,
             height: 52,

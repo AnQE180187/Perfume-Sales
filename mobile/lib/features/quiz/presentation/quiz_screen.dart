@@ -1,28 +1,53 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/glass_container.dart';
 import '../../../core/widgets/main_shell.dart';
+import '../providers/quiz_provider.dart';
 
-class QuizScreen extends StatefulWidget {
+class QuizScreen extends ConsumerWidget {
   const QuizScreen({super.key});
 
-  @override
-  State<QuizScreen> createState() => _QuizScreenState();
-}
+  static const _iconMap = <String, IconData>{
+    'nightlife': Icons.nightlife,
+    'business_center': Icons.business_center,
+    'wb_sunny': Icons.wb_sunny,
+    'favorite': Icons.favorite,
+    'savings': Icons.savings,
+    'account_balance_wallet': Icons.account_balance_wallet,
+    'diamond': Icons.diamond,
+    'workspace_premium': Icons.workspace_premium,
+    'park': Icons.park,
+    'local_florist': Icons.local_florist,
+    'air': Icons.air,
+    'cake': Icons.cake,
+    'schedule': Icons.schedule,
+    'timelapse': Icons.timelapse,
+    'timer': Icons.timer,
+    'hourglass_full': Icons.hourglass_full,
+    'visibility_off': Icons.visibility_off,
+    'bolt': Icons.bolt,
+    'favorite_border': Icons.favorite_border,
+    'auto_awesome': Icons.auto_awesome,
+  };
 
-class _QuizScreenState extends State<QuizScreen> {
-  int _currentStep = 0;
-  final List<String> _questions = [
-    'Mùi hương này dành cho dịp nào?',
-    'Mức ngân sách bạn mong muốn là bao nhiêu?',
-    'Bạn yêu thích nhóm hương nào nhất?',
-    'Bạn muốn độ lưu hương kéo dài tới mức nào?',
-    'Hãy mô tả tính cách của bạn bằng một từ.',
-  ];
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final quizState = ref.watch(quizProvider);
     final brightness = Theme.of(context).brightness;
+
+    // Navigate to main shell when quiz is complete
+    ref.listen<QuizState>(quizProvider, (prev, next) {
+      if (next.isComplete && !(prev?.isComplete ?? false)) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const MainShell()),
+        );
+      }
+    });
+
+    final question = QuizState.questions[quizState.currentStep];
+    final selectedAnswer = quizState.answers[quizState.currentStep];
 
     return Scaffold(
       body: Container(
@@ -36,59 +61,63 @@ class _QuizScreenState extends State<QuizScreen> {
             // Progress Indicator
             Row(
               children: List.generate(
-                5,
+                quizState.totalSteps,
                 (index) => Expanded(
                   child: Container(
                     height: 2,
                     margin: const EdgeInsets.only(right: 4),
-                    color: index <= _currentStep
+                    color: index <= quizState.currentStep
                         ? Theme.of(context).primaryColor
                         : Theme.of(context).colorScheme.outline,
                   ),
                 ),
               ),
             ),
-            const SizedBox(height: 40),
-            Text(
-              'BƯỚC ${_currentStep + 1} / 5',
-              style: Theme.of(context).textTheme.labelLarge,
+            const SizedBox(height: 24),
+
+            // Back button + step indicator
+            Row(
+              children: [
+                if (quizState.canGoBack)
+                  GestureDetector(
+                    onTap: () => ref.read(quizProvider.notifier).goBack(),
+                    child: Icon(
+                      Icons.arrow_back_ios,
+                      size: 16,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                if (quizState.canGoBack) const SizedBox(width: 12),
+                Text(
+                  'BUOC ${quizState.currentStep + 1} / ${quizState.totalSteps}',
+                  style: Theme.of(context).textTheme.labelLarge,
+                ),
+              ],
             ),
             const SizedBox(height: 20),
+
+            // Question
             Text(
-              _questions[_currentStep],
+              question.text,
               style: Theme.of(context).textTheme.displayLarge,
             ),
             const SizedBox(height: 60),
 
-            // Options (Example for step 0)
+            // Options
             Expanded(
-              child: ListView(
-                children: [
-                  QuizOption(
-                    title: 'Dạ tiệc buổi tối sang trọng',
-                    icon: Icons.nightlife,
-                    isSelected: false,
-                    onTap: _nextStep,
-                  ),
-                  QuizOption(
-                    title: 'Môi trường làm việc chuyên nghiệp',
-                    icon: Icons.business_center,
-                    isSelected: false,
-                    onTap: _nextStep,
-                  ),
-                  QuizOption(
-                    title: 'Bữa brunch cuối tuần thoải mái',
-                    icon: Icons.wb_sunny,
-                    isSelected: false,
-                    onTap: _nextStep,
-                  ),
-                  QuizOption(
-                    title: 'Buổi hẹn hò riêng tư',
-                    icon: Icons.favorite,
-                    isSelected: false,
-                    onTap: _nextStep,
-                  ),
-                ],
+              child: ListView.builder(
+                itemCount: question.options.length,
+                itemBuilder: (_, index) {
+                  final option = question.options[index];
+                  final isSelected = selectedAnswer == index;
+                  return QuizOptionTile(
+                    title: option.title,
+                    icon: _iconMap[option.icon] ?? Icons.circle,
+                    isSelected: isSelected,
+                    onTap: () =>
+                        ref.read(quizProvider.notifier).selectOption(index),
+                  );
+                },
               ),
             ),
           ],
@@ -96,28 +125,15 @@ class _QuizScreenState extends State<QuizScreen> {
       ),
     );
   }
-
-  void _nextStep() {
-    if (_currentStep < 4) {
-      setState(() {
-        _currentStep++;
-      });
-    } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const MainShell()),
-      );
-    }
-  }
 }
 
-class QuizOption extends StatelessWidget {
+class QuizOptionTile extends StatelessWidget {
   final String title;
   final IconData icon;
   final bool isSelected;
   final VoidCallback onTap;
 
-  const QuizOption({
+  const QuizOptionTile({
     super.key,
     required this.title,
     required this.icon,
@@ -133,27 +149,34 @@ class QuizOption extends StatelessWidget {
         onTap: onTap,
         child: GlassContainer(
           padding: const EdgeInsets.all(24),
-          opacity: 0.1,
-          borderRadius: 8, // Rounded aesthetic
+          opacity: isSelected ? 0.25 : 0.1,
+          borderRadius: 8,
           child: Row(
             children: [
               Icon(icon, color: Theme.of(context).primaryColor, size: 24),
               const SizedBox(width: 20),
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  letterSpacing: 1,
-                  color: Theme.of(context).colorScheme.onSurface,
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight:
+                        isSelected ? FontWeight.w700 : FontWeight.w500,
+                    letterSpacing: 1,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                 ),
               ),
-              const Spacer(),
               Icon(
-                Icons.arrow_forward_ios,
-                color: Theme.of(
-                  context,
-                ).colorScheme.onSurface.withValues(alpha: 0.3),
+                isSelected
+                    ? Icons.check_circle
+                    : Icons.arrow_forward_ios,
+                color: isSelected
+                    ? Theme.of(context).primaryColor
+                    : Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.3),
                 size: 14,
               ),
             ],

@@ -77,8 +77,8 @@ class ScentStructureSection extends StatelessWidget {
       builder: (context, constraints) {
         final isCompact = constraints.maxWidth < 330;
 
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+        final content = Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 48),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -210,6 +210,15 @@ class ScentStructureSection extends StatelessWidget {
             ],
           ),
         );
+
+        if (constraints.hasBoundedHeight) {
+          return SingleChildScrollView(
+            physics: const NeverScrollableScrollPhysics(),
+            child: content,
+          );
+        }
+
+        return content;
       },
     );
   }
@@ -300,17 +309,6 @@ class _ScentLayer extends StatelessWidget {
             ),
             textAlign: TextAlign.center,
             maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 2),
-          Text(
-            descriptor,
-            style: GoogleFonts.montserrat(
-              fontSize: 8,
-              color: AppTheme.mutedSilver,
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
         ],
