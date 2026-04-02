@@ -99,6 +99,11 @@ final currentUserProvider = Provider<AuthUser?>((ref) {
   return ref.watch(_authUserStateProvider);
 });
 
+/// Synchronous access to cached profile data (used by router guard for role check).
+final userProfileRawProvider = Provider<Map<String, dynamic>?>((ref) {
+  return ref.watch(_authProfileStateProvider);
+});
+
 /// Full profile payload returned by `/auth/profile`.
 final userProfileProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
   final isAuthenticated = ref.watch(authStateProvider);

@@ -1,48 +1,41 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../product/models/product.dart';
-
-// Mock data for initial wishlist
-final List<Product> _mockWishlist = [
-  Product(
-    id: 'prod_1',
-    name: 'NOIR ÉLIXIR',
-    brand: 'LUMINA',
-    price: 280.0,
-    imageUrl:
-        'https://images.unsplash.com/photo-1541643600914-78b084683601?q=80&w=1000&auto=format&fit=crop',
-    rating: 4.8,
-    reviews: 124,
-    notes: ['Oud', 'Black Pepper', 'Amber'],
-    description: '',
-  ),
-  Product(
-    id: 'prod_2',
-    name: 'ROSE POUDRÉE',
-    brand: 'LUMINA',
-    price: 240.0,
-    imageUrl:
-        'https://images.unsplash.com/photo-1594035910387-fea4779426e9?q=80&w=1000&auto=format&fit=crop',
-    rating: 4.9,
-    reviews: 89,
-    notes: ['Damask Rose', 'Vanilla', 'Iris'],
-    description: '',
-  ),
-];
+import '../services/favorite_service.dart';
 
 class WishlistNotifier extends AsyncNotifier<List<Product>> {
+  FavoriteService get _service => ref.read(favoriteServiceProvider);
+
   @override
   Future<List<Product>> build() async {
-    // Simulates an API call; replace with real service call in production
-    await Future.delayed(const Duration(milliseconds: 400));
-    return List.from(_mockWishlist);
+    return _service.list();
   }
 
+  /// Toggle yêu thích: optimistic update rồi gọi API
   Future<void> toggle(Product product) async {
     final current = state.value ?? [];
-    if (current.any((p) => p.id == product.id)) {
+    final alreadyFav = current.any((p) => p.id == product.id);
+
+    // Optimistic update UI ngay lập tức
+    if (alreadyFav) {
       state = AsyncData(current.where((p) => p.id != product.id).toList());
     } else {
       state = AsyncData([...current, product]);
+    }
+
+    try {
+      if (alreadyFav) {
+        await _service.remove(product.id);
+      } else {
+        // Lấy variantId đầu tiên nếu có
+        final variantId = product.variants.isNotEmpty
+            ? product.variants.first.id
+            : null;
+        await _service.add(product.id, variantId: variantId);
+      }
+    } catch (_) {
+      // Rollback nếu API lỗi
+      state = AsyncData(current);
+      rethrow;
     }
   }
 
@@ -53,6 +46,7 @@ class WishlistNotifier extends AsyncNotifier<List<Product>> {
   void remove(String productId) {
     final current = state.value ?? [];
     state = AsyncData(current.where((p) => p.id != productId).toList());
+    _service.remove(productId);
   }
 }
 

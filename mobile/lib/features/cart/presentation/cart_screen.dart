@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
@@ -22,6 +22,21 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   final TextEditingController _promoController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    // Defer initial selection sync to after the first build frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final items = ref.read(cartProvider).items;
+      if (items.isNotEmpty) {
+        ref
+            .read(cartSelectionProvider.notifier)
+            .initFromCart(items.map((e) => e.id).toList());
+      }
+    });
+  }
+
+  @override
   void dispose() {
     _promoController.dispose();
     super.dispose();
@@ -32,10 +47,19 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     final cartState = ref.watch(cartProvider);
     final selection = ref.watch(cartSelectionProvider);
 
-    // Initialize selection when cart loads
-    ref
-        .read(cartSelectionProvider.notifier)
-        .initFromCart(cartState.items.map((e) => e.id).toList());
+    // Initialize selection when cart loads — deferred to avoid modifying
+    // a provider while the widget tree is building.
+    ref.listen<CartState>(cartProvider, (previous, next) {
+      if (next.items.isNotEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            ref
+                .read(cartSelectionProvider.notifier)
+                .initFromCart(next.items.map((e) => e.id).toList());
+          }
+        });
+      }
+    });
 
     final selectedSubtotal = cartState.items
         .where((item) => selection.selectedIds.contains(item.id))

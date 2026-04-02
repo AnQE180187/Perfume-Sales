@@ -7,6 +7,7 @@ import '../../../core/widgets/app_async_widget.dart';
 import '../../../core/widgets/product_card.dart';
 import '../../../core/widgets/shimmer_loading.dart';
 import '../providers/product_provider.dart';
+import '../../wishlist/providers/wishlist_provider.dart';
 
 class ExploreScreen extends ConsumerStatefulWidget {
   const ExploreScreen({super.key});
@@ -19,6 +20,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   @override
   Widget build(BuildContext context) {
     final productsAsync = ref.watch(productsProvider);
+    final wishlistAsync = ref.watch(wishlistProvider);
+    final wishlistIds = wishlistAsync.value?.map((p) => p.id).toSet() ?? {};
 
     return Scaffold(
       body: SafeArea(
@@ -98,13 +101,18 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   itemCount: products.length,
                   itemBuilder: (context, index) {
                     final product = products[index];
+                    final isFav = wishlistIds.contains(product.id);
                     return ProductCard(
                       product: product,
                       variant: ProductCardVariant.grid,
                       badge: (product.rating ?? 0) >= 4.9
                           ? 'ĐÁNH GIÁ CAO'
                           : null,
+                      isFavorite: isFav,
                       onTap: () => context.push('/product/${product.id}'),
+                      onFavoriteToggle: () {
+                        ref.read(wishlistProvider.notifier).toggle(product);
+                      },
                     );
                   },
                 ),

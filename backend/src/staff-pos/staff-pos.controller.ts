@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -18,7 +19,7 @@ import { StaffPosService } from './staff-pos.service';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('STAFF', 'ADMIN')
 export class StaffPosController {
-  constructor(private readonly staffPosService: StaffPosService) { }
+  constructor(private readonly staffPosService: StaffPosService) {}
 
   @Get('products')
   searchProducts(@Query('q') q?: string, @Query('storeId') storeId?: string) {
@@ -93,5 +94,33 @@ export class StaffPosController {
   payQr(@Req() req: any, @Param('id') orderId: string) {
     const user = req.user as { userId: string };
     return this.staffPosService.createQrPayment(user.userId, orderId);
+  }
+
+  @Post('checkout')
+  checkout(
+    @Req() req: any,
+    @Body()
+    body: {
+      storeId: string;
+      items: { variantId: string; quantity: number }[];
+      paymentMethod: 'CASH' | 'QR';
+      customerPhone?: string;
+    },
+  ) {
+    const user = req.user as { userId: string; role: string };
+    return this.staffPosService.checkout(
+      user.userId,
+      user.role,
+      body.storeId,
+      body.items,
+      body.paymentMethod,
+      body.customerPhone,
+    );
+  }
+
+  @Delete('orders/:id')
+  cancelOrder(@Req() req: any, @Param('id') orderId: string) {
+    const user = req.user as { userId: string };
+    return this.staffPosService.cancelOrder(user.userId, orderId);
   }
 }
