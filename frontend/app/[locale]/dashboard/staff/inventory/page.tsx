@@ -200,217 +200,215 @@ export default function StaffInventory() {
                         {t('select_store_to_view')}
                     </div>
                 ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Variants & stock table */}
-                    <div className="lg:col-span-2 glass rounded-[2.5rem] border-border overflow-hidden">
-                        <div className="p-6 border-b border-border flex items-center justify-between gap-4">
-                            <h2 className="font-heading text-lg uppercase tracking-widest">{t('stock_ledger')}</h2>
-                            <div className="flex items-center gap-3">
-                                <input
-                                    type="text"
-                                    value={variantFilter}
-                                    onChange={(e) => setVariantFilter(e.target.value)}
-                                    placeholder={t('filter_placeholder')}
-                                    className="text-xs rounded-full border border-border bg-background px-4 py-2 outline-none focus:border-gold/60"
-                                />
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {/* Variants & stock table */}
+                        <div className="lg:col-span-2 glass rounded-[2.5rem] border-border overflow-hidden">
+                            <div className="p-6 border-b border-border flex items-center justify-between gap-4">
+                                <h2 className="font-heading text-lg uppercase tracking-widest">{t('stock_ledger')}</h2>
+                                <div className="flex items-center gap-3">
+                                    <input
+                                        type="text"
+                                        value={variantFilter}
+                                        onChange={(e) => setVariantFilter(e.target.value)}
+                                        placeholder={t('filter_placeholder')}
+                                        className="text-xs rounded-full border border-border bg-background px-4 py-2 outline-none focus:border-gold/60"
+                                    />
+                                </div>
                             </div>
-                        </div>
-                        <div className="p-6 max-h-[480px] overflow-y-auto custom-scrollbar">
-                            {loading ? (
-                                <div className="flex items-center justify-center py-10 text-muted-foreground text-sm">
-                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" /> {t('loading')}
-                                </div>
-                            ) : filteredVariants.length === 0 ? (
-                                <div className="text-sm text-muted-foreground text-center py-10">
-                                    {t('logs.no_logs')}
-                                </div>
-                            ) : (
-                                <div className="space-y-3">
-                                    {filteredVariants.map((row) => {
-                                        const isLow =
-                                            row.stock > 0 &&
-                                            row.stock <= 5;
-                                        const isSelected = selectedVariant === row.id;
-                                        return (
-                                            <button
-                                                key={row.id}
-                                                type="button"
-                                                onClick={() => {
-                                                    setSelectedVariant(row.id);
-                                                    void loadLogs(row.id);
-                                                }}
-                                                className={`w-full flex items-center justify-between p-4 rounded-3xl border transition-all text-left ${
-                                                    isSelected
+                            <div className="p-6 max-h-[480px] overflow-y-auto custom-scrollbar">
+                                {loading ? (
+                                    <div className="flex items-center justify-center py-10 text-muted-foreground text-sm">
+                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" /> {t('loading')}
+                                    </div>
+                                ) : filteredVariants.length === 0 ? (
+                                    <div className="text-sm text-muted-foreground text-center py-10">
+                                        {t('logs.no_logs')}
+                                    </div>
+                                ) : (
+                                    <div className="space-y-3">
+                                        {filteredVariants.map((row) => {
+                                            const isLow =
+                                                row.stock > 0 &&
+                                                row.stock <= 5;
+                                            const isSelected = selectedVariant === row.id;
+                                            return (
+                                                <button
+                                                    key={row.id}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setSelectedVariant(row.id);
+                                                        void loadLogs(row.id);
+                                                    }}
+                                                    className={`w-full flex items-center justify-between p-4 rounded-3xl border transition-all text-left ${isSelected
                                                         ? 'border-gold bg-gold/5 shadow-[0_0_20px_rgba(197,160,89,0.1)]'
                                                         : 'bg-card border border-border/50 hover:border-gold/40'
-                                                }`}
-                                            >
-                                                <div>
-                                                    <p className="text-[10px] text-gold uppercase tracking-[0.2em] font-bold">
-                                                        {row.brand ?? '—'}
-                                                    </p>
-                                                    <h4 className="font-heading uppercase text-xs tracking-wider">
-                                                        {row.name} ({row.variantName})
-                                                    </h4>
-                                                </div>
-                                                <div className="flex items-center gap-8">
-                                                    <div className="text-right">
-                                                        <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">
-                                                            {t('quantity')}
+                                                        }`}
+                                                >
+                                                    <div>
+                                                        <p className="text-[10px] text-gold uppercase tracking-[0.2em] font-bold">
+                                                            {row.brand ?? '—'}
                                                         </p>
-                                                        <p className="font-heading">{row.stock}</p>
+                                                        <h4 className="font-heading uppercase text-xs tracking-wider">
+                                                            {row.name} ({row.variantName})
+                                                        </h4>
                                                     </div>
-                                                    <div
-                                                        className={`px-3 py-1.5 rounded-full border text-[8px] uppercase tracking-widest font-bold ${
-                                                            row.stock === 0
+                                                    <div className="flex items-center gap-8">
+                                                        <div className="text-right">
+                                                            <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">
+                                                                {t('quantity')}
+                                                            </p>
+                                                            <p className="font-heading">{row.stock}</p>
+                                                        </div>
+                                                        <div
+                                                            className={`px-3 py-1.5 rounded-full border text-[8px] uppercase tracking-widest font-bold ${row.stock === 0
                                                                 ? 'bg-error/10 border-error/30 text-error'
                                                                 : isLow
-                                                                ? 'bg-warning/10 border-warning/30 text-warning'
-                                                                : 'bg-success/10 border-success/30 text-success'
-                                                        }`}
-                                                    >
-                                                        {row.stock === 0
-                                                            ? t('status.out')
-                                                            : isLow
-                                                            ? t('status.low')
-                                                            : t('status.optimal')}
+                                                                    ? 'bg-warning/10 border-warning/30 text-warning'
+                                                                    : 'bg-success/10 border-success/30 text-success'
+                                                                }`}
+                                                        >
+                                                            {row.stock === 0
+                                                                ? t('status.out')
+                                                                : isLow
+                                                                    ? t('status.low')
+                                                                    : t('status.optimal')}
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Right side: forms + logs */}
-                    <div className="space-y-6">
-                        {/* Forms */}
-                        <div className="glass rounded-[2rem] border-border p-6 space-y-4">
-                            <h3 className="font-heading text-sm uppercase tracking-widest mb-2 flex items-center gap-2">
-                                <Activity className="w-4 h-4 text-gold" /> {t('operations.title')}
-                            </h3>
-                            <p className="text-[11px] text-muted-foreground mb-2">
-                                {t('operations.desc')}
-                            </p>
-
-                            <div className="space-y-3">
-                                <div>
-                                    <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
-                                        {t('operations.selected_variant')}
-                                    </label>
-                                    <div className="text-xs font-heading">
-                                        {selectedVariant
-                                            ? variants.find(v => v.id === selectedVariant)?.name || t('operations.none')
-                                            : t('operations.none')}
+                                                </button>
+                                            );
+                                        })}
                                     </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-3 mt-2">
-                                    <div className="space-y-2">
-                                        <label className="block text-[10px] uppercase tracking-widest text-muted-foreground">
-                                            {t('operations.import_qty')}
-                                        </label>
-                                        <input
-                                            type="number"
-                                            value={importQty || ''}
-                                            onChange={(e) => setImportQty(Number(e.target.value) || 0)}
-                                            className="w-full text-xs rounded-xl border border-border bg-background px-3 py-2 outline-none focus:border-gold/60"
-                                            placeholder="e.g. 10"
-                                        />
-                                        <input
-                                            type="text"
-                                            value={importReason}
-                                            onChange={(e) => setImportReason(e.target.value)}
-                                            className="w-full text-xs rounded-xl border border-border bg-background px-3 py-2 outline-none focus:border-gold/60"
-                                            placeholder={t('operations.import_reason')}
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={handleImport}
-                                            disabled={!selectedVariant || importQty <= 0 || submitting}
-                                            className="w-full mt-1 py-2.5 rounded-full bg-gold text-primary-foreground text-[10px] font-heading uppercase tracking-widest disabled:opacity-50"
-                                        >
-                                            {submitting ? t('processing') : t('operations.import_btn')}
-                                        </button>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="block text-[10px] uppercase tracking-widest text-muted-foreground">
-                                            {t('operations.adjust_delta')}
-                                        </label>
-                                        <input
-                                            type="number"
-                                            value={adjustDelta || ''}
-                                            onChange={(e) => setAdjustDelta(Number(e.target.value) || 0)}
-                                            className="w-full text-xs rounded-xl border border-border bg-background px-3 py-2 outline-none focus:border-gold/60"
-                                            placeholder="e.g. -2 or 5"
-                                        />
-                                        <input
-                                            type="text"
-                                            value={adjustReason}
-                                            onChange={(e) => setAdjustReason(e.target.value)}
-                                            className="w-full text-xs rounded-xl border border-border bg-background px-3 py-2 outline-none focus:border-gold/60"
-                                            placeholder={t('operations.adjust_reason')}
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={handleAdjust}
-                                            disabled={!selectedVariant || adjustDelta === 0 || submitting}
-                                            className="w-full mt-1 py-2.5 rounded-full bg-secondary text-foreground text-[10px] font-heading uppercase tracking-widest disabled:opacity-50"
-                                        >
-                                            {submitting ? t('processing') : t('operations.adjust_btn')}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Logs */}
-                        <div className="glass rounded-[2rem] border-border p-6 max-h-[260px] overflow-y-auto custom-scrollbar">
-                            <div className="flex items-center justify-between mb-3">
-                                <h3 className="font-heading text-sm uppercase tracking-widest">
-                                    {t('logs.title')}
-                                </h3>
-                                {loadingLogs && (
-                                    <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />
                                 )}
                             </div>
-                            {logs.length === 0 ? (
-                                <div className="text-xs text-muted-foreground">
-                                    {t('logs.no_logs')}
-                                </div>
-                            ) : (
-                                <div className="space-y-2 text-[11px]">
-                                    {logs.map((log) => (
-                                        <div
-                                            key={log.id}
-                                            className="flex items-start justify-between py-2 border-b border-border/40 last:border-b-0"
-                                        >
-                                            <div>
-                                                <div className="font-heading">
-                                                    {log.variant.product?.name} ({log.variant.name})
-                                                </div>
-                                                <div className="text-[10px] text-muted-foreground">
-                                                    {log.type} {log.quantity > 0 ? `+${log.quantity}` : log.quantity}{' '}
-                                                    {log.reason && `• ${log.reason}`}
-                                                </div>
-                                            </div>
-                                            <div className="text-right text-[10px] text-muted-foreground">
-                                                <div>
-                                                    {new Date(log.createdAt).toLocaleString('vi-VN')}
-                                                </div>
-                                                {log.staff && (
-                                                    <div>{log.staff.fullName ?? log.staff.email}</div>
-                                                )}
-                                            </div>
+                        </div>
+
+                        {/* Right side: forms + logs */}
+                        <div className="space-y-6">
+                            {/* Forms */}
+                            <div className="glass rounded-[2rem] border-border p-6 space-y-4">
+                                <h3 className="font-heading text-sm uppercase tracking-widest mb-2 flex items-center gap-2">
+                                    <Activity className="w-4 h-4 text-gold" /> {t('operations.title')}
+                                </h3>
+                                <p className="text-[11px] text-muted-foreground mb-2">
+                                    {t('operations.desc')}
+                                </p>
+
+                                <div className="space-y-3">
+                                    <div>
+                                        <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
+                                            {t('operations.selected_variant')}
+                                        </label>
+                                        <div className="text-xs font-heading">
+                                            {selectedVariant
+                                                ? variants.find(v => v.id === selectedVariant)?.name || t('operations.none')
+                                                : t('operations.none')}
                                         </div>
-                                    ))}
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3 mt-2">
+                                        <div className="space-y-2">
+                                            <label className="block text-[10px] uppercase tracking-widest text-muted-foreground">
+                                                {t('operations.import_qty')}
+                                            </label>
+                                            <input
+                                                type="number"
+                                                value={importQty || ''}
+                                                onChange={(e) => setImportQty(Number(e.target.value) || 0)}
+                                                className="w-full text-xs rounded-xl border border-border bg-background px-3 py-2 outline-none focus:border-gold/60"
+                                                placeholder="e.g. 10"
+                                            />
+                                            <input
+                                                type="text"
+                                                value={importReason}
+                                                onChange={(e) => setImportReason(e.target.value)}
+                                                className="w-full text-xs rounded-xl border border-border bg-background px-3 py-2 outline-none focus:border-gold/60"
+                                                placeholder={t('operations.import_reason')}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={handleImport}
+                                                disabled={!selectedVariant || importQty <= 0 || submitting}
+                                                className="w-full mt-1 py-2.5 rounded-full bg-gold text-primary-foreground text-[10px] font-heading uppercase tracking-widest disabled:opacity-50"
+                                            >
+                                                {submitting ? t('processing') : t('operations.import_btn')}
+                                            </button>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="block text-[10px] uppercase tracking-widest text-muted-foreground">
+                                                {t('operations.adjust_delta')}
+                                            </label>
+                                            <input
+                                                type="number"
+                                                value={adjustDelta || ''}
+                                                onChange={(e) => setAdjustDelta(Number(e.target.value) || 0)}
+                                                className="w-full text-xs rounded-xl border border-border bg-background px-3 py-2 outline-none focus:border-gold/60"
+                                                placeholder="e.g. -2 or 5"
+                                            />
+                                            <input
+                                                type="text"
+                                                value={adjustReason}
+                                                onChange={(e) => setAdjustReason(e.target.value)}
+                                                className="w-full text-xs rounded-xl border border-border bg-background px-3 py-2 outline-none focus:border-gold/60"
+                                                placeholder={t('operations.adjust_reason')}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={handleAdjust}
+                                                disabled={!selectedVariant || adjustDelta === 0 || submitting}
+                                                className="w-full mt-1 py-2.5 rounded-full bg-secondary text-foreground text-[10px] font-heading uppercase tracking-widest disabled:opacity-50"
+                                            >
+                                                {submitting ? t('processing') : t('operations.adjust_btn')}
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
-                            )}
+                            </div>
+
+                            {/* Logs */}
+                            <div className="glass rounded-[2rem] border-border p-6 max-h-[260px] overflow-y-auto custom-scrollbar">
+                                <div className="flex items-center justify-between mb-3">
+                                    <h3 className="font-heading text-sm uppercase tracking-widest">
+                                        {t('logs.title')}
+                                    </h3>
+                                    {loadingLogs && (
+                                        <Loader2 className="w-3 h-3 animate-spin text-muted-foreground" />
+                                    )}
+                                </div>
+                                {logs.length === 0 ? (
+                                    <div className="text-xs text-muted-foreground">
+                                        {t('logs.no_logs')}
+                                    </div>
+                                ) : (
+                                    <div className="space-y-2 text-[11px]">
+                                        {logs.map((log) => (
+                                            <div
+                                                key={log.id}
+                                                className="flex items-start justify-between py-2 border-b border-border/40 last:border-b-0"
+                                            >
+                                                <div>
+                                                    <div className="font-heading">
+                                                        {log.variant.product?.name} ({log.variant.name})
+                                                    </div>
+                                                    <div className="text-[10px] text-muted-foreground">
+                                                        {log.type} {log.quantity > 0 ? `+${log.quantity}` : log.quantity}{' '}
+                                                        {log.reason && `• ${log.reason}`}
+                                                    </div>
+                                                </div>
+                                                <div className="text-right text-[10px] text-muted-foreground">
+                                                    <div>
+                                                        {new Date(log.createdAt).toLocaleString('vi-VN')}
+                                                    </div>
+                                                    {log.staff && (
+                                                        <div>{log.staff.fullName ?? log.staff.email}</div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
-                </div>
                 )}
             </main>
         </AuthGuard>
