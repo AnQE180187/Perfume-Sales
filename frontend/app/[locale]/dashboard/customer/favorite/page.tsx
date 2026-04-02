@@ -40,7 +40,7 @@ export default function CustomerFavoritePage() {
             Favorite Products
           </h1>
           <p className="text-muted-foreground font-body text-sm uppercase tracking-widest">
-            Danh sach nuoc hoa ban da luu.
+            Danh sách nước hoa bạn đã lưu
           </p>
         </header>
 
@@ -49,12 +49,12 @@ export default function CustomerFavoritePage() {
         ) : favorites.length === 0 ? (
           <div className="glass rounded-[3rem] border-border p-16 text-center">
             <Heart className="w-10 h-10 mx-auto text-muted-foreground mb-5" />
-            <h2 className="font-heading text-xl uppercase tracking-widest mb-3">Chua co san pham yeu thich</h2>
+            <h2 className="font-heading text-xl uppercase tracking-widest mb-3">Chưa có sản phẩm yêu thích</h2>
             <Link
               href="/collection"
               className="inline-flex mt-4 px-8 py-3 rounded-full bg-gold text-primary-foreground text-[10px] font-bold tracking-widest uppercase"
             >
-              Xem bo suu tap
+              Xem bộ sưu tập
             </Link>
           </div>
         ) : (
@@ -88,13 +88,13 @@ export default function CustomerFavoritePage() {
                       href={`/collection/${item.id}`}
                       className="flex-1 bg-gold text-primary-foreground py-3 rounded-2xl text-[10px] font-bold uppercase tracking-[0.2em] text-center"
                     >
-                      Xem chi tiet
+                      Xem chi tiết
                     </Link>
                     <button
                       onClick={() => void handleRemoveFavorite(item.id)}
                       className="px-4 py-3 rounded-2xl border border-border text-[10px] uppercase tracking-[0.2em] hover:text-red-500 hover:border-red-400 transition-colors"
                     >
-                      Xoa
+                      Xóa
                     </button>
                   </div>
                 </div>

@@ -134,7 +134,7 @@ export const Header = () => {
                                             <span className="text-[9px] font-bold text-foreground uppercase tracking-widest">
                                                 {user?.name?.split(' ')[0] || t('member')}
                                             </span>
-                                            <span className="text-[8px] text-gold font-bold uppercase tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <span className="text-[8px] text-gold font-bold uppercase tracking-tighter opacity-100">
                                                 {t('view_profile')}
                                             </span>
                                         </Link>

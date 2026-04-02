@@ -21,6 +21,7 @@ export default function ProductDetail({ product }: { product: Product }) {
     const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
         product.variants?.[0] || null
     );
+    const [activeImageIndex, setActiveImageIndex] = useState(0);
     const [loading, setLoading] = useState(false);
     const [favoriteLoading, setFavoriteLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -103,33 +104,42 @@ export default function ProductDetail({ product }: { product: Product }) {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-20">
                 {/* Visual Section */}
                 <div className="space-y-6">
-                    <div className="aspect-4/5 glass rounded-[3rem] border-border overflow-hidden relative group">
+                    <div className="aspect-4/5 glass rounded-[3rem] border-border overflow-hidden relative group shadow-2xl">
                         {product.images?.length ? (
                             <img
-                                src={product.images[0].url}
+                                src={product.images[activeImageIndex]?.url || product.images[0].url}
                                 alt={product.name}
-                                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                                className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-110"
                             />
                         ) : (
-                            <div className="w-full h-full bg-secondary/20 flex items-center justify-center font-heading text-gold/30">
+                            <div className="w-full h-full bg-secondary/20 flex items-center justify-center font-heading text-gold/30 uppercase tracking-[0.5em] text-[10px]">
                                 {t('visual_data_unavailable')}
                             </div>
                         )}
-                        <div className="absolute inset-0 bg-linear-to-tr from-gold/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-                        <div className="absolute inset-x-0 bottom-0 p-12 text-center bg-linear-to-t from-background/80 to-transparent">
+                        <div className="absolute inset-0 bg-linear-to-tr from-gold/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+                        <div className="absolute inset-x-0 bottom-0 p-12 text-center bg-linear-to-t from-background/80 to-transparent backdrop-blur-[2px]">
                             <span className="text-gold font-heading tracking-[0.5em] uppercase text-[10px] animate-pulse inline-flex items-center gap-3">
                                 <Sparkles className="w-4 h-4" /> {t('neural_scanning_active')}
                             </span>
                         </div>
                     </div>
-                    <div className="grid grid-cols-4 gap-4">
-                        {product.images?.map((img) => (
-                            <div
+                    {/* Gallery Thumbnails */}
+                    <div className="flex gap-4 overflow-x-auto pb-6 scrollbar-thin scrollbar-thumb-gold/20 scrollbar-track-transparent snap-x snap-mandatory">
+                        {product.images?.map((img, idx) => (
+                            <button
                                 key={img.id}
-                                className="aspect-square glass rounded-2xl border-border cursor-pointer hover:border-gold/30 transition-all overflow-hidden"
+                                onClick={() => setActiveImageIndex(idx)}
+                                className={`flex-shrink-0 w-24 sm:w-28 aspect-square glass rounded-2xl border transition-all duration-500 overflow-hidden snap-center relative group/thumb ${activeImageIndex === idx ? 'border-gold shadow-lg shadow-gold/10 scale-105' : 'border-border/50 hover:border-gold/30'}`}
                             >
-                                <img src={img.url} alt="" className="w-full h-full object-cover" />
-                            </div>
+                                <img 
+                                    src={img.url} 
+                                    alt="" 
+                                    className={`w-full h-full object-cover transition-transform duration-700 ${activeImageIndex === idx ? 'scale-110' : 'group-hover/thumb:scale-110'}`} 
+                                />
+                                {activeImageIndex === idx && (
+                                    <div className="absolute inset-0 bg-gold/5 pointer-events-none" />
+                                )}
+                            </button>
                         ))}
                     </div>
                 </div>
