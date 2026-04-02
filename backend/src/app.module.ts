@@ -26,6 +26,7 @@ import { FavoritesModule } from './favorites/favorites.module';
 import { AddressesModule } from './addresses/addresses.module';
 import { GHNModule } from './ghn/ghn.module';
 import { ShippingModule } from './shipping/shipping.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -55,9 +56,10 @@ import { ShippingModule } from './shipping/shipping.module';
     AddressesModule,
     GHNModule,
     ShippingModule,
+    NotificationsModule,
   ],
 
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}
