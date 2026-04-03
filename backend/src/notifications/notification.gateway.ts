@@ -53,4 +53,16 @@ export class NotificationGateway
     const room = `user:${userId}`;
     this.server.to(room).emit('unreadCount', { count });
   }
+
+  /** Push order status change to a specific user (for real-time tracking) */
+  sendOrderStatusChanged(
+    userId: string,
+    payload: { orderId: string; orderCode: string; status: string },
+  ) {
+    const room = `user:${userId}`;
+    this.server.to(room).emit('orderStatusChanged', payload);
+    this.logger.log(
+      `Emitted orderStatusChanged to ${room} — ${payload.orderCode} → ${payload.status}`,
+    );
+  }
 }

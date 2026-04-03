@@ -59,6 +59,8 @@ class ApiEndpoints {
   static const String brands = '/catalog/brands';
 
   // ── Reviews ───────────────────────────────────────────────────────
+  static const String createReview = '/reviews';
+  static const String uploadReviewImages = '/reviews/upload-images';
   static String reviewsByProduct(String productId) =>
       '/reviews/product/$productId';
   static String reviewStatsByProduct(String productId) =>
