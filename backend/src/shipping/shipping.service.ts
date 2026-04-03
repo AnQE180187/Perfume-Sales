@@ -34,7 +34,7 @@ export class ShippingService {
     private readonly prisma: PrismaService,
     private readonly ghn: GHNService,
     private readonly notificationsService: NotificationsService,
-  ) { }
+  ) {}
 
   async createGhnShipmentForUser(userId: string, orderId: string) {
     const order = await this.prisma.order.findFirst({
@@ -141,14 +141,14 @@ export class ShippingService {
 
     let shipment = orderCode
       ? await this.prisma.shipment.findFirst({
-        where: { ghnOrderCode: orderCode, provider: ShippingProvider.GHN },
-        include: { order: true },
-      })
-      : clientCode
-        ? await this.prisma.shipment.findFirst({
-          where: { order: { code: clientCode } },
+          where: { ghnOrderCode: orderCode, provider: ShippingProvider.GHN },
           include: { order: true },
         })
+      : clientCode
+        ? await this.prisma.shipment.findFirst({
+            where: { order: { code: clientCode } },
+            include: { order: true },
+          })
         : null;
 
     if (!shipment) return;
@@ -179,7 +179,7 @@ export class ShippingService {
             shipmentStatus: newStatus,
           },
         })
-        .catch(() => { });
+        .catch(() => {});
     }
 
     if (newStatus === ShipmentStatus.DELIVERED && shipment.order.userId) {

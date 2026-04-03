@@ -169,6 +169,44 @@ export class StaffInventoryService {
     return requests.map((r) => this.formatRequest(r));
   }
 
+  /** Search all active system products with their variants (for import) */
+  async searchAllVariants(q?: string) {
+    const where: any = { isActive: true };
+    if (q) {
+      where.OR = [
+        { name: { contains: q, mode: 'insensitive' } },
+        { brand: { name: { contains: q, mode: 'insensitive' } } },
+        { variants: { some: { name: { contains: q, mode: 'insensitive' } } } },
+      ];
+    }
+
+    const products = await this.prisma.product.findMany({
+      where,
+      take: 50,
+      include: {
+        brand: { select: { name: true } },
+        images: { select: { url: true }, orderBy: { order: 'asc' }, take: 1 },
+        variants: {
+          where: { isActive: true },
+          select: { id: true, name: true, sku: true, price: true },
+        },
+      },
+      orderBy: { name: 'asc' },
+    });
+
+    return products.flatMap((p) =>
+      p.variants.map((v) => ({
+        variantId: v.id,
+        productName: p.name,
+        variantName: v.name,
+        brand: p.brand?.name ?? null,
+        sku: v.sku,
+        price: v.price,
+        imageUrl: p.images?.[0]?.url ?? null,
+      })),
+    );
+  }
+
   /** Admin: list all inventory requests (optionally filtered) */
   async listAllRequests(params: {
     status?: string;

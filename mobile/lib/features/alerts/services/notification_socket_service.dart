@@ -15,6 +15,7 @@ class NotificationSocketService {
     required String userId,
     required void Function(Alert) onNotification,
     required void Function(int) onUnreadCount,
+    void Function(Map<String, dynamic>)? onOrderStatusChanged,
   }) {
     _socket?.disconnect();
     _socket?.dispose();
@@ -49,6 +50,15 @@ class NotificationSocketService {
         if (data is Map) {
           final count = data['count'];
           if (count is int) onUnreadCount(count);
+        }
+      } catch (_) {}
+    });
+
+    _socket!.on('orderStatusChanged', (data) {
+      try {
+        if (data is Map && onOrderStatusChanged != null) {
+          final json = data.map((k, v) => MapEntry(k.toString(), v));
+          onOrderStatusChanged(json);
         }
       } catch (_) {}
     });

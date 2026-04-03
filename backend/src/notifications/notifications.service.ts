@@ -104,6 +104,18 @@ export class NotificationsService {
     return { success: true };
   }
 
+  /** Emit an order-status-changed event via WebSocket (no DB record) */
+  emitOrderStatusChanged(
+    userId: string,
+    payload: { orderId: string; orderCode: string; status: string },
+  ) {
+    try {
+      this.gateway.sendOrderStatusChanged(userId, payload);
+    } catch (e) {
+      this.logger.warn('Failed to emit orderStatusChanged', e);
+    }
+  }
+
   /** Delete a notification */
   async remove(userId: string, id: string) {
     const notification = await this.prisma.notification.findFirst({
