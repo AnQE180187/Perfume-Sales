@@ -11,6 +11,7 @@ import '../../../../core/widgets/shimmer_loading.dart';
 import '../../../auth/providers/auth_provider.dart';
 import '../models/inventory_models.dart';
 import '../providers/inventory_provider.dart';
+import '../services/inventory_service.dart';
 import '../services/inventory_socket_service.dart';
 
 class StaffInventoryScreen extends ConsumerStatefulWidget {
@@ -114,8 +115,24 @@ class _StaffInventoryScreenState extends ConsumerState<StaffInventoryScreen> {
       }
     });
 
+    final hasStore = selectedStoreId != null;
     return Scaffold(
       backgroundColor: AppTheme.ivoryBackground,
+      floatingActionButton: hasStore
+          ? FloatingActionButton.extended(
+              onPressed: () => _showImportProductSheet(context),
+              backgroundColor: AppTheme.accentGold,
+              foregroundColor: Colors.white,
+              icon: const Icon(Icons.add_circle_outline_rounded),
+              label: Text(
+                'Nhập kho',
+                style: GoogleFonts.montserrat(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
+            )
+          : null,
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
           SliverToBoxAdapter(
@@ -564,7 +581,6 @@ class _StaffInventoryScreenState extends ConsumerState<StaffInventoryScreen> {
           final variant = variants[index];
           return _InventoryTile(
             variant: variant,
-            onImport: () => _showImportSheet(context, variant),
             onAdjust: () => _showAdjustSheet(context, variant),
           );
         },
@@ -572,148 +588,50 @@ class _StaffInventoryScreenState extends ConsumerState<StaffInventoryScreen> {
     );
   }
 
-  // ── Import Bottom Sheet ─────────────────────────────────────────
+  // ── Import Product Sheet (all system products) ──────────────────
 
-  void _showImportSheet(BuildContext context, InventoryVariant variant) {
-    final qtyController = TextEditingController();
-    final reasonController = TextEditingController();
+  void _showImportProductSheet(BuildContext context) {
+    final storeId = ref.read(selectedStoreIdProvider);
+    if (storeId == null) return;
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (ctx) {
-        return Padding(
-          padding: EdgeInsets.fromLTRB(
-            AppSpacing.md,
-            AppSpacing.lg,
-            AppSpacing.md,
-            MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.lg,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Nhập kho',
-                style: GoogleFonts.playfairDisplay(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.deepCharcoal,
-                ),
-              ),
-              AppSpacing.vertXs,
-              Text(
-                '${variant.name} — ${variant.variantName}',
-                style: GoogleFonts.montserrat(
-                  fontSize: 13,
-                  color: AppTheme.mutedSilver,
-                ),
-              ),
-              AppSpacing.vertMd,
-              TextField(
-                controller: qtyController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: 'Số lượng nhập',
-                  border: OutlineInputBorder(
-                    borderRadius: AppRadius.inputBorder,
-                  ),
-                ),
-              ),
-              AppSpacing.vertXs,
-              // Quick import chips
-              Wrap(
-                spacing: AppSpacing.xs,
-                children: [10, 20, 50, 100].map((n) {
-                  return ActionChip(
-                    label: Text(
-                      '+$n',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.accentGold,
+        return _ImportProductSheet(
+          storeId: storeId,
+          service: ref.read(staffInventoryServiceProvider),
+          onSubmit:
+              ({
+                required String variantId,
+                required int quantity,
+                String? reason,
+              }) async {
+                Navigator.of(ctx).pop();
+                final request = await ref
+                    .read(inventoryProvider.notifier)
+                    .importStock(
+                      storeId: storeId,
+                      variantId: variantId,
+                      quantity: quantity,
+                      reason: reason,
+                    );
+                if (request != null) {
+                  ref.invalidate(myInventoryRequestsProvider);
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text(
+                          'Yêu cầu nhập kho đã gửi, chờ admin duyệt',
+                        ),
+                        backgroundColor: AppTheme.accentGold,
+                        behavior: SnackBarBehavior.floating,
                       ),
-                    ),
-                    backgroundColor: AppTheme.accentGold.withValues(alpha: 0.1),
-                    side: BorderSide(
-                      color: AppTheme.accentGold.withValues(alpha: 0.3),
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: AppRadius.chipBorder,
-                    ),
-                    onPressed: () {
-                      HapticFeedback.lightImpact();
-                      final current =
-                          int.tryParse(qtyController.text.trim()) ?? 0;
-                      qtyController.text = '${current + n}';
-                    },
-                  );
-                }).toList(),
-              ),
-              AppSpacing.vertSm,
-              TextField(
-                controller: reasonController,
-                decoration: InputDecoration(
-                  labelText: 'Lý do (tuỳ chọn)',
-                  border: OutlineInputBorder(
-                    borderRadius: AppRadius.inputBorder,
-                  ),
-                ),
-              ),
-              AppSpacing.vertMd,
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.accentGold,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: AppRadius.buttonBorder,
-                    ),
-                  ),
-                  onPressed: () async {
-                    final qty = int.tryParse(qtyController.text.trim());
-                    if (qty == null || qty <= 0) return;
-                    final storeId = ref.read(selectedStoreIdProvider);
-                    if (storeId == null) return;
-                    Navigator.of(ctx).pop();
-                    final request = await ref
-                        .read(inventoryProvider.notifier)
-                        .importStock(
-                          storeId: storeId,
-                          variantId: variant.id,
-                          quantity: qty,
-                          reason: reasonController.text.trim().isEmpty
-                              ? null
-                              : reasonController.text.trim(),
-                        );
-                    if (request != null) {
-                      ref.invalidate(myInventoryRequestsProvider);
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Yêu cầu nhập kho đã gửi, chờ admin duyệt',
-                            ),
-                            backgroundColor: AppTheme.accentGold,
-                            behavior: SnackBarBehavior.floating,
-                          ),
-                        );
-                      }
-                    }
-                  },
-                  child: Text(
-                    'Gửi yêu cầu nhập kho',
-                    style: GoogleFonts.montserrat(fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ),
-            ],
-          ),
+                    );
+                  }
+                }
+              },
         );
       },
     );
@@ -918,14 +836,9 @@ class _StatChip extends StatelessWidget {
 
 class _InventoryTile extends StatelessWidget {
   final InventoryVariant variant;
-  final VoidCallback onImport;
   final VoidCallback onAdjust;
 
-  const _InventoryTile({
-    required this.variant,
-    required this.onImport,
-    required this.onAdjust,
-  });
+  const _InventoryTile({required this.variant, required this.onAdjust});
 
   @override
   Widget build(BuildContext context) {
@@ -1061,27 +974,11 @@ class _InventoryTile extends StatelessWidget {
                   ],
                 ),
                 AppSpacing.vertSm,
-                Row(
-                  children: [
-                    Expanded(
-                      child: _ActionButton(
-                        icon: Icons.add_circle_outline_rounded,
-                        label: 'Nhập kho',
-                        color: AppTheme.accentGold,
-                        onTap: onImport,
-                        filled: true,
-                      ),
-                    ),
-                    AppSpacing.horzSm,
-                    Expanded(
-                      child: _ActionButton(
-                        icon: Icons.tune_rounded,
-                        label: 'Điều chỉnh',
-                        color: AppTheme.deepCharcoal,
-                        onTap: onAdjust,
-                      ),
-                    ),
-                  ],
+                _ActionButton(
+                  icon: Icons.tune_rounded,
+                  label: 'Điều chỉnh',
+                  color: AppTheme.deepCharcoal,
+                  onTap: onAdjust,
                 ),
               ],
             ),
@@ -1141,6 +1038,487 @@ class _ActionButton extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// IMPORT PRODUCT SHEET — search all system products
+// ══════════════════════════════════════════════════════════════════════
+
+class _ImportProductSheet extends StatefulWidget {
+  final String storeId;
+  final StaffInventoryService service;
+  final Future<void> Function({
+    required String variantId,
+    required int quantity,
+    String? reason,
+  })
+  onSubmit;
+
+  const _ImportProductSheet({
+    required this.storeId,
+    required this.service,
+    required this.onSubmit,
+  });
+
+  @override
+  State<_ImportProductSheet> createState() => _ImportProductSheetState();
+}
+
+class _ImportProductSheetState extends State<_ImportProductSheet> {
+  final _searchController = TextEditingController();
+  final _qtyController = TextEditingController();
+  final _reasonController = TextEditingController();
+
+  List<SystemVariant> _variants = [];
+  bool _loading = true;
+  SystemVariant? _selected;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchProducts('');
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _qtyController.dispose();
+    _reasonController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _searchProducts(String query) async {
+    setState(() => _loading = true);
+    try {
+      final results = await widget.service.searchAllProducts(
+        query: query.isEmpty ? null : query,
+      );
+      if (mounted) setState(() => _variants = results);
+    } catch (_) {
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.85,
+      minChildSize: 0.5,
+      maxChildSize: 0.95,
+      builder: (ctx, scrollController) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: AppTheme.ivoryBackground,
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(AppRadius.lg),
+            ),
+          ),
+          child: Column(
+            children: [
+              // Handle + header
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.md,
+                  AppSpacing.sm,
+                  AppSpacing.md,
+                  0,
+                ),
+                child: Column(
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: AppTheme.softTaupe,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    AppSpacing.vertSm,
+                    Row(
+                      children: [
+                        Container(
+                          width: 34,
+                          height: 34,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                AppTheme.accentGold,
+                                AppTheme.accentGold.withValues(alpha: 0.7),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(9),
+                          ),
+                          child: const Icon(
+                            Icons.add_circle_outline_rounded,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                        ),
+                        AppSpacing.horzSm,
+                        Text(
+                          'Nhập kho',
+                          style: GoogleFonts.playfairDisplay(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.deepCharcoal,
+                          ),
+                        ),
+                        const Spacer(),
+                        if (_selected != null)
+                          TextButton(
+                            onPressed: () => setState(() => _selected = null),
+                            child: Text(
+                              'Quay lại',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 13,
+                                color: AppTheme.accentGold,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    AppSpacing.vertSm,
+                    // Search field
+                    if (_selected == null)
+                      TextField(
+                        controller: _searchController,
+                        onChanged: (v) => _searchProducts(v),
+                        style: GoogleFonts.montserrat(fontSize: 14),
+                        decoration: InputDecoration(
+                          hintText: 'Tìm sản phẩm hệ thống...',
+                          hintStyle: GoogleFonts.montserrat(
+                            fontSize: 13,
+                            color: AppTheme.mutedSilver,
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.search_rounded,
+                            size: 20,
+                            color: AppTheme.mutedSilver,
+                          ),
+                          filled: true,
+                          fillColor: AppTheme.creamWhite,
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 10,
+                            horizontal: 12,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: AppRadius.cardBorder,
+                            borderSide: BorderSide(color: AppTheme.softTaupe),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: AppRadius.cardBorder,
+                            borderSide: BorderSide(color: AppTheme.softTaupe),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: AppRadius.cardBorder,
+                            borderSide: const BorderSide(
+                              color: AppTheme.accentGold,
+                              width: 1.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              AppSpacing.vertSm,
+              const Divider(height: 1),
+
+              // Body: either product list or import form
+              Expanded(
+                child: _selected != null
+                    ? _buildImportForm()
+                    : _buildProductList(scrollController),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildProductList(ScrollController scrollController) {
+    if (_loading) {
+      return const Center(
+        child: CircularProgressIndicator(
+          color: AppTheme.accentGold,
+          strokeWidth: 2,
+        ),
+      );
+    }
+    if (_variants.isEmpty) {
+      return Center(
+        child: Text(
+          'Không tìm thấy sản phẩm',
+          style: GoogleFonts.montserrat(
+            color: AppTheme.mutedSilver,
+            fontSize: 14,
+          ),
+        ),
+      );
+    }
+
+    return ListView.separated(
+      controller: scrollController,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      itemCount: _variants.length,
+      separatorBuilder: (_, __) => AppSpacing.vertXs,
+      itemBuilder: (context, index) {
+        final v = _variants[index];
+        return InkWell(
+          onTap: () {
+            HapticFeedback.lightImpact();
+            setState(() => _selected = v);
+          },
+          borderRadius: AppRadius.cardBorder,
+          child: Container(
+            padding: AppSpacing.cardInner,
+            decoration: BoxDecoration(
+              color: AppTheme.creamWhite,
+              borderRadius: AppRadius.cardBorder,
+              border: Border.all(
+                color: AppTheme.softTaupe.withValues(alpha: 0.5),
+              ),
+            ),
+            child: Row(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: v.imageUrl != null && v.imageUrl!.isNotEmpty
+                      ? Image.network(
+                          v.imageUrl!,
+                          width: 48,
+                          height: 48,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => _imagePlaceholder(),
+                        )
+                      : _imagePlaceholder(),
+                ),
+                AppSpacing.horzSm,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (v.brand != null)
+                        Text(
+                          v.brand!,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.accentGold,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      Text(
+                        v.productName,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.deepCharcoal,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        '${v.variantName} • ${v.sku ?? ''}',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 12,
+                          color: AppTheme.mutedSilver,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                if (v.price != null)
+                  Text(
+                    '${v.price!.toStringAsFixed(0)}đ',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 12,
+                      color: AppTheme.mutedSilver,
+                    ),
+                  ),
+                AppSpacing.horzXs,
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppTheme.mutedSilver,
+                  size: 20,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _imagePlaceholder() {
+    return Container(
+      width: 48,
+      height: 48,
+      color: AppTheme.softTaupe.withValues(alpha: 0.3),
+      child: const Icon(
+        Icons.inventory_2_outlined,
+        size: 20,
+        color: AppTheme.mutedSilver,
+      ),
+    );
+  }
+
+  Widget _buildImportForm() {
+    final v = _selected!;
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Selected product card
+          Container(
+            padding: AppSpacing.cardInner,
+            decoration: BoxDecoration(
+              color: AppTheme.accentGold.withValues(alpha: 0.08),
+              borderRadius: AppRadius.cardBorder,
+              border: Border.all(
+                color: AppTheme.accentGold.withValues(alpha: 0.3),
+              ),
+            ),
+            child: Row(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: v.imageUrl != null && v.imageUrl!.isNotEmpty
+                      ? Image.network(
+                          v.imageUrl!,
+                          width: 56,
+                          height: 56,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => _imagePlaceholder(),
+                        )
+                      : _imagePlaceholder(),
+                ),
+                AppSpacing.horzSm,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (v.brand != null)
+                        Text(
+                          v.brand!,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.accentGold,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      Text(
+                        v.productName,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.deepCharcoal,
+                        ),
+                      ),
+                      Text(
+                        '${v.variantName} • ${v.sku ?? ''}',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 12,
+                          color: AppTheme.mutedSilver,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          AppSpacing.vertMd,
+          // Quantity
+          TextField(
+            controller: _qtyController,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: 'Số lượng nhập',
+              border: OutlineInputBorder(borderRadius: AppRadius.inputBorder),
+            ),
+          ),
+          AppSpacing.vertXs,
+          // Quick chips
+          Wrap(
+            spacing: AppSpacing.xs,
+            children: [10, 20, 50, 100].map((n) {
+              return ActionChip(
+                label: Text(
+                  '+$n',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.accentGold,
+                  ),
+                ),
+                backgroundColor: AppTheme.accentGold.withValues(alpha: 0.1),
+                side: BorderSide(
+                  color: AppTheme.accentGold.withValues(alpha: 0.3),
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: AppRadius.chipBorder,
+                ),
+                onPressed: () {
+                  HapticFeedback.lightImpact();
+                  final current = int.tryParse(_qtyController.text.trim()) ?? 0;
+                  _qtyController.text = '${current + n}';
+                },
+              );
+            }).toList(),
+          ),
+          AppSpacing.vertSm,
+          // Reason
+          TextField(
+            controller: _reasonController,
+            decoration: InputDecoration(
+              labelText: 'Lý do (tuỳ chọn)',
+              border: OutlineInputBorder(borderRadius: AppRadius.inputBorder),
+            ),
+          ),
+          AppSpacing.vertMd,
+          // Submit
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.accentGold,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: AppRadius.buttonBorder,
+                ),
+              ),
+              onPressed: () {
+                final qty = int.tryParse(_qtyController.text.trim());
+                if (qty == null || qty <= 0) return;
+                widget.onSubmit(
+                  variantId: v.variantId,
+                  quantity: qty,
+                  reason: _reasonController.text.trim().isEmpty
+                      ? null
+                      : _reasonController.text.trim(),
+                );
+              },
+              child: Text(
+                'Gửi yêu cầu nhập kho',
+                style: GoogleFonts.montserrat(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -103,4 +103,18 @@ class StaffInventoryService {
         .map((e) => InventoryLog.fromJson(e))
         .toList();
   }
+
+  /// Search all system product variants for import.
+  Future<List<SystemVariant>> searchAllProducts({String? query}) async {
+    final response = await _client.get(
+      ApiEndpoints.staffInventorySearchProducts,
+      queryParameters: {if (query != null && query.isNotEmpty) 'q': query},
+    );
+    final data = response.data;
+    if (data is! List) return const [];
+    return data
+        .whereType<Map<String, dynamic>>()
+        .map((e) => SystemVariant.fromJson(e))
+        .toList();
+  }
 }

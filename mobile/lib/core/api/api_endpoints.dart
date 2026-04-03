@@ -77,6 +77,8 @@ class ApiEndpoints {
   static const String staffInventoryAdjust = '/staff/inventory/adjust';
   static const String staffInventoryRequests = '/staff/inventory/requests';
   static const String staffInventoryLogs = '/staff/inventory/logs';
+  static const String staffInventorySearchProducts =
+      '/staff/inventory/search-products';
 
   // ── Staff: Orders ─────────────────────────────────────────────────
   static const String staffOrders = '/staff/orders';
