@@ -239,7 +239,7 @@ export default function AdminReviewsPage() {
                                             <TableCell className="py-8">
                                                 <div className="flex flex-col gap-2">
                                                     <StarRating rating={review.rating} readOnly size={12} />
-                                                    <span className="text-[9px] font-black uppercase text-gold tracking-widest opacity-70">Rating: {review.rating}/5</span>
+                                                    <span className="text-[9px] font-black uppercase text-gold tracking-widest opacity-70">{t('rating_label', { rating: review.rating })}</span>
                                                 </div>
                                             </TableCell>
                                             <TableCell className="py-8">

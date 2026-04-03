@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 
 export default function RegisterPage() {
     const t = useTranslations('auth.register');
+    const tCommon = useTranslations('common');
     const router = useRouter();
     const { register } = useAuth();
 

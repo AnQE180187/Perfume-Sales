@@ -1,7 +1,7 @@
 'use client';
 
 import { AuthGuard } from '@/components/auth/auth-guard';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useFormatter } from 'next-intl';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import {
     Search, ShoppingCart, CreditCard, Plus, Minus, Receipt, QrCode,
@@ -23,6 +23,7 @@ function formatVND(n: number) {
 
 export default function PosPage() {
     const t = useTranslations('dashboard.pos');
+    const format = useFormatter();
     // Store
     const [myStores, setMyStores] = useState<StoreType[]>([]);
     const [selectedStoreId, setSelectedStoreId] = useState<string>('');
@@ -659,7 +660,7 @@ export default function PosPage() {
                                                 </>
                                             ) : loyaltyInfo && !loyaltyInfo.registered ? (
                                                 <>
-                                                    <p className="font-heading text-[10px] uppercase tracking-widest">Khách vãng lai — {loyaltyInfo.phone}</p>
+                                                    <p className="font-heading text-[10px] uppercase tracking-widest">{t('cart.guest')} — {loyaltyInfo.phone}</p>
                                                     <div className="flex items-center gap-1">
                                                         <Award className="w-3 h-3 text-gold" />
                                                         <span className="text-[10px] text-gold font-heading">{t('receipt.earned_points', { count: Math.floor(completedOrder.finalAmount / 10000) })} {t('receipt.reg_to_use')}</span>
@@ -689,7 +690,7 @@ export default function PosPage() {
                                     <div className="flex justify-between text-xl font-heading pt-2"><span className="uppercase tracking-tighter">{t('receipt.total')}</span><span className="text-gold">{formatVND(completedOrder.finalAmount)}</span></div>
                                 </div>
                                 <div className="mt-4 text-center text-[10px] text-muted-foreground uppercase tracking-widest font-heading">
-                                    {completedOrder.store?.name ?? 'POS'} • {new Date().toLocaleString('vi-VN')}
+                                    {completedOrder.store?.name ?? 'POS'} • {format.dateTime(new Date(), { dateStyle: 'medium', timeStyle: 'short' })}
                                 </div>
                                 <div className="mt-8 grid grid-cols-2 gap-3">
                                     <button onClick={() => setShowReceipt(false)} className="py-3 glass border-border rounded-2xl font-heading text-[9px] uppercase tracking-[0.2em] hover:border-gold/50 transition-all">{t('receipt.close_btn')}</button>

@@ -4,10 +4,12 @@ import { AuthGuard } from '@/components/auth/auth-guard';
 import { Plus, X, Pencil, Trash2, Tag, Layers, Flower } from 'lucide-react';
 import { catalogService, type CatalogItem } from '@/services/catalog.service';
 import { useEffect, useState, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 
 type TabType = 'brands' | 'categories' | 'scentFamilies';
 
 export default function AdminCatalog() {
+  const t = useTranslations('dashboard.admin.catalog');
   const [activeTab, setActiveTab] = useState<TabType>('brands');
   const [items, setItems] = useState<CatalogItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -86,7 +88,7 @@ export default function AdminCatalog() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim()) {
-      setError('Name is required.');
+      setError(t('errors.name_required'));
       return;
     }
     setSaving(true);
@@ -131,8 +133,9 @@ export default function AdminCatalog() {
   };
 
   const handleDelete = async (id: number) => {
-    const typeName = activeTab === 'brands' ? 'brand' : activeTab === 'categories' ? 'category' : 'scent family';
-    if (!confirm(`Delete this ${typeName}? This will update all related products.`)) return;
+    const typeKey = activeTab === 'brands' ? 'brands' : activeTab === 'categories' ? 'categories' : 'scent_families';
+    const typeLabel = t(`tabs.${typeKey}`).toLowerCase();
+    if (!confirm(t('delete_confirm', { type: typeLabel }))) return;
     try {
       switch (activeTab) {
         case 'brands':
@@ -152,20 +155,14 @@ export default function AdminCatalog() {
   };
 
   const tabs = [
-    { id: 'brands' as TabType, label: 'Brands', icon: Tag },
-    { id: 'categories' as TabType, label: 'Categories', icon: Layers },
-    { id: 'scentFamilies' as TabType, label: 'Scent Families', icon: Flower },
+    { id: 'brands' as TabType, label: t('tabs.brands'), icon: Tag },
+    { id: 'categories' as TabType, label: t('tabs.categories'), icon: Layers },
+    { id: 'scentFamilies' as TabType, label: t('tabs.scentFamilies'), icon: Flower },
   ];
 
-  const getTitle = () => {
-    switch (activeTab) {
-      case 'brands':
-        return 'Brand Management';
-      case 'categories':
-        return 'Category Management';
-      case 'scentFamilies':
-        return 'Scent Family Management';
-    }
+  const getTypeName = () => {
+    const key = activeTab === 'brands' ? 'brands' : activeTab === 'categories' ? 'categories' : 'scentFamilies';
+    return t(`tabs.${key}`);
   };
 
   return (
@@ -173,15 +170,15 @@ export default function AdminCatalog() {
       <main className="p-8">
         <header className="mb-12 flex justify-between items-end">
           <div>
-            <h1 className="text-4xl font-heading gold-gradient mb-2 uppercase tracking-tighter">Catalog Console</h1>
-            <p className="text-muted-foreground font-body text-sm uppercase tracking-widest">Brand, Category & Scent Family Management</p>
+            <h1 className="text-4xl font-heading gold-gradient mb-2 uppercase tracking-tighter">{t('title')}</h1>
+            <p className="text-muted-foreground font-body text-sm uppercase tracking-widest">{t('subtitle')}</p>
           </div>
           <button
             onClick={openCreate}
             className="bg-gold text-primary-foreground px-6 py-3 rounded-full font-heading text-[10px] uppercase tracking-widest font-bold flex items-center gap-2 hover:scale-105 transition-all"
           >
             <Plus className="w-4 h-4" />
-            Add New
+            {t('add_new')}
           </button>
         </header>
 
@@ -214,7 +211,7 @@ export default function AdminCatalog() {
 
         {loading ? (
           <div className="flex justify-center py-20">
-            <span className="text-muted-foreground">Loading…</span>
+            <span className="text-muted-foreground">{t('loading')}</span>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -249,7 +246,7 @@ export default function AdminCatalog() {
             ))}
             {items.length === 0 && (
               <div className="col-span-full text-center py-12 text-muted-foreground">
-                No {activeTab === 'brands' ? 'brands' : activeTab === 'categories' ? 'categories' : 'scent families'} found.
+                {t('no_items', { type: getTypeName().toLowerCase() })}
               </div>
             )}
           </div>
@@ -264,7 +261,7 @@ export default function AdminCatalog() {
             >
               <div className="flex justify-between items-center mb-8">
                 <h2 className="text-2xl font-heading">
-                  {editId ? `Edit ${getTitle()}` : `Create ${getTitle()}`}
+                  {editId ? t('modal.edit_title', { type: getTypeName() }) : t('modal.create_title', { type: getTypeName() })}
                 </h2>
                 <button onClick={closeModal} className="p-2 hover:bg-secondary rounded-full">
                   <X className="w-5 h-5" />
@@ -273,25 +270,25 @@ export default function AdminCatalog() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
-                    Name *
+                    {t('modal.name_label')}
                   </label>
                   <input
                     className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold"
                     value={form.name}
                     onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                     required
-                    placeholder="Enter name"
+                    placeholder={t('modal.name_placeholder')}
                   />
                 </div>
                 <div>
                   <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
-                    Description
+                    {t('modal.desc_label')}
                   </label>
                   <textarea
                     className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold min-h-[100px]"
                     value={form.description}
                     onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                    placeholder="Enter description (optional)"
+                    placeholder={t('modal.desc_placeholder')}
                   />
                 </div>
                 <div className="flex gap-4 pt-4">
@@ -300,14 +297,14 @@ export default function AdminCatalog() {
                     onClick={closeModal}
                     className="flex-1 py-3 rounded-full border border-border text-muted-foreground hover:bg-secondary/50"
                   >
-                    Cancel
+                    {t('modal.cancel')}
                   </button>
                   <button
                     type="submit"
                     disabled={saving}
                     className="flex-1 py-3 rounded-full bg-gold text-primary-foreground font-heading uppercase tracking-widest disabled:opacity-50"
                   >
-                    {saving ? 'Saving…' : editId ? 'Save' : 'Create'}
+                    {saving ? t('modal.saving') : editId ? t('modal.save') : t('modal.create')}
                   </button>
                 </div>
               </form>

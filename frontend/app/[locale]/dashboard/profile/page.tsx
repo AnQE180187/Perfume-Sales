@@ -6,6 +6,8 @@ import { authService } from '@/services/auth.service';
 import { useAuthStore } from '@/store/auth.store';
 import { User, Mail, Shield, Edit2, Loader2, CheckCircle, Send, Phone, Eye, EyeOff, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { useLocale, useFormatter } from 'next-intl';
 
 type ProfileData = {
   id: string;
@@ -143,6 +145,38 @@ export default function ProfilePage() {
     });
   };
 
+  const openChangePassword = () => {
+    setChangePasswordOpen(true);
+    setChangePasswordError(null);
+    setChangePasswordSuccess(null);
+    setChangePasswordForm({ oldPassword: '', newPassword: '', confirmPassword: '' });
+  };
+
+  const closeChangePassword = () => {
+    if (changePasswordLoading) return;
+    setChangePasswordOpen(false);
+  };
+
+  const submitChangePassword = async () => {
+    setChangePasswordError(null);
+    setChangePasswordSuccess(null);
+    const { oldPassword, newPassword, confirmPassword } = changePasswordForm;
+    if (!oldPassword) return setChangePasswordError(t('security.error_old_required'));
+    if (!newPassword || newPassword.length < 6) return setChangePasswordError(t('security.error_new_min'));
+    if (newPassword !== confirmPassword) return setChangePasswordError(t('security.error_mismatch'));
+    
+    setChangePasswordLoading(true);
+    try {
+      await authService.changePassword({ oldPassword, newPassword });
+      setChangePasswordSuccess(t('security.success'));
+      setTimeout(() => closeChangePassword(), 2000);
+    } catch (e: any) {
+      setChangePasswordError(e.response?.data?.message || (e as Error).message);
+    } finally {
+      setChangePasswordLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <AuthGuard>
@@ -181,11 +215,11 @@ export default function ProfilePage() {
                   <User className="w-16 h-16 text-muted-foreground/50" />
                 )}
               </div>
-              <h2 className="font-heading text-xl text-foreground uppercase tracking-widest mb-1 truncate px-2">
-                {data?.fullName || data?.email || 'User'}
+              <h2 className="font-heading text-xl text-foreground uppercase tracking-widest mb-1">
+                {data?.fullName || data?.email || t('user_placeholder')}
               </h2>
-              <p className="text-[10px] text-gold uppercase tracking-[0.3em] font-bold opacity-60">
-                {data?.role ?? 'CUSTOMER'}
+              <p className="text-[10px] text-gold uppercase tracking-[0.3em] font-bold">
+                {data?.role ? t(`roles.${data.role.toLowerCase()}`) : t('roles.customer')}
               </p>
             </div>
 
@@ -206,7 +240,7 @@ export default function ProfilePage() {
                   disabled={changePasswordLoading}
                 >
                   {changePasswordLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
-                  Đổi Mật Khẩu
+                  {t('security.change_password')}
                 </button>
               </div>
             </div>
@@ -289,7 +323,7 @@ export default function ProfilePage() {
                     />
                   ) : (
                     <p className="font-bold text-[10px] uppercase tracking-widest border-b border-border/30 pb-3">
-                      {data?.fullName || '—'}
+                      {data?.fullName || t('fallback.empty')}
                     </p>
                   )}
                 </div>
@@ -303,12 +337,12 @@ export default function ProfilePage() {
                       value={form.phone}
                       onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
                       className="w-full px-4 py-3 rounded-2xl border border-border bg-background/50 text-[10px] uppercase tracking-widest focus:border-gold outline-none transition-all"
-                      placeholder="+84 901 234 567"
+                      placeholder={t('fallback.placeholder_phone')}
                     />
                   ) : (
                     <p className="font-bold text-[10px] uppercase tracking-widest border-b border-border/30 pb-3 flex items-center gap-2">
                       <Phone className="w-3 h-3 text-gold/60" />
-                      {data?.phone || '—'}
+                      {data?.phone || t('fallback.empty')}
                     </p>
                   )}
                 </div>
@@ -318,7 +352,7 @@ export default function ProfilePage() {
                   </label>
                   <p className="font-bold text-[10px] opacity-40 lowercase tracking-wider border-b border-border/30 pb-3 flex items-center gap-2">
                     <Mail className="w-3 h-3 text-gold/30" />
-                    {data?.email || '—'}
+                    {data?.email || t('fallback.empty')}
                   </p>
                 </div>
                 <div className="space-y-4">
@@ -331,14 +365,14 @@ export default function ProfilePage() {
                       onChange={(e) => setForm((f) => ({ ...f, gender: e.target.value }))}
                       className="w-full px-4 py-3 rounded-2xl border border-border bg-background/50 text-[10px] uppercase tracking-widest focus:border-gold outline-none transition-all appearance-none cursor-pointer"
                     >
-                      <option value="">—</option>
+                      <option value="">{t('fallback.empty')}</option>
                       <option value="MALE">{t('gender_options.male')}</option>
                       <option value="FEMALE">{t('gender_options.female')}</option>
                       <option value="OTHER">{t('gender_options.other')}</option>
                     </select>
                   ) : (
                     <p className="font-bold text-[10px] uppercase tracking-widest border-b border-border/30 pb-3">
-                      {data?.gender === 'MALE' ? t('gender_options.male') : data?.gender === 'FEMALE' ? t('gender_options.female') : data?.gender || '—'}
+                      {data?.gender ? t(`gender_options.${data.gender.toLowerCase()}`) : t('fallback.empty')}
                     </p>
                   )}
                 </div>
@@ -357,7 +391,7 @@ export default function ProfilePage() {
                     <p className="font-bold text-[10px] uppercase tracking-widest border-b border-border/30 pb-3">
                       {data?.dateOfBirth
                         ? new Date(data.dateOfBirth).toLocaleDateString(locale === 'vi' ? 'vi-VN' : 'en-US', { dateStyle: 'long' })
-                        : '—'}
+                        : t('fallback.empty')}
                     </p>
                   )}
                 </div>
@@ -374,7 +408,7 @@ export default function ProfilePage() {
                     />
                   ) : (
                     <p className="font-bold text-[10px] uppercase tracking-widest border-b border-border/30 pb-3 leading-loose">
-                      {data?.address || '—'}
+                      {data?.address || t('fallback.empty')}
                     </p>
                   )}
                 </div>
@@ -391,7 +425,7 @@ export default function ProfilePage() {
                     />
                   ) : (
                     <p className="font-bold text-[10px] uppercase tracking-widest border-b border-border/30 pb-3">
-                      {data?.city || '—'}
+                      {data?.city || t('fallback.empty')}
                     </p>
                   )}
                 </div>
@@ -408,7 +442,7 @@ export default function ProfilePage() {
                     />
                   ) : (
                     <p className="font-bold text-[10px] uppercase tracking-widest border-b border-border/30 pb-3">
-                      {data?.country || '—'}
+                      {data?.country || t('fallback.empty')}
                     </p>
                   )}
                 </div>
@@ -434,7 +468,7 @@ export default function ProfilePage() {
                         <p className="font-bold text-[10px] uppercase tracking-widest border-b border-border/30 pb-3 text-gold">
                           {data?.budgetMin != null
                             ? formatCurrency(data.budgetMin)
-                            : '—'}
+                            : t('fallback.empty')}
                         </p>
                       )}
                     </div>
@@ -458,7 +492,7 @@ export default function ProfilePage() {
                         <p className="font-bold text-[10px] uppercase tracking-widest border-b border-border/30 pb-3 text-gold">
                           {data?.budgetMax != null
                             ? formatCurrency(data.budgetMax)
-                            : '—'}
+                            : t('fallback.empty')}
                         </p>
                       )}
                     </div>
@@ -483,10 +517,10 @@ export default function ProfilePage() {
             <div className="flex items-start justify-between gap-4 mb-6">
               <div>
                 <h2 className="text-2xl font-heading text-foreground uppercase tracking-widest">
-                  Đổi mật khẩu
+                  {t('security.change_password')}
                 </h2>
                 <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-                  Nhập mật khẩu cũ, mật khẩu mới và xác nhận lại.
+                  {t('security.modal_subtitle')}
                 </p>
               </div>
 
@@ -514,7 +548,7 @@ export default function ProfilePage() {
             <div className="space-y-4">
               <div className="space-y-2">
                 <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400">
-                  Mật khẩu cũ
+                  {t('security.old_password')}
                 </label>
                 <div className="relative">
                   <input
@@ -539,7 +573,7 @@ export default function ProfilePage() {
 
               <div className="space-y-2">
                 <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400">
-                  Mật khẩu mới
+                  {t('security.new_password')}
                 </label>
                 <div className="relative">
                   <input
@@ -564,7 +598,7 @@ export default function ProfilePage() {
 
               <div className="space-y-2">
                 <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400">
-                  Xác nhận mật khẩu mới
+                  {t('security.confirm_password')}
                 </label>
                 <div className="relative">
                   <input
@@ -598,7 +632,7 @@ export default function ProfilePage() {
                 disabled={changePasswordLoading}
                 className="flex-1 px-4 py-3 rounded-2xl border border-border text-[10px] uppercase tracking-widest font-heading text-stone-500 hover:text-foreground hover:border-gold transition-colors disabled:opacity-50"
               >
-                Hủy
+                {t('cancel')}
               </button>
               <button
                 type="button"
@@ -608,10 +642,10 @@ export default function ProfilePage() {
               >
                 {changePasswordLoading ? (
                   <span className="inline-flex items-center justify-center gap-2">
-                    <Loader2 className="w-3 h-3 animate-spin" /> Dang doi...
+                    <Loader2 className="w-3 h-3 animate-spin" /> {t('security.waiting')}
                   </span>
                 ) : (
-                  'Xác nhận'
+                  t('security.change_password')
                 )}
               </button>
             </div>

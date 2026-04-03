@@ -7,9 +7,13 @@ import { useTranslations } from 'next-intl';
 import { loyaltyService } from '@/services/loyalty.service';
 import { AuthGuard } from '@/components/auth/auth-guard';
 import { format } from 'date-fns';
+import { vi, enUS } from 'date-fns/locale';
+import { useParams } from 'next/navigation';
  
 export default function LoyaltyDashboard() {
     const t = useTranslations('dashboard.customer.loyalty');
+    const { locale } = useParams();
+    const dateLocale = locale === 'vi' ? vi : enUS;
     const [data, setData] = useState<{ points: number; history: any[] }>({ points: 0, history: [] });
     const [loading, setLoading] = useState(true);
  
@@ -103,8 +107,19 @@ export default function LoyaltyDashboard() {
                                                     {tx.points > 0 ? <Zap size={16} /> : <Gift size={16} />}
                                                 </div>
                                                 <div>
-                                                    <p className="text-xs font-bold uppercase tracking-widest text-foreground">{tx.reason.replace(/_/g, ' ')}</p>
-                                                    <p className="text-[10px] text-muted-foreground uppercase mt-0.5">{format(new Date(tx.createdAt), 'MMM dd, yyyy • HH:mm')}</p>
+                                                    <p className="text-xs font-bold uppercase tracking-widest text-foreground">
+                                                        {(() => {
+                                                            const r = tx.reason.toLowerCase();
+                                                            if (r.startsWith('earned_from_order')) {
+                                                                const id = tx.reason.split('_').pop();
+                                                                return t('reasons.earned_from_order', { id });
+                                                            }
+                                                            return t(`reasons.${r}`);
+                                                        })()}
+                                                    </p>
+                                                    <p className="text-[10px] text-muted-foreground uppercase mt-0.5">
+                                                        {format(new Date(tx.createdAt), 'MMM dd, yyyy • HH:mm', { locale: dateLocale })}
+                                                    </p>
                                                 </div>
                                             </div>
                                             <span className={`font-heading ${tx.points > 0 ? 'text-emerald-500' : 'text-red-500'}`}>
@@ -137,7 +152,7 @@ export default function LoyaltyDashboard() {
                                         <div className="flex justify-between items-center">
                                             <div>
                                                 <p className="text-xs font-bold uppercase tracking-wider text-foreground">{t(`perks_list.${perk.key}`)}</p>
-                                                <p className="text-[10px] text-gold uppercase font-bold mt-1">{perk.points} PTS</p>
+                                                <p className="text-[10px] text-gold uppercase font-bold mt-1">{perk.points} {t('credits_suffix')}</p>
                                             </div>
                                             <perk.icon size={14} className="text-muted-foreground group-hover:text-gold transition-colors" />
                                         </div>

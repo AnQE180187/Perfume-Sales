@@ -325,28 +325,49 @@ export default function CustomerOrderDetailPage() {
               <h3 className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-4">
                 {tDetail("status")}
               </h3>
-              <span
-                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border ${style.color}`}
-              >
-                {style.label}
-              </span>
-              <p className="mt-6 text-[10px] text-stone-400 uppercase tracking-widest font-bold">
-                {tDetail("payment")}:{" "}
-                <span className="text-luxury-black dark:text-white">
-                  {order.paymentStatus === "PAID"
-                    ? locale === "vi"
-                      ? "Đã thanh toán"
-                      : "Settled"
-                    : order.paymentStatus === "PENDING"
-                    ? locale === "vi"
-                      ? "Chờ thanh toán"
-                      : "Pending"
-                    : order.paymentStatus}
+              <div className="flex flex-col gap-4">
+                <span
+                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border w-fit ${style.color}`}
+                >
+                  <style.icon size={12} />
+                  {style.label}
                 </span>
-              </p>
-              <p className="mt-8 text-3xl font-heading text-gold uppercase tracking-tighter">
-                {formatCurrency(order.finalAmount)}
-              </p>
+                <p className="text-[10px] text-stone-400 uppercase tracking-widest font-bold">
+                  {tDetail("payment")}:{" "}
+                  <span className="text-luxury-black dark:text-white uppercase">
+                    {order.paymentStatus === "PAID"
+                      ? tDetail("payment_status.paid")
+                      : order.paymentStatus === "PENDING"
+                      ? tDetail("payment_status.pending")
+                      : order.paymentStatus}
+                  </span>
+                </p>
+              </div>
+
+              <div className="mt-8 pt-8 border-t border-border space-y-3">
+                <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
+                  <span className="text-stone-400">{tDetail("subtotal")}</span>
+                  <span className="text-luxury-black dark:text-white">
+                    {formatCurrency(order.totalAmount)}
+                  </span>
+                </div>
+                {order.discountAmount > 0 && (
+                  <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
+                    <span className="text-stone-400">{tDetail("discount")}</span>
+                    <span className="text-red-500">
+                      -{formatCurrency(order.discountAmount)}
+                    </span>
+                  </div>
+                )}
+                <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest pt-4 border-t border-stone-100 dark:border-white/5">
+                  <span className="text-luxury-black dark:text-white">
+                    {tDetail("total")}
+                  </span>
+                  <span className="text-2xl font-heading text-gold tracking-tighter">
+                    {formatCurrency(order.finalAmount)}
+                  </span>
+                </div>
+              </div>
             </div>
 
             {/* Shipment / Tracking */}
@@ -371,7 +392,11 @@ export default function CustomerOrderDetailPage() {
                             {s.trackingCode || s.ghnOrderCode || "—"}
                           </p>
                           <p className="text-[10px] text-stone-500 mt-2 font-bold uppercase tracking-widest opacity-60">
-                            {tDetail("tracking_status", { status: s.status })}
+                            {tDetail("tracking_status", {
+                              status: s.status
+                                ? tDetail(`shipping_status_labels.${s.status}`)
+                                : "Awaiting",
+                            })}
                           </p>
                         </div>
                         {(s.trackingCode || s.ghnOrderCode) && (

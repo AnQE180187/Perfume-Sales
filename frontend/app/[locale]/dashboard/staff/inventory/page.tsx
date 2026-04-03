@@ -86,7 +86,7 @@ export default function StaffInventory() {
         setError(null);
         try {
             const data = await staffInventoryService.importStock(selectedStoreId, selectedVariant, importQty, importReason || undefined);
-            setOverview(data);
+            void loadOverview();
             setImportQty(0);
             setImportReason('');
             void loadLogs(selectedVariant);
@@ -102,8 +102,8 @@ export default function StaffInventory() {
         setSubmitting(true);
         setError(null);
         try {
-            const data = await staffInventoryService.adjustStock(selectedStoreId, selectedVariant, adjustDelta, adjustReason || 'Adjustment');
-            setOverview(data);
+            const data = await staffInventoryService.adjustStock(selectedStoreId, selectedVariant, adjustDelta, adjustReason || t('operations.default_reason'));
+            void loadOverview();
             setAdjustDelta(0);
             setAdjustReason('');
             void loadLogs(selectedVariant);
