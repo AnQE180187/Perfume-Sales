@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from '@/lib/i18n';
 import { motion } from 'framer-motion';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations, useLocale, useFormatter } from 'next-intl';
 import {
     MapPin,
     Truck,
@@ -21,7 +21,9 @@ import { cn } from '@/lib/utils';
  
 export default function CustomerOrdersPage() {
     const t = useTranslations('dashboard.customer.orders');
+    const tFeatured = useTranslations('featured');
     const locale = useLocale();
+    const format = useFormatter();
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
  
@@ -48,6 +50,14 @@ export default function CustomerOrdersPage() {
     useEffect(() => {
         fetchOrders();
     }, [fetchOrders]);
+
+    const formatCurrency = (amount: number) => {
+        return format.number(amount, {
+            style: 'currency',
+            currency: tFeatured('currency_code') || 'VND',
+            maximumFractionDigits: 0
+        });
+    };
  
     return (
         <AuthGuard allowedRoles={['customer', 'staff', 'admin']}>
@@ -106,7 +116,7 @@ export default function CustomerOrdersPage() {
                                                 </div>
                                                 <div className="text-right">
                                                     <span className="text-xl font-heading text-foreground block mb-2">
-                                                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.finalAmount)}
+                                                        {formatCurrency(order.finalAmount)}
                                                     </span>
                                                     <div className={cn(
                                                         "inline-flex items-center gap-2 text-[8px] px-4 py-1.5 rounded-full font-bold uppercase tracking-widest border",

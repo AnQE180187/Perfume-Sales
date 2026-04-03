@@ -1,6 +1,4 @@
-'use client';
-
-import { useTranslations } from 'next-intl';
+import { useTranslations, useFormatter } from 'next-intl';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { Link } from '@/lib/i18n';
@@ -8,30 +6,34 @@ import { ArrowRight } from 'lucide-react';
 
 const products = [
     {
+        id: "p1",
         name: "Lumina No. 01",
-        price: "240",
-        type: "Extrait de Parfum",
+        price: 240000,
+        type: "extrait",
         img: "/luxury_perfume_hero_cinematic.png",
-        accent: "Floral"
+        accent: "floral"
     },
     {
+        id: "p2",
         name: "Oud Mystère",
-        price: "380",
-        type: "Pure Essence",
+        price: 380000,
+        type: "pure",
         img: "/luxury_ai_scent_lab.png",
-        accent: "Oriental"
+        accent: "oriental"
     },
     {
+        id: "p3",
         name: "Santal Bloom",
-        price: "195",
-        type: "Eau de Parfum",
+        price: 195000,
+        type: "eau",
         img: "/luxury_perfume_auth_aesthetic.png",
-        accent: "Woody"
+        accent: "woody"
     }
 ];
 
 export const FeaturedProducts = () => {
     const t = useTranslations('featured');
+    const format = useFormatter();
 
     return (
         <section className="py-40 bg-white dark:bg-zinc-950 transition-colors" id="collections">
@@ -57,55 +59,57 @@ export const FeaturedProducts = () => {
 
                 {/* Products Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-16 xl:gap-24">
-                    {products.map((perfume, i) => (
-                        <motion.div
-                            key={i}
-                            initial={{ opacity: 0, y: 40 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.8, delay: i * 0.2 }}
-                            className="group cursor-pointer"
-                        >
-                            {/* Image Card */}
-                            <div className="relative aspect-[3/4] bg-stone-50 dark:bg-zinc-900 mb-10 overflow-hidden rounded-[3.5rem] transition-all border border-stone-100 dark:border-white/5 shadow-sm group-hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.15)] group-hover:-translate-y-4">
-                                <Image
-                                    src={perfume.img}
-                                    alt={perfume.name}
-                                    fill
-                                    className="object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                    {products.map((perfume, i) => {
+                        return (
+                            <motion.div
+                                key={perfume.id}
+                                initial={{ opacity: 0, y: 40 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.8, delay: i * 0.2 }}
+                                className="group cursor-pointer"
+                            >
+                                {/* Image Card */}
+                                <div className="relative aspect-[3/4] bg-stone-50 dark:bg-zinc-900 mb-10 overflow-hidden rounded-[3.5rem] transition-all border border-stone-100 dark:border-white/5 shadow-sm group-hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.15)] group-hover:-translate-y-4">
+                                    <Image
+                                        src={perfume.img}
+                                        alt={perfume.name}
+                                        fill
+                                        className="object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
-                                {/* Accent Badge */}
-                                <div className="absolute top-8 left-8">
-                                    <span className="glass px-4 py-2 rounded-full text-[9px] font-bold tracking-widest uppercase text-white shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-500 -translate-y-4 group-hover:translate-y-0">
-                                        {perfume.accent}
-                                    </span>
+                                    {/* Accent Badge */}
+                                    <div className="absolute top-8 left-8">
+                                        <span className="glass px-4 py-2 rounded-full text-[9px] font-bold tracking-widest uppercase text-white shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-500 -translate-y-4 group-hover:translate-y-0">
+                                            {t(`accents.${perfume.accent}`)}
+                                        </span>
+                                    </div>
+
+                                    {/* CTA Button */}
+                                    <div className="absolute bottom-8 left-8 right-8 translate-y-8 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700">
+                                        <button className="w-full py-4 glass text-white text-[10px] font-bold tracking-[.4em] uppercase rounded-full hover:bg-white hover:text-luxury-black transition-all">
+                                            {t('add')}
+                                        </button>
+                                    </div>
                                 </div>
 
-                                {/* CTA Button */}
-                                <div className="absolute bottom-8 left-8 right-8 translate-y-8 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700">
-                                    <button className="w-full py-4 glass text-white text-[10px] font-bold tracking-[.4em] uppercase rounded-full hover:bg-white hover:text-luxury-black transition-all">
-                                        {t('add')}
-                                    </button>
+                                {/* Product Info */}
+                                <div className="flex flex-col items-center text-center">
+                                    <p className="text-[9px] text-stone-400 dark:text-stone-500 font-bold tracking-[.4em] uppercase mb-2 transition-colors">
+                                        {t(`types.${perfume.type}`)}
+                                    </p>
+                                    <h4 className="text-3xl font-serif text-luxury-black dark:text-white mb-4 group-hover:italic transition-all duration-500">
+                                        {perfume.name}
+                                    </h4>
+                                    <div className="w-8 h-px bg-stone-200 dark:bg-gold/30 mb-4 transition-colors" />
+                                    <p className="text-lg font-serif italic text-luxury-black dark:text-white transition-colors tracking-widest">
+                                        {format.number(perfume.price, { style: 'currency', currency: t('currency_code') || 'VND', maximumFractionDigits: 0 })}
+                                    </p>
                                 </div>
-                            </div>
-
-                            {/* Product Info */}
-                            <div className="flex flex-col items-center text-center">
-                                <p className="text-[9px] text-stone-400 dark:text-stone-500 font-bold tracking-[.4em] uppercase mb-2 transition-colors">
-                                    {perfume.type}
-                                </p>
-                                <h4 className="text-3xl font-serif text-luxury-black dark:text-white mb-4 group-hover:italic transition-all duration-500">
-                                    {perfume.name}
-                                </h4>
-                                <div className="w-8 h-px bg-stone-200 dark:bg-gold/30 mb-4 transition-colors" />
-                                <p className="text-lg font-serif italic text-luxury-black dark:text-white transition-colors tracking-widest">
-                                    {perfume.price}.000đ
-                                </p>
-                            </div>
-                        </motion.div>
-                    ))}
+                            </motion.div>
+                        );
+                    })}
                 </div>
             </div>
         </section>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations, useLocale, useFormatter } from 'next-intl';
 import { Link, useRouter } from '@/lib/i18n';
 import { useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -73,6 +73,8 @@ export default function CheckoutPage() {
     const t = useTranslations('checkout');
     const locale = useLocale();
     const router = useRouter();
+    const format = useFormatter();
+    const tFeatured = useTranslations('featured');
     const { isAuthenticated } = useAuth();
     const [step, setStep] = useState(1);
     const [cartItems, setCartItems] = useState<any[]>([]);
@@ -149,12 +151,20 @@ export default function CheckoutPage() {
             });
             setShippingFee(res.total ?? 0);
         } catch (e: any) {
-            setFeeError(e.message || 'Không thể tính phí');
+            setFeeError(e.message || t('error_calculate_fee'));
             setShippingFee(0);
         } finally {
             setLoadingFee(false);
         }
-    }, [selectedAddress, selectedServiceId]);
+    }, [selectedAddress, selectedServiceId, t]);
+
+    const formatCurrency = useCallback((amount: number) => {
+        return format.number(amount, {
+            style: 'currency',
+            currency: tFeatured('currency_code') || 'VND',
+            maximumFractionDigits: 0
+        });
+    }, [format, tFeatured]);
 
     useEffect(() => {
         if (selectedAddress && selectedServiceId) {
@@ -179,7 +189,7 @@ export default function CheckoutPage() {
             const result = await promotionService.validate(couponCode.trim(), subtotal);
             setAppliedCoupon(result);
         } catch (e: any) {
-            setCouponError(e.response?.data?.message || 'Mã giảm giá không hợp lệ');
+            setCouponError(e.response?.data?.message || t('invalid_coupon'));
             setAppliedCoupon(null);
         } finally {
             setIsApplyingCoupon(false);
@@ -195,7 +205,7 @@ export default function CheckoutPage() {
     const handleCreateOrderIfNeeded = async (method: PaymentMethod): Promise<string | null> => {
         if (orderId) return orderId;
         if (!selectedAddress) {
-            alert('Vui lòng chọn địa chỉ giao hàng');
+            alert(t('error_missing_address'));
             return null;
         }
 
@@ -221,7 +231,7 @@ export default function CheckoutPage() {
             setOrderId(order.id);
             return order.id;
         } catch (e: any) {
-            alert(e.response?.data?.message || e.message || 'Có lỗi xảy ra khi tạo đơn hàng');
+            alert(e.response?.data?.message || e.message || t('error_create_order'));
             return null;
         } finally {
             setSubmitting(false);
@@ -274,7 +284,7 @@ export default function CheckoutPage() {
                             </Link>
 
                             <h1 className="text-5xl md:text-7xl font-serif text-luxury-black dark:text-white mb-16 tracking-tighter">
-                                {t('page_title_part1')} <span className="italic">{t('page_title_part2')}</span>
+                                {t('page_title_part1')} <span className="italic uppercase">{t('page_title_part2')}</span>
                             </h1>
 
                             <AnimatePresence mode="wait">
@@ -291,7 +301,7 @@ export default function CheckoutPage() {
                                             <div className="flex items-center justify-between pl-2">
                                                 <h2 className="text-[10px] font-bold tracking-[.3em] uppercase text-stone-400 flex items-center gap-3 italic">
                                                     <MapPinned size={16} className="text-gold" />
-                                                    Địa chỉ giao hàng
+                                                    {t('shipping_address')}
                                                 </h2>
                                             </div>
 
@@ -304,7 +314,7 @@ export default function CheckoutPage() {
                                         {ghnEnabled && services.length > 0 && (
                                             <div className="space-y-4 p-8 bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-stone-100 dark:border-white/5 shadow-sm">
                                                 <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2 flex items-center gap-2">
-                                                    Dịch vụ vận chuyển
+                                                    {t('shipping_service')}
                                                 </label>
                                                 {services.length > 1 ? (
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -338,7 +348,7 @@ export default function CheckoutPage() {
                                                         <span className="text-[10px] text-red-500 font-bold uppercase">{feeError}</span>
                                                     ) : (
                                                         <span className="text-[10px] font-bold uppercase text-gold tracking-[.2em] italic">
-                                                            Phí vận chuyển dự kiến: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(shippingFee)}
+                                                            {t('estimated_shipping_fee', { fee: formatCurrency(shippingFee) })}
                                                         </span>
                                                     )}
                                                 </div>
@@ -366,7 +376,9 @@ export default function CheckoutPage() {
                                         className="space-y-8"
                                     >
                                         <h2 className="text-2xl font-serif text-luxury-black dark:text-white mb-8">
-                                            Chọn phương thức <span className="italic">thanh toán</span>
+                                            {t.rich('payment_method_title', {
+                                                span: (chunks) => <span className="italic">{chunks}</span>
+                                            })}
                                         </h2>
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -380,7 +392,7 @@ export default function CheckoutPage() {
                                                 </div>
                                                 <div className="space-y-2">
                                                     <span className="block text-xs font-bold tracking-[.2em] uppercase text-luxury-black dark:text-white">
-                                                        Thanh toán khi nhận hàng
+                                                        {t('cod_label')}
                                                     </span>
                                                     <span className="text-[10px] text-stone-400 uppercase tracking-widest italic">
                                                         COD
@@ -398,7 +410,7 @@ export default function CheckoutPage() {
                                                 </div>
                                                 <div className="space-y-2">
                                                     <span className="block text-xs font-bold tracking-[.2em] uppercase text-luxury-black dark:text-white">
-                                                        Thanh toán online
+                                                        {t('online_payment_label')}
                                                     </span>
                                                     <span className="text-[10px] text-stone-400 uppercase tracking-widest italic">
                                                         VietQR / PayOS
@@ -411,7 +423,7 @@ export default function CheckoutPage() {
                                             onClick={() => setStep(1)}
                                             className="w-full py-4 border border-stone-100 dark:border-white/5 rounded-full font-bold tracking-[.3em] uppercase text-[10px] text-stone-400 hover:text-luxury-black dark:hover:text-white transition-all"
                                         >
-                                            Quay lại địa chỉ
+                                            {t('back_to_address')}
                                         </button>
                                     </motion.div>
                                 )}
@@ -427,10 +439,12 @@ export default function CheckoutPage() {
                                     >
                                         <div className="text-center space-y-4">
                                             <h2 className="text-3xl font-serif text-luxury-black dark:text-white">
-                                                Quét mã <span className="italic">QR</span>
+                                                {t.rich('qr_title', {
+                                                    span: (chunks) => <span className="italic">{chunks}</span>
+                                                })}
                                             </h2>
                                             <p className="text-[10px] font-bold uppercase tracking-widest text-stone-400">
-                                                Mở app ngân hàng và quét mã để hoàn tất
+                                                {t('qr_desc_scanning')}
                                             </p>
                                         </div>
 
@@ -445,7 +459,7 @@ export default function CheckoutPage() {
 
                                             <div className="text-center space-y-3">
                                                 <p className="text-2xl font-serif text-gold italic">
-                                                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(paymentData.amount)}
+                                                    {formatCurrency(paymentData.amount)}
                                                 </p>
                                                 <div className="space-y-1">
                                                     <p className="text-[10px] font-bold text-luxury-black dark:text-white uppercase tracking-widest">
@@ -459,13 +473,13 @@ export default function CheckoutPage() {
 
                                             <div className="flex items-center gap-3 py-3 px-6 bg-stone-50 dark:bg-white/5 rounded-full border border-stone-100 dark:border-white/5">
                                                 <Loader2 className="w-4 h-4 animate-spin text-gold" />
-                                                <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">Đang chờ thanh toán...</span>
+                                                <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">{t('waiting_for_payment')}</span>
                                             </div>
                                         </div>
 
                                         <div className="bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-[2rem] p-8">
                                             <p className="text-[10px] font-bold text-blue-800 dark:text-blue-300 uppercase tracking-widest text-center mb-6">
-                                                Hoặc nhấn nút để thanh toán qua cổng PayOS
+                                                {t('pay_via_payos_desc')}
                                             </p>
                                             <a
                                                 href={paymentData.checkoutUrl || '#'}
@@ -473,7 +487,7 @@ export default function CheckoutPage() {
                                                 rel="noopener noreferrer"
                                                 className="block w-full py-5 bg-gold text-white rounded-full font-bold tracking-[.3em] uppercase text-[10px] text-center hover:bg-gold/90 transition-all shadow-lg"
                                             >
-                                                Thanh toán qua PayOS
+                                                {t('pay_via_payos_btn')}
                                                 <ArrowRight size={16} className="inline ml-3" />
                                             </a>
                                         </div>
@@ -518,11 +532,11 @@ export default function CheckoutPage() {
                                                             </p>
                                                         </div>
                                                         <span className="text-xs font-bold text-luxury-black dark:text-white">
-                                                            {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.variant.price * item.quantity)}
+                                                            {formatCurrency(item.variant.price * item.quantity)}
                                                         </span>
                                                     </div>
                                                     <p className="text-[10px] text-stone-400 uppercase tracking-widest italic mb-6">
-                                                        Số lượng: {item.quantity}
+                                                        {t('quantity_label', { qty: item.quantity })}
                                                     </p>
                                                 </div>
                                             </div>
@@ -579,7 +593,7 @@ export default function CheckoutPage() {
                                     )}
                                     {appliedCoupon && (
                                         <p className="mt-4 text-[10px] font-bold text-green-500 uppercase tracking-widest leading-relaxed flex items-center gap-2 italic pl-2">
-                                            <Tag size={12} /> Áp dụng thành công: Giảm {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(appliedCoupon.discountAmount)}
+                                            <Tag size={12} /> {t('coupon_applied', { amount: formatCurrency(appliedCoupon.discountAmount) })}
                                         </p>
                                     )}
 
@@ -604,7 +618,7 @@ export default function CheckoutPage() {
                                                         {t('loyalty_points')}
                                                     </p>
                                                     <p className="text-[8px] text-stone-400 uppercase tracking-tighter font-bold">
-                                                        Bạn có {loyaltyInfo.points} điểm (~ {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(loyaltyInfo.points * 500)})
+                                                        {t('points_balance_summary', { points: loyaltyInfo.points, value: formatCurrency(loyaltyInfo.points * 500) })}
                                                     </p>
                                                 </div>
                                             </label>
@@ -622,7 +636,7 @@ export default function CheckoutPage() {
                                                             onChange={(e) => setPointsToUse(Math.min(loyaltyInfo.points, Number(e.target.value)))}
                                                             className="w-24 h-10 bg-stone-50 dark:bg-zinc-950 border border-stone-100 dark:border-white/5 rounded-xl px-4 text-xs font-bold outline-none border-gold"
                                                         />
-                                                        <span className="text-[10px] text-stone-400 uppercase font-bold tracking-widest italic">-{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(pointsToUse * 500)}</span>
+                                                        <span className="text-[10px] text-stone-400 uppercase font-bold tracking-widest italic">-{formatCurrency(pointsToUse * 500)}</span>
                                                     </div>
                                                 </motion.div>
                                             )}
@@ -635,30 +649,30 @@ export default function CheckoutPage() {
                                         <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-stone-400">
                                             <span>{t('subtotal')}</span>
                                             <span className="text-luxury-black dark:text-white">
-                                                {new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', { style: 'currency', currency: 'VND' }).format(subtotal)}
+                                                {formatCurrency(subtotal)}
                                             </span>
                                         </div>
                                         {appliedCoupon && (
                                             <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-green-500 italic">
-                                                <span>Coupon giảm giá</span>
+                                                <span>{t('coupon_discount_label')}</span>
                                                 <span className="">
-                                                    -{new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', { style: 'currency', currency: 'VND' }).format(couponDiscount)}
+                                                    -{formatCurrency(couponDiscount)}
                                                 </span>
                                             </div>
                                         )}
                                         {usePoints && loyaltyDiscount > 0 && (
                                             <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-gold italic">
-                                                <span>Điểm tích lũy</span>
+                                                <span>{t('loyalty_points_summary')}</span>
                                                 <span className="">
-                                                    -{new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', { style: 'currency', currency: 'VND' }).format(loyaltyDiscount)}
+                                                    -{formatCurrency(loyaltyDiscount)}
                                                 </span>
                                             </div>
                                         )}
                                         <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-stone-400">
-                                            <span>Phí vận chuyển</span>
+                                            <span>{t('shipping_fee_summary')}</span>
                                             <span className={shippingFee > 0 ? 'text-luxury-black dark:text-white' : 'text-gold italic'}>
                                                 {ghnEnabled && shippingFee > 0
-                                                    ? new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', { style: 'currency', currency: 'VND' }).format(shippingFee)
+                                                    ? formatCurrency(shippingFee)
                                                     : t('shipping_free')}
                                             </span>
                                         </div>
@@ -669,7 +683,7 @@ export default function CheckoutPage() {
                                             {t('total')}
                                         </span>
                                         <span className="text-4xl font-serif text-luxury-black dark:text-white italic">
-                                            {new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', { style: 'currency', currency: 'VND' }).format(total)}
+                                            {formatCurrency(total)}
                                         </span>
                                     </div>
                                 </div>

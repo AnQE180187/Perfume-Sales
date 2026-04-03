@@ -24,6 +24,7 @@
         "orders": "Orders",
         "settings": "Settings",
         "dashboard": "Dashboard",
+        "and": "and",
         "boutiques": "Boutiques",
         "journal": "Journal",
         "view_profile": "View Profile",
@@ -169,7 +170,18 @@
         "badge": "The Archive",
         "title": "The Permanent Collection",
         "cta": "Explore All Works",
-        "add": "Add to Collection"
+        "add": "Add to Collection",
+        "types": {
+            "extrait": "Extrait de Parfum",
+            "pure": "Pure Essence",
+            "eau": "Eau de Parfum"
+        },
+        "accents": {
+            "floral": "Floral",
+            "oriental": "Oriental",
+            "woody": "Woody"
+        },
+        "currency_code": "USD"
     },
     "quiz": {
         "title": "Essence Discovery",
@@ -193,6 +205,32 @@
                 "title": "Solar Garden",
                 "desc": "Dewy grass, jasmine, sandalwood"
             }
+        },
+        "footer": {
+            "desc": "Merging the ancient art of perfumery with the predictive power of neural intelligence.",
+            "newsletter_title": "Concierge News",
+            "newsletter_desc": "Join the inner circle for archival releases and AI insights.",
+            "email_placeholder": "YOUR EMAIL",
+            "copyright": "© 2026 AURA HOUSE. ALL RIGHTS RESERVED.",
+            "engine": "Aura AI v4.2 Engine",
+            "location": "Grasse • Paris • Tokyo",
+            "column_exploration": "Exploration",
+            "column_house": "The House",
+            "navigation_labels": {
+                "products": "Products",
+                "consultation": "AI Consultation",
+                "journal": "Journal",
+                "subscription": "Subscription",
+                "boutiques": "Boutiques",
+                "gifting": "Gifting"
+            },
+            "support_labels": {
+                "story": "Our Story",
+                "ingredients": "Ingredients",
+                "terms": "Terms",
+                "privacy": "Privacy",
+                "support": "Support"
+            }
         }
     },
     "auth": {
@@ -210,6 +248,7 @@
             "or_continue": "Or continue with",
             "google": "Google",
             "facebook": "Facebook",
+            "error_failed": "Login failed",
             "no_account": "Don't have an account?",
             "sign_up": "Sign up"
         },
@@ -235,7 +274,17 @@
             "google": "Google",
             "facebook": "Facebook",
             "already_member": "Already part of the House?",
-            "sign_in": "Sign in"
+            "sign_in": "Sign in",
+            "success_title": "Registration Successful",
+            "success_desc": "Account created successfully. You can sign in now. Email verification can be done later in your profile.",
+            "go_to_login": "Go to Sign In",
+            "phone_label": "Phone Number (Optional)",
+            "phone_placeholder": "+84 901 234 567",
+            "error_terms": "You must accept the terms and conditions",
+            "error_password_match": "Passwords do not match",
+            "error_failed": "Registration failed",
+            "join_badge": "Join the House",
+            "create_profile": "Create your scent profile"
         },
         "forgot_password": {
             "badge": "Identity Recovery",
@@ -249,7 +298,8 @@
             "check_email": "Please check your transmission for instructions",
             "link_sent": "An encrypted link has been dispatched to",
             "link_valid": "It remains valid for a period of 60 minutes.",
-            "didnt_receive": "Didn't receive it? Try again"
+            "didnt_receive": "Didn't receive it? Try again",
+            "error_failed": "Failed to send reset link"
         },
         "reset_password": {
             "badge": "Secure Synthesis",
@@ -265,7 +315,11 @@
             "security_updated": "Security Updated",
             "portal_secured": "Your portal is now secured with a new signature",
             "success_message": "Your password has been successfully re-synthesized. You may now return to the portal to re-authenticate.",
-            "proceed_login": "Proceed to Login"
+            "proceed_login": "Proceed to Login",
+            "error_missing_token": "Missing or invalid reset token",
+            "error_invalid_token": "Invalid token session",
+            "error_password_match": "Passwords do not match",
+            "error_failed": "Failed to update password"
         },
         "logout": {
             "title": "Until the next Inspiration",
@@ -315,7 +369,15 @@
         "pattern_matching": "Pattern Matching",
         "pattern_matching_desc": "Matches your bio-profile with 98.4% precision.",
         "authenticity_shield": "Authenticity Shield",
-        "authenticity_shield_desc": "Indelible molecular signature for certification."
+        "authenticity_shield_desc": "Indelible molecular signature for certification.",
+        "toast_login_required": "Please login to save favorite products",
+        "toast_select_size": "Please select a size before adding to favorites",
+        "toast_favorite_added": "Product added to favorites",
+        "toast_favorite_removed": "Product removed from favorites",
+        "toast_favorite_error": "Could not update favorites",
+        "fallback_description": "A masterfully curated essence that captures the intersection of urban neon and raw botanical power. Engineered to resonate with the wearer's unique olfactive signature.",
+        "remove_favorite": "Remove from favorites",
+        "add_favorite": "Add to favorites"
     },
     "review": {
         "customer_reviews": "Customer Reviews",
@@ -446,54 +508,63 @@
             "auth_desc": "Sealed with our digital seal.",
             "refill_title": "Refill Service",
             "refill_desc": "Sustainability in every bottle."
+        },
+        "profile": {
+            "title": "Olfactory Profile",
+            "subtitle": "Manage your sensory signature and account credentials.",
+            "personal_info": "Personal Intel",
+            "edit": "Refine",
+            "save": "Record Changes",
+            "cancel": "Cancel",
+            "labels": {
+                "fullName": "Full Name",
+                "phone": "Channel (Phone)",
+                "email": "Identifier (Non-mutable)",
+                "gender": "Sensory Orientation (Gender)",
+                "dob": "Origin (Date of Birth)",
+                "address": "Coordinates (Address)",
+                "city": "Station (City)",
+                "country": "Region (Country)",
+                "min_budget": "Minimum Acquisition (USD)",
+                "max_budget": "Maximum Acquisition (USD)"
+            },
+            "gender_options": {
+                "male": "Masculine",
+                "female": "Feminine",
+                "other": "Non-binary"
+            },
+            "security": {
+                "title": "Security Protocol",
+                "protected": "Shield Active: Managed Intel"
+            },
+            "verification": {
+                "title": "Signature Verification (Email)",
+                "verified": "Signature Authenticated",
+                "unverified": "Pending Authentication (Optional)",
+                "resend": "Issue Verification",
+                "sending": "Transmitting...",
+                "sent": "Authentication sequence initiated successfully."
+            }
         }
     },
-    "checkout": {
-        "return_to_cart": "Return to Portal Archive (Cart)",
-        "page_title": "Assemble Acquisition",
-        "recipient_name": "Recipient Full Name (Identifier)",
-        "select_province": "Select Province/Metropolis",
-        "select_district": "Select Administrative District",
-        "select_ward": "Select Local Ward",
-        "shipping_service": "Logistics Service",
-        "shipping_fee": "Atmospheric Logistics Fee",
-        "shipping_address": "Acquisition Destination (Address)",
-        "phone_number": "Communication Channel (Phone)",
-        "continue_to_payment": "Proceed to Financial Synthesis",
-        "select_payment_method": "Select Transaction Frequency",
-        "cod": "Cash on Manifestation (COD)",
-        "online_payment": "Neural Financial Link (Online)",
-        "qr_scan": "Scan Neural Link (QR) for Synthesis",
-        "qr_desc": "Initialize your secure financial link to complete the acquisition",
-        "waiting_confirmation": "Awaiting Financial Resonance...",
-        "pay_via_payos": "Execute via PayOS Gateway",
-        "other_method": "Alternate Synthesis Method",
-        "order_summary": "Acquisition Summary",
-        "empty_cart": "Acquisition Queue Empty",
-        "coupon_code": "PROMOTION SIGNATURE",
-        "apply": "SYNTHESIZE",
-        "invalid_coupon": "Signature Invalid",
-        "coupon_success": "Signature Verified: Discount {amount}",
-        "loyalty_points": "Neural Credits",
-        "use_points": "Redeem Neural Credits",
-        "points_balance": "You possess {points} credits (Value: {value})",
-        "points_discount": "Credit Deduction",
-        "subtotal": "Scent Base Value",
-        "total": "Total Acquisition Value",
-        "shipping_placeholder": "Street, Ward, District, City...",
-        "name_placeholder": "Alexander Dupont",
+
+    "address": {
+        "recipient_name": "Recipient Name *",
+        "phone_number": "Phone Number *",
+        "street_name": "Street Name & Number *",
+        "set_default": "Set as default address",
+        "save_address": "Save Address",
+        "recipient_placeholder": "Alexander Dupont",
         "phone_placeholder": "0901234567",
-        "loading": "Processing...",
-        "page_title_part1": "Assemble",
-        "page_title_part2": "Acquisition",
-        "download_qr": "Download QR Code",
-        "street_name": "Street Name & Number",
-        "street_placeholder": "e.g. 123 Luxury Ave",
-        "pay_via_payos_desc": "Or click the button below to pay via PayOS gateway",
-        "shipping_free": "Complementary",
-        "error_missing_info": "Please specify all required logistics identifiers.",
-        "error_create_order": "A neural resonance failure occurred during acquisition creation.",
-        "error_create_payment": "Acquisition synthesis link failed to initialize."
+        "street_placeholder": "123 Main St, Apt 4B...",
+        "province_label": "Province/City *",
+        "district_label": "District *",
+        "ward_label": "Ward *",
+        "province_placeholder": "Select province",
+        "district_placeholder": "Select district",
+        "ward_placeholder": "Select ward",
+        "error_calculate_fee": "Failed to calculate logistics fee",
+        "error_missing_address": "Please specify a valid acquisition destination"
     },
     "dashboard": {
         "profile": {
@@ -710,6 +781,8 @@
                 "offers_new": "New",
                 "offers_desc": "{count} Rewards available for synthesis",
                 "modules": {
+                    "profile": "Profile",
+                    "addresses": "Address Book",
                     "orders": "My Orders",
                     "loyalty": "Loyalty",
                     "ai_chat": "AI Consultation",
@@ -718,23 +791,42 @@
                 }
             },
             "orders": {
-                "title": "My Acquisitions",
-                "subtitle": "Registry of your unique olfactory journey.",
-                "empty_title": "The Archival Registry is Empty",
-                "empty_desc": "Start your journey into luxury scents today.",
-                "order_label": "Order",
+                "title": "My Collection",
+                "subtitle": "A chronicle of your signature olfactory journeys.",
+                "empty_title": "Archives Are Empty",
+                "empty_desc": "Begin your expedition into luxury scents today.",
+                "order_label": "Sequence",
                 "more_suffix": "(+{count} more)",
                 "fragrance_acquisition": "Fragrance Acquisition",
                 "destination": "Destination",
-                "view_details": "View Details & Track",
+                "view_details": "View Details & Tracking",
                 "status": {
-                    "pending": "Awaiting Confirmation",
+                    "pending": "Pending",
                     "confirmed": "Confirmed",
-                    "processing": "Preparing Synthesis",
-                    "shipped": "In Transit",
-                    "completed": "Synthesis Complete",
-                    "cancelled": "Voided"
+                    "processing": "Processing",
+                    "shipped": "Dispatched",
+                    "completed": "Fulfilled",
+                    "cancelled": "Revoked"
                 }
+            },
+            "order_detail": {
+                "back": "Back to Archive",
+                "order_number": "Sequence {code}",
+                "products": "Acquisitions",
+                "no_products": "No items recorded",
+                "shipping_address": "Delivery Coordinates",
+                "summary": "Summary",
+                "status": "Transmission Status",
+                "payment": "Settlement Protocol",
+                "tracking": "Neural Tracking",
+                "tracking_code": "Logistics Identifier",
+                "tracking_status": "Current Status: {status}",
+                "ghn_lookup": "GHN Inquiry",
+                "write_review": "Document Experience",
+                "writing_review": "Recording...",
+                "reviewed": "Documented",
+                "not_found": "Sequence Not Found",
+                "back_to_list": "Return to Archives"
             },
             "promotions": {
                 "title": "Olfactory Incentives",
@@ -951,5 +1043,58 @@
                 }
             }
         }
+    },
+    "order_success": {
+        "title": "Order Successful!",
+        "desc": "Thank you for your purchase. We are preparing your essence for distribution.",
+        "order_code": "Sequence Identifier",
+        "estimated_arrival": "Estimated Resonance Time",
+        "payment_method": "Protocol",
+        "status_paid": "Settled",
+        "status_pending": "Pending Settlement",
+        "status_cod": "Local Handover (COD)",
+        "view_order": "Monitor Acquisition Status",
+        "back_home": "Return to Sanctum",
+        "wait_quote": "\"The wait is the most exquisite part of the ceremony.\"",
+        "processed_by": "Securely processed by Aura AI Intelligence"
+    },
+    "checkout": {
+        "return_to_cart": "Return to Archive",
+        "page_title_part1": "Ceremony",
+        "page_title_part2": "Settlement",
+        "shipping_address": "Delivery Coordinates",
+        "shipping_service": "Logistics Service",
+        "shipping_free": "Complementary",
+        "estimated_shipping_fee": "Estimated Logistics: {fee}",
+        "continue_to_payment": "Proceed to Settlement",
+        "payment_method_title": "Settlement <span>Protocol</span>",
+        "cod_label": "Cash on Manifestation (COD)",
+        "online_payment_label": "Neural Financial Link",
+        "back_to_address": "Return to Coordinates",
+        "qr_title": "Settlement <span>QR Link</span>",
+        "qr_desc_scanning": "Scan to complete the financial synthesis.",
+        "download_qr": "Download QR",
+        "waiting_for_payment": "Awaiting resonance...",
+        "pay_via_payos_desc": "Secure transaction via PayOS Gateway.",
+        "pay_via_payos_btn": "Execute via PayOS",
+        "other_method": "Alternate Protocol",
+        "order_summary": "Order summary",
+        "quantity_label": "Quantity: {qty}",
+        "empty_cart": "Archive queue empty",
+        "coupon_code": "Promotion Signature",
+        "apply": "Apply",
+        "coupon_applied": "Signature Verified (Benefit {amount})",
+        "loyalty_points": "Aura Credits",
+        "points_balance_summary": "You have {points} credits (Value {value})",
+        "subtotal": "Scent Base Value",
+        "total": "Total",
+        "invalid_coupon": "Signature invalid or expired",
+        "error_missing_address": "Logistics coordinates required",
+        "error_create_payment": "Failed to initialize settlement",
+        "error_create_order": "A neural resonance failure occurred during acquisition creation.",
+        "error_calculate_fee": "Logistics calculation failure",
+        "coupon_discount_label": "Signature Discount",
+        "loyalty_points_summary": "Credits Deducted",
+        "shipping_fee_summary": "Logistics Surcharge"
     }
 }

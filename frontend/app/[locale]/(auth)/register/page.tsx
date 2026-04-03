@@ -36,12 +36,12 @@ export default function RegisterPage() {
         e.preventDefault();
 
         if (!termsAccepted) {
-            setError('You must accept the terms and conditions');
+            setError(t('error_terms'));
             return;
         }
 
         if (formData.password !== formData.confirmPassword) {
-            setError('Passwords do not match');
+            setError(t('error_password_match'));
             return;
         }
 
@@ -57,7 +57,7 @@ export default function RegisterPage() {
             });
             setIsSubmitted(true);
         } catch (err: any) {
-            setError(err.response?.data?.message || err.message || 'Registration failed');
+            setError(err.response?.data?.message || err.message || t('error_failed'));
         } finally {
             setIsLoading(false);
         }
@@ -89,14 +89,14 @@ export default function RegisterPage() {
                             <div className="flex items-center gap-3 text-gold mb-6">
                                 <ArrowRight size={24} />
                                 <span className="text-[10px] font-bold tracking-[.4em] uppercase">
-                                    Join the House
+                                    {t('join_badge')}
                                 </span>
                             </div>
                             <h2 className="text-5xl font-serif text-white mb-6 leading-tight italic">
-                                Discover Your Scent Identity
+                                {t('page_title')}
                             </h2>
                             <p className="text-stone-300 text-sm font-light leading-relaxed max-w-sm">
-                                Create an account to preserve your private collection and access AI-powered fragrance consultations.
+                                {t('page_subtitle')}
                             </p>
                         </motion.div>
                     </div>
@@ -117,17 +117,17 @@ export default function RegisterPage() {
                                         <Sparkles className="text-gold" size={48} />
                                     </div>
                                     <h1 className="text-4xl font-serif text-luxury-black dark:text-white mb-2 transition-colors">
-                                        Đăng ký thành công
+                                        {t('success_title')}
                                     </h1>
                                     <p className="text-stone-500 text-sm leading-relaxed max-w-xs mx-auto italic">
-                                        Tài khoản đã được tạo. Bạn có thể <span className="text-luxury-black dark:text-white font-bold">đăng nhập ngay</span>. Xác thực email (tùy chọn) có thể làm sau trong trang Hồ sơ.
+                                        {t('success_desc')}
                                     </p>
                                     <div className="pt-8">
                                         <Link
                                             href="/login"
                                             className="inline-flex items-center gap-3 text-[10px] font-bold tracking-widest uppercase text-stone-400 hover:text-gold transition-colors group"
                                         >
-                                            Go to Sign In
+                                            {t('go_to_login')}
                                             <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                                         </Link>
                                     </div>
@@ -135,10 +135,10 @@ export default function RegisterPage() {
                             ) : (
                                 <>
                                     <h1 className="text-4xl font-serif text-luxury-black dark:text-white mb-2 transition-colors">
-                                        Join the House
+                                        {t('join_badge')}
                                     </h1>
                                     <p className="text-[10px] text-stone-400 font-bold tracking-[.4em] uppercase mb-8">
-                                        Create your scent profile
+                                        {t('create_profile')}
                                     </p>
 
                                     {error && (
@@ -151,7 +151,7 @@ export default function RegisterPage() {
                                         {/* Full Name */}
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2">
-                                                Full Name
+                                                {t('name_label')}
                                             </label>
                                             <div className="relative">
                                                 <User className="absolute left-6 top-1/2 -translate-y-1/2 text-stone-300" size={18} />
@@ -162,7 +162,7 @@ export default function RegisterPage() {
                                                     type="text"
                                                     required
                                                     className="w-full bg-stone-50 dark:bg-white/5 border border-stone-100 dark:border-white/10 rounded-2xl px-14 py-4 outline-none focus:border-gold transition-all text-sm text-luxury-black dark:text-white"
-                                                    placeholder="Alexander Dupont"
+                                                    placeholder={t('name_placeholder')}
                                                 />
                                             </div>
                                         </div>
@@ -170,7 +170,7 @@ export default function RegisterPage() {
                                         {/* Email */}
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2">
-                                                Email
+                                                {t('email_label')}
                                             </label>
                                             <div className="relative">
                                                 <Mail className="absolute left-6 top-1/2 -translate-y-1/2 text-stone-300" size={18} />
@@ -181,7 +181,7 @@ export default function RegisterPage() {
                                                     type="email"
                                                     required
                                                     className="w-full bg-stone-50 dark:bg-white/5 border border-stone-100 dark:border-white/10 rounded-2xl px-14 py-4 outline-none focus:border-gold transition-all text-sm text-luxury-black dark:text-white"
-                                                    placeholder="alexander@auraai.com"
+                                                    placeholder={t('email_placeholder')}
                                                 />
                                             </div>
                                         </div>
@@ -189,7 +189,7 @@ export default function RegisterPage() {
                                         {/* Phone Number */}
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2">
-                                                Phone Number (Optional)
+                                                {t('phone_label')}
                                             </label>
                                             <div className="relative">
                                                 <Phone className="absolute left-6 top-1/2 -translate-y-1/2 text-stone-300" size={18} />
@@ -199,7 +199,7 @@ export default function RegisterPage() {
                                                     onChange={handleInputChange}
                                                     type="tel"
                                                     className="w-full bg-stone-50 dark:bg-white/5 border border-stone-100 dark:border-white/10 rounded-2xl px-14 py-4 outline-none focus:border-gold transition-all text-sm text-luxury-black dark:text-white"
-                                                    placeholder="+84 901 234 567"
+                                                    placeholder={t('phone_placeholder')}
                                                 />
                                             </div>
                                         </div>
@@ -207,7 +207,7 @@ export default function RegisterPage() {
                                         {/* Password */}
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2">
-                                                Password
+                                                {t('password_label')}
                                             </label>
                                             <div className="relative">
                                                 <Lock className="absolute left-6 top-1/2 -translate-y-1/2 text-stone-300" size={18} />
@@ -218,7 +218,7 @@ export default function RegisterPage() {
                                                     type={showPassword ? 'text' : 'password'}
                                                     required
                                                     className="w-full bg-stone-50 dark:bg-white/5 border border-stone-100 dark:border-white/10 rounded-2xl px-14 py-4 outline-none focus:border-gold transition-all text-sm pr-16 text-luxury-black dark:text-white"
-                                                    placeholder="••••••••"
+                                                    placeholder={t('password_placeholder')}
                                                 />
                                                 <button
                                                     type="button"
@@ -233,7 +233,7 @@ export default function RegisterPage() {
                                         {/* Confirm Password */}
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2">
-                                                Confirm Password
+                                                {t('confirm_password_label')}
                                             </label>
                                             <div className="relative">
                                                 <Lock className="absolute left-6 top-1/2 -translate-y-1/2 text-stone-300" size={18} />
@@ -244,7 +244,7 @@ export default function RegisterPage() {
                                                     type={showConfirmPassword ? 'text' : 'password'}
                                                     required
                                                     className="w-full bg-stone-50 dark:bg-white/5 border border-stone-100 dark:border-white/10 rounded-2xl px-14 py-4 outline-none focus:border-gold transition-all text-sm pr-16 text-luxury-black dark:text-white"
-                                                    placeholder="••••••••"
+                                                    placeholder={t('confirm_password_placeholder')}
                                                 />
                                                 <button
                                                     type="button"
@@ -270,7 +270,7 @@ export default function RegisterPage() {
                                                 className="mt-1 h-4 w-4 rounded border-stone-200 dark:border-white/10 text-gold focus:ring-gold cursor-pointer"
                                             />
                                             <label htmlFor="terms" className="text-[9px] text-stone-400 font-bold tracking-widest uppercase leading-[1.6] cursor-pointer select-none">
-                                                By creating an account, I agree to the <Link href="/terms" className="text-luxury-black dark:text-white underline hover:text-gold transition-colors italic">Terms of Service</Link> and the <Link href="/privacy" className="text-luxury-black dark:text-white underline hover:text-gold transition-colors italic">Privacy Policy</Link>.
+                                                {t('terms_text')} <Link href="/terms" className="text-luxury-black dark:text-white underline hover:text-gold transition-colors italic">{t('terms_link')}</Link> {tCommon('and')} <Link href="/privacy" className="text-luxury-black dark:text-white underline hover:text-gold transition-colors italic">{t('privacy_link')}</Link>.
                                             </label>
                                         </motion.div>
 
@@ -279,7 +279,7 @@ export default function RegisterPage() {
                                             disabled={isLoading}
                                             className="w-full py-5 bg-luxury-black dark:bg-gold text-white rounded-full font-bold tracking-[.3em] uppercase text-[10px] shadow-2xl hover:bg-stone-800 dark:hover:bg-gold/80 transition-all flex items-center justify-center gap-4 group disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
-                                            {isLoading ? 'PROCESSING...' : 'Start the Journey'}
+                                            {isLoading ? tCommon('processing').toUpperCase() : t('start_journey')}
                                             {!isLoading && <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />}
                                         </button>
                                     </form>
@@ -287,7 +287,7 @@ export default function RegisterPage() {
                                     <div className="space-y-8">
                                         <div className="relative">
                                             <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-stone-100 dark:border-white/5" /></div>
-                                            <div className="relative flex justify-center"><span className="bg-white dark:bg-zinc-900 px-4 text-[10px] font-bold text-stone-300 uppercase tracking-widest">Or register with</span></div>
+                                            <div className="relative flex justify-center"><span className="bg-white dark:bg-zinc-900 px-4 text-[10px] font-bold text-stone-300 uppercase tracking-widest">{t('or_register')}</span></div>
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-4">
@@ -298,7 +298,7 @@ export default function RegisterPage() {
                                                 className="flex items-center justify-center gap-3 py-4 border border-stone-100 dark:border-white/10 rounded-2xl hover:bg-stone-50 dark:hover:bg-white/5 transition-all cursor-pointer disabled:opacity-50"
                                             >
                                                 <Globe size={18} className="text-stone-400" />
-                                                <span className="text-[10px] font-bold tracking-widest uppercase text-stone-500">Google</span>
+                                                <span className="text-[10px] font-bold tracking-widest uppercase text-stone-500">{t('google')}</span>
                                             </button>
                                             <button
                                                 type="button"
@@ -307,16 +307,16 @@ export default function RegisterPage() {
                                                 className="flex items-center justify-center gap-3 py-4 border border-stone-100 dark:border-white/10 rounded-2xl hover:bg-stone-50 dark:hover:bg-white/5 transition-all cursor-pointer disabled:opacity-50"
                                             >
                                                 <Facebook size={18} className="text-stone-400" />
-                                                <span className="text-[10px] font-bold tracking-widest uppercase text-stone-500">Facebook</span>
+                                                <span className="text-[10px] font-bold tracking-widest uppercase text-stone-500">{t('facebook')}</span>
                                             </button>
                                         </div>
                                     </div>
 
                                     <div className="mt-12 pt-8 border-t border-stone-100 dark:border-white/5 text-center">
                                         <p className="text-[10px] font-bold tracking-widest uppercase text-stone-400">
-                                            Already a member?{' '}
+                                            {t('already_member')}{' '}
                                             <Link href="/login" className="text-gold hover:text-gold-dark transition-colors">
-                                                Sign In
+                                                {t('sign_in')}
                                             </Link>
                                         </p>
                                     </div>

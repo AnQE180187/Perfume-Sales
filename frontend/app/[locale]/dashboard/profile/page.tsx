@@ -6,7 +6,6 @@ import { authService } from '@/services/auth.service';
 import { useAuthStore } from '@/store/auth.store';
 import { User, Mail, Shield, Edit2, Loader2, CheckCircle, Send, Phone, Eye, EyeOff, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
 
 type ProfileData = {
   id: string;
@@ -28,6 +27,10 @@ type ProfileData = {
 };
 
 export default function ProfilePage() {
+  const t = useTranslations('dashboard.profile');
+  const tFeatured = useTranslations('featured');
+  const locale = useLocale();
+  const format = useFormatter();
   const { user: authUser, token, setAuth } = useAuthStore();
   const [data, setData] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -89,68 +92,12 @@ export default function ProfilePage() {
     loadProfile();
   }, []);
 
-  const openChangePassword = () => {
-    setChangePasswordError(null);
-    setChangePasswordForm({
-      oldPassword: '',
-      newPassword: '',
-      confirmPassword: '',
-    });
-    setChangePasswordOpen(true);
-  };
-
-  const closeChangePassword = () => {
-    setChangePasswordOpen(false);
-    setChangePasswordLoading(false);
-    setChangePasswordError(null);
-    setChangePasswordSuccess(null);
-  };
-
-  const submitChangePassword = async () => {
-    if (changePasswordLoading) return;
-
-    setChangePasswordError(null);
-    setChangePasswordSuccess(null);
-
-    if (!changePasswordForm.oldPassword) {
-      setChangePasswordError('Vui lòng nhập mật khẩu cũ');
-      return;
-    }
-
-    if (!changePasswordForm.newPassword || changePasswordForm.newPassword.length < 6) {
-      setChangePasswordError('Mật khẩu mới phải có ít nhất 6 ký tự');
-      return;
-    }
-
-    if (changePasswordForm.newPassword !== changePasswordForm.confirmPassword) {
-      setChangePasswordError('Xác nhận mật khẩu mới không khớp');
-      return;
-    }
-
-    setChangePasswordLoading(true);
-    try {
-      await authService.changePassword({
-        oldPassword: changePasswordForm.oldPassword,
-        newPassword: changePasswordForm.newPassword,
-      });
-
-      toast.success('Đổi mật khẩu thành công!');
-      setChangePasswordSuccess('Đổi mật khẩu thành công!');
-      // Keep the modal open briefly so user can see confirmation.
-      setTimeout(() => closeChangePassword(), 800);
-    } catch (e: unknown) {
-      setChangePasswordError((e as Error).message || 'Không thể đổi mật khẩu!');
-    } finally {
-      setChangePasswordLoading(false);
-    }
-  };
-
   const handleResendVerification = async () => {
     setSendingVerify(true);
     setVerifyMsg(null);
     try {
-      const res = await authService.resendVerificationEmail();
-      setVerifyMsg(res.message ?? 'Đã gửi email.');
+      await authService.resendVerificationEmail();
+      setVerifyMsg(t('verification.sent'));
     } catch (e) {
       setVerifyMsg((e as Error).message);
     } finally {
@@ -188,6 +135,14 @@ export default function ProfilePage() {
     }
   };
 
+  const formatCurrency = (amount: number) => {
+    return format.number(amount, {
+      style: 'currency',
+      currency: tFeatured('currency_code') || 'VND',
+      maximumFractionDigits: 0
+    });
+  };
+
   if (loading) {
     return (
       <AuthGuard>
@@ -203,15 +158,15 @@ export default function ProfilePage() {
       <main className="p-8 max-w-5xl mx-auto">
         <header className="mb-12">
           <h1 className="text-4xl font-heading gold-gradient mb-2 uppercase tracking-tighter">
-            Hồ sơ cá nhân
+            {t('title')}
           </h1>
           <p className="text-muted-foreground font-body text-sm uppercase tracking-widest">
-            Quản lý thông tin tài khoản của bạn
+            {t('subtitle')}
           </p>
         </header>
 
         {error && (
-          <div className="mb-6 p-4 rounded-2xl bg-destructive/10 text-destructive text-sm">
+          <div className="mb-6 p-4 rounded-2xl bg-destructive/10 text-destructive text-sm font-bold uppercase tracking-widest">
             {error}
           </div>
         )}
@@ -226,21 +181,21 @@ export default function ProfilePage() {
                   <User className="w-16 h-16 text-muted-foreground/50" />
                 )}
               </div>
-              <h2 className="font-heading text-xl text-foreground uppercase tracking-widest mb-1">
+              <h2 className="font-heading text-xl text-foreground uppercase tracking-widest mb-1 truncate px-2">
                 {data?.fullName || data?.email || 'User'}
               </h2>
-              <p className="text-[10px] text-gold uppercase tracking-[0.3em] font-bold">
+              <p className="text-[10px] text-gold uppercase tracking-[0.3em] font-bold opacity-60">
                 {data?.role ?? 'CUSTOMER'}
               </p>
             </div>
 
             <div className="glass p-8 rounded-[2.5rem] border-border space-y-6">
               <h3 className="font-heading text-[10px] uppercase tracking-widest text-muted-foreground mb-4">
-                Bảo mật
+                {t('security.title')}
               </h3>
-              <div className="flex items-center gap-4 text-xs font-body text-foreground">
-                <Shield className="w-4 h-4 text-emerald-500" />
-                <span>Tài khoản được bảo vệ</span>
+              <div className="flex items-center gap-4 text-xs font-bold uppercase tracking-widest text-foreground">
+                <Shield className="w-4 h-4 text-gold shadow-lg shadow-gold/20" />
+                <span>{t('security.protected')}</span>
               </div>
 
               <div className="pt-2">
@@ -258,29 +213,29 @@ export default function ProfilePage() {
 
             <div className="glass p-8 rounded-[2.5rem] border-border space-y-4">
               <h3 className="font-heading text-[10px] uppercase tracking-widest text-muted-foreground mb-4">
-                Xác thực email
+                {t('verification.title')}
               </h3>
               {data?.emailVerified ? (
-                <div className="flex items-center gap-4 text-xs font-body text-emerald-500">
+                <div className="flex items-center gap-4 text-xs font-bold uppercase tracking-widest text-emerald-500">
                   <CheckCircle className="w-4 h-4" />
-                  <span>Email đã được xác thực</span>
+                  <span>{t('verification.verified')}</span>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <p className="text-xs text-muted-foreground">
-                    Email chưa xác thực. (Tùy chọn – không ảnh hưởng sử dụng)
+                  <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground leading-relaxed">
+                    {t('verification.unverified')}
                   </p>
                   <button
                     type="button"
                     onClick={handleResendVerification}
                     disabled={sendingVerify}
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gold text-gold text-[10px] font-heading uppercase tracking-widest hover:bg-gold/10 disabled:opacity-50"
+                    className="flex items-center gap-2 px-6 py-3 rounded-full border border-gold text-gold text-[10px] font-heading uppercase tracking-widest hover:bg-gold/10 disabled:opacity-50 transition-all active:scale-95"
                   >
                     {sendingVerify ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
-                    Gửi email xác thực
+                    {t('verification.resend')}
                   </button>
                   {verifyMsg && (
-                    <p className="text-[10px] text-muted-foreground">{verifyMsg}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground animate-pulse">{verifyMsg}</p>
                   )}
                 </div>
               )}
@@ -288,181 +243,180 @@ export default function ProfilePage() {
           </div>
 
           <div className="lg:col-span-2 space-y-8">
-            <div className="glass p-10 rounded-[3rem] border-border">
-              <div className="flex justify-between items-center mb-10">
-                <h3 className="font-heading text-lg uppercase tracking-widest">Thông tin cá nhân</h3>
+            <div className="glass p-10 rounded-[3.5rem] border-border shadow-xl">
+              <div className="flex justify-between items-center mb-12 border-b border-border pb-6">
+                <h3 className="font-heading text-lg uppercase tracking-[.2em]">{t('personal_info')}</h3>
                 {!editing ? (
                   <button
                     type="button"
                     onClick={() => setEditing(true)}
-                    className="flex items-center gap-2 text-gold text-[10px] uppercase font-heading tracking-widest hover:underline"
+                    className="flex items-center gap-2 text-gold text-[10px] uppercase font-black tracking-widest hover:tracking-[.3em] transition-all"
                   >
-                    <Edit2 className="w-3 h-3" /> Chỉnh sửa
+                    <Edit2 className="w-3 h-3" /> {t('edit')}
                   </button>
                 ) : (
-                  <div className="flex gap-2">
+                  <div className="flex gap-4">
                     <button
                       type="button"
                       onClick={handleSave}
                       disabled={saving}
-                      className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gold text-primary text-[10px] uppercase font-heading tracking-widest disabled:opacity-50"
+                      className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-gold text-primary text-[10px] uppercase font-black tracking-widest disabled:opacity-50 shadow-lg shadow-gold/20"
                     >
-                      {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : null} Lưu
+                      {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : null} {t('save')}
                     </button>
                     <button
                       type="button"
                       onClick={() => setEditing(false)}
-                      className="px-4 py-2 rounded-xl border border-border text-[10px] uppercase font-heading tracking-widest"
+                      className="px-6 py-2.5 rounded-full border border-border text-[10px] uppercase font-black tracking-widest hover:bg-muted-foreground/5"
                     >
-                      Hủy
+                      {t('cancel')}
                     </button>
                   </div>
                 )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                <div className="space-y-2">
-                  <label className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-heading">
-                    Họ tên
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div className="space-y-4">
+                  <label className="text-[9px] uppercase tracking-[0.4em] text-muted-foreground font-black">
+                    {t('labels.fullName')}
                   </label>
                   {editing ? (
                     <input
                       type="text"
                       value={form.fullName}
                       onChange={(e) => setForm((f) => ({ ...f, fullName: e.target.value }))}
-                      className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm"
+                      className="w-full px-4 py-3 rounded-2xl border border-border bg-background/50 text-[10px] uppercase tracking-widest focus:border-gold outline-none transition-all"
                     />
                   ) : (
-                    <p className="font-body text-sm border-b border-border/50 pb-2">
+                    <p className="font-bold text-[10px] uppercase tracking-widest border-b border-border/30 pb-3">
                       {data?.fullName || '—'}
                     </p>
                   )}
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-heading">
-                    Số điện thoại
+                <div className="space-y-4">
+                  <label className="text-[9px] uppercase tracking-[0.4em] text-muted-foreground font-black">
+                    {t('labels.phone')}
                   </label>
                   {editing ? (
                     <input
                       type="tel"
                       value={form.phone}
                       onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-                      className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm"
+                      className="w-full px-4 py-3 rounded-2xl border border-border bg-background/50 text-[10px] uppercase tracking-widest focus:border-gold outline-none transition-all"
                       placeholder="+84 901 234 567"
                     />
                   ) : (
-                    <p className="font-body text-sm border-b border-border/50 pb-2 flex items-center gap-2">
-                      <Phone className="w-3 h-3 text-muted-foreground" />
+                    <p className="font-bold text-[10px] uppercase tracking-widest border-b border-border/30 pb-3 flex items-center gap-2">
+                      <Phone className="w-3 h-3 text-gold/60" />
                       {data?.phone || '—'}
                     </p>
                   )}
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-heading">
-                    Email
+                <div className="space-y-4">
+                  <label className="text-[9px] uppercase tracking-[0.4em] text-muted-foreground font-black">
+                    {t('labels.email')}
                   </label>
-                  <p className="font-body text-sm border-b border-border/50 pb-2 flex items-center gap-2">
-                    <Mail className="w-3 h-3 text-muted-foreground" />
+                  <p className="font-bold text-[10px] opacity-40 lowercase tracking-wider border-b border-border/30 pb-3 flex items-center gap-2">
+                    <Mail className="w-3 h-3 text-gold/30" />
                     {data?.email || '—'}
                   </p>
-                  <span className="text-[10px] text-muted-foreground">Email không thể thay đổi</span>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-heading">
-                    Giới tính
+                <div className="space-y-4">
+                  <label className="text-[9px] uppercase tracking-[0.4em] text-muted-foreground font-black">
+                    {t('labels.gender')}
                   </label>
                   {editing ? (
                     <select
                       value={form.gender}
                       onChange={(e) => setForm((f) => ({ ...f, gender: e.target.value }))}
-                      className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm"
+                      className="w-full px-4 py-3 rounded-2xl border border-border bg-background/50 text-[10px] uppercase tracking-widest focus:border-gold outline-none transition-all appearance-none cursor-pointer"
                     >
                       <option value="">—</option>
-                      <option value="MALE">Nam</option>
-                      <option value="FEMALE">Nữ</option>
-                      <option value="OTHER">Khác</option>
+                      <option value="MALE">{t('gender_options.male')}</option>
+                      <option value="FEMALE">{t('gender_options.female')}</option>
+                      <option value="OTHER">{t('gender_options.other')}</option>
                     </select>
                   ) : (
-                    <p className="font-body text-sm border-b border-border/50 pb-2">
-                      {data?.gender === 'MALE' ? 'Nam' : data?.gender === 'FEMALE' ? 'Nữ' : data?.gender || '—'}
+                    <p className="font-bold text-[10px] uppercase tracking-widest border-b border-border/30 pb-3">
+                      {data?.gender === 'MALE' ? t('gender_options.male') : data?.gender === 'FEMALE' ? t('gender_options.female') : data?.gender || '—'}
                     </p>
                   )}
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-heading">
-                    Ngày sinh
+                <div className="space-y-4">
+                  <label className="text-[9px] uppercase tracking-[0.4em] text-muted-foreground font-black">
+                    {t('labels.dob')}
                   </label>
                   {editing ? (
                     <input
                       type="date"
                       value={form.dateOfBirth}
                       onChange={(e) => setForm((f) => ({ ...f, dateOfBirth: e.target.value }))}
-                      className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm"
+                      className="w-full px-4 py-3 rounded-2xl border border-border bg-background/50 text-[10px] uppercase tracking-widest focus:border-gold outline-none transition-all cursor-pointer"
                     />
                   ) : (
-                    <p className="font-body text-sm border-b border-border/50 pb-2">
+                    <p className="font-bold text-[10px] uppercase tracking-widest border-b border-border/30 pb-3">
                       {data?.dateOfBirth
-                        ? new Date(data.dateOfBirth).toLocaleDateString('vi-VN')
+                        ? new Date(data.dateOfBirth).toLocaleDateString(locale === 'vi' ? 'vi-VN' : 'en-US', { dateStyle: 'long' })
                         : '—'}
                     </p>
                   )}
                 </div>
-                <div className="space-y-2 md:col-span-2">
-                  <label className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-heading">
-                    Địa chỉ
+                <div className="space-y-4 md:col-span-2">
+                  <label className="text-[9px] uppercase tracking-[0.4em] text-muted-foreground font-black">
+                    {t('labels.address')}
                   </label>
                   {editing ? (
                     <input
                       type="text"
                       value={form.address}
                       onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
-                      className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm"
+                      className="w-full px-4 py-3 rounded-2xl border border-border bg-background/50 text-[10px] uppercase tracking-widest focus:border-gold outline-none transition-all"
                     />
                   ) : (
-                    <p className="font-body text-sm border-b border-border/50 pb-2">
+                    <p className="font-bold text-[10px] uppercase tracking-widest border-b border-border/30 pb-3 leading-loose">
                       {data?.address || '—'}
                     </p>
                   )}
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-heading">
-                    Thành phố
+                <div className="space-y-4">
+                  <label className="text-[9px] uppercase tracking-[0.4em] text-muted-foreground font-black">
+                    {t('labels.city')}
                   </label>
                   {editing ? (
                     <input
                       type="text"
                       value={form.city}
                       onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
-                      className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm"
+                      className="w-full px-4 py-3 rounded-2xl border border-border bg-background/50 text-[10px] uppercase tracking-widest focus:border-gold outline-none transition-all"
                     />
                   ) : (
-                    <p className="font-body text-sm border-b border-border/50 pb-2">
+                    <p className="font-bold text-[10px] uppercase tracking-widest border-b border-border/30 pb-3">
                       {data?.city || '—'}
                     </p>
                   )}
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-heading">
-                    Quốc gia
+                <div className="space-y-4">
+                  <label className="text-[9px] uppercase tracking-[0.4em] text-muted-foreground font-black">
+                    {t('labels.country')}
                   </label>
                   {editing ? (
                     <input
                       type="text"
                       value={form.country}
                       onChange={(e) => setForm((f) => ({ ...f, country: e.target.value }))}
-                      className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm"
+                      className="w-full px-4 py-3 rounded-2xl border border-border bg-background/50 text-[10px] uppercase tracking-widest focus:border-gold outline-none transition-all"
                     />
                   ) : (
-                    <p className="font-body text-sm border-b border-border/50 pb-2">
+                    <p className="font-bold text-[10px] uppercase tracking-widest border-b border-border/30 pb-3">
                       {data?.country || '—'}
                     </p>
                   )}
                 </div>
                 {data?.role === 'CUSTOMER' && (
                   <>
-                    <div className="space-y-2">
-                      <label className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-heading">
-                        Ngân sách tối thiểu (VNĐ)
+                    <div className="space-y-4">
+                      <label className="text-[9px] uppercase tracking-[0.4em] text-muted-foreground font-black">
+                        {t('labels.min_budget')}
                       </label>
                       {editing ? (
                         <input
@@ -474,19 +428,19 @@ export default function ProfilePage() {
                               budgetMin: e.target.value ? Number(e.target.value) : '',
                             }))
                           }
-                          className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm"
+                          className="w-full px-4 py-3 rounded-2xl border border-border bg-background/50 text-[10px] uppercase tracking-widest focus:border-gold outline-none transition-all"
                         />
                       ) : (
-                        <p className="font-body text-sm border-b border-border/50 pb-2">
+                        <p className="font-bold text-[10px] uppercase tracking-widest border-b border-border/30 pb-3 text-gold">
                           {data?.budgetMin != null
-                            ? new Intl.NumberFormat('vi-VN').format(data.budgetMin)
+                            ? formatCurrency(data.budgetMin)
                             : '—'}
                         </p>
                       )}
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-heading">
-                        Ngân sách tối đa (VNĐ)
+                    <div className="space-y-4">
+                      <label className="text-[9px] uppercase tracking-[0.4em] text-muted-foreground font-black">
+                        {t('labels.max_budget')}
                       </label>
                       {editing ? (
                         <input
@@ -498,12 +452,12 @@ export default function ProfilePage() {
                               budgetMax: e.target.value ? Number(e.target.value) : '',
                             }))
                           }
-                          className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm"
+                          className="w-full px-4 py-3 rounded-2xl border border-border bg-background/50 text-[10px] uppercase tracking-widest focus:border-gold outline-none transition-all"
                         />
                       ) : (
-                        <p className="font-body text-sm border-b border-border/50 pb-2">
+                        <p className="font-bold text-[10px] uppercase tracking-widest border-b border-border/30 pb-3 text-gold">
                           {data?.budgetMax != null
-                            ? new Intl.NumberFormat('vi-VN').format(data.budgetMax)
+                            ? formatCurrency(data.budgetMax)
                             : '—'}
                         </p>
                       )}

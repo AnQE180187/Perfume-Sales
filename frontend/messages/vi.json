@@ -24,6 +24,7 @@
         "orders": "Đơn Hàng",
         "settings": "Cài Đặt",
         "dashboard": "Bảng Điều Khiển",
+        "and": "và",
         "boutiques": "Cửa Hàng",
         "journal": "Tạp Chí",
         "view_profile": "Xem Hồ Sơ",
@@ -169,7 +170,18 @@
         "badge": "Kho Lưu Trữ",
         "title": "Bộ Sưu Tập Vĩnh Cửu",
         "cta": "Khám Phá Toàn Bộ Tác Phẩm",
-        "add": "Thêm Vào Bộ Sưu Tập"
+        "add": "Thêm Vào Bộ Sưu Tập",
+        "types": {
+            "extrait": "Extrait de Parfum",
+            "pure": "Pure Essence",
+            "eau": "Eau de Parfum"
+        },
+        "accents": {
+            "floral": "Hương Hoa",
+            "oriental": "Hương Phương Đông",
+            "woody": "Hương Gỗ"
+        },
+        "currency_code": "VND"
     },
     "quiz": {
         "title": "Khám Phá Bản Ngã",
@@ -193,6 +205,32 @@
                 "title": "Vườn Thái Dương",
                 "desc": "Cỏ đẫm sương, hoa nhài, gỗ đàn hương"
             }
+        },
+        "footer": {
+            "desc": "Kết hợp nghệ thuật chế tác nước hoa cổ điển với sức mạnh dự đoán của trí tuệ thần kinh.",
+            "newsletter_title": "Tin Tức Thượng Lưu",
+            "newsletter_desc": "Tham gia vòng tròn nội bộ để nhận các bản phát hành lưu trữ và thông tin chi tiết từ AI.",
+            "email_placeholder": "EMAIL CỦA BẠN",
+            "copyright": "© 2026 AURA HOUSE. BẢO LƯU MỌI QUYỀN.",
+            "engine": "Động Cơ Aura AI v4.2",
+            "location": "Grasse • Paris • Tokyo",
+            "column_exploration": "Khám Phá",
+            "column_house": "Ngôi Nhà",
+            "navigation_labels": {
+                "products": "Sản Phẩm",
+                "consultation": "Tư Vấn AI",
+                "journal": "Tạp Chí",
+                "subscription": "Gói Hội Viên",
+                "boutiques": "Cửa Hàng",
+                "gifting": "Quà Tặng"
+            },
+            "support_labels": {
+                "story": "Câu Chuyện",
+                "ingredients": "Nguyên Liệu",
+                "terms": "Điều Khoản",
+                "privacy": "Bảo Mật",
+                "support": "Hỗ Trợ"
+            }
         }
     },
     "auth": {
@@ -210,6 +248,7 @@
             "or_continue": "Hoặc tiếp tục với",
             "google": "Google",
             "facebook": "Facebook",
+            "error_failed": "Đăng nhập thất bại",
             "no_account": "Chưa có tài khoản?",
             "sign_up": "Đăng ký"
         },
@@ -235,7 +274,17 @@
             "google": "Google",
             "facebook": "Facebook",
             "already_member": "Đã là thành viên?",
-            "sign_in": "Đăng nhập"
+            "sign_in": "Đăng nhập",
+            "success_title": "Đăng ký thành công",
+            "success_desc": "Tài khoản đã được tạo. Bạn có thể đăng nhập ngay. Xác thực email có thể thực hiện sau trong trang Hồ sơ.",
+            "go_to_login": "Đến trang Đăng nhập",
+            "phone_label": "Số điện thoại (Tùy chọn)",
+            "phone_placeholder": "+84 901 234 567",
+            "error_terms": "Bạn phải chấp nhận các điều khoản và điều kiện",
+            "error_password_match": "Mật khẩu không khớp",
+            "error_failed": "Đăng ký thất bại",
+            "join_badge": "Tham gia cùng chúng tôi",
+            "create_profile": "Tạo hồ sơ mùi hương của bạn"
         },
         "forgot_password": {
             "badge": "Khôi Phục Danh Tính",
@@ -249,7 +298,8 @@
             "check_email": "Vui lòng kiểm tra email để biết hướng dẫn",
             "link_sent": "Một liên kết được mã hóa đã được gửi đến",
             "link_valid": "Nó có hiệu lực trong vòng 60 phút.",
-            "didnt_receive": "Không nhận được? Thử lại"
+            "didnt_receive": "Không nhận được? Thử lại",
+            "error_failed": "Thất bại khi gửi liên kết khôi phục"
         },
         "reset_password": {
             "badge": "Tổng Hợp An Toàn",
@@ -265,7 +315,11 @@
             "security_updated": "Đã Cập Nhật Bảo Mật",
             "portal_secured": "Cổng của bạn hiện được bảo mật bằng chữ ký mới",
             "success_message": "Mật khẩu của bạn đã được tổng hợp lại thành công. Bây giờ bạn có thể quay lại cổng để xác thực lại.",
-            "proceed_login": "Tiến Đến Đăng Nhập"
+            "proceed_login": "Tiến Đến Đăng Nhập",
+            "error_missing_token": "Thiếu hoặc sai mã khôi phục",
+            "error_invalid_token": "Phiên khôi phục không hợp lệ",
+            "error_password_match": "Mật khẩu không khớp",
+            "error_failed": "Cập nhật mật khẩu thất bại"
         },
         "logout": {
             "title": "Hẹn Gặp Lại Trong Cảm Hứng Tiếp Theo",
@@ -315,7 +369,15 @@
         "pattern_matching": "Khớp Mẫu",
         "pattern_matching_desc": "Khớp với hồ sơ sinh học của bạn với độ chính xác 98.4%.",
         "authenticity_shield": "Giáp Xác Thực",
-        "authenticity_shield_desc": "Chữ ký phân tử không thể tẩy xóa để chứng nhận."
+        "authenticity_shield_desc": "Chữ ký phân tử không thể tẩy xóa để chứng nhận.",
+        "toast_login_required": "Vui lòng đăng nhập để lưu sản phẩm yêu thích",
+        "toast_select_size": "Vui lòng chọn dung tích trước khi thêm yêu thích",
+        "toast_favorite_added": "Đã thêm sản phẩm vào mục yêu thích",
+        "toast_favorite_removed": "Đã xóa sản phẩm khỏi mục yêu thích",
+        "toast_favorite_error": "Không thể cập nhật mục yêu thích",
+        "fallback_description": "Một tinh chất được tuyển chọn bậc thầy, lưu giữ sự giao thoa giữa ánh đèn neon đô thị và sức mạnh thực vật thô mộc. Được thiết kế để cộng hưởng với chữ ký khứu giác độc đáo của người đeo.",
+        "remove_favorite": "Xóa khỏi yêu thích",
+        "add_favorite": "Thêm vào yêu thích"
     },
     "review": {
         "customer_reviews": "Đánh Giá Khách Hàng",
@@ -446,54 +508,63 @@
             "auth_desc": "Được niêm phong bằng ấn ký số.",
             "refill_title": "Dịch Vụ Nạp Lại",
             "refill_desc": "Sự bền vững trong từng chai nước hoa."
+        },
+        "profile": {
+            "title": "Hồ sơ Khứu giác",
+            "subtitle": "Quản lý chữ ký cá nhân và thông tin tài khoản của bạn.",
+            "personal_info": "Thông tin cá nhân",
+            "edit": "Chỉnh sửa",
+            "save": "Lưu thay đổi",
+            "cancel": "Hủy",
+            "labels": {
+                "fullName": "Họ tên",
+                "phone": "Số điện thoại",
+                "email": "Email (Không thể thay đổi)",
+                "gender": "Giới tính",
+                "dob": "Ngày sinh",
+                "address": "Địa chỉ",
+                "city": "Thành phố",
+                "country": "Quốc gia",
+                "min_budget": "Ngân sách tối thiểu (VNĐ)",
+                "max_budget": "Ngân sách tối đa (VNĐ)"
+            },
+            "gender_options": {
+                "male": "Nam",
+                "female": "Nữ",
+                "other": "Khác"
+            },
+            "security": {
+                "title": "Giao thức Bảo mật",
+                "protected": "Tài khoản đang được bảo vệ"
+            },
+            "verification": {
+                "title": "Xác thực Chữ ký (Email)",
+                "verified": "Email đã được xác thực",
+                "unverified": "Email chưa xác thực. (Tùy chọn)",
+                "resend": "Gửi email xác thực",
+                "sending": "Đang gửi...",
+                "sent": "Đã gửi email xác thực thành công."
+            }
         }
     },
-    "checkout": {
-        "return_to_cart": "Quay Lại Kho Lưu Trữ (Giỏ Hàng)",
-        "page_title": "Tiến Hành Sở Hữu",
-        "recipient_name": "Họ Tên Người Nhận (Định Danh)",
-        "select_province": "Chọn Tỉnh/Thành Phố",
-        "select_district": "Chọn Quận/Huyện",
-        "select_ward": "Chọn Phường/Xã",
-        "shipping_service": "Dịch Vụ Vận Chuyển",
-        "shipping_fee": "Phí Vận Chuyển Hệ Thống",
-        "shipping_address": "Điểm Đến Sở Hữu (Địa Chỉ)",
-        "phone_number": "Kênh Liên Lạc (Số Điện Thoại)",
-        "continue_to_payment": "Tiếp Tục Đến Tổng Hợp Tài Chính",
-        "select_payment_method": "Chọn Phương Thức Giao Dịch",
-        "cod": "Thanh Toán Khi Hiện Hữu (COD)",
-        "online_payment": "Liên Kết Tài Chính Thần Kinh (Online)",
-        "qr_scan": "Quét Mã Liên Kết (QR) Để Tổng Hợp",
-        "qr_desc": "Khởi tạo liên kết tài chính an toàn để hoàn tất sở hữu",
-        "waiting_confirmation": "Đang Chờ Cộng Hưởng Tài Chính...",
-        "pay_via_payos": "Thanh Toán Qua Cổng PayOS",
-        "other_method": "Phương Thức Tổng Hợp Khác",
-        "order_summary": "Tóm Tắt Sở Hữu",
-        "empty_cart": "Hàng Đợi Sở Hữu Trống",
-        "coupon_code": "MÃ CHỮ KÝ ƯU ĐÃI",
-        "apply": "TỔNG HỢP",
-        "invalid_coupon": "Chữ Ký Không Hợp Lệ",
-        "coupon_success": "Chữ Ký Đã Xác Minh: Giảm {amount}",
-        "loyalty_points": "Tín Dụng Thần Kinh",
-        "use_points": "Sử Dụng Tín Dụng Aura",
-        "points_balance": "Bạn có {points} tín dụng (Giá trị: {value})",
-        "points_discount": "Khấu Trừ Tín Dụng",
-        "subtotal": "Giá Trị Khứu Giác Gốc",
-        "total": "Tổng Giá Trị Sở Hữu",
-        "shipping_placeholder": "Số nhà, tên đường, phường/xã...",
-        "name_placeholder": "Nguyễn Văn An",
+
+    "address": {
+        "recipient_name": "Tên người nhận *",
+        "phone_number": "Số điện thoại *",
+        "street_name": "Số nhà, tên đường *",
+        "set_default": "Đặt làm địa chỉ mặc định",
+        "save_address": "Lưu địa chỉ",
+        "recipient_placeholder": "Nguyễn Văn A",
         "phone_placeholder": "0901234567",
-        "loading": "Đang Xử Lý...",
-        "page_title_part1": "Tiến Hành",
-        "page_title_part2": "Sở Hữu",
-        "download_qr": "Tải mã QR",
-        "street_name": "Số nhà, tên đường",
-        "street_placeholder": "Ví dụ: 123 Đường Luxury",
-        "pay_via_payos_desc": "Hoặc nhấn nút bên dưới để thanh toán qua cổng PayOS",
-        "shipping_free": "Miễn Phí",
-        "error_missing_info": "Vui lòng cung cấp đầy đủ định danh hậu cần bắt buộc.",
-        "error_create_order": "Thất bại khi khởi tạo sự cộng hưởng sở hữu khứu giác.",
-        "error_create_payment": "Liên kết tổng hợp sở hữu không thể khởi tạo."
+        "street_placeholder": "Số 123, đường ABC...",
+        "province_label": "Tỉnh/Thành Phố *",
+        "district_label": "Quận/Huyện *",
+        "ward_label": "Phường/Xã *",
+        "province_placeholder": "Chọn tỉnh/thành phố",
+        "district_placeholder": "Chọn quận/huyện",
+        "ward_placeholder": "Chọn phường/xã",
+        "error_calculate_fee": "Không thể tính phí vận chuyển",
+        "error_missing_address": "Vui lòng chọn địa chỉ giao hàng"
     },
     "dashboard": {
         "profile": {
@@ -721,6 +792,8 @@
                 "offers_new": "Mới",
                 "offers_desc": "{count} Phần thưởng sẵn sàng tổng hợp",
                 "modules": {
+                    "profile": "Hồ sơ cá nhân",
+                    "addresses": "Sổ địa chỉ",
                     "orders": "Đơn hàng của tôi",
                     "loyalty": "Điểm thưởng",
                     "ai_chat": "Tư vấn AI",
@@ -746,6 +819,25 @@
                     "completed": "Hoàn thành",
                     "cancelled": "Đã hủy"
                 }
+            },
+            "order_detail": {
+                "back": "Quay lại đơn hàng",
+                "order_number": "Đơn hàng {code}",
+                "products": "Sản phẩm",
+                "no_products": "Không có sản phẩm",
+                "shipping_address": "Địa chỉ giao hàng",
+                "summary": "Tóm tắt",
+                "status": "Trạng thái",
+                "payment": "Thanh toán",
+                "tracking": "Theo dõi đơn hàng",
+                "tracking_code": "Mã vận đơn",
+                "tracking_status": "Trạng thái vận chuyển: {status}",
+                "ghn_lookup": "Tra cứu GHN",
+                "write_review": "Viết đánh giá",
+                "writing_review": "Đang viết",
+                "reviewed": "Đã đánh giá",
+                "not_found": "Không tìm thấy đơn hàng",
+                "back_to_list": "Quay lại danh sách đơn hàng"
             },
             "promotions": {
                 "title": "Ưu đãi Khứu giác",
@@ -962,5 +1054,58 @@
                 }
             }
         }
+    },
+    "order_success": {
+        "title": "Đặt hàng thành công!",
+        "desc": "Cảm ơn bạn đã đặt hàng. Chúng tôi sẽ xử lý đơn hàng của bạn trong thời gian sớm nhất.",
+        "order_code": "Mã đơn hàng",
+        "estimated_arrival": "Thời gian giao hàng dự kiến",
+        "payment_method": "Phương thức",
+        "status_paid": "Đã thanh toán",
+        "status_pending": "Chờ thanh toán",
+        "status_cod": "Thanh toán khi nhận hàng",
+        "view_order": "Xem đơn hàng & theo dõi",
+        "back_home": "Về trang chủ",
+        "wait_quote": "\"Sự chờ đợi là phần tinh tế nhất của mỗi nghi lễ.\"",
+        "processed_by": "Được xử lý an toàn bởi trí tuệ Aura AI"
+    },
+    "checkout": {
+        "return_to_cart": "Quay lại giỏ hàng",
+        "page_title_part1": "Nghi lễ",
+        "page_title_part2": "Thanh toán",
+        "shipping_address": "Địa chỉ giao hàng",
+        "shipping_service": "Dịch vụ vận chuyển",
+        "shipping_free": "Miễn phí",
+        "estimated_shipping_fee": "Phí vận chuyển dự kiến: {fee}",
+        "continue_to_payment": "Tiếp tục thanh toán",
+        "payment_method_title": "Phương thức <span>Thanh toán</span>",
+        "cod_label": "Thanh toán khi nhận hàng",
+        "online_payment_label": "Thanh toán Trực tuyến",
+        "back_to_address": "Quay lại địa chỉ",
+        "qr_title": "Mã QR <span>Thanh toán</span>",
+        "qr_desc_scanning": "Vui lòng quét mã để hoàn tất nghi lễ.",
+        "download_qr": "Tải mã QR",
+        "waiting_for_payment": "Đang chờ thanh toán...",
+        "pay_via_payos_desc": "Giao dịch an toàn qua cổng PayOS.",
+        "pay_via_payos_btn": "Thanh toán qua PayOS",
+        "other_method": "Sử dụng phương thức khác",
+        "order_summary": "Tóm tắt đơn hàng",
+        "quantity_label": "Số lượng: {qty}",
+        "empty_cart": "Giỏ hàng đang trống",
+        "coupon_code": "Mã giảm giá",
+        "apply": "Áp dụng",
+        "coupon_applied": "Áp dụng thành công (Giảm {amount})",
+        "loyalty_points": "Điểm Aura",
+        "points_balance_summary": "Bạn có {points} điểm (quy đổi {value})",
+        "subtotal": "Tạm tính",
+        "total": "Tổng cộng",
+        "invalid_coupon": "Mã không hợp lệ hoặc đã hết hạn",
+        "error_missing_address": "Vui lòng chọn địa chỉ giao hàng",
+        "error_create_payment": "Không thể tạo yêu cầu thanh toán",
+        "error_create_order": "Thất bại khi khởi tạo sự cộng hưởng sở hữu khứu giác.",
+        "error_calculate_fee": "Lỗi tính phí vận chuyển",
+        "coupon_discount_label": "Coupon giảm giá",
+        "loyalty_points_summary": "Điểm tích lũy",
+        "shipping_fee_summary": "Phí vận chuyển"
     }
 }
