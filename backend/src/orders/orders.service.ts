@@ -328,6 +328,13 @@ export class OrdersService {
           data: { orderId: updated.id, orderCode: updated.code, status },
         })
         .catch(() => {});
+
+      // Push real-time order status event for instant UI update
+      this.notificationsService.emitOrderStatusChanged(updated.userId, {
+        orderId: updated.id,
+        orderCode: updated.code,
+        status,
+      });
     }
 
     return updated;

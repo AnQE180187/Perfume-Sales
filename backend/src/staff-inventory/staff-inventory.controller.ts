@@ -91,6 +91,12 @@ export class StaffInventoryController {
     );
   }
 
+  /** Search all system products/variants for import */
+  @Get('search-products')
+  searchAllProducts(@Query('q') q?: string) {
+    return this.staffInventoryService.searchAllVariants(q);
+  }
+
   @Get('logs')
   getLogs(
     @Req() req: any,

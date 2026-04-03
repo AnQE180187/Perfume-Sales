@@ -38,6 +38,16 @@ export type InventoryRequest = {
   reviewer: { id: string; name: string | null; email: string } | null;
 };
 
+export type SystemVariant = {
+  variantId: string;
+  productName: string;
+  variantName: string;
+  brand: string | null;
+  sku: string | null;
+  price: number;
+  imageUrl: string | null;
+};
+
 export type StaffInventoryLog = {
   id: number;
   variantId: string;
@@ -113,6 +123,13 @@ export const staffInventoryService = {
   }): Promise<StaffInventoryLog[]> {
     return api
       .get<StaffInventoryLog[]>("/staff/inventory/logs", { params })
+      .then((r) => r.data);
+  },
+  searchAllProducts(q?: string): Promise<SystemVariant[]> {
+    return api
+      .get<SystemVariant[]>("/staff/inventory/search-products", {
+        params: q ? { q } : undefined,
+      })
       .then((r) => r.data);
   },
 };

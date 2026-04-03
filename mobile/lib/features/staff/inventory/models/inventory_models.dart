@@ -206,3 +206,36 @@ class InventoryRequestModel {
     );
   }
 }
+
+/// System-wide variant for import search (from GET /staff/inventory/search-products).
+class SystemVariant {
+  final String variantId;
+  final String productName;
+  final String variantName;
+  final String? brand;
+  final String? sku;
+  final double? price;
+  final String? imageUrl;
+
+  const SystemVariant({
+    required this.variantId,
+    required this.productName,
+    required this.variantName,
+    this.brand,
+    this.sku,
+    this.price,
+    this.imageUrl,
+  });
+
+  factory SystemVariant.fromJson(Map<String, dynamic> json) {
+    return SystemVariant(
+      variantId: json['variantId'] as String,
+      productName: json['productName'] as String,
+      variantName: json['variantName'] as String,
+      brand: json['brand'] as String?,
+      sku: json['sku'] as String?,
+      price: (json['price'] as num?)?.toDouble(),
+      imageUrl: json['imageUrl'] as String?,
+    );
+  }
+}

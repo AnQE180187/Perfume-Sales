@@ -9,6 +9,7 @@ import '../../../../core/widgets/app_async_widget.dart';
 import '../../../../core/widgets/shimmer_loading.dart';
 import '../../models/order.dart';
 import '../../providers/order_provider.dart';
+import '../../providers/order_realtime_provider.dart';
 import '../sections/active_orders_section.dart';
 import '../sections/completed_orders_section.dart';
 
@@ -38,6 +39,13 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
   @override
   Widget build(BuildContext context) {
     final orderState = ref.watch(orderProvider);
+
+    // Auto-refresh order list when any order status changes in real-time
+    ref.listen<OrderStatusEvent?>(orderRealtimeProvider, (prev, next) {
+      if (next != null) {
+        ref.read(orderProvider.notifier).refresh();
+      }
+    });
 
     return Scaffold(
       backgroundColor: AppTheme.ivoryBackground,

@@ -17,6 +17,7 @@ class OrderCard extends StatelessWidget {
   final VoidCallback? onTrack;
   final VoidCallback? onReview;
   final VoidCallback? onViewDetail;
+  final bool isReviewed;
 
   const OrderCard({
     super.key,
@@ -26,6 +27,7 @@ class OrderCard extends StatelessWidget {
     this.onTrack,
     this.onReview,
     this.onViewDetail,
+    this.isReviewed = false,
   });
 
   @override
@@ -127,6 +129,8 @@ class OrderCard extends StatelessWidget {
         ? 'Theo dõi'
         : isCancelled
         ? 'Xem chi tiết'
+        : isReviewed
+        ? 'Đã đánh giá'
         : 'Đánh giá';
 
     return Row(
@@ -137,13 +141,26 @@ class OrderCard extends StatelessWidget {
         ),
         const Spacer(),
         ElevatedButton(
-          onPressed: showTrack
+          onPressed: isReviewed
+              ? null
+              : showTrack
               ? onTrack
               : (isCancelled ? onViewDetail : onReview),
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            disabledBackgroundColor: AppTheme.softTaupe,
+            disabledForegroundColor: AppTheme.mutedSilver,
           ),
-          child: Text(ctaLabel),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (isReviewed) ...[
+                const Icon(Icons.check_circle, size: 16),
+                const SizedBox(width: 4),
+              ],
+              Text(ctaLabel),
+            ],
+          ),
         ),
       ],
     );
