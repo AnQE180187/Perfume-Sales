@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import '../services/notification_service.dart';
 
@@ -14,6 +16,7 @@ class Alert {
   final bool isUnread;
   final String? actionLabel;
   final Color accentColor;
+  final String? orderId;
 
   const Alert({
     required this.id,
@@ -24,11 +27,19 @@ class Alert {
     required this.isUnread,
     this.actionLabel,
     required this.accentColor,
+    this.orderId,
   });
 
   /// Create from backend NotificationItem
   factory Alert.fromNotification(NotificationItem item) {
     final category = _mapTypeToCategory(item.type);
+    String? orderId;
+    if (item.data != null) {
+      try {
+        final parsed = jsonDecode(item.data!);
+        if (parsed is Map) orderId = parsed['orderId'] as String?;
+      } catch (_) {}
+    }
     return Alert(
       id: item.id,
       title: item.title,
@@ -38,6 +49,7 @@ class Alert {
       isUnread: !item.isRead,
       actionLabel: _actionLabelFor(category),
       accentColor: _colorFor(category),
+      orderId: orderId,
     );
   }
 
@@ -98,6 +110,7 @@ class Alert {
       isUnread: isUnread ?? this.isUnread,
       actionLabel: actionLabel,
       accentColor: accentColor,
+      orderId: orderId,
     );
   }
 

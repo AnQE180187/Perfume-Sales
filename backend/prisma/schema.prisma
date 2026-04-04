@@ -545,6 +545,7 @@ model Conversation {
   type      ConversationType
   createdAt DateTime           @default(now())
   updatedAt DateTime           @updatedAt
+  deletedAt DateTime?
 
   participants ConversationParticipant[]
   messages     Message[]

@@ -2,7 +2,9 @@ import {
   Controller,
   Get,
   Post,
+  Delete,
   Body,
+  Param,
   Query,
   UseGuards,
   Req,
@@ -71,11 +73,13 @@ export class ChatController {
     @Body('type') type: ConversationType,
     @Body('otherUserId') otherUserId?: string,
   ) {
-    return this.conversationService.create(
-      type,
-      req.user.userId,
-      otherUserId,
-    );
+    return this.conversationService.create(type, req.user.userId, otherUserId);
+  }
+
+  // ───── DELETE /chat/conversations/:id ─────
+  @Delete('conversations/:id')
+  async deleteConversation(@Req() req: any, @Param('id') id: string) {
+    return this.conversationService.softDelete(id, req.user.userId);
   }
 
   // ───── GET /chat/messages ─────
