@@ -6,6 +6,7 @@ import { authService } from '@/services/auth.service';
 import { useAuthStore } from '@/store/auth.store';
 import { User, Mail, Shield, Edit2, Loader2, CheckCircle, Send, Phone } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useTranslations, useLocale, useFormatter } from 'next-intl';
 
 type ProfileData = {
     id: string;
@@ -27,6 +28,10 @@ type ProfileData = {
 };
 
 export default function ProfilePage() {
+    const t = useTranslations('dashboard.profile');
+    const tFeatured = useTranslations('featured');
+    const locale = useLocale();
+    const format = useFormatter();
     const { user: authUser, token, setAuth } = useAuthStore();
     const [data, setData] = useState<ProfileData | null>(null);
     const [loading, setLoading] = useState(true);
@@ -79,8 +84,8 @@ export default function ProfilePage() {
         setSendingVerify(true);
         setVerifyMsg(null);
         try {
-            const res = await authService.resendVerificationEmail();
-            setVerifyMsg(res.message ?? 'Đã gửi email.');
+            await authService.resendVerificationEmail();
+            setVerifyMsg(t('verification.sent'));
         } catch (e) {
             setVerifyMsg((e as Error).message);
         } finally {
@@ -118,6 +123,14 @@ export default function ProfilePage() {
         }
     };
 
+    const formatCurrency = (amount: number) => {
+        return format.number(amount, {
+          style: 'currency',
+          currency: tFeatured('currency_code') || 'VND',
+          maximumFractionDigits: 0
+        });
+    };
+
     if (loading) {
         return (
             <AuthGuard>
@@ -133,10 +146,10 @@ export default function ProfilePage() {
             <main className="p-8 max-w-5xl mx-auto">
                 <header className="mb-12">
                     <h1 className="text-4xl font-heading gold-gradient mb-2 uppercase tracking-tighter">
-                        Hồ sơ cá nhân
+                        {t('title')}
                     </h1>
                     <p className="text-muted-foreground font-body text-sm uppercase tracking-widest">
-                        Quản lý thông tin tài khoản của bạn
+                        {t('subtitle')}
                     </p>
                 </header>
 
@@ -157,36 +170,36 @@ export default function ProfilePage() {
                                 )}
                             </div>
                             <h2 className="font-heading text-xl text-foreground uppercase tracking-widest mb-1">
-                                {data?.fullName || data?.email || 'User'}
+                                {data?.fullName || data?.email || t('user_placeholder')}
                             </h2>
                             <p className="text-[10px] text-gold uppercase tracking-[0.3em] font-bold">
-                                {data?.role ?? 'CUSTOMER'}
+                                {data?.role ? t(`roles.${data.role.toLowerCase()}`) : t('roles.customer')}
                             </p>
                         </div>
 
                         <div className="glass p-8 rounded-[2.5rem] border-border space-y-6">
                             <h3 className="font-heading text-[10px] uppercase tracking-widest text-muted-foreground mb-4">
-                                Bảo mật
+                                {t('security.title')}
                             </h3>
                             <div className="flex items-center gap-4 text-xs font-body text-foreground">
                                 <Shield className="w-4 h-4 text-emerald-500" />
-                                <span>Tài khoản được bảo vệ</span>
+                                <span>{t('security.protected')}</span>
                             </div>
                         </div>
 
                         <div className="glass p-8 rounded-[2.5rem] border-border space-y-4">
                             <h3 className="font-heading text-[10px] uppercase tracking-widest text-muted-foreground mb-4">
-                                Xác thực email
+                                {t('verification.title')}
                             </h3>
                             {data?.emailVerified ? (
                                 <div className="flex items-center gap-4 text-xs font-body text-emerald-500">
                                     <CheckCircle className="w-4 h-4" />
-                                    <span>Email đã được xác thực</span>
+                                    <span>{t('verification.verified')}</span>
                                 </div>
                             ) : (
                                 <div className="space-y-3">
                                     <p className="text-xs text-muted-foreground">
-                                        Email chưa xác thực. (Tùy chọn – không ảnh hưởng sử dụng)
+                                        {t('verification.unverified')}
                                     </p>
                                     <button
                                         type="button"
@@ -195,7 +208,7 @@ export default function ProfilePage() {
                                         className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gold text-gold text-[10px] font-heading uppercase tracking-widest hover:bg-gold/10 disabled:opacity-50"
                                     >
                                         {sendingVerify ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
-                                        Gửi email xác thực
+                                        {t('verification.resend')}
                                     </button>
                                     {verifyMsg && (
                                         <p className="text-[10px] text-muted-foreground">{verifyMsg}</p>
@@ -208,14 +221,14 @@ export default function ProfilePage() {
                     <div className="lg:col-span-2 space-y-8">
                         <div className="glass p-10 rounded-[3rem] border-border">
                             <div className="flex justify-between items-center mb-10">
-                                <h3 className="font-heading text-lg uppercase tracking-widest">Thông tin cá nhân</h3>
+                                <h3 className="font-heading text-lg uppercase tracking-widest">{t('personal_info')}</h3>
                                 {!editing ? (
                                     <button
                                         type="button"
                                         onClick={() => setEditing(true)}
                                         className="flex items-center gap-2 text-gold text-[10px] uppercase font-heading tracking-widest hover:underline"
                                     >
-                                        <Edit2 className="w-3 h-3" /> Chỉnh sửa
+                                        <Edit2 className="w-3 h-3" /> {t('edit')}
                                     </button>
                                 ) : (
                                     <div className="flex gap-2">
@@ -225,14 +238,14 @@ export default function ProfilePage() {
                                             disabled={saving}
                                             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gold text-primary text-[10px] uppercase font-heading tracking-widest disabled:opacity-50"
                                         >
-                                            {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : null} Lưu
+                                            {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : null} {t('save')}
                                         </button>
                                         <button
                                             type="button"
                                             onClick={() => setEditing(false)}
                                             className="px-4 py-2 rounded-xl border border-border text-[10px] uppercase font-heading tracking-widest"
                                         >
-                                            Hủy
+                                            {t('cancel')}
                                         </button>
                                     </div>
                                 )}
@@ -241,7 +254,7 @@ export default function ProfilePage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                                 <div className="space-y-2">
                                     <label className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-heading">
-                                        Họ tên
+                                        {t('labels.fullName')}
                                     </label>
                                     {editing ? (
                                         <input
@@ -252,13 +265,13 @@ export default function ProfilePage() {
                                         />
                                     ) : (
                                         <p className="font-body text-sm border-b border-border/50 pb-2">
-                                            {data?.fullName || '—'}
+                                            {data?.fullName || t('fallback.empty')}
                                         </p>
                                     )}
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-heading">
-                                        Số điện thoại
+                                        {t('labels.phone')}
                                     </label>
                                     {editing ? (
                                         <input
@@ -266,28 +279,30 @@ export default function ProfilePage() {
                                             value={form.phone}
                                             onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
                                             className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm"
-                                            placeholder="+84 901 234 567"
+                                            placeholder={t('placeholders.phone')}
                                         />
                                     ) : (
                                         <p className="font-body text-sm border-b border-border/50 pb-2 flex items-center gap-2">
                                             <Phone className="w-3 h-3 text-muted-foreground" />
-                                            {data?.phone || '—'}
+                                            {data?.phone || t('fallback.empty')}
                                         </p>
                                     )}
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-heading">
-                                        Email
+                                        {t('labels.email')}
                                     </label>
                                     <p className="font-body text-sm border-b border-border/50 pb-2 flex items-center gap-2">
                                         <Mail className="w-3 h-3 text-muted-foreground" />
-                                        {data?.email || '—'}
+                                        {data?.email || t('fallback.empty')}
                                     </p>
-                                    <span className="text-[10px] text-muted-foreground">Email không thể thay đổi</span>
+                                    <span className="text-[10px] text-muted-foreground leading-relaxed">
+                                        {t('labels.email_immutable')}
+                                    </span>
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-heading">
-                                        Giới tính
+                                        {t('labels.gender')}
                                     </label>
                                     {editing ? (
                                         <select
@@ -296,19 +311,19 @@ export default function ProfilePage() {
                                             className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm"
                                         >
                                             <option value="">—</option>
-                                            <option value="MALE">Nam</option>
-                                            <option value="FEMALE">Nữ</option>
-                                            <option value="OTHER">Khác</option>
+                                            <option value="MALE">{t('gender_options.male')}</option>
+                                            <option value="FEMALE">{t('gender_options.female')}</option>
+                                            <option value="OTHER">{t('gender_options.other')}</option>
                                         </select>
                                     ) : (
                                         <p className="font-body text-sm border-b border-border/50 pb-2">
-                                            {data?.gender === 'MALE' ? 'Nam' : data?.gender === 'FEMALE' ? 'Nữ' : data?.gender || '—'}
+                                            {data?.gender ? t(`gender_options.${data.gender.toLowerCase()}`) : t('fallback.empty')}
                                         </p>
                                     )}
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-heading">
-                                        Ngày sinh
+                                        {t('labels.dob')}
                                     </label>
                                     {editing ? (
                                         <input
@@ -320,14 +335,14 @@ export default function ProfilePage() {
                                     ) : (
                                         <p className="font-body text-sm border-b border-border/50 pb-2">
                                             {data?.dateOfBirth
-                                                ? new Date(data.dateOfBirth).toLocaleDateString('vi-VN')
-                                                : '—'}
+                                                ? format.dateTime(new Date(data.dateOfBirth), { dateStyle: 'long' })
+                                                : t('fallback.empty')}
                                         </p>
                                     )}
                                 </div>
                                 <div className="space-y-2 md:col-span-2">
                                     <label className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-heading">
-                                        Địa chỉ
+                                        {t('labels.address')}
                                     </label>
                                     {editing ? (
                                         <input
@@ -338,13 +353,13 @@ export default function ProfilePage() {
                                         />
                                     ) : (
                                         <p className="font-body text-sm border-b border-border/50 pb-2">
-                                            {data?.address || '—'}
+                                            {data?.address || t('fallback.empty')}
                                         </p>
                                     )}
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-heading">
-                                        Thành phố
+                                        {t('labels.city')}
                                     </label>
                                     {editing ? (
                                         <input
@@ -355,13 +370,13 @@ export default function ProfilePage() {
                                         />
                                     ) : (
                                         <p className="font-body text-sm border-b border-border/50 pb-2">
-                                            {data?.city || '—'}
+                                            {data?.city || t('fallback.empty')}
                                         </p>
                                     )}
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-heading">
-                                        Quốc gia
+                                        {t('labels.country')}
                                     </label>
                                     {editing ? (
                                         <input
@@ -372,7 +387,7 @@ export default function ProfilePage() {
                                         />
                                     ) : (
                                         <p className="font-body text-sm border-b border-border/50 pb-2">
-                                            {data?.country || '—'}
+                                            {data?.country || t('fallback.empty')}
                                         </p>
                                     )}
                                 </div>
@@ -380,7 +395,7 @@ export default function ProfilePage() {
                                     <>
                                         <div className="space-y-2">
                                             <label className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-heading">
-                                                Ngân sách tối thiểu (VNĐ)
+                                                {t('labels.min_budget')}
                                             </label>
                                             {editing ? (
                                                 <input
@@ -395,16 +410,16 @@ export default function ProfilePage() {
                                                     className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm"
                                                 />
                                             ) : (
-                                                <p className="font-body text-sm border-b border-border/50 pb-2">
+                                                <p className="font-body text-sm border-b border-border/50 pb-2 text-gold">
                                                     {data?.budgetMin != null
-                                                        ? new Intl.NumberFormat('vi-VN').format(data.budgetMin)
-                                                        : '—'}
+                                                        ? formatCurrency(data.budgetMin)
+                                                        : t('fallback.empty')}
                                                 </p>
                                             )}
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-heading">
-                                                Ngân sách tối đa (VNĐ)
+                                                {t('labels.max_budget')}
                                             </label>
                                             {editing ? (
                                                 <input
@@ -419,10 +434,10 @@ export default function ProfilePage() {
                                                     className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm"
                                                 />
                                             ) : (
-                                                <p className="font-body text-sm border-b border-border/50 pb-2">
+                                                <p className="font-body text-sm border-b border-border/50 pb-2 text-gold">
                                                     {data?.budgetMax != null
-                                                        ? new Intl.NumberFormat('vi-VN').format(data.budgetMax)
-                                                        : '—'}
+                                                        ? formatCurrency(data.budgetMax)
+                                                        : t('fallback.empty')}
                                                 </p>
                                             )}
                                         </div>

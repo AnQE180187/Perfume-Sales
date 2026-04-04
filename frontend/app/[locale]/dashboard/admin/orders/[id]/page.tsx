@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { Link, useRouter } from '@/lib/i18n';
+import { useTranslations, useFormatter } from 'next-intl';
 import { orderService, Order } from '@/services/order.service';
 import { shippingService, type Shipment } from '@/services/shipping.service';
 import {
@@ -40,6 +41,13 @@ export default function AdminOrderDetailPage() {
     const [shipments, setShipments] = useState<Shipment[]>([]);
     const [loading, setLoading] = useState(true);
     const [shippingAction, setShippingAction] = useState<string | null>(null);
+
+    const tOrder = useTranslations('admin_orders_page');
+    const tFeatured = useTranslations('featured');
+    const format = useFormatter();
+
+    const formatCurrency = (val: number) => format.number(val, { style: 'currency', currency: tFeatured('currency_code') || 'VND' });
+    const formatDate = (val: string | Date | undefined) => val ? format.dateTime(new Date(val), { dateStyle: 'short', timeStyle: 'short' }) : '—';
 
     useEffect(() => {
         if (orderId) {
@@ -140,22 +148,6 @@ export default function AdminOrderDetailPage() {
         REFUNDED: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400',
     };
 
-    const statusLabels: Record<string, string> = {
-        PENDING: 'Chờ Xử Lý',
-        PROCESSING: 'Đang Xử Lý',
-        CONFIRMED: 'Đã Xác Nhận',
-        SHIPPED: 'Đang Giao',
-        COMPLETED: 'Hoàn Thành',
-        CANCELLED: 'Đã Hủy',
-    };
-
-    const paymentLabels: Record<string, string> = {
-        PENDING: 'Chờ Thanh Toán',
-        PAID: 'Đã Thanh Toán',
-        FAILED: 'Thanh Toán Thất Bại',
-        REFUNDED: 'Đã Hoàn Tiền',
-    };
-
     const hasShipment = shipments.length > 0;
     const canCreateShipment = !hasShipment && order.shippingAddress && order.status !== 'CANCELLED';
 
@@ -169,13 +161,13 @@ export default function AdminOrderDetailPage() {
                         className="inline-flex items-center gap-2 text-gold hover:text-gold/80 transition mb-4"
                     >
                         <ArrowLeft size={20} />
-                        Quay Lại
+                        {tOrder('back')}
                     </Link>
 
                     <div className="flex items-center gap-3">
                         <Package className="text-gold" size={32} />
                         <h1 className="text-4xl font-serif text-luxury-black dark:text-white">
-                            Chi Tiết Đơn Hàng
+                            {tOrder('detail_title')}
                         </h1>
                     </div>
                 </div>
@@ -185,7 +177,7 @@ export default function AdminOrderDetailPage() {
                     {/* Order Code & Status */}
                     <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-stone-100 dark:border-white/10">
                         <p className="text-xs uppercase tracking-wider text-stone-600 dark:text-stone-400 mb-2">
-                            Mã Đơn Hàng
+                            {tOrder('order_code')}
                         </p>
                         <p className="text-2xl font-mono font-bold text-luxury-black dark:text-white mb-4">
                             {order.code}
@@ -193,22 +185,22 @@ export default function AdminOrderDetailPage() {
                         <div className="space-y-2">
                             <div>
                                 <p className="text-xs uppercase tracking-wider text-stone-600 dark:text-stone-400 mb-1">
-                                    Trạng Thái Đơn
+                                    {tOrder('status')}
                                 </p>
                                 <span
                                     className={`inline-block text-xs font-bold px-3 py-1 rounded-full ${statusColors[order.status] || statusColors.PENDING}`}
                                 >
-                                    {statusLabels[order.status] || order.status}
+                                    {tOrder(`status_labels.${order.status}`)}
                                 </span>
                             </div>
                             <div>
                                 <p className="text-xs uppercase tracking-wider text-stone-600 dark:text-stone-400 mb-1">
-                                    Trạng Thái Thanh Toán
+                                    {tOrder('payment_status')}
                                 </p>
                                 <span
                                     className={`inline-block text-xs font-bold px-3 py-1 rounded-full ${paymentStatusColors[order.paymentStatus] || paymentStatusColors.PENDING}`}
                                 >
-                                    {paymentLabels[order.paymentStatus] || order.paymentStatus}
+                                    {tOrder(`payment_labels.${order.paymentStatus}`)}
                                 </span>
                             </div>
                         </div>
@@ -217,13 +209,13 @@ export default function AdminOrderDetailPage() {
                     {/* Customer Info */}
                     <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-stone-100 dark:border-white/10">
                         <p className="text-xs uppercase tracking-wider text-stone-600 dark:text-stone-400 mb-4">
-                            Thông Tin Khách Hàng
+                            {tOrder('customer_info')}
                         </p>
                         <div className="space-y-3">
                             <div className="flex gap-3">
                                 <Mail size={18} className="text-gold flex-shrink-0 mt-0.5" />
                                 <div>
-                                    <p className="text-xs text-stone-600 dark:text-stone-400">Email</p>
+                                    <p className="text-xs text-stone-600 dark:text-stone-400">{tOrder('email')}</p>
                                     <p className="text-sm font-bold text-luxury-black dark:text-white">
                                         {order.user?.email}
                                     </p>
@@ -232,7 +224,7 @@ export default function AdminOrderDetailPage() {
                             <div className="flex gap-3">
                                 <Phone size={18} className="text-gold flex-shrink-0 mt-0.5" />
                                 <div>
-                                    <p className="text-xs text-stone-600 dark:text-stone-400">Số Điện Thoại</p>
+                                    <p className="text-xs text-stone-600 dark:text-stone-400">{tOrder('phone')}</p>
                                     <p className="text-sm font-bold text-luxury-black dark:text-white">
                                         {order.phone}
                                     </p>
@@ -244,35 +236,35 @@ export default function AdminOrderDetailPage() {
                     {/* Amount Info */}
                     <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-stone-100 dark:border-white/10">
                         <p className="text-xs uppercase tracking-wider text-stone-600 dark:text-stone-400 mb-4">
-                            Thông Tin Thanh Toán
+                            {tOrder('payment_info')}
                         </p>
                         <div className="space-y-3">
                             <div>
-                                <p className="text-xs text-stone-600 dark:text-stone-400 mb-1">Tổng Tiền Hàng</p>
+                                <p className="text-xs text-stone-600 dark:text-stone-400 mb-1">{tOrder('subtotal')}</p>
                                 <p className="text-xl font-bold text-luxury-black dark:text-white">
-                                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.totalAmount)}
+                                    {formatCurrency(order.totalAmount)}
                                 </p>
                             </div>
                             {order.discountAmount > 0 && (
                                 <div>
-                                    <p className="text-xs text-stone-600 dark:text-stone-400 mb-1">Giảm Giá</p>
+                                    <p className="text-xs text-stone-600 dark:text-stone-400 mb-1">{tOrder('discount')}</p>
                                     <p className="text-lg font-bold text-red-600">
-                                        - {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.discountAmount)}
+                                        - {formatCurrency(order.discountAmount)}
                                     </p>
                                 </div>
                             )}
                             {(order as any).shippingFee > 0 && (
                                 <div>
-                                    <p className="text-xs text-stone-600 dark:text-stone-400 mb-1">Phí Vận Chuyển</p>
+                                    <p className="text-xs text-stone-600 dark:text-stone-400 mb-1">{tOrder('shipping_fee')}</p>
                                     <p className="text-lg font-bold text-stone-700 dark:text-stone-300">
-                                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format((order as any).shippingFee)}
+                                        {formatCurrency((order as any).shippingFee)}
                                     </p>
                                 </div>
                             )}
                             <div className="pt-3 border-t border-stone-200 dark:border-white/10">
-                                <p className="text-xs text-stone-600 dark:text-stone-400 mb-1">Tổng Thanh Toán</p>
+                                <p className="text-xs text-stone-600 dark:text-stone-400 mb-1">{tOrder('total')}</p>
                                 <p className="text-2xl font-bold text-gold">
-                                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.finalAmount)}
+                                    {formatCurrency(order.finalAmount)}
                                 </p>
                             </div>
                         </div>
@@ -284,11 +276,11 @@ export default function AdminOrderDetailPage() {
                     <div className="flex items-center gap-3 mb-4">
                         <MapPin className="text-gold" size={20} />
                         <h2 className="text-xl font-serif font-bold text-luxury-black dark:text-white">
-                            Địa Chỉ Giao Hàng
+                            {tOrder('shipping_address')}
                         </h2>
                     </div>
                     <p className="text-sm text-luxury-black dark:text-white">
-                        {order.shippingAddress || 'Không có địa chỉ'}
+                        {order.shippingAddress || tOrder('no_address')}
                     </p>
                 </div>
 
@@ -298,7 +290,7 @@ export default function AdminOrderDetailPage() {
                         <div className="flex items-center gap-3">
                             <Truck className="text-gold" size={20} />
                             <h2 className="text-xl font-serif font-bold text-luxury-black dark:text-white">
-                                Vận Chuyển GHN
+                                {tOrder('ghn_shipping')}
                             </h2>
                         </div>
                         <div className="flex items-center gap-3">
@@ -313,7 +305,7 @@ export default function AdminOrderDetailPage() {
                                     ) : (
                                         <Plus size={14} />
                                     )}
-                                    Tạo đơn GHN
+                                    {tOrder('create_ghn')}
                                 </button>
                             )}
                         </div>
@@ -331,38 +323,38 @@ export default function AdminOrderDetailPage() {
                                         <div className="flex justify-between items-start gap-4 mb-4">
                                             <div>
                                                 <p className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-1">
-                                                    Mã vận đơn GHN
+                                                    {tOrder('tracking_code')}
                                                 </p>
                                                 <p className="font-mono font-bold text-luxury-black dark:text-white text-lg">
                                                     {s.ghnOrderCode || s.trackingCode || '—'}
                                                 </p>
                                             </div>
                                             <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${statusStyle.color}`}>
-                                                {statusStyle.label}
+                                                {tOrder(`shipment_status.${s.status}`)}
                                             </span>
                                         </div>
 
                                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                                             <div>
-                                                <p className="text-[10px] text-stone-400 uppercase tracking-wider mb-1">Nhà vận chuyển</p>
+                                                <p className="text-[10px] text-stone-400 uppercase tracking-wider mb-1">{tOrder('provider')}</p>
                                                 <p className="text-sm font-bold text-luxury-black dark:text-white">{s.provider}</p>
                                             </div>
                                             <div>
-                                                <p className="text-[10px] text-stone-400 uppercase tracking-wider mb-1">Phí vận chuyển</p>
+                                                <p className="text-[10px] text-stone-400 uppercase tracking-wider mb-1">{tOrder('shipping_fee')}</p>
                                                 <p className="text-sm font-bold text-luxury-black dark:text-white">
-                                                    {s.fee ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(s.fee) : '—'}
+                                                    {s.fee ? formatCurrency(s.fee) : '—'}
                                                 </p>
                                             </div>
                                             <div>
-                                                <p className="text-[10px] text-stone-400 uppercase tracking-wider mb-1">Ngày tạo</p>
+                                                <p className="text-[10px] text-stone-400 uppercase tracking-wider mb-1">{tOrder('created_at')}</p>
                                                 <p className="text-sm font-bold text-luxury-black dark:text-white">
-                                                    {new Date(s.createdAt).toLocaleDateString('vi-VN')}
+                                                    {formatDate(s.createdAt)}
                                                 </p>
                                             </div>
                                             <div>
-                                                <p className="text-[10px] text-stone-400 uppercase tracking-wider mb-1">Cập nhật</p>
+                                                <p className="text-[10px] text-stone-400 uppercase tracking-wider mb-1">{tOrder('updated_at')}</p>
                                                 <p className="text-sm font-bold text-luxury-black dark:text-white">
-                                                    {new Date(s.updatedAt).toLocaleDateString('vi-VN')}
+                                                    {formatDate(s.updatedAt)}
                                                 </p>
                                             </div>
                                         </div>
@@ -376,7 +368,7 @@ export default function AdminOrderDetailPage() {
                                                     className="flex items-center gap-2 px-3 py-2 bg-stone-100 dark:bg-zinc-700 rounded-lg text-[10px] font-bold uppercase tracking-wider text-gold hover:text-gold/80 transition"
                                                 >
                                                     <ExternalLink size={12} />
-                                                    Tra cứu GHN
+                                                    {tOrder('track_ghn')}
                                                 </a>
                                             )}
                                             {s.status !== 'DELIVERED' && s.status !== 'FAILED' && s.status !== 'RETURNED' && (
@@ -391,7 +383,7 @@ export default function AdminOrderDetailPage() {
                                                         ) : (
                                                             <RefreshCw size={12} />
                                                         )}
-                                                        Đồng bộ trạng thái
+                                                        {tOrder('sync_status')}
                                                     </button>
                                                     {s.status === 'PENDING' && (
                                                         <button
@@ -404,7 +396,7 @@ export default function AdminOrderDetailPage() {
                                                             ) : (
                                                                 <XCircle size={12} />
                                                             )}
-                                                            Hủy vận chuyển
+                                                            {tOrder('cancel_shipping')}
                                                         </button>
                                                     )}
                                                 </>
@@ -419,8 +411,8 @@ export default function AdminOrderDetailPage() {
                             <Truck size={40} className="mx-auto text-stone-300 dark:text-stone-600 mb-4" />
                             <p className="text-sm text-stone-500 dark:text-stone-400">
                                 {canCreateShipment
-                                    ? 'Chưa có đơn vận chuyển. Nhấn "Tạo đơn GHN" để tạo.'
-                                    : 'Không có thông tin vận chuyển.'}
+                                    ? tOrder('no_shipping')
+                                    : tOrder('no_shipping_data')}
                             </p>
                         </div>
                     )}
@@ -429,7 +421,7 @@ export default function AdminOrderDetailPage() {
                 {/* Order Items */}
                 <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-stone-100 dark:border-white/10">
                     <h2 className="text-xl font-serif font-bold text-luxury-black dark:text-white mb-6">
-                        Danh Sách Sản Phẩm
+                        {tOrder('products_list')}
                     </h2>
 
                     {order.items && order.items.length > 0 ? (
@@ -444,20 +436,20 @@ export default function AdminOrderDetailPage() {
                                             {item.product?.name}
                                         </p>
                                         <p className="text-sm text-stone-600 dark:text-stone-400">
-                                            Số lượng: {item.quantity} ×{' '}
-                                            {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.unitPrice)}
+                                            {tOrder('qty')}: {item.quantity} ×{' '}
+                                            {formatCurrency(item.unitPrice)}
                                         </p>
                                     </div>
                                     <div className="text-right">
                                         <p className="font-bold text-luxury-black dark:text-white">
-                                            {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.totalPrice)}
+                                            {formatCurrency(item.totalPrice)}
                                         </p>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     ) : (
-                        <p className="text-stone-600 dark:text-stone-400">Không có sản phẩm</p>
+                        <p className="text-stone-600 dark:text-stone-400">{tOrder('no_products')}</p>
                     )}
                 </div>
 
@@ -465,10 +457,10 @@ export default function AdminOrderDetailPage() {
                 <div className="mt-8 text-sm text-stone-600 dark:text-stone-400 grid grid-cols-2 gap-4">
                     <div>
                         <Calendar size={16} className="inline mr-2" />
-                        Ngày tạo: {new Date(order.createdAt || '').toLocaleString('vi-VN')}
+                        {tOrder('created_at')}: {formatDate(order.createdAt)}
                     </div>
                     <div className="text-right">
-                        Cập nhật: {new Date(order.updatedAt || '').toLocaleString('vi-VN')}
+                        {tOrder('updated_at')}: {formatDate(order.updatedAt)}
                     </div>
                 </div>
             </div>

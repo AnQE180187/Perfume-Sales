@@ -36,7 +36,7 @@ export default function LoginPage() {
             await login({ email: formData.email, password: formData.password });
             router.push('/');
         } catch (err: any) {
-            setError(err.message || 'Login failed');
+            setError(err.message || t('error_failed'));
         } finally {
             setIsLoading(false);
         }
@@ -68,14 +68,14 @@ export default function LoginPage() {
                             <div className="flex items-center gap-3 text-gold mb-6">
                                 <ArrowRight size={24} />
                                 <span className="text-[10px] font-bold tracking-[.4em] uppercase">
-                                    Private Access
+                                    {t('badge')}
                                 </span>
                             </div>
                             <h2 className="text-5xl font-serif text-white mb-6 leading-tight italic">
-                                Enter the House
+                                {t('title')}
                             </h2>
                             <p className="text-stone-300 text-sm font-light leading-relaxed max-w-sm">
-                                Unlock your neural scent profile, manage your private collection, and access member-only archival essences.
+                                {t('subtitle')}
                             </p>
                         </motion.div>
                     </div>
@@ -145,7 +145,7 @@ export default function LoginPage() {
                                             type={showPassword ? 'text' : 'password'}
                                             required
                                             className="w-full bg-stone-50 dark:bg-white/5 border border-stone-100 dark:border-white/10 rounded-2xl px-14 py-4 outline-none focus:border-gold transition-all text-sm pr-16 text-luxury-black dark:text-white"
-                                            placeholder="••••••••"
+                                            placeholder={t('password_placeholder')}
                                         />
                                         <button
                                             type="button"
@@ -181,7 +181,7 @@ export default function LoginPage() {
                                         className="flex items-center justify-center gap-3 py-4 border border-stone-100 dark:border-white/10 rounded-2xl hover:bg-stone-50 dark:hover:bg-white/5 transition-all cursor-pointer disabled:opacity-50"
                                     >
                                         <Globe size={18} className="text-stone-400" />
-                                        <span className="text-[10px] font-bold tracking-widest uppercase text-stone-500">Google</span>
+                                        <span className="text-[10px] font-bold tracking-widest uppercase text-stone-500">{t('google')}</span>
                                     </button>
                                     <button
                                         type="button"
@@ -190,7 +190,7 @@ export default function LoginPage() {
                                         className="flex items-center justify-center gap-3 py-4 border border-stone-100 dark:border-white/10 rounded-2xl hover:bg-stone-50 dark:hover:bg-white/5 transition-all cursor-pointer disabled:opacity-50"
                                     >
                                         <Facebook size={18} className="text-stone-400" />
-                                        <span className="text-[10px] font-bold tracking-widest uppercase text-stone-500">Facebook</span>
+                                        <span className="text-[10px] font-bold tracking-widest uppercase text-stone-500">{t('facebook')}</span>
                                     </button>
                                 </div>
                             </div>

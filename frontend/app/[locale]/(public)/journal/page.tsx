@@ -37,7 +37,9 @@ export default function JournalPage() {
                             transition={{ delay: 0.1 }}
                             className="text-5xl md:text-7xl font-serif text-luxury-black dark:text-white mb-8 transition-colors"
                         >
-                            Aura <span className="italic">Journal</span>
+                            {t.rich('journal_title', {
+                                italic: (chunks) => <span className="italic">{chunks}</span>
+                            })}
                         </motion.h1>
                         <motion.p
                             initial={{ opacity: 0, y: 20 }}

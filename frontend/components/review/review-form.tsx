@@ -123,11 +123,11 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
     // Helper for rating description translation
     const getRatingDesc = (r: number) => {
         switch (r) {
-            case 5: return 'Excellent';
-            case 4: return 'Very Good';
-            case 3: return 'Good';
-            case 2: return 'Fair';
-            case 1: return 'Poor';
+            case 5: return tReview('form.rating_desc.excellent');
+            case 4: return tReview('form.rating_desc.very_good');
+            case 3: return tReview('form.rating_desc.good');
+            case 2: return tReview('form.rating_desc.fair');
+            case 1: return tReview('form.rating_desc.poor');
             default: return '';
         }
     };
@@ -135,14 +135,14 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
     return (
         <form onSubmit={handleSubmit} className="glass dark:bg-zinc-900 rounded-[2.5rem] p-8 md:p-12 border-border space-y-10 animate-in fade-in zoom-in-95 duration-700">
             <div className="space-y-3 text-center md:text-left">
-                <h3 className="text-3xl font-serif text-foreground italic capitalize tracking-tight">Share Your Experience</h3>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-[.4em] font-bold opacity-60">Reviewing: <span className="text-gold italic">{productName}</span></p>
+                <h3 className="text-3xl font-serif text-foreground italic capitalize tracking-tight">{tReview('form.title')}</h3>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-[.4em] font-bold opacity-60">{tReview('form.reviewing_label')} <span className="text-gold italic">{productName}</span></p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                 <div className="space-y-8">
                     <div className="space-y-4">
-                        <label className="text-[10px] font-bold uppercase tracking-[.4em] text-muted-foreground ml-1">Your Rating</label>
+                        <label className="text-[10px] font-bold uppercase tracking-[.4em] text-muted-foreground ml-1">{tReview('form.rating_label')}</label>
                         <div className="flex items-center gap-6 glass px-6 py-4 rounded-2xl border-gold/10">
                             <StarRating rating={rating} onChange={setRating} size={32} />
                             <span className="text-sm font-serif text-gold italic border-l border-gold/20 pl-6">
@@ -152,10 +152,10 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                     </div>
 
                     <div className="space-y-4">
-                        <label className="text-[10px] font-bold uppercase tracking-[.4em] text-muted-foreground ml-1">Your Story</label>
+                        <label className="text-[10px] font-bold uppercase tracking-[.4em] text-muted-foreground ml-1">{tReview('form.description_label')}</label>
                         <textarea
                             className="w-full h-44 bg-foreground/5 dark:bg-white/[0.02] border border-border rounded-3xl p-6 text-sm font-serif italic focus:outline-none focus:ring-1 focus:ring-gold/30 transition-all resize-none custom-scrollbar"
-                            placeholder="Describe the scent, the longevity, or the compliments you received..."
+                            placeholder={tReview('form.description_placeholder')}
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                             required
@@ -165,7 +165,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
 
                 <div className="space-y-6">
                     <label className="text-[10px] font-bold uppercase tracking-[.4em] text-muted-foreground flex justify-between ml-1">
-                        Visual Memories
+                        {tReview('form.visual_label')}
                         <span className="text-gold/50">{images.length}/{MAX_IMAGES}</span>
                     </label>
 
@@ -190,7 +190,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                                 className="aspect-square flex flex-col items-center justify-center border-2 border-dashed border-border rounded-2xl hover:bg-gold/5 hover:border-gold/30 transition-all group scale-100 hover:scale-95 duration-500"
                             >
                                 <ImageIcon className="text-muted-foreground group-hover:text-gold transition-colors duration-700" size={32} />
-                                <span className="text-[8px] mt-3 text-muted-foreground uppercase font-bold tracking-widest opacity-60">Add Photo</span>
+                                <span className="text-[8px] mt-3 text-muted-foreground uppercase font-bold tracking-widest opacity-60">{tReview('form.add_photo')}</span>
                             </button>
                         )}
                     </div>
@@ -207,7 +207,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                     <div className="p-6 rounded-3xl bg-gold/5 border border-gold/10 flex gap-4 shadow-inner">
                         <AlertCircle size={20} className="text-gold shrink-0 mt-1" />
                         <p className="text-[10px] text-muted-foreground leading-relaxed italic opacity-80">
-                            Help others by uploading photos of the bottle or the packaging. Max 5MB per image.
+                            {tReview('form.visual_desc')}
                         </p>
                     </div>
                 </div>
@@ -221,7 +221,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                         disabled={isSubmitting}
                         className="text-[10px] uppercase font-bold tracking-[.4em] text-muted-foreground hover:text-foreground transition-colors"
                     >
-                        Cancel
+                        {tReview('form.cancel')}
                     </button>
                 )}
                 <Button
@@ -232,15 +232,15 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                     {isSubmitting ? (
                         <>
                             <Loader2 className="mr-3 h-4 w-4 animate-spin" />
-                            Sending...
+                            {tReview('form.sending')}
                         </>
                     ) : isUploading ? (
                         <>
                             <Loader2 className="mr-3 h-4 w-4 animate-spin" />
-                            Uploading...
+                            {tReview('form.uploading')}
                         </>
                     ) : (
-                        "Submit Review"
+                        tReview('form.submit')
                     )}
                 </Button>
             </div>

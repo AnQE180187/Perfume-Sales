@@ -9,6 +9,7 @@ import { useTranslations } from 'next-intl';
 
 export default function CustomerPromotions() {
     const t = useTranslations('dashboard.customer.promotions');
+    const tFeatured = useTranslations('featured');
     const [promos, setPromos] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [copiedCode, setCopiedCode] = useState<string | null>(null);
@@ -77,7 +78,7 @@ export default function CustomerPromotions() {
                                         {promo.code}
                                     </h2>
                                     <p className="text-[11px] text-muted-foreground font-body leading-relaxed mb-8 flex-1 italic uppercase tracking-widest">
-                                        {promo.description || `Digital benefit for your next neural acquisition.`}
+                                        {promo.description || t('fallback_desc')}
                                     </p>
 
                                     <div className="flex items-center justify-between pt-8 border-t border-white/5">
@@ -87,8 +88,11 @@ export default function CustomerPromotions() {
                                             </p>
                                             <p className="text-2xl font-serif text-gold">
                                                 {promo.discountType === 'PERCENTAGE' 
-                                                  ? `${promo.discountValue}% OFF` 
-                                                  : `-${new Intl.NumberFormat('vi-VN').format(promo.discountValue)} VND`}
+                                                  ? t('discount_off', { value: promo.discountValue }) 
+                                                  : t('discount_fixed', { 
+                                                      value: new Intl.NumberFormat(tFeatured('currency_code') === 'USD' ? 'en-US' : 'vi-VN').format(promo.discountValue),
+                                                      currency: tFeatured('currency_code') === 'USD' ? 'USD' : 'VND'
+                                                    })}
                                             </p>
                                         </div>
                                         <button

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useFormatter } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Package, Search, Eye, CheckCircle2, Clock, AlertCircle,
@@ -9,9 +9,6 @@ import {
 } from 'lucide-react';
 import { staffOrdersService, type StaffPosOrder } from '@/services/staff-orders.service';
 import { AuthGuard } from '@/components/auth/auth-guard';
-
-const formatMoney = (n: number) =>
-    new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n);
 
 function getStatusBadge(order: StaffPosOrder, t: any) {
     if (order.status === 'COMPLETED') return { label: t('status.completed'), color: 'bg-success/10 border-success/20 text-success', icon: CheckCircle2 };
@@ -21,7 +18,8 @@ function getStatusBadge(order: StaffPosOrder, t: any) {
 }
 
 export default function StaffOrdersPage() {
-    const t = useTranslations('dashboard.orders');
+    const t = useTranslations('dashboard.staff.orders');
+    const format = useFormatter();
     const [orders, setOrders] = useState<StaffPosOrder[]>([]);
     const [total, setTotal] = useState(0);
     const [loading, setLoading] = useState(true);
@@ -128,7 +126,7 @@ export default function StaffOrdersPage() {
                                     {orders.map((order) => {
                                         const firstItem = order.items[0];
                                         const itemSummary = firstItem
-                                            ? `${firstItem.product?.name ?? 'Product'} x${firstItem.quantity}${order.items.length > 1 ? ` +${order.items.length - 1} more` : ''
+                                            ? `${firstItem.product?.name ?? t('table.product_fallback')} x${firstItem.quantity}${order.items.length > 1 ? ` ${t('table.more', { count: order.items.length - 1 })}` : ''
                                             }`
                                             : '—';
                                         const badge = getStatusBadge(order, t);
@@ -142,13 +140,13 @@ export default function StaffOrdersPage() {
                                                             {order.code}
                                                         </span>
                                                         <span className="text-[10px] text-muted-foreground font-bold tracking-tight mt-1 uppercase">
-                                                            POS
+                                                            {t('table.pos')}
                                                         </span>
                                                     </div>
                                                 </td>
                                                 <td>
                                                     <span className="text-sm font-heading">
-                                                        {new Date(order.createdAt).toLocaleString('vi-VN')}
+                                                        {format.dateTime(new Date(order.createdAt), { dateStyle: 'medium', timeStyle: 'short' })}
                                                     </span>
                                                 </td>
                                                 <td>
@@ -164,7 +162,7 @@ export default function StaffOrdersPage() {
                                                 </td>
                                                 <td>
                                                     <span className="text-sm font-bold font-heading tracking-wider">
-                                                        {formatMoney(order.finalAmount)}
+                                                        {format.number(order.finalAmount, { style: 'currency', currency: 'VND' })}
                                                     </span>
                                                 </td>
                                                 <td className="p-10 text-right">
@@ -236,7 +234,7 @@ export default function StaffOrdersPage() {
                                                     );
                                                 })()}
                                                 <span className="text-[10px] text-muted-foreground uppercase tracking-widest">
-                                                    {new Date(selectedOrder.createdAt).toLocaleString('vi-VN')}
+                                                    {format.dateTime(new Date(selectedOrder.createdAt), { dateStyle: 'medium', timeStyle: 'short' })}
                                                 </span>
                                             </div>
                                         </div>
@@ -278,7 +276,7 @@ export default function StaffOrdersPage() {
                                                             )}
                                                             <span className="text-muted-foreground text-[10px]"> x{item.quantity}</span>
                                                         </div>
-                                                        <span className="font-heading text-gold text-sm">{formatMoney(item.totalPrice)}</span>
+                                                        <span className="font-heading text-gold text-sm">{format.number(item.totalPrice, { style: 'currency', currency: 'VND' })}</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -288,17 +286,17 @@ export default function StaffOrdersPage() {
                                         <div className="border-t border-border pt-4 mb-6 space-y-2">
                                             <div className="flex justify-between text-[10px] uppercase tracking-widest text-muted-foreground font-heading">
                                                 <span>{t('detail.subtotal')}</span>
-                                                <span>{formatMoney(selectedOrder.totalAmount)}</span>
+                                                <span>{format.number(selectedOrder.totalAmount, { style: 'currency', currency: 'VND' })}</span>
                                             </div>
                                             {selectedOrder.discountAmount > 0 && (
                                                 <div className="flex justify-between text-[10px] uppercase tracking-widest text-success font-heading">
                                                     <span>{t('detail.discount')}</span>
-                                                    <span>-{formatMoney(selectedOrder.discountAmount)}</span>
+                                                    <span>-{format.number(selectedOrder.discountAmount, { style: 'currency', currency: 'VND' })}</span>
                                                 </div>
                                             )}
                                             <div className="flex justify-between text-lg font-heading pt-2">
                                                 <span className="uppercase tracking-tighter">{t('detail.total')}</span>
-                                                <span className="text-gold">{formatMoney(selectedOrder.finalAmount)}</span>
+                                                <span className="text-gold">{format.number(selectedOrder.finalAmount, { style: 'currency', currency: 'VND' })}</span>
                                             </div>
                                         </div>
 
@@ -316,7 +314,7 @@ export default function StaffOrdersPage() {
                                                             <div className="flex items-center gap-4">
                                                                 <span className={`text-[9px] uppercase font-bold ${p.status === 'PAID' ? 'text-success' : 'text-warning'
                                                                     }`}>{p.status}</span>
-                                                                <span className="font-heading">{formatMoney(p.amount)}</span>
+                                                                <span className="font-heading">{format.number(p.amount, { style: 'currency', currency: 'VND' })}</span>
                                                             </div>
                                                         </div>
                                                     ))}

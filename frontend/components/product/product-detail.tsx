@@ -11,11 +11,13 @@ import { toast } from 'sonner';
 import ReviewList from '../review/review-list';
 import ReviewSummaryView from '../review/review-summary';
 import StarRating from '../review/star-rating';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useFormatter } from 'next-intl';
 
 export default function ProductDetail({ product }: { product: Product }) {
     const t = useTranslations('product_detail');
     const tCommon = useTranslations('common');
+    const tFeatured = useTranslations('featured');
+    const format = useFormatter();
     const { isAuthenticated } = useAuth();
     const router = useRouter();
     const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
@@ -67,19 +69,23 @@ export default function ProductDetail({ product }: { product: Product }) {
         }
     };
 
-    const fmt = (n: number) =>
-        new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n);
+    const formatCurrency = (n: number) =>
+        format.number(n, {
+            style: 'currency',
+            currency: tFeatured('currency_code') || 'VND',
+            maximumFractionDigits: 0
+        });
 
     const handleToggleFavorite = async () => {
         if (!isAuthenticated) {
-            toast.error('Vui long dang nhap de luu san pham yeu thich');
+            toast.error(t('toast_login_required'));
             router.push('/login');
             return;
         }
 
         if (favoriteLoading) return;
         if (!selectedVariant && !isFavorite) {
-            toast.error('Vui long chon dung tich truoc khi them yeu thich');
+            toast.error(t('toast_select_size'));
             return;
         }
 
@@ -88,12 +94,12 @@ export default function ProductDetail({ product }: { product: Product }) {
             const nextFavorite = await favoriteService.toggleProduct(product.id, isFavorite, selectedVariant?.id);
             setIsFavorite(nextFavorite);
             if (nextFavorite) {
-                toast.success('Đã thêm sản phẩm vào mục yêu thích');
+                toast.success(t('toast_favorite_added'));
             } else {
-                toast.success('Đã xóa sản phẩm khỏi mục yêu thích');
+                toast.success(t('toast_favorite_removed'));
             }
         } catch (e: unknown) {
-            toast.error((e as Error).message || 'Khong the cap nhat muc yeu thich');
+            toast.error((e as Error).message || t('toast_favorite_error'));
         } finally {
             setFavoriteLoading(false);
         }
@@ -163,14 +169,13 @@ export default function ProductDetail({ product }: { product: Product }) {
                             <span className="text-[10px] text-muted-foreground uppercase tracking-widest">{t('rating_label', { rating: 4.5 })}</span>
                         </div>
                         <p className="text-3xl font-heading text-gold">
-                            {selectedVariant ? fmt(selectedVariant.price) : t('select_size')}
+                            {selectedVariant ? formatCurrency(selectedVariant.price) : t('select_size')}
                         </p>
                     </div>
 
                     <div className="space-y-8 mb-12">
                         <p className="text-sm text-muted-foreground font-body leading-relaxed max-w-xl">
-                            {product.description ||
-                                "A masterfully curated essence that captures the intersection of urban neon and raw botanical power. Engineered to resonate with the wearer's unique olfactive signature."}
+                            {product.description || t('fallback_description')}
                         </p>
 
                         <div className="space-y-6">
@@ -190,7 +195,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                                         <span className="text-[10px] font-heading uppercase tracking-widest mb-1">
                                             {v.name}
                                         </span>
-                                        <span className="text-[8px] opacity-60 font-body">{fmt(v.price)}</span>
+                                        <span className="text-[8px] opacity-60 font-body">{formatCurrency(v.price)}</span>
                                     </button>
                                 ))}
                             </div>
@@ -279,7 +284,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                             disabled={favoriteLoading}
                             className={`w-16 h-16 glass border-border rounded-full flex items-center justify-center group transition-all ${isFavorite ? 'text-red-700 bg-red-500/10 border-red-400/50' : 'text-muted-foreground hover:text-red-400'
                                 }`}
-                            aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                            aria-label={isFavorite ? t('remove_favorite') : t('add_favorite')}
                         >
                             <Heart className={`w-5 h-5 transition-all ${isFavorite ? 'fill-red-700/60' : 'group-hover:fill-red-400/20'}`} />
                         </button>

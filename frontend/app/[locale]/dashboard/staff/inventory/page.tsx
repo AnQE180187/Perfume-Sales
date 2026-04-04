@@ -110,6 +110,41 @@ export default function StaffInventory() {
     }
   }, [selectedStoreId, loadOverview, loadLogs]);
 
+<<<<<<< feat/i18n
+    const handleImport = async () => {
+        if (!selectedStoreId || !selectedVariant || importQty <= 0) return;
+        setSubmitting(true);
+        setError(null);
+        try {
+            const data = await staffInventoryService.importStock(selectedStoreId, selectedVariant, importQty, importReason || undefined);
+            void loadOverview();
+            setImportQty(0);
+            setImportReason('');
+            void loadLogs(selectedVariant);
+        } catch (e: any) {
+            setError(e.message || t('errors.import_failed'));
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const handleAdjust = async () => {
+        if (!selectedStoreId || !selectedVariant || adjustDelta === 0) return;
+        setSubmitting(true);
+        setError(null);
+        try {
+            const data = await staffInventoryService.adjustStock(selectedStoreId, selectedVariant, adjustDelta, adjustReason || t('operations.default_reason'));
+            void loadOverview();
+            setAdjustDelta(0);
+            setAdjustReason('');
+            void loadLogs(selectedVariant);
+        } catch (e: any) {
+            setError(e.message || t('errors.adjust_failed'));
+        } finally {
+            setSubmitting(false);
+        }
+    };
+=======
   const handleImport = async () => {
     if (!selectedStoreId || !selectedImportVariant || importQty <= 0) return;
     setSubmitting(true);
@@ -146,6 +181,7 @@ export default function StaffInventory() {
       setLoadingProducts(false);
     }
   }, []);
+>>>>>>> main
 
   const handleImportSearchChange = (val: string) => {
     setImportSearch(val);

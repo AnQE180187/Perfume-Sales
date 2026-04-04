@@ -18,6 +18,7 @@ import { LanguageSwitch } from './language-switch';
 export const Sidebar = () => {
     const commonT = useTranslations('common');
     const navT = useTranslations('navigation');
+    const tUser = useTranslations('dashboard.user');
     const { user, logout } = useAuth();
     const pathname = usePathname();
 
@@ -136,10 +137,10 @@ export const Sidebar = () => {
                     </div>
                     <div className="flex-1 overflow-hidden">
                         <p className="text-xs font-heading text-foreground truncate uppercase tracking-tighter">
-                            {user?.name || useTranslations('dashboard.user')('explorer')}
+                            {user?.name || tUser('explorer')}
                         </p>
                         <p className="text-[10px] text-muted-foreground truncate uppercase tracking-widest mt-0.5">
-                            {user?.role || useTranslations('dashboard.user')('guest')}
+                            {tUser(role.toLowerCase())}
                         </p>
                     </div>
                 </div>
