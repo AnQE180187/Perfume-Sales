@@ -1,165 +1,119 @@
 'use client';
 
-import React from 'react';
-import Image from 'next/image';
-import { motion } from 'framer-motion';
-import { Header } from '@/components/common/header';
-import { MapPin, Phone, Clock, ArrowRight } from 'lucide-react';
+import React, { useEffect, useState, useMemo } from 'react';
+import { catalogService, CatalogItem } from '@/services/catalog.service';
+import { Link } from '@/lib/i18n';
+import { Search } from 'lucide-react';
 
-export default function BoutiquesPage() {
-    const boutiques = [
-        {
-            city: "Paris",
-            address: "8 Rue du Faubourg Saint-Honoré",
-            phone: "+33 1 42 65 31 31",
-            hours: "10:00 - 19:00",
-            image: "/luxury_perfume_hero_cinematic.png"
-        },
-        {
-            city: "London",
-            address: "14-15 Conduit St, Mayfair",
-            phone: "+44 20 7493 0000",
-            hours: "10:00 - 18:30",
-            image: "/luxury_ai_scent_lab.png"
-        },
-        {
-            city: "New York",
-            address: "712 Fifth Avenue, Manhattan",
-            phone: "+1 212-247-1100",
-            hours: "10:00 - 20:00",
-            image: "/luxury_perfume_hero_cinematic.png"
-        },
-        {
-            city: "Tokyo",
-            address: "5-1-15 Jinguumae, Shibuya",
-            phone: "+81 3-5464-3111",
-            hours: "11:00 - 20:00",
-            image: "/luxury_ai_scent_lab.png"
-        },
-    ];
+export default function BrandsIndexPage() {
+    const [brands, setBrands] = useState<CatalogItem[]>([]);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        catalogService.getPublicBrands()
+            .then(setBrands)
+            .catch(console.error)
+            .finally(() => setLoading(false));
+    }, []);
+
+    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+
+    const filteredBrands = useMemo(() => {
+        let result = brands;
+        if (selectedLetter) {
+            result = result.filter(b => b.name.toUpperCase().startsWith(selectedLetter));
+        }
+        if (searchQuery.trim()) {
+            const q = searchQuery.trim().toLowerCase();
+            result = result.filter(b => b.name.toLowerCase().includes(q));
+        }
+        return result.sort((a,b) => a.name.localeCompare(b.name));
+    }, [brands, searchQuery, selectedLetter]);
+
+    // Group by first letter
+    const groupedBrands = useMemo(() => {
+        const groups: Record<string, CatalogItem[]> = {};
+        filteredBrands.forEach(b => {
+            const letter = b.name.charAt(0).toUpperCase();
+            if (!groups[letter]) groups[letter] = [];
+            groups[letter].push(b);
+        });
+        return groups;
+    }, [filteredBrands]);
 
     return (
-        <div className="min-h-screen bg-stone-50 dark:bg-zinc-950 transition-colors">
-            <Header />
+        <div className="bg-stone-50 dark:bg-zinc-950 transition-colors">
+            <main className="pt-40 pb-32 min-h-[80vh]">
+                <div className="container mx-auto px-6">
+                    <h1 className="text-4xl md:text-5xl font-serif text-center mb-16 text-foreground tracking-wide">Thương hiệu</h1>
 
-            <main>
-                {/* Hero Section */}
-                <section className="relative h-[60vh] flex items-center justify-center overflow-hidden">
-                    <Image
-                        src="/luxury_perfume_hero_cinematic.png"
-                        alt="Boutique Interior"
-                        fill
-                        className="object-cover contrast-125"
-                    />
-                    <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
-                    <div className="relative z-10 text-center text-white px-6">
-                        <motion.span
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="text-xs font-bold tracking-[.4em] uppercase mb-6 block"
-                        >
-                            The Scent Ateliers
-                        </motion.span>
-                        <motion.h1
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: 0.3 }}
-                            className="text-5xl md:text-7xl font-serif"
-                        >
-                            Global Boutiques
-                        </motion.h1>
-                    </div>
-                </section>
-
-                {/* Global Network Section */}
-                <section className="py-32">
-                    <div className="container mx-auto px-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                            {boutiques.map((b, i) => (
-                                <motion.div
-                                    key={i}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true }}
-                                    transition={{ delay: i * 0.1 }}
-                                    className="glass bg-white dark:bg-zinc-900 p-10 rounded-[2.5rem] border border-stone-200 dark:border-white/10 shadow-sm hover:shadow-xl transition-all group"
+                    {/* Filter Bar */}
+                    <div className="flex flex-col md:flex-row items-center justify-between border-y border-border py-6 mb-20 gap-8">
+                        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-4 flex-1 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground w-full">
+                            <button 
+                                onClick={() => setSelectedLetter(null)} 
+                                className={`hover:text-foreground transition-all duration-300 ${!selectedLetter ? 'text-foreground' : ''}`}
+                            >
+                                ALL BRANDS
+                            </button>
+                            {letters.map(l => (
+                                <button 
+                                    key={l}
+                                    onClick={() => setSelectedLetter(l)}
+                                    className={`hover:text-foreground transition-all duration-300 ${selectedLetter === l ? 'text-foreground scale-125' : ''}`}
                                 >
-                                    <h3 className="text-3xl font-serif text-luxury-black dark:text-white mb-10 group-hover:text-gold dark:group-hover:text-gold transition-colors">
-                                        {b.city}
-                                    </h3>
-
-                                    <div className="space-y-6">
-                                        <div className="flex gap-4">
-                                            <MapPin size={18} className="text-stone-300 dark:text-stone-600 flex-shrink-0 transition-colors" />
-                                            <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed font-medium uppercase tracking-widest transition-colors">
-                                                {b.address}
-                                            </p>
-                                        </div>
-                                        <div className="flex gap-4">
-                                            <Phone size={18} className="text-stone-300 dark:text-stone-600 flex-shrink-0 transition-colors" />
-                                            <p className="text-xs text-stone-500 dark:text-stone-400 font-medium tracking-widest transition-colors">
-                                                {b.phone}
-                                            </p>
-                                        </div>
-                                        <div className="flex gap-4">
-                                            <Clock size={18} className="text-stone-300 dark:text-stone-600 flex-shrink-0 transition-colors" />
-                                            <p className="text-xs text-stone-500 dark:text-stone-400 font-medium tracking-widest transition-colors">
-                                                {b.hours}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <button className="mt-12 w-full py-4 border border-stone-100 dark:border-white/10 rounded-2xl flex items-center justify-center gap-3 text-[10px] font-bold tracking-widest uppercase text-stone-400 dark:text-stone-500 group-hover:bg-luxury-black dark:group-hover:bg-gold group-hover:text-white dark:group-hover:text-white group-hover:border-luxury-black dark:group-hover:border-gold transition-all cursor-pointer">
-                                        Book Private Discovery <ArrowRight size={14} />
-                                    </button>
-                                </motion.div>
+                                    {l}
+                                </button>
                             ))}
                         </div>
-                    </div>
-                </section>
 
-                {/* Client Relations Section */}
-                <section className="py-32 bg-luxury-black text-white relative overflow-hidden">
-                    <div className="container mx-auto px-6">
-                        <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-24">
-                            <div className="flex-1">
-                                <span className="text-xs font-bold tracking-[.2em] uppercase text-gold mb-6 block font-serif italic">
-                                    Concierge Service
-                                </span>
-                                <h2 className="text-4xl md:text-5xl font-serif mb-8 italic">
-                                    Virtual Fragrance Masterclass
-                                </h2>
-                                <p className="text-stone-400 text-lg font-light leading-relaxed mb-10">
-                                    Can't visit our ateliers in person? Our world-class perfumers are available for 1-on-1 virtual consultations to guide you through your olfactory journey.
-                                </p>
-                                <div className="flex flex-wrap gap-8">
-                                    <div className="flex flex-col gap-2">
-                                        <span className="text-[10px] uppercase tracking-widest text-stone-500">
-                                            Global Assistance
-                                        </span>
-                                        <span className="text-sm font-bold tracking-widest uppercase">
-                                            concierge@aura.com
-                                        </span>
-                                    </div>
-                                    <div className="flex flex-col gap-2">
-                                        <span className="text-[10px] uppercase tracking-widest text-stone-500">
-                                            Bespoke Inquiries
-                                        </span>
-                                        <span className="text-sm font-bold tracking-widest uppercase">
-                                            ateliers@aura.com
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="w-full md:w-80 relative aspect-square rounded-full border border-white/10 p-12 flex items-center justify-center group overflow-hidden">
-                                <div className="absolute inset-0 bg-gold/10 opacity-0 group-hover:opacity-100 transition-opacity blur-[80px]" />
-                                <button className="relative z-10 w-full h-full rounded-full border border-gold flex items-center justify-center text-gold text-xs font-bold tracking-[.3em] uppercase text-center p-8 group-hover:bg-gold group-hover:text-white transition-all duration-700 cursor-pointer">
-                                    Schedule Your Private Session
-                                </button>
-                            </div>
+                        <div className="relative w-full md:w-72">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                            <input 
+                                type="text"
+                                placeholder="Tên thương hiệu..."
+                                value={searchQuery}
+                                onChange={e => setSearchQuery(e.target.value)}
+                                className="w-full pl-12 pr-4 py-3 border border-border rounded-full bg-background text-sm focus:outline-none focus:border-foreground transition-all shadow-sm"
+                            />
                         </div>
                     </div>
-                </section>
+
+                    {/* Grid */}
+                    {loading ? (
+                        <div className="flex justify-center items-center py-20">
+                            <span className="text-[10px] tracking-[0.3em] font-bold uppercase text-muted-foreground animate-pulse">
+                                Đang tải danh bạ...
+                            </span>
+                        </div>
+                    ) : Object.keys(groupedBrands).length === 0 ? (
+                        <div className="text-center text-muted-foreground py-20 font-serif text-xl italic">
+                            Không tìm thấy thương hiệu phù hợp với yêu cầu.
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-12 gap-y-24">
+                            {Object.keys(groupedBrands).sort().map(letter => (
+                                <div key={letter} className="flex flex-col">
+                                    <h2 className="text-3xl font-serif text-foreground pb-6 mb-8 border-b border-border">{letter}</h2>
+                                    <ul className="flex flex-col gap-4">
+                                        {groupedBrands[letter].map(brand => (
+                                            <li key={brand.id}>
+                                                <Link 
+                                                    href={`/collection?brand=${encodeURIComponent(brand.name)}`}
+                                                    className="group flex items-center text-[15px] text-muted-foreground hover:text-foreground transition-colors font-medium font-serif"
+                                                >
+                                                    {brand.name}
+                                                </Link>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </main>
         </div>
     );

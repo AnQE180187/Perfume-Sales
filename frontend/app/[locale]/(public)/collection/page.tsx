@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Link } from '@/lib/i18n';
 import { ChevronDown, Search } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
@@ -13,7 +14,9 @@ export default function CollectionPage() {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [brandQuery, setBrandQuery] = useState('');
-    const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
+    const searchParams = useSearchParams();
+    const brandParam = searchParams.get('brand');
+    const [selectedBrand, setSelectedBrand] = useState<string | null>(brandParam || null);
     const [selectedScent, setSelectedScent] = useState<string | null>(null);
     const [gender, setGender] = useState<'MALE' | 'FEMALE' | 'UNISEX' | null>(null);
     const [priceRange, setPriceRange] = useState<'P1' | 'P2' | 'P3' | 'P4' | null>(null);
@@ -26,6 +29,13 @@ export default function CollectionPage() {
             setLoading(false);
         }).catch(() => setLoading(false));
     }, []);
+
+    useEffect(() => {
+        const brand = searchParams.get('brand');
+        if (brand) {
+            setSelectedBrand(brand);
+        }
+    }, [searchParams]);
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', {
