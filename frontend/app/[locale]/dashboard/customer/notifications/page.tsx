@@ -15,6 +15,7 @@ import {
   Bell,
 } from "lucide-react";
 import { Header } from "@/components/common/header";
+import { useTranslations } from "next-intl";
 import {
   notificationService,
   type Notification,
@@ -32,27 +33,28 @@ const TYPE_CONFIG: Record<
   SYSTEM: { icon: Settings, color: "text-stone-500", bg: "bg-stone-500/10" },
 };
 
-function formatTime(dateStr: string) {
-  const date = new Date(dateStr);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 1) return "Vừa xong";
-  if (diffMin < 60) return `${diffMin} phút trước`;
-  const diffHours = Math.floor(diffMin / 60);
-  if (diffHours < 24) return `${diffHours} giờ trước`;
-  const diffDays = Math.floor(diffHours / 24);
-  if (diffDays === 1) return "Hôm qua";
-  if (diffDays < 7) return `${diffDays} ngày trước`;
-  return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
-}
-
 export default function NotificationsPage() {
+  const t = useTranslations("dashboard.customer.notifications");
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
   const [skip, setSkip] = useState(0);
   const take = 20;
+
+  const formatTime = useCallback((dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMin = Math.floor(diffMs / 60000);
+    if (diffMin < 1) return t("time.just_now");
+    if (diffMin < 60) return t("time.mins_ago", { count: diffMin });
+    const diffHours = Math.floor(diffMin / 60);
+    if (diffHours < 24) return t("time.hours_ago", { count: diffHours });
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays === 1) return t("time.yesterday");
+    if (diffDays < 7) return t("time.days_ago", { count: diffDays });
+    return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+  }, [t]);
 
   const fetchNotifications = useCallback(async (s = 0) => {
     try {
@@ -119,10 +121,12 @@ export default function NotificationsPage() {
           <header className="flex justify-between items-end mb-16 px-4">
             <div>
               <h1 className="text-4xl md:text-5xl font-serif text-luxury-black dark:text-white mb-4">
-                Notifi<span className="italic">cations</span>
+                {t.rich("title", {
+                  italic: () => <span className="italic">cations</span>,
+                })}
               </h1>
               <p className="text-[10px] text-stone-500 uppercase tracking-[.3em] font-bold">
-                Theo dõi đơn hàng, ưu đãi và hoạt động tài khoản.
+                {t("subtitle")}
               </p>
             </div>
             <div className="flex gap-6">
@@ -130,7 +134,7 @@ export default function NotificationsPage() {
                 onClick={handleMarkAllAsRead}
                 className="text-[10px] font-bold uppercase tracking-widest text-stone-400 hover:text-luxury-black dark:hover:text-white transition-colors flex items-center gap-2 cursor-pointer"
               >
-                Đánh dấu đã đọc <CheckCircle2 size={14} />
+                {t("mark_all_read")} <CheckCircle2 size={14} />
               </button>
             </div>
           </header>
@@ -142,7 +146,7 @@ export default function NotificationsPage() {
           ) : notifications.length === 0 ? (
             <div className="text-center py-20">
               <Bell className="w-16 h-16 text-stone-300 mx-auto mb-4" />
-              <p className="text-stone-500 text-sm">Chưa có thông báo nào.</p>
+              <p className="text-stone-500 text-sm">{t("empty")}</p>
             </div>
           ) : (
             <div className="flex flex-col gap-6">
@@ -199,7 +203,7 @@ export default function NotificationsPage() {
                         </p>
                         <div className="flex gap-6 mt-6 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button className="text-[10px] font-bold uppercase tracking-widest text-gold flex items-center gap-2 hover:underline underline-offset-4 cursor-pointer">
-                            Xem chi tiết <ChevronRight size={12} />
+                            {t("view_details")} <ChevronRight size={12} />
                           </button>
                           {!notif.isRead && (
                             <button
@@ -209,7 +213,7 @@ export default function NotificationsPage() {
                               }}
                               className="text-[10px] font-bold uppercase tracking-widest text-stone-400 flex items-center gap-2 hover:text-stone-600 dark:hover:text-stone-200 cursor-pointer"
                             >
-                              Đánh dấu đã đọc
+                              {t("mark_read")}
                             </button>
                           )}
                         </div>
@@ -227,7 +231,7 @@ export default function NotificationsPage() {
                 onClick={loadMore}
                 className="text-[10px] font-bold uppercase tracking-widest text-stone-400 hover:text-gold transition-colors cursor-pointer"
               >
-                Tải thêm thông báo
+                {t("load_more")}
               </button>
             </footer>
           )}

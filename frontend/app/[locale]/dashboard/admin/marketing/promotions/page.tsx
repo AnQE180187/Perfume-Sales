@@ -5,10 +5,12 @@ import { promotionService } from '@/services/promotion.service';
 import { Tag, Plus, Loader2, Trash2, ShieldCheck, Zap, TrendingUp, X } from 'lucide-react';
 import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useFormatter } from 'next-intl';
 
 export default function PromotionsAdmin() {
   const t = useTranslations('dashboard.admin.promotions');
+  const tFeatured = useTranslations('featured');
+  const format = useFormatter();
   const [promos, setPromos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -17,7 +19,7 @@ export default function PromotionsAdmin() {
     description: '',
     discountType: 'PERCENTAGE',
     discountValue: 0,
-    maxRedemptions: 100,
+    usageLimit: 100,
     startDate: new Date().toISOString().split('T')[0],
     endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
   });
@@ -46,7 +48,7 @@ export default function PromotionsAdmin() {
       await promotionService.create({
         ...form,
         discountValue: Number(form.discountValue),
-        maxRedemptions: Number(form.maxRedemptions),
+        usageLimit: Number(form.usageLimit),
         startDate: new Date(form.startDate).toISOString(),
         endDate: new Date(form.endDate).toISOString(),
       });
@@ -99,7 +101,7 @@ export default function PromotionsAdmin() {
           {[
             { label: t('stats.total'), value: promos.length, icon: Tag, color: 'text-stone-400' },
             { label: t('stats.active'), value: promos.filter(p => !isExpired(p.endDate)).length, icon: ShieldCheck, color: 'text-emerald-500' },
-            { label: t('stats.redemptions'), value: promos.reduce((acc, p) => acc + p.redemptionsCount, 0), icon: TrendingUp, color: 'text-gold' },
+            { label: t('stats.redemptions'), value: promos.reduce((acc, p) => acc + (p.redemptionsCount || 0), 0), icon: TrendingUp, color: 'text-gold' },
           ].map((stat, i) => (
              <div key={i} className="glass p-10 rounded-[3rem] border-border relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gold/5 blur-[60px] pointer-events-none" />
@@ -134,35 +136,37 @@ export default function PromotionsAdmin() {
                   </td>
                 </tr>
               ) : promos.map((p) => (
-                <tr key={p.id} className="hover:bg-white/[0.02] transition-colors group">
+                <tr key={p.id} className="hover:bg-white/2 transition-colors group">
                   <td className="px-10 py-10">
                     <span className="font-heading text-lg tracking-wider text-foreground group-hover:text-gold transition-colors">{p.code}</span>
                     <p className="text-[9px] text-muted-foreground font-mono mt-1 opacity-60 truncate max-w-[150px]">{p.description}</p>
                   </td>
                   <td className="px-10 py-10">
                     <span className="text-xl font-serif text-gold">
-                      {p.discountType === 'PERCENTAGE' ? `${p.discountValue}%` : `-${new Intl.NumberFormat('vi-VN').format(p.discountValue)}`}
+                      {p.discountType === 'PERCENTAGE' ? `${p.discountValue}%` : `-${format.number(p.discountValue, { style: 'currency', currency: tFeatured('currency_code') || 'VND' })}`}
                     </span>
                   </td>
                   <td className="px-10 py-10">
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                       {p.redemptionsCount} / {p.maxRedemptions}
+                       {p.usedCount} / {p.usageLimit ?? '∞'}
                     </span>
                   </td>
                   <td className="px-10 py-10">
                     <div className="w-full max-w-[80px] h-1.5 bg-secondary rounded-full overflow-hidden">
                        <div 
                          className="h-full bg-gold transition-all duration-1000 ease-out" 
-                         style={{ width: `${Math.min((p.redemptionsCount / p.maxRedemptions) * 100, 100)}%` }}
+                         style={{
+                           width: `${p.usageLimit ? Math.min((p.usedCount / p.usageLimit) * 100, 100) : 0}%`,
+                         }}
                        />
                     </div>
                   </td>
                   <td className="px-10 py-10">
                     <div className="flex flex-col gap-1">
                       <span className="text-[9px] font-bold uppercase tracking-widest text-foreground">
-                        {new Date(p.startDate).toLocaleDateString()}
+                        {format.dateTime(new Date(p.startDate))}
                       </span>
-                      <span className="text-[9px] text-muted-foreground">→ {new Date(p.endDate).toLocaleDateString()}</span>
+                      <span className="text-[9px] text-muted-foreground">→ {format.dateTime(new Date(p.endDate))}</span>
                     </div>
                   </td>
                   <td className="px-10 py-10">
@@ -233,7 +237,7 @@ export default function PromotionsAdmin() {
                         className="w-full h-16 bg-white/5 border border-white/5 rounded-[1.5rem] px-8 text-xs font-bold uppercase tracking-widest outline-none focus:border-gold/50 transition-all appearance-none"
                       >
                         <option value="PERCENTAGE">{t('types.percentage')}</option>
-                        <option value="FIXED">{t('types.fixed')}</option>
+                        <option value="FIXED_AMOUNT">{t('types.fixed')}</option>
                       </select>
                     </div>
 
@@ -252,8 +256,8 @@ export default function PromotionsAdmin() {
                       <input
                         type="number"
                         required
-                        value={form.maxRedemptions}
-                        onChange={(e) => setForm({ ...form, maxRedemptions: Number(e.target.value) })}
+                        value={form.usageLimit}
+                        onChange={(e) => setForm({ ...form, usageLimit: Number(e.target.value) })}
                         className="w-full h-16 bg-white/5 border border-white/5 rounded-[1.5rem] px-8 text-xs font-bold tracking-widest outline-none focus:border-gold/50 transition-all"
                       />
                     </div>

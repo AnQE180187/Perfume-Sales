@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import {
     ShoppingBag,
-    Search,
+    Bell,
     Menu,
     X,
     ChevronRight,
@@ -19,16 +19,15 @@ import { LanguageSwitch } from './language-switch';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/use-auth';
+import { cartService } from '@/services/cart.service';
 
 export const Header = () => {
     const t = useTranslations('common');
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [cartCount, setCartCount] = useState(0);
     const { isAuthenticated, user, logout } = useAuth();
     const pathname = usePathname();
-
-    // Mock cart count - in real app would come from a cart context
-    const cartCount = 2;
 
     useEffect(() => {
         const handleScroll = () => {
@@ -38,12 +37,42 @@ export const Header = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    const menuItems = [
+    useEffect(() => {
+        if (!isAuthenticated) {
+            setCartCount(0);
+            return;
+        }
+
+        let mounted = true;
+
+        const syncCartCount = async () => {
+            try {
+                const cart = await cartService.getCart();
+                const count = (cart.items ?? []).reduce((acc, item) => acc + (item.quantity || 0), 0);
+                if (mounted) setCartCount(count);
+            } catch {
+                if (mounted) setCartCount(0);
+            }
+        };
+
+        void syncCartCount();
+
+        window.addEventListener(cartService.eventName, syncCartCount);
+        return () => {
+            mounted = false;
+            window.removeEventListener(cartService.eventName, syncCartCount);
+        };
+    }, [isAuthenticated]);
+
+    const menuLeft = [
+        { name: t('home'), href: '/' },
         { name: t('collection'), href: '/collection' },
-        { name: t('consultation'), href: '/consultation' },
-        { name: t('journal'), href: '/journal' },
-        { name: t('membership'), href: '/subscription' },
         { name: t('boutiques'), href: '/boutiques' },
+    ];
+
+    const menuRight = [
+        { name: t('about'), href: '/story' },
+        { name: t('journal'), href: '/journal' },
     ];
 
     const role = user?.role || 'CUSTOMER';
@@ -54,30 +83,17 @@ export const Header = () => {
         <>
             <nav
                 className={cn(
-                    "fixed top-0 left-0 right-0 z-50 transition-all duration-700",
-                    isScrolled
-                        ? "py-4 bg-background/80 backdrop-blur-xl border-b border-border shadow-sm"
-                        : "py-8 bg-transparent"
+                    "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+                    "py-4 bg-background/80 backdrop-blur-xl border-b border-border shadow-sm"
                 )}
             >
                 <div className="container mx-auto px-6">
-                    <div className="flex items-center justify-between">
-                        {/* Logo */}
-                        <Link href="/" className="relative z-50 group">
-                            <h1 className="text-2xl md:text-3xl font-serif tracking-[0.3em] font-bold text-foreground transition-colors">
-                                AURA
-                            </h1>
-                            <div className={cn(
-                                "absolute -bottom-1 left-0 w-0 h-px bg-gold group-hover:w-full transition-all duration-500",
-                                pathname === '/' && "w-full"
-                            )} />
-                        </Link>
-
-                        {/* Desktop Menu */}
-                        <div className="hidden lg:flex items-center gap-10">
-                            {menuItems.map((item) => (
+                    <div className="grid grid-cols-[1fr_auto_1fr] items-center">
+                        {/* Left */}
+                        <div className="hidden lg:flex items-center gap-10 justify-start">
+                            {menuLeft.map((item) => (
                                 <Link
-                                    key={item.name}
+                                    key={item.href}
                                     href={item.href}
                                     className={cn(
                                         "text-[10px] font-bold tracking-[.3em] uppercase transition-all cursor-pointer relative group",
@@ -95,14 +111,47 @@ export const Header = () => {
                             ))}
                         </div>
 
-                        {/* Actions */}
-                        <div className="flex items-center gap-2 md:gap-4">
+                        {/* Center Logo (always centered) */}
+                        <div className="flex items-center justify-center">
+                            <Link
+                                href="/"
+                                className="w-12 h-12 rounded-full bg-foreground text-background flex items-center justify-center font-serif text-[10px] tracking-[0.4em] font-bold uppercase shadow-sm hover:shadow-md transition-shadow"
+                                aria-label="AURA Home"
+                            >
+                                A
+                            </Link>
+                        </div>
+
+                        {/* Right (menu + actions) */}
+                        <div className="flex items-center justify-end gap-6">
+                            <div className="hidden lg:flex items-center gap-10">
+                                {menuRight.map((item) => (
+                                    <Link
+                                        key={item.href}
+                                        href={item.href}
+                                        className={cn(
+                                            "text-[10px] font-bold tracking-[.3em] uppercase transition-all cursor-pointer relative group",
+                                            pathname === item.href
+                                                ? "text-gold"
+                                                : "text-foreground hover:text-gold"
+                                        )}
+                                    >
+                                        {item.name}
+                                        <span className={cn(
+                                            "absolute -bottom-1 left-0 h-px bg-gold transition-all duration-500",
+                                            pathname === item.href ? "w-full" : "w-0 group-hover:w-full"
+                                        )} />
+                                    </Link>
+                                ))}
+                            </div>
+
                             <div className="flex items-center gap-1 md:gap-2">
                                 <Link
-                                    href="/search"
+                                    href={isAuthenticated ? '/notifications' : '/login'}
                                     className="p-2 text-foreground hover:text-gold transition-colors cursor-pointer"
+                                    title={('notifications')}
                                 >
-                                    <Search size={20} strokeWidth={1.5} />
+                                    <Bell size={20} strokeWidth={1.5} />
                                 </Link>
 
                                 <ThemeToggle />
@@ -175,9 +224,9 @@ export const Header = () => {
                             exit={{ opacity: 0, y: -20 }}
                             className="absolute top-full left-0 right-0 bg-background border-b border-border p-8 flex flex-col gap-6 lg:hidden shadow-2xl transition-colors"
                         >
-                            {menuItems.map((item) => (
+                            {[...menuLeft, ...menuRight].map((item) => (
                                 <Link
-                                    key={item.name}
+                                    key={item.href}
                                     href={item.href}
                                     className="text-xs font-bold tracking-[.3em] uppercase text-luxury-black dark:text-white hover:text-gold transition-colors flex items-center justify-between group"
                                     onClick={() => setIsMobileMenuOpen(false)}

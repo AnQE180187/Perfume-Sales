@@ -26,6 +26,8 @@ import { FavoritesModule } from './favorites/favorites.module';
 import { AddressesModule } from './addresses/addresses.module';
 import { GHNModule } from './ghn/ghn.module';
 import { ShippingModule } from './shipping/shipping.module';
+import { BannersModule } from './banners/banners.module';
+import { JournalsModule } from './journals/journals.module';
 import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
@@ -56,6 +58,8 @@ import { NotificationsModule } from './notifications/notifications.module';
     AddressesModule,
     GHNModule,
     ShippingModule,
+    BannersModule,
+    JournalsModule,
     NotificationsModule,
   ],
 

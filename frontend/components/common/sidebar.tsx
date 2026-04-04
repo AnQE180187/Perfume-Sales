@@ -6,7 +6,7 @@ import {
     MessageSquare, BrainCircuit, Heart, History, Coins, Tag,
     Monitor, Box, ClipboardList, BarChart3, ShieldCheck,
     Globe, Mail, FileText, Settings2, Smartphone, Receipt, FolderTree,
-    Sparkles, Zap, Store, Warehouse
+    Sparkles, Zap, Store, Warehouse, BookOpen
 } from 'lucide-react';
 import { Link, usePathname } from '@/lib/i18n';
 import { useAuth } from '@/hooks/use-auth';
@@ -18,6 +18,7 @@ import { LanguageSwitch } from './language-switch';
 export const Sidebar = () => {
     const commonT = useTranslations('common');
     const navT = useTranslations('navigation');
+    const tUser = useTranslations('dashboard.user');
     const { user, logout } = useAuth();
     const pathname = usePathname();
 
@@ -60,10 +61,12 @@ export const Sidebar = () => {
             { icon: Package, label: navT('admin.products'), href: '/dashboard/admin/products' },
             { icon: FolderTree, label: navT('admin.catalog'), href: '/dashboard/admin/catalog' },
             { icon: MessageSquare, label: navT('admin.reviews'), href: '/dashboard/admin/reviews' },
+            { icon: BookOpen, label: 'Tạp chí', href: '/dashboard/admin/manage-journal' },
             { icon: Tag, label: navT('admin.promotions'), href: '/dashboard/admin/marketing/promotions' },
             { icon: Receipt, label: commonT('orders'), href: '/dashboard/admin/orders' },
             { icon: BarChart3, label: navT('admin.analytics'), href: '/dashboard/admin/analytics' },
             { icon: Mail, label: navT('admin.marketing'), href: '/dashboard/admin/marketing' },
+            { icon: Sparkles, label: 'Banners', href: '/dashboard/admin/manage-banner' },
             { icon: Settings2, label: commonT('settings'), href: '/dashboard/admin/settings' },
         ];
 
@@ -136,10 +139,10 @@ export const Sidebar = () => {
                     </div>
                     <div className="flex-1 overflow-hidden">
                         <p className="text-xs font-heading text-foreground truncate uppercase tracking-tighter">
-                            {user?.name || useTranslations('dashboard.user')('explorer')}
+                            {user?.name || tUser('explorer')}
                         </p>
                         <p className="text-[10px] text-muted-foreground truncate uppercase tracking-widest mt-0.5">
-                            {user?.role || useTranslations('dashboard.user')('guest')}
+                            {tUser(role.toLowerCase())}
                         </p>
                     </div>
                 </div>

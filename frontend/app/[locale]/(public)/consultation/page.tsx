@@ -5,7 +5,8 @@ import Image from 'next/image';
 import { Link } from '@/lib/i18n';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Header } from '@/components/common/header';
-import { Sparkles, ArrowRight, ArrowLeft, Droplet, Wind, Coffee, Zap, Moon, Sun, LucideIcon } from 'lucide-react';
+import { Sparkles, ArrowLeft, ArrowRight, Droplet, Wind, Coffee, Zap, Moon, Sun, LucideIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface ConsultationOption {
     label: string;
@@ -21,6 +22,7 @@ interface StepData {
 }
 
 export default function ConsultationPage() {
+    const t = useTranslations('consultation_page');
     const [step, setStep] = useState(1);
     const [answers, setAnswers] = useState<Record<string, string>>({});
     const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -45,38 +47,38 @@ export default function ConsultationPage() {
     const currentStepData: StepData[] = [
         {
             id: 1,
-            title: 'Select your preferred intensity.',
+            title: t('steps.intensity.title'),
             key: 'intensity',
             options: [
-                { label: 'Subtle & Airy', icon: Wind, value: 'subtle' },
-                { label: 'Balanced & Elegant', icon: Droplet, value: 'balanced' },
-                { label: 'Powerful & Intense', icon: Zap, value: 'intense' }
+                { label: t('steps.intensity.options.subtle'), icon: Wind, value: 'subtle' },
+                { label: t('steps.intensity.options.balanced'), icon: Droplet, value: 'balanced' },
+                { label: t('steps.intensity.options.intense'), icon: Zap, value: 'intense' }
             ]
         },
         {
             id: 2,
-            title: 'Which environment do you inhabit?',
+            title: t('steps.environment.title'),
             key: 'environment',
             options: [
-                { label: 'Sun-drenched Outdoors', icon: Sun, value: 'outdoor' },
-                { label: 'Sleek Urban Spaces', icon: Coffee, value: 'urban' },
-                { label: 'Quiet Midnight Lounges', icon: Moon, value: 'midnight' }
+                { label: t('steps.environment.options.outdoor'), icon: Sun, value: 'outdoor' },
+                { label: t('steps.environment.options.urban'), icon: Coffee, value: 'urban' },
+                { label: t('steps.environment.options.midnight'), icon: Moon, value: 'midnight' }
             ]
         },
         {
             id: 3,
-            title: 'The emotion you wish to project.',
+            title: t('steps.emotion.title'),
             key: 'emotion',
             options: [
-                { label: 'Sophistication', value: 'sophisticated' },
-                { label: 'Playfulness', value: 'playful' },
-                { label: 'Mystery', value: 'mysterious' },
-                { label: 'Vitality', value: 'vitality' }
+                { label: t('steps.emotion.options.sophisticated'), value: 'sophisticated' },
+                { label: t('steps.emotion.options.playful'), value: 'playful' },
+                { label: t('steps.emotion.options.mysterious'), value: 'mysterious' },
+                { label: t('steps.emotion.options.vitality'), value: 'vitality' }
             ]
         },
         {
             id: 4,
-            title: 'AI Analysis',
+            title: t('analysis.complete'),
             key: 'result',
             options: []
         }
@@ -122,7 +124,7 @@ export default function ConsultationPage() {
                                     <div className="flex items-center justify-center gap-2 text-gold mb-6">
                                         <Sparkles size={18} />
                                         <span className="text-xs font-bold tracking-[.3em] uppercase italic">
-                                            Section 0{step}
+                                            {t('section_prefix')} 0{step}
                                         </span>
                                     </div>
                                     <h2 className="text-4xl md:text-5xl font-serif text-luxury-black dark:text-white mb-16">
@@ -161,7 +163,7 @@ export default function ConsultationPage() {
                                             onClick={() => setStep(step - 1)}
                                             className="mt-12 text-xs font-bold tracking-widest uppercase text-stone-600 dark:text-stone-500 hover:text-luxury-black dark:hover:text-white flex items-center gap-2 mx-auto transition-colors"
                                         >
-                                            <ArrowLeft size={16} /> Previous step
+                                            <ArrowLeft size={16} /> {t('prev_step')}
                                         </button>
                                     )}
                                 </div>
@@ -181,16 +183,16 @@ export default function ConsultationPage() {
                                             </div>
                                             <div className="space-y-4 text-left font-mono text-[10px] text-stone-400 uppercase tracking-widest bg-white dark:bg-white/5 p-8 rounded-3xl border border-stone-200 dark:border-white/10 shadow-sm">
                                                 <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
-                                                    {'>'}  Initializing neural weights...
+                                                    {'>'}  {t('analysis.initializing')}
                                                 </motion.p>
                                                 <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}>
-                                                    {'>'} Loading olfactory datasets...
+                                                    {'>'} {t('analysis.loading')}
                                                 </motion.p>
                                                 <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.0 }}>
-                                                    {'>'} Cross-referencing {answers.intensity} profiles...
+                                                    {'>'} {t('analysis.cross_referencing', { intensity: answers.intensity })}
                                                 </motion.p>
                                                 <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.8 }}>
-                                                    {'>'} Finalizing emotional anchors...
+                                                    {'>'} {t('analysis.finalizing')}
                                                 </motion.p>
                                                 <motion.div
                                                     initial={{ width: 0 }}
@@ -200,7 +202,7 @@ export default function ConsultationPage() {
                                                 />
                                             </div>
                                             <p className="mt-8 italic text-stone-500 dark:text-stone-400 font-serif">
-                                                Aura AI Neural Engine is calculating...
+                                                {t('analysis.calculating')}
                                             </p>
                                         </div>
                                     ) : (
@@ -212,7 +214,7 @@ export default function ConsultationPage() {
                                             <div className="relative aspect-video w-full mb-12 rounded-[3.5rem] overflow-hidden shadow-2xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-white/10">
                                                 <Image
                                                     src="/luxury_ai_scent_lab.png"
-                                                    alt="AI Analysis"
+                                                    alt={t('analysis.complete')}
                                                     fill
                                                     className="object-cover"
                                                 />
@@ -220,29 +222,29 @@ export default function ConsultationPage() {
                                                     <div className="flex items-center gap-3 text-gold mb-4">
                                                         <Sparkles size={24} />
                                                         <h3 className="text-2xl font-serif text-white uppercase tracking-widest">
-                                                            Analysis Complete
+                                                            {t('analysis.complete')}
                                                         </h3>
                                                     </div>
                                                     <p className="text-stone-300 text-sm font-light max-w-sm">
-                                                        Neural match verified at 98.4% accuracy across all olfactory dimensions.
+                                                        {t('analysis.description')}
                                                     </p>
                                                 </div>
                                             </div>
 
                                             <h2 className="text-4xl md:text-5xl font-serif text-luxury-black dark:text-white mb-8">
-                                                Your DNA <span className="italic">Blueprint</span>.
+                                                {t('analysis.dna_blueprint')}
                                             </h2>
                                             <p className="text-stone-500 dark:text-stone-400 mb-12 leading-relaxed uppercase tracking-[.3em] text-[10px] font-bold">
-                                                PROFILE: {answers.intensity?.toUpperCase()} | {answers.environment?.toUpperCase()} |{' '}
+                                                {t('analysis.profile_label')}: {answers.intensity?.toUpperCase()} | {answers.environment?.toUpperCase()} |{' '}
                                                 {answers.emotion?.toUpperCase()}
                                             </p>
 
                                             <div className="flex gap-4 justify-center">
                                                 <Link
-                                                    href="/dashboard/customer/profile"
+                                                    href="/dashboard/profile"
                                                     className="px-12 py-5 bg-luxury-black dark:bg-gold text-white rounded-full font-bold tracking-[.3em] uppercase flex items-center gap-4 hover:bg-stone-800 dark:hover:bg-gold/80 transition-all shadow-xl group"
                                                 >
-                                                    View Your Profile
+                                                    {t('analysis.view_profile')}
                                                     <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform" />
                                                 </Link>
                                             </div>

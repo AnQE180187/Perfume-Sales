@@ -5,6 +5,7 @@ import { Package, Plus, Search, X, Eye, EyeOff, Pencil, ImagePlus } from 'lucide
 import { productService, type Product } from '@/services/product.service';
 import { catalogService } from '@/services/catalog.service';
 import { useEffect, useState, useCallback } from 'react';
+import { useTranslations, useFormatter } from 'next-intl';
 
 const MAX_IMAGES = 10;
 
@@ -19,6 +20,9 @@ function slugify(s: string) {
 }
 
 export default function AdminProducts() {
+  const t = useTranslations('dashboard.admin.products');
+  const tFeatured = useTranslations('featured');
+  const format = useFormatter();
   const [products, setProducts] = useState<Product[]>([]);
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState('');
@@ -45,7 +49,7 @@ export default function AdminProducts() {
     longevity: '',
     concentration: '',
     isActive: true,
-    variants: [{ name: 'Full Bottle', price: 0, stock: 0, sku: '' }],
+    variants: [{ name: t('form.variants.default_name'), price: 0, stock: 0, sku: '' }],
   });
 
   const fetchProducts = useCallback(async () => {
@@ -103,7 +107,7 @@ export default function AdminProducts() {
             isActive: p.isActive,
             variants: p.variants?.length
               ? p.variants.map(v => ({ name: v.name, price: v.price, stock: v.stock, sku: v.sku ?? '' }))
-              : [{ name: 'Full Bottle', price: 0, stock: 0, sku: '' }],
+              : [{ name: t('form.variants.default_name'), price: 0, stock: 0, sku: '' }],
           });
           setExistingImages((p.images ?? []) as ExistingImage[]);
         })
@@ -147,7 +151,7 @@ export default function AdminProducts() {
       longevity: '',
       concentration: '',
       isActive: true,
-      variants: [{ name: 'Full Bottle', price: 0, stock: 0, sku: '' }],
+      variants: [{ name: t('form.variants.default_name'), price: 0, stock: 0, sku: '' }],
     });
     setShowModal(true);
   };
@@ -240,12 +244,12 @@ export default function AdminProducts() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim() || !form.slug.trim() || form.brandId <= 0) {
-      setError('Please fill name, slug and brand.');
+      setError(t('errors.fill_fields'));
       return;
     }
     const invalidVariant = form.variants.some(v => !v.name.trim() || v.price < 0);
     if (invalidVariant) {
-      setError('Each variant must have a name and a valid price.');
+      setError(t('errors.variant_invalid'));
       return;
     }
 
@@ -273,8 +277,8 @@ export default function AdminProducts() {
   };
 
   const handleToggleVisibility = async (id: string, currentStatus: boolean) => {
-    const action = currentStatus ? 'hide' : 'show';
-    if (!confirm(`${action === 'hide' ? 'Hide' : 'Show'} this product?`)) return;
+    const confirmMsg = currentStatus ? t('confirm_hide') : t('confirm_show');
+    if (!confirm(confirmMsg)) return;
     try {
       if (currentStatus) {
         // Hide product (soft delete)
@@ -294,7 +298,7 @@ export default function AdminProducts() {
     const prices = product.variants.map(v => v.price);
     const min = Math.min(...prices);
     const max = Math.max(...prices);
-    const fmt = (n: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n);
+    const fmt = (n: number) => format.number(n, { style: 'currency', currency: tFeatured('currency_code') || 'VND', maximumFractionDigits: 0 });
     if (min === max) return fmt(min);
     return `${fmt(min)} - ${fmt(max)}`;
   };
@@ -309,15 +313,15 @@ export default function AdminProducts() {
       <main className="p-8">
         <header className="mb-12 flex justify-between items-end">
           <div>
-            <h1 className="text-4xl font-heading gold-gradient mb-2 uppercase tracking-tighter">Inventory Console</h1>
-            <p className="text-muted-foreground font-body text-sm uppercase tracking-widest">Fragrance Collection Management</p>
+            <h1 className="text-4xl font-heading gold-gradient mb-2 uppercase tracking-tighter">{t('title')}</h1>
+            <p className="text-muted-foreground font-body text-sm uppercase tracking-widest">{t('subtitle')}</p>
           </div>
           <button
             onClick={openCreate}
             className="bg-gold text-primary-foreground px-6 py-3 rounded-full font-heading text-[10px] uppercase tracking-widest font-bold flex items-center gap-2 hover:scale-105 transition-all"
           >
             <Plus className="w-4 h-4" />
-            Curate New
+            {t('add_new')}
           </button>
         </header>
 
@@ -326,7 +330,7 @@ export default function AdminProducts() {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               type="text"
-              placeholder="Search by essence, brand or note..."
+              placeholder={t('search_placeholder')}
               className="w-full bg-secondary/20 border border-border rounded-full py-3 pl-12 pr-4 text-sm outline-none focus:border-gold/50 transition-all font-body"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -342,7 +346,7 @@ export default function AdminProducts() {
 
         {loading ? (
           <div className="flex justify-center py-20">
-            <span className="text-muted-foreground">Loading…</span>
+            <span className="text-muted-foreground">{t('loading')}</span>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -362,7 +366,7 @@ export default function AdminProducts() {
                   )}
                   {!p.isActive && (
                     <div className="absolute top-2 right-2 bg-red-500/80 text-white text-[8px] px-2 py-1 rounded-full uppercase tracking-widest font-bold">
-                      Hidden
+                      {t('status.hidden')}
                     </div>
                   )}
                 </div>
@@ -370,7 +374,7 @@ export default function AdminProducts() {
                   <div className="flex items-start justify-between mb-1">
                     <p className="text-[10px] text-gold uppercase tracking-widest font-bold">{p.brand?.name ?? '—'}</p>
                     {!p.isActive && (
-                      <span className="text-[8px] text-muted-foreground uppercase">Hidden</span>
+                      <span className="text-[8px] text-muted-foreground uppercase">{t('status.hidden')}</span>
                     )}
                   </div>
                   <h3 className="font-heading text-foreground mb-4 line-clamp-1">{p.name}</h3>
@@ -379,7 +383,7 @@ export default function AdminProducts() {
                       {getPriceRange(p)}
                     </span>
                     <span className="text-[10px] text-muted-foreground uppercase tracking-widest">
-                      {getTotalStock(p)} in stock
+                      {t('status.in_stock', { count: getTotalStock(p) })}
                     </span>
                   </div>
                   <div className="mt-3 flex gap-2">
@@ -396,7 +400,7 @@ export default function AdminProducts() {
                         ? 'text-muted-foreground hover:text-orange-500'
                         : 'text-muted-foreground hover:text-green-500'
                         }`}
-                      title={p.isActive ? 'Hide product' : 'Show product'}
+                      title={p.isActive ? t('actions.hide') : t('actions.show')}
                     >
                       {p.isActive ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -414,19 +418,19 @@ export default function AdminProducts() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex justify-between items-center mb-8">
-                <h2 className="text-2xl font-heading">{editId ? 'Edit Product' : 'Create Product'}</h2>
+                <h2 className="text-2xl font-heading">{editId ? t('form.title_edit') : t('form.title_create')}</h2>
                 <button onClick={closeModal} className="p-2 hover:bg-secondary rounded-full">
                   <X className="w-5 h-5" />
                 </button>
               </div>
               {loadingProduct ? (
-                <div className="py-12 text-center text-muted-foreground">Loading product…</div>
+                <div className="py-12 text-center text-muted-foreground">{t('form.loading_product')}</div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid md:grid-cols-2 gap-6">
                     <div className="space-y-6">
                       <div>
-                        <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Name *</label>
+                        <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">{t('form.name')}</label>
                         <input
                           className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold"
                           value={form.name}
@@ -435,7 +439,7 @@ export default function AdminProducts() {
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Slug *</label>
+                        <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">{t('form.slug')}</label>
                         <input
                           className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold"
                           value={form.slug}
@@ -445,7 +449,7 @@ export default function AdminProducts() {
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Brand *</label>
+                          <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">{t('form.brand')}</label>
                           <select
                             className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold"
                             value={form.brandId || ''}
@@ -459,7 +463,7 @@ export default function AdminProducts() {
                           </select>
                         </div>
                         <div>
-                          <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Category</label>
+                          <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">{t('form.category')}</label>
                           <select
                             className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold"
                             value={form.categoryId === '' ? '' : form.categoryId}
@@ -476,7 +480,7 @@ export default function AdminProducts() {
 
                     <div className="space-y-6">
                       <div>
-                        <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Scent Family</label>
+                        <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">{t('form.scent_family')}</label>
                         <select
                           className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold"
                           value={form.scentFamilyId === '' ? '' : form.scentFamilyId}
@@ -489,16 +493,15 @@ export default function AdminProducts() {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Gender</label>
+                        <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">{t('form.gender')}</label>
                         <input
                           className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold"
                           value={form.gender}
                           onChange={(e) => setForm((f) => ({ ...f, gender: e.target.value }))}
-                          placeholder="e.g. Unisex"
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Longevity</label>
+                        <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">{t('form.longevity')}</label>
                         <input
                           className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold"
                           value={form.longevity}
@@ -506,19 +509,18 @@ export default function AdminProducts() {
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Concentration</label>
+                        <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">{t('form.concentration')}</label>
                         <input
                           className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold"
                           value={form.concentration}
                           onChange={(e) => setForm((f) => ({ ...f, concentration: e.target.value }))}
-                          placeholder="e.g. Eau de Parfum"
                         />
                       </div>
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Description</label>
+                    <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">{t('form.description')}</label>
                     <textarea
                       className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold min-h-[80px]"
                       value={form.description}
@@ -529,13 +531,13 @@ export default function AdminProducts() {
                   {/* Variants Section */}
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <label className="block text-[10px] uppercase tracking-widest text-gold font-bold">Product Variants (Sizes/Dung tích) *</label>
+                      <label className="block text-[10px] uppercase tracking-widest text-gold font-bold">{t('form.variants.title')}</label>
                       <button
                         type="button"
                         onClick={addVariant}
                         className="text-[10px] uppercase tracking-widest font-bold bg-gold/10 text-gold px-3 py-1 rounded-full hover:bg-gold/20"
                       >
-                        + Add Size
+                        {t('form.variants.add')}
                       </button>
                     </div>
 
@@ -543,16 +545,15 @@ export default function AdminProducts() {
                       {form.variants.map((v, i) => (
                         <div key={i} className="flex gap-2 items-end bg-secondary/10 p-4 rounded-2xl relative group">
                           <div className="flex-1">
-                            <label className="text-[8px] uppercase tracking-widest text-muted-foreground mb-1 block">Size Name</label>
+                            <label className="text-[8px] uppercase tracking-widest text-muted-foreground mb-1 block">{t('form.variants.name')}</label>
                             <input
                               className="w-full bg-background border border-border rounded-lg py-1.5 px-3 text-xs outline-none focus:border-gold"
-                              placeholder="e.g. 50ml"
                               value={v.name}
                               onChange={(e) => updateVariant(i, { name: e.target.value })}
                             />
                           </div>
                           <div className="w-24">
-                            <label className="text-[8px] uppercase tracking-widest text-muted-foreground mb-1 block">Price</label>
+                            <label className="text-[8px] uppercase tracking-widest text-muted-foreground mb-1 block">{t('form.variants.price')}</label>
                             <input
                               type="number"
                               className="w-full bg-background border border-border rounded-lg py-1.5 px-3 text-xs outline-none focus:border-gold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
@@ -561,7 +562,7 @@ export default function AdminProducts() {
                             />
                           </div>
                           <div className="w-20">
-                            <label className="text-[8px] uppercase tracking-widest text-muted-foreground mb-1 block">Stock</label>
+                            <label className="text-[8px] uppercase tracking-widest text-muted-foreground mb-1 block">{t('form.variants.stock')}</label>
                             <input
                               type="number"
                               className="w-full bg-background border border-border rounded-lg py-1.5 px-3 text-xs outline-none focus:border-gold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
@@ -586,7 +587,7 @@ export default function AdminProducts() {
                   {/* Images */}
                   <div>
                     <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
-                      Images (max {MAX_IMAGES})
+                      {t('modal.labels.images', { max: MAX_IMAGES })}
                     </label>
                     <div className="flex flex-wrap gap-2 mb-3">
                       {existingImages.map((img) => (
@@ -640,7 +641,7 @@ export default function AdminProducts() {
                       onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.checked }))}
                       className="rounded border-border"
                     />
-                    <label htmlFor="isActive" className="text-sm font-body">Active for public listing</label>
+                    <label htmlFor="isActive" className="text-sm font-body">{t('form.isActive')}</label>
                   </div>
 
                   <div className="flex gap-4 pt-4">
@@ -649,14 +650,14 @@ export default function AdminProducts() {
                       onClick={closeModal}
                       className="flex-1 py-3 rounded-full border border-border text-muted-foreground hover:bg-secondary/50 font-heading text-[10px] uppercase tracking-widest"
                     >
-                      Cancel
+                      {t('form.cancel')}
                     </button>
                     <button
                       type="submit"
                       disabled={saving}
                       className="flex-1 py-3 rounded-full bg-gold text-primary-foreground font-heading uppercase tracking-widest disabled:opacity-50 text-[10px] font-bold shadow-lg shadow-gold/20"
                     >
-                      {saving ? 'Processing…' : (editId ? 'Apply changes' : 'Create olfactory asset')}
+                      {saving ? t('form.processing') : (editId ? t('form.submit_edit') : t('form.submit_create'))}
                     </button>
                   </div>
                 </form>

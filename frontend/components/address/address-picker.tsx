@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import {
     ghnService,
     type GHNProvince,
@@ -74,10 +75,12 @@ export function AddressPicker({ onAddressChange, initialValues }: AddressPickerP
         }
     }, [provinceId, districtId, wardCode, provinces, districts, wards]);
 
+    const t = useTranslations('address');
+
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
-                <Label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2">Tỉnh *</Label>
+                <Label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2">{t('province_label')}</Label>
                 <Select
                     value={provinceId ?? ''}
                     onChange={(e) => {
@@ -86,7 +89,7 @@ export function AddressPicker({ onAddressChange, initialValues }: AddressPickerP
                         setWardCode('');
                     }}
                 >
-                    <option value="">Chọn tỉnh/thành phố</option>
+                    <option value="">{t('province_placeholder')}</option>
                     {provinces.map((p) => (
                         <option key={p.ProvinceID} value={p.ProvinceID}>
                             {p.ProvinceName}
@@ -96,7 +99,7 @@ export function AddressPicker({ onAddressChange, initialValues }: AddressPickerP
             </div>
 
             <div className="space-y-2">
-                <Label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2">Quận/Huyện *</Label>
+                <Label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2">{t('district_label')}</Label>
                 <Select
                     value={districtId ?? ''}
                     onChange={(e) => {
@@ -105,7 +108,7 @@ export function AddressPicker({ onAddressChange, initialValues }: AddressPickerP
                     }}
                     disabled={!provinceId}
                 >
-                    <option value="">Chọn quận/huyện</option>
+                    <option value="">{t('district_placeholder')}</option>
                     {districts.map((d) => (
                         <option key={d.DistrictID} value={d.DistrictID}>
                             {d.DistrictName}
@@ -115,13 +118,13 @@ export function AddressPicker({ onAddressChange, initialValues }: AddressPickerP
             </div>
 
             <div className="space-y-2">
-                <Label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2">Phường/Xã *</Label>
+                <Label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2">{t('ward_label')}</Label>
                 <Select
                     value={wardCode}
                     onChange={(e) => setWardCode(e.target.value)}
                     disabled={!districtId}
                 >
-                    <option value="">Chọn phường/xã</option>
+                    <option value="">{t('ward_placeholder')}</option>
                     {wards.map((w) => (
                         <option key={w.WardCode} value={w.WardCode}>
                             {w.WardName}

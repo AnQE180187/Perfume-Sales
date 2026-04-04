@@ -1,3 +1,5 @@
+'use client';
+
 import { Search as SearchIcon, Filter, Sparkles } from 'lucide-react';
 import { Link } from '@/lib/i18n';
 import { useTranslations } from 'next-intl';
@@ -62,8 +64,8 @@ export default function SearchPage() {
                             transition={{ delay: i * 0.05 }}
                         >
                             <Link href={`/collection/${i}`} className="group relative block">
-                                <div className="aspect-[3/4] glass rounded-[2.5rem] border-border overflow-hidden mb-6 relative hover:border-gold/30 transition-all duration-500">
-                                    <div className="absolute inset-x-0 bottom-0 p-8 bg-gradient-to-t from-background to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                <div className="aspect-3/4 glass rounded-[2.5rem] border-border overflow-hidden mb-6 relative hover:border-gold/30 transition-all duration-500">
+                                    <div className="absolute inset-x-0 bottom-0 p-8 bg-linear-to-t from-background to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10">
                                         <button className="w-full bg-white text-black py-4 rounded-2xl font-heading text-[10px] uppercase font-bold tracking-widest hover:bg-gold hover:text-white transition-all">
                                             View Essence
                                         </button>
@@ -71,7 +73,7 @@ export default function SearchPage() {
                                     <div className="absolute top-6 right-6 z-10">
                                         <Sparkles className="w-4 h-4 text-gold/30 group-hover:text-gold animate-pulse" />
                                     </div>
-                                    <div className="absolute inset-0 bg-gradient-to-br from-gold/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    <div className="absolute inset-0 bg-linear-to-br from-gold/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </div>
                                 <div className="px-2">
                                     <p className="text-[10px] text-gold font-bold uppercase tracking-[0.2em] mb-1">Aura Premiere</p>

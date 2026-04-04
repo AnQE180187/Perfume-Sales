@@ -34,19 +34,19 @@ export const Footer = () => {
                     {/* Brand Column */}
                     <div className="col-span-1 md:col-span-1">
                         <Link href="/">
-                            <h2 className="text-3xl font-serif text-white tracking-[.3em] font-bold mb-10 uppercase">
+                            <h2 className="text-3xl font-serif text-white tracking-[0.3em] font-bold mb-10 uppercase">
                                 AURA
                             </h2>
                         </Link>
                         <p className="text-sm leading-relaxed mb-10 font-light italic">
-                            {t('desc') || 'Merging the ancient art of perfumery with the predictive power of neural intelligence.'}
+                            {t('desc')}
                         </p>
                         <div className="flex flex-wrap gap-x-6 gap-y-3 mt-12">
                             {social.map(name => (
                                 <a
                                     key={name}
                                     href="#"
-                                    className="text-[9px] uppercase tracking-[.3em] text-stone-700 hover:text-gold transition-colors font-bold"
+                                    className="text-[9px] uppercase tracking-[0.3em] text-stone-700 hover:text-gold transition-colors font-bold"
                                 >
                                     {name}
                                 </a>
@@ -56,10 +56,10 @@ export const Footer = () => {
 
                     {/* Navigation Column */}
                     <div>
-                        <h4 className="text-white font-bold mb-10 uppercase text-[10px] tracking-[.4em]">
-                            Exploration
+                        <h4 className="text-white font-bold mb-10 uppercase text-[10px] tracking-[0.4em]">
+                            {t('column_exploration')}
                         </h4>
-                        <ul className="space-y-6 text-[10px] uppercase tracking-[.2em] font-bold">
+                        <ul className="space-y-6 text-[10px] uppercase tracking-[0.2em] font-bold">
                             {navigation.map(item => (
                                 <li key={item.href}>
                                     <Link
@@ -75,10 +75,10 @@ export const Footer = () => {
 
                     {/* Support Column */}
                     <div>
-                        <h4 className="text-white font-bold mb-10 uppercase text-[10px] tracking-[.4em]">
-                            The House
+                        <h4 className="text-white font-bold mb-10 uppercase text-[10px] tracking-[0.4em]">
+                            {t('column_house')}
                         </h4>
-                        <ul className="space-y-6 text-[10px] uppercase tracking-[.2em] font-bold">
+                        <ul className="space-y-6 text-[10px] uppercase tracking-[0.2em] font-bold">
                             {support.map(item => (
                                 <li key={item.href}>
                                     <Link
@@ -94,16 +94,16 @@ export const Footer = () => {
 
                     {/* Newsletter Column */}
                     <div>
-                        <h4 className="text-white font-bold mb-10 uppercase text-[10px] tracking-[.4em]">
-                            Concierge News
+                        <h4 className="text-white font-bold mb-10 uppercase text-[10px] tracking-[0.4em]">
+                            {t('newsletter_title')}
                         </h4>
                         <p className="text-xs mb-8 italic">
-                            {t('newsletter_desc') || 'Join the inner circle for archival releases and AI insights.'}
+                            {t('newsletter_desc')}
                         </p>
                         <div className="flex border-b border-white/10 pb-4 group focus-within:border-gold transition-colors">
                             <input
                                 type="email"
-                                placeholder={t('email_placeholder') || 'YOUR EMAIL'}
+                                placeholder={t('email_placeholder')}
                                 className="bg-transparent text-xs w-full outline-none placeholder:text-stone-800 text-white transition-all uppercase tracking-widest"
                             />
                             <button className="text-stone-700 hover:text-gold transition-colors">
@@ -114,11 +114,11 @@ export const Footer = () => {
                 </div>
 
                 {/* Bottom Bar */}
-                <div className="flex flex-col md:flex-row justify-between items-center pt-12 border-t border-white/5 text-[9px] tracking-[.4em] uppercase font-bold text-stone-800">
-                    <span>{t('copyright') || '© 2026 AURA HOUSE. ALL RIGHTS RESERVED.'}</span>
+                <div className="flex flex-col md:flex-row justify-between items-center pt-12 border-t border-white/5 text-[9px] tracking-[0.3em] uppercase font-bold text-stone-800">
+                    <span>{t('copyright')}</span>
                     <div className="flex gap-12 mt-8 md:mt-0 italic">
-                        <span>{t('engine') || 'Aura AI v4.2 Engine'}</span>
-                        <span>{t('location') || 'Grasse • Paris • Tokyo'}</span>
+                        <span>{t('engine')}</span>
+                        <span>{t('location')}</span>
                     </div>
                 </div>
             </div>

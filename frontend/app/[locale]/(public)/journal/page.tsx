@@ -1,147 +1,120 @@
 'use client';
 
-import React from 'react';
+import { useEffect, useState } from 'react';
+import { journalService, Journal } from '@/services/journal.service';
+import { Link } from '@/lib/i18n';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Header } from '@/components/common/header';
-import { ArrowUpRight, BookOpen } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { ArrowRight } from 'lucide-react';
 
-// Articles data is now localized in en.json / vi.json
+export default function JournalPublicPage() {
+    const [journals, setJournals] = useState<Journal[]>([]);
+    const [loading, setLoading] = useState(true);
 
-export default function JournalPage() {
-    const t = useTranslations('journal_page');
-    // For mapping through the translated articles array
-    const articleItems = t.raw('articles') as any[];
-    
+    useEffect(() => {
+        journalService.list().then(res => {
+            setJournals(res);
+            setLoading(false);
+        }).catch(err => {
+            console.error(err);
+            setLoading(false);
+        });
+    }, []);
+
+    if (loading) return (
+        <div className="min-h-screen bg-background flex items-center justify-center">
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground animate-pulse">Loading Editorial...</span>
+        </div>
+    );
+
+    if (journals.length === 0) return (
+        <div className="min-h-screen bg-background flex flex-col pt-32 items-center text-center">
+            <h1 className="text-4xl font-serif mb-4">The Aura Journal</h1>
+            <p className="text-muted-foreground">Hiện chưa có ấn bản nào được xuất bản.</p>
+        </div>
+    );
+
+    const featured = journals[0];
+    const rest = journals.slice(1);
+
     return (
-        <div className="min-h-screen bg-background transition-colors">
-            <Header />
+        <div className="min-h-screen bg-background pb-32">
+            {/* Magazine Header */}
+            <div className="pt-32 pb-16 text-center border-b border-border/50">
+                <span className="text-[10px] uppercase tracking-[0.5em] text-gold font-bold">Editorial</span>
+                <h1 className="text-6xl md:text-8xl mt-4 font-serif text-foreground uppercase tracking-tighter">The Edition</h1>
+                <p className="mt-6 text-muted-foreground max-w-xl mx-auto px-6 italic text-lg leading-relaxed">
+                    Khám phá nghệ thuật chế tác hương thơm, câu chuyện lịch sử và nguồn cảm hứng bất tận đằng sau mỗi giọt nước hoa.
+                </p>
+            </div>
 
-            <main className="container mx-auto px-6 py-32 lg:py-40">
-                <header className="mb-24 flex flex-col md:flex-row md:items-end justify-between gap-8">
-                    <div className="max-w-2xl">
-                        <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            className="flex items-center gap-2 text-gold mb-4"
-                        >
-                            <BookOpen size={18} />
-                            <span className="text-xs font-bold tracking-[.3em] uppercase italic transition-colors">
-                                {t('digital_anthology')}
-                            </span>
-                        </motion.div>
-                        <motion.h1
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.1 }}
-                            className="text-5xl md:text-7xl font-serif text-luxury-black dark:text-white mb-8 transition-colors"
-                        >
-                            Aura <span className="italic">Journal</span>
-                        </motion.h1>
-                        <motion.p
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.2 }}
-                            className="text-stone-500 dark:text-stone-400 text-lg font-light leading-relaxed transition-colors"
-                        >
-                            {t('journal_subtitle')}
-                        </motion.p>
+            {/* Featured Hero Article */}
+            {featured && (
+                <section className="container mx-auto px-6 mt-16 mb-24">
+                    <Link href={`/journal/${featured.id}`} className="group block relative overflow-hidden rounded-3xl aspect-[16/9] md:aspect-[21/9]">
+                        <Image
+                            src={featured.mainImage}
+                            alt={featured.title}
+                            fill
+                            className="object-cover transition-transform duration-[2s] group-hover:scale-105"
+                            priority
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+                        <div className="absolute bottom-0 left-0 w-full p-8 md:p-16 flex flex-col justify-end text-white text-center md:text-left">
+                            <span className="text-[10px] uppercase tracking-widest text-gold font-bold mb-4">Tiêu Điểm • {featured.category}</span>
+                            <h2 className="text-4xl md:text-6xl font-serif leading-tight mb-4 group-hover:text-gold transition-colors">{featured.title}</h2>
+                            <p className="hidden md:block max-w-3xl text-white/80 text-lg leading-relaxed line-clamp-2 italic">{featured.excerpt}</p>
+                        </div>
+                    </Link>
+                </section>
+            )}
+
+            {/* Grid Layout Articles (Magazine format) */}
+            {rest.length > 0 && (
+                <section className="container mx-auto px-6">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-10">
+                        {rest.map((j, idx) => {
+                            // Creates varied architectural layouts
+                            // Large item occupies 8 cols, small item occupies 4 cols
+                            const isLarge = idx % 3 === 0;
+                            const spanClass = isLarge ? "md:col-span-7 xl:col-span-8" : "md:col-span-5 xl:col-span-4";
+
+                            return (
+                                <motion.div
+                                    key={j.id}
+                                    initial={{ opacity: 0, y: 30 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true, margin: "-100px" }}
+                                    transition={{ duration: 0.8 }}
+                                    className={spanClass}
+                                >
+                                    <Link href={`/journal/${j.id}`} className="group block h-full flex flex-col">
+                                        <div className={`relative overflow-hidden rounded-[2rem] bg-secondary/10 ${isLarge ? 'aspect-[4/3]' : 'aspect-square'}`}>
+                                            <Image
+                                                src={j.mainImage}
+                                                alt={j.title}
+                                                fill
+                                                className="object-cover transition-transform duration-[1.5s] group-hover:scale-105"
+                                            />
+                                        </div>
+                                        <div className="pt-6 px-2 flex-grow flex flex-col">
+                                            <span className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground font-bold mb-3">{j.category} • {new Date(j.createdAt).toLocaleDateString('vi-VN')}</span>
+                                            <h3 className="text-2xl md:text-3xl font-serif text-foreground leading-[1.2] mb-3 group-hover:text-gold transition-colors">{j.title}</h3>
+                                            <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3 mb-6 italic flex-grow">
+                                                {j.excerpt}
+                                            </p>
+                                            <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-foreground group-hover:text-gold transition-colors mt-auto">
+                                                Đọc Ký Sự <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                                            </span>
+                                        </div>
+                                    </Link>
+                                </motion.div>
+                            )
+                        })}
                     </div>
-
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="flex gap-6"
-                    >
-                        {["all", "science", "philosophy", "artistry"].map(catKey => (
-                            <button key={catKey} className="text-[10px] font-bold tracking-widest uppercase text-stone-400 hover:text-gold transition-colors cursor-pointer">
-                                {t(`categories.${catKey}`)}
-                            </button>
-                        ))}
-                    </motion.div>
-                </header>
-
-                {/* Featured Article */}
-                <motion.section
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="group relative h-[600px] mb-24 rounded-[4rem] overflow-hidden shadow-2xl cursor-pointer border border-stone-100 dark:border-white/5"
-                >
-                    <Image
-                        src="/luxury_perfume_hero_cinematic.png"
-                        alt="Featured Article"
-                        fill
-                        className="object-cover transition-transform duration-1000 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                    <div className="absolute bottom-16 left-16 right-16">
-                        <span className="text-gold text-[10px] font-bold tracking-widest uppercase mb-4 block">
-                            {t('special_release')}
-                        </span>
-                        <h2 className="text-4xl md:text-6xl font-serif text-white max-w-3xl mb-6">
-                            {t('featured_article.title')}
-                        </h2>
-                        <p className="text-stone-300 max-w-xl mb-8 font-light text-lg">
-                            {t('featured_article.excerpt')}
-                        </p>
-                        <button className="flex items-center gap-3 text-white text-[10px] font-bold tracking-[.3em] uppercase group-hover:text-gold transition-colors">
-                            {t('consume_story')} <ArrowUpRight size={18} />
-                        </button>
-                    </div>
-                </motion.section>
-
-                {/* Article Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-24">
-                    {articleItems.map((article, i) => (
-                        <motion.article
-                            key={article.title}
-                            initial={{ opacity: 0, y: 30 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: i * 0.1 }}
-                            className="group cursor-pointer"
-                        >
-                            <div className="relative aspect-video mb-8 rounded-[2.5rem] overflow-hidden transition-colors border border-stone-100 dark:border-white/5 shadow-sm">
-                                <Image
-                                    src={article.image}
-                                    alt={article.title}
-                                    fill
-                                    className="object-cover transition-transform duration-700 group-hover:scale-110"
-                                />
-                                <div className="absolute top-6 left-6 px-4 py-1.5 glass rounded-full text-[10px] text-white font-bold tracking-widest uppercase border border-white/20">
-                                    {article.category}
-                                </div>
-                            </div>
-                            <div className="flex justify-between items-start mb-4">
-                                <span className="text-[10px] text-stone-400 font-bold tracking-widest uppercase transition-colors">
-                                    {article.date}
-                                </span>
-                                <div className="p-2 border border-stone-200 dark:border-white/10 rounded-full text-stone-900 dark:text-white group-hover:bg-gold group-hover:text-white group-hover:border-gold transition-all">
-                                    <ArrowUpRight size={16} />
-                                </div>
-                            </div>
-                            <h3 className="text-3xl font-serif text-metropolis-black dark:text-white mb-4 group-hover:italic transition-all duration-500">
-                                {article.title}
-                            </h3>
-                            <p className="text-stone-500 dark:text-stone-400 font-light leading-relaxed transition-colors line-clamp-2">
-                                {article.excerpt}
-                            </p>
-                        </motion.article>
-                    ))}
-                </div>
-
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    className="mt-32 pt-24 border-t border-stone-100 dark:border-white/10 text-center"
-                >
-                    <button className="px-12 py-5 bg-luxury-black dark:bg-gold text-white rounded-full font-bold tracking-[.2em] uppercase hover:scale-105 transition-all shadow-xl cursor-pointer">
-                        {t('load_older')}
-                    </button>
-                </motion.div>
-            </main>
+                </section>
+            )}
         </div>
     );
 }

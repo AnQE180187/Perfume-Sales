@@ -28,4 +28,10 @@ export class QueryProductsDto {
   @Type(() => Number)
   @IsInt()
   categoryId?: number;
+
+  @IsOptional()
+  isFeatured?: any;
+
+  @IsOptional()
+  isBestseller?: any;
 }
