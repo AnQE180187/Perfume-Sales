@@ -24,7 +24,7 @@
         "orders": "Orders",
         "settings": "Settings",
         "dashboard": "Dashboard",
-        "boutiques": "Boutiques",
+        "boutiques": "Brands",
         "journal": "Journal",
         "view_profile": "View Profile",
         "my_profile": "My Profile",
@@ -411,7 +411,7 @@
             "consultation": "AI Consultation",
             "journal": "Journal",
             "subscription": "The Anthology Club",
-            "boutiques": "Boutiques",
+            "boutiques": "Brands",
             "gifting": "Gifting"
         },
         "support_labels": {
@@ -480,8 +480,8 @@
         "subtotal": "Scent Base Value",
         "total": "Total Acquisition Value",
         "shipping_placeholder": "Street, Ward, District, City...",
-        "name_placeholder": "Alexander Dupont",
-        "phone_placeholder": "0901234567",
+        "name_placeholder": "Please enter your name",
+        "phone_placeholder": "Please enter your phone number",
         "loading": "Processing...",
         "page_title_part1": "Assemble",
         "page_title_part2": "Acquisition",

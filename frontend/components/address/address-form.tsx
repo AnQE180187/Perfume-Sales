@@ -46,7 +46,7 @@ export function AddressForm({ onSubmit, initialData, loading }: AddressFormProps
                     <Input
                         value={formData.recipientName}
                         onChange={(e) => setFormData({ ...formData, recipientName: e.target.value })}
-                        placeholder="Nguyễn Văn A"
+                        placeholder="Vui lòng nhập tên người nhận"
                         required
                         className="rounded-[1.5rem]"
                     />
@@ -56,7 +56,7 @@ export function AddressForm({ onSubmit, initialData, loading }: AddressFormProps
                     <Input
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        placeholder="0901234567"
+                        placeholder="Vui lòng nhập số điện thoại của bạn"
                         required
                         className="rounded-[1.5rem]"
                     />

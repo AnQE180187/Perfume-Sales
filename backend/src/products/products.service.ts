@@ -10,7 +10,7 @@ export class ProductsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly cloudinaryService: CloudinaryService,
-  ) {}
+  ) { }
 
   async list(query: QueryProductsDto) {
     const { search, skip = 0, take = 20, brandId, categoryId } = query;
@@ -38,6 +38,7 @@ export class ProductsService {
         include: {
           brand: true,
           category: true,
+          scentFamily: true,
           images: {
             orderBy: { order: 'asc' },
           },
@@ -58,7 +59,7 @@ export class ProductsService {
   }
 
   async listPublic(query: QueryProductsDto) {
-    const { search, skip = 0, take = 20, brandId, categoryId } = query;
+    const { search, skip = 0, take = 20, brandId, categoryId, isFeatured, isBestseller } = query;
 
     const where: any = {
       isActive: true,
@@ -76,6 +77,12 @@ export class ProductsService {
     if (categoryId) {
       where.categoryId = categoryId;
     }
+    if (isFeatured === 'true' || isFeatured === true) {
+      where.isFeatured = true;
+    }
+    if (isBestseller === 'true' || isBestseller === true) {
+      where.isBestseller = true;
+    }
 
     const [items, total] = await this.prisma.$transaction([
       this.prisma.product.findMany({
@@ -85,6 +92,7 @@ export class ProductsService {
         include: {
           brand: true,
           category: true,
+          scentFamily: true,
           images: {
             orderBy: { order: 'asc' },
           },

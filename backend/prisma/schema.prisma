@@ -171,6 +171,8 @@ model Product {
   longevity     String?
   concentration String?
   isActive      Boolean            @default(true)
+  isFeatured    Boolean            @default(false)
+  isBestseller  Boolean            @default(false)
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
 
@@ -183,6 +185,7 @@ model Product {
   reviews       Review[]
   reviewSummary ReviewSummary?
   favorites     Favorite[]
+  journalSections JournalSection[]
 }
 
 
@@ -710,3 +713,38 @@ model Favorite {
   @@index([variantId])
 }
 
+model Banner {
+  id        String   @id @default(cuid())
+  title     String?
+  subtitle  String?
+  imageUrl  String
+  linkUrl   String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Journal {
+  id        String         @id @default(cuid())
+  title     String
+  excerpt   String?
+  mainImage String
+  category  String?        @default("all")
+  priority  Int            @default(0)
+  isActive  Boolean        @default(true)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  sections  JournalSection[]
+}
+
+model JournalSection {
+  id        String   @id @default(cuid())
+  journalId String
+  subtitle  String?
+  content   String   @db.Text
+  imageUrl  String?
+  productId String?
+  order     Int      @default(0)
+  journal   Journal  @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+}

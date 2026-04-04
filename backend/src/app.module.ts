@@ -26,6 +26,8 @@ import { FavoritesModule } from './favorites/favorites.module';
 import { AddressesModule } from './addresses/addresses.module';
 import { GHNModule } from './ghn/ghn.module';
 import { ShippingModule } from './shipping/shipping.module';
+import { BannersModule } from './banners/banners.module';
+import { JournalsModule } from './journals/journals.module';
 
 @Module({
   imports: [
@@ -55,6 +57,8 @@ import { ShippingModule } from './shipping/shipping.module';
     AddressesModule,
     GHNModule,
     ShippingModule,
+    BannersModule,
+    JournalsModule,
   ],
 
   controllers: [AppController],

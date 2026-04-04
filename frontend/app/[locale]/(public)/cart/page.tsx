@@ -98,7 +98,7 @@ export default function CartPage() {
           >
             {tCommon('curation')}
           </motion.span>
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1 }}
@@ -114,7 +114,7 @@ export default function CartPage() {
             <p className="text-[10px] uppercase tracking-[.6em] font-black text-muted-foreground">{t('loading')}</p>
           </div>
         ) : items.length === 0 ? (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="py-40 text-center glass bg-foreground/[0.02] rounded-[4rem] border border-dashed border-border/50"
@@ -143,7 +143,7 @@ export default function CartPage() {
                         <img src={item.variant.product.images[0].url} alt={item.variant.product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[2s]" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-gold/20">
-                           <Sparkles size={32} />
+                          <Sparkles size={32} />
                         </div>
                       )}
                     </div>
@@ -157,25 +157,25 @@ export default function CartPage() {
                           {formatCurrency(item.variant.price)} {t('each')}
                         </p>
                       </div>
-                      
+
                       <div className="pt-6 flex items-center justify-center sm:justify-start gap-10">
                         <div className="flex items-center gap-6 glass px-6 py-3 rounded-full border border-border/50 shadow-inner group-hover:border-gold/20 transition-all">
-                          <button 
-                            onClick={() => updateQty(item, -1)} 
+                          <button
+                            onClick={() => updateQty(item, -1)}
                             className="text-muted-foreground hover:text-gold transition-colors font-serif text-lg p-1"
                           >
                             —
                           </button>
                           <span className="text-xs font-black tracking-widest text-foreground w-6 text-center">{item.quantity}</span>
-                          <button 
-                            onClick={() => updateQty(item, 1)} 
+                          <button
+                            onClick={() => updateQty(item, 1)}
                             className="text-muted-foreground hover:text-gold transition-colors font-serif text-lg p-1"
                           >
                             +
                           </button>
                         </div>
-                        <button 
-                          onClick={() => remove(item.id)} 
+                        <button
+                          onClick={() => remove(item.id)}
                           className="text-muted-foreground/30 hover:text-red-500 hover:rotate-12 transition-all duration-500"
                         >
                           <Trash2 size={22} strokeWidth={1.5} />
@@ -195,8 +195,8 @@ export default function CartPage() {
                   { icon: ShieldCheck, title: t('perks.auth_title'), desc: t('perks.auth_desc') },
                   { icon: RotateCcw, title: t('perks.refill_title'), desc: t('perks.refill_desc') },
                 ].map((g, i) => (
-                  <motion.div 
-                    key={i} 
+                  <motion.div
+                    key={i}
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
@@ -204,7 +204,7 @@ export default function CartPage() {
                     className="flex flex-col items-center text-center p-8 glass bg-foreground/[0.01] rounded-[3rem] border border-border/30 hover:border-gold/20 transition-all duration-700 shadow-sm"
                   >
                     <div className="w-14 h-14 bg-gold/5 rounded-2xl flex items-center justify-center mb-6 border border-gold/10">
-                       <g.icon className="text-gold" size={24} strokeWidth={1} />
+                      <g.icon className="text-gold" size={24} strokeWidth={1} />
                     </div>
                     <h5 className="text-[10px] font-black tracking-[.3em] uppercase mb-3 text-foreground">{g.title}</h5>
                     <p className="text-[9px] text-muted-foreground leading-relaxed uppercase tracking-[.1em] font-medium opacity-60">{g.desc}</p>
@@ -216,11 +216,11 @@ export default function CartPage() {
             <div className="lg:col-span-4">
               <div className="glass bg-background/50 p-12 rounded-[4rem] border border-border/50 shadow-2xl sticky top-40 transition-all backdrop-blur-3xl overflow-hidden group/summary">
                 <div className="absolute top-0 right-0 p-8 opacity-5">
-                   <ShoppingBag size={120} className="text-gold" />
+                  <ShoppingBag size={120} className="text-gold" />
                 </div>
-                
+
                 <h2 className="text-4xl font-serif text-foreground italic mb-12 tracking-tight">{t('summary')}</h2>
-                
+
                 <div className="space-y-6 mb-12 relative z-10">
                   <div className="flex justify-between items-center group/line">
                     <span className="text-muted-foreground uppercase tracking-[.4em] text-[9px] font-black opacity-50">{t('subtotal')}</span>

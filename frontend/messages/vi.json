@@ -24,7 +24,7 @@
         "orders": "Đơn Hàng",
         "settings": "Cài Đặt",
         "dashboard": "Bảng Điều Khiển",
-        "boutiques": "Cửa Hàng",
+        "boutiques": "Thương Hiệu",
         "journal": "Tạp Chí",
         "view_profile": "Xem Hồ Sơ",
         "my_profile": "Hồ Sơ Của Tôi",
@@ -411,7 +411,7 @@
             "consultation": "Tư Vấn AI",
             "journal": "Tập Ký",
             "subscription": "Câu Lạc Bộ Anthology",
-            "boutiques": "Cửa Hàng",
+            "boutiques": "Thương Hiệu",
             "gifting": "Quà Tặng"
         },
         "support_labels": {
@@ -480,8 +480,8 @@
         "subtotal": "Giá Trị Khứu Giác Gốc",
         "total": "Tổng Giá Trị Sở Hữu",
         "shipping_placeholder": "Số nhà, tên đường, phường/xã...",
-        "name_placeholder": "Nguyễn Văn An",
-        "phone_placeholder": "0901234567",
+        "name_placeholder": "Vui lòng nhập tên của bạn",
+        "phone_placeholder": "Vui lòng nhập số điện thoại của bạn",
         "loading": "Đang Xử Lý...",
         "page_title_part1": "Tiến Hành",
         "page_title_part2": "Sở Hữu",
