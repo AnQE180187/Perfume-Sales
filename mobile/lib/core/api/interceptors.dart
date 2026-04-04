@@ -20,6 +20,10 @@ class AuthInterceptor extends Interceptor {
     ApiEndpoints.login,
     ApiEndpoints.register,
     ApiEndpoints.refreshToken,
+    ApiEndpoints.forgotPassword,
+    ApiEndpoints.resetPassword,
+    ApiEndpoints.verifyEmail,
+    ApiEndpoints.socialLogin,
   };
 
   @override

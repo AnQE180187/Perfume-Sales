@@ -42,6 +42,13 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     super.dispose();
   }
 
+  void _removeSelectedItems(WidgetRef ref, Set<String> selectedIds) {
+    for (final id in selectedIds) {
+      ref.read(cartProvider.notifier).removeItem(id);
+      ref.read(cartSelectionProvider.notifier).removeId(id);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final cartState = ref.watch(cartProvider);
@@ -194,22 +201,30 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           ),
         ),
         TextButton(
-          onPressed: () {
-            showClearCartModal(
-              context,
-              onClearConfirmed: () {
-                ref.read(cartProvider.notifier).clearCart();
-                ref.read(cartSelectionProvider.notifier).clear();
-                Navigator.pop(context);
-              },
-            );
-          },
+          onPressed: selection.selectedIds.isEmpty
+              ? null
+              : () {
+                  if (selection.selectAll) {
+                    showClearCartModal(
+                      context,
+                      onClearConfirmed: () {
+                        ref.read(cartProvider.notifier).clearCart();
+                        ref.read(cartSelectionProvider.notifier).clear();
+                        Navigator.pop(context);
+                      },
+                    );
+                  } else {
+                    _removeSelectedItems(ref, selection.selectedIds);
+                  }
+                },
           child: Text(
-            'Xoa tat ca',
+            selection.selectAll ? 'Xoa tat ca' : 'Xoa',
             style: GoogleFonts.montserrat(
               fontSize: 11,
               fontWeight: FontWeight.w500,
-              color: AppTheme.accentGold,
+              color: selection.selectedIds.isEmpty
+                  ? AppTheme.mutedSilver
+                  : AppTheme.accentGold,
             ),
           ),
         ),

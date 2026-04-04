@@ -41,7 +41,7 @@ class ChatSocketService {
       onConnected?.call();
     });
 
-    _socket!.on('messageReceived', (data) {
+    _socket!.on('message', (data) {
       try {
         final Map<String, dynamic> map;
         if (data is Map) {

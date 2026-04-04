@@ -509,10 +509,52 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                           .addItemByVariant(variant.id, quantity: 1);
 
                       if (!mounted) return;
+                      messenger.clearSnackBars();
                       messenger.showSnackBar(
                         SnackBar(
-                          content: Text('Đã thêm ${product.name} vào giỏ hàng'),
+                          content: Row(
+                            children: [
+                              const Icon(
+                                Icons.check_circle_rounded,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  'Đã thêm ${product.name} vào giỏ hàng',
+                                  style: const TextStyle(fontSize: 13),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  messenger.hideCurrentSnackBar();
+                                  if (context.mounted) {
+                                    context.push('/cart');
+                                  }
+                                },
+                                child: const Text(
+                                  'Xem giỏ',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 13,
+                                    decoration: TextDecoration.underline,
+                                    decorationColor: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                           behavior: SnackBarBehavior.floating,
+                          backgroundColor: const Color(0xFF2E7D32),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                          duration: const Duration(seconds: 3),
                         ),
                       );
                     } catch (error) {

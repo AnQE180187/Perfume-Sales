@@ -26,15 +26,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     super.dispose();
   }
 
-  void _showSocialNotSupported() {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Đăng nhập mạng xã hội hiện chưa được hỗ trợ với API hiện tại.',
-        ),
-      ),
-    );
+  void _handleSocialLogin(Future<void> Function() loginFn) async {
+    try {
+      await loginFn();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Đăng nhập thất bại: $e')));
+      }
+    }
   }
 
   Future<void> _handleContinue() async {
@@ -122,7 +123,30 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       // Password Input
                       _buildPasswordField(),
 
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 8),
+
+                      // Forgot Password Link
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: () => context.push('/forgot-password'),
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: Text(
+                            'Quên mật khẩu?',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: const Color(0xFFD4AF37),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
 
                       // Continue Button
                       SizedBox(
@@ -200,12 +224,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         children: [
                           _buildSocialButton(
                             icon: FontAwesomeIcons.google,
-                            onPressed: _showSocialNotSupported,
+                            onPressed: () => _handleSocialLogin(
+                              ref
+                                  .read(authControllerProvider.notifier)
+                                  .signInWithGoogle,
+                            ),
                           ),
                           const SizedBox(width: 20),
                           _buildSocialButton(
                             icon: FontAwesomeIcons.facebookF,
-                            onPressed: _showSocialNotSupported,
+                            onPressed: () => _handleSocialLogin(
+                              ref
+                                  .read(authControllerProvider.notifier)
+                                  .signInWithFacebook,
+                            ),
                           ),
                         ],
                       ),

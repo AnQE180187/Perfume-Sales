@@ -1,16 +1,25 @@
 import 'product_recommendation.dart';
 
 /// Lightweight AI recommendation returned inside a backend AI_RECOMMENDATION message.
-/// Contains only what the AI knows: productId (virtual), name, reason.
 class AiRecommendation {
   final String productId;
   final String name;
   final String reason;
+  final double price;
+  final String brand;
+  final String imageUrl;
+  final List<String> tags;
+  final String variantId;
 
   const AiRecommendation({
     required this.productId,
     required this.name,
     required this.reason,
+    this.price = 0,
+    this.brand = '',
+    this.imageUrl = '',
+    this.tags = const [],
+    this.variantId = '',
   });
 
   factory AiRecommendation.fromJson(Map<String, dynamic> json) {
@@ -18,6 +27,15 @@ class AiRecommendation {
       productId: (json['productId'] ?? '').toString(),
       name: (json['name'] ?? '').toString(),
       reason: (json['reason'] ?? '').toString(),
+      price: (json['price'] is num)
+          ? (json['price'] as num).toDouble()
+          : double.tryParse(json['price']?.toString() ?? '') ?? 0,
+      brand: (json['brand'] ?? '').toString(),
+      imageUrl: (json['imageUrl'] ?? '').toString(),
+      tags: (json['tags'] is List)
+          ? (json['tags'] as List).map((t) => t.toString()).toList()
+          : const [],
+      variantId: (json['variantId'] ?? '').toString(),
     );
   }
 }

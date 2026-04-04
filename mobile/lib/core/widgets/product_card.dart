@@ -249,9 +249,9 @@ class _GridCard extends StatelessWidget {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
           children: [
-            Expanded(
+            AspectRatio(
+              aspectRatio: 1.1,
               child: ClipRRect(
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(20),
@@ -312,80 +312,85 @@ class _GridCard extends StatelessWidget {
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    product.brand.toUpperCase(),
-                    style: GoogleFonts.montserrat(
-                      fontSize: 8,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 1.2,
-                      color: AppTheme.mutedSilver,
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      product.brand.toUpperCase(),
+                      style: GoogleFonts.montserrat(
+                        fontSize: 8,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 1.2,
+                        color: AppTheme.mutedSilver,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    product.name,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.playfairDisplay(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      height: 1.15,
+                    const SizedBox(height: 3),
+                    Text(
+                      product.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.playfairDisplay(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        height: 1.15,
+                      ),
                     ),
-                  ),
-                  if (product.notes.isNotEmpty) ...[
-                    const SizedBox(height: 5),
-                    Wrap(
-                      spacing: 4,
-                      runSpacing: 4,
-                      children: product.notes
-                          .take(2)
-                          .map((note) => _ScentTag(text: note))
-                          .toList(),
-                    ),
-                  ],
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          formatVND(product.price),
-                          style: GoogleFonts.montserrat(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.accentGold,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                    if (product.notes.isNotEmpty) ...[
+                      const SizedBox(height: 5),
+                      SizedBox(
+                        height: 20,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: product.notes.length > 3
+                              ? 3
+                              : product.notes.length,
+                          separatorBuilder: (_, __) => const SizedBox(width: 4),
+                          itemBuilder: (_, i) =>
+                              _ScentTag(text: product.notes[i]),
                         ),
                       ),
-                      if (product.rating != null) ...[
-                        const SizedBox(width: 6),
-                        const Icon(
-                          Icons.star,
-                          size: 11,
-                          color: AppTheme.accentGold,
-                        ),
-                        const SizedBox(width: 2),
-                        Text(
-                          product.rating!.toStringAsFixed(1),
-                          style: GoogleFonts.montserrat(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w500,
-                            color: AppTheme.mutedSilver,
+                    ],
+                    const Spacer(),
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            formatVND(product.price),
+                            style: GoogleFonts.montserrat(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.accentGold,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
+                        if (product.rating != null) ...[
+                          const SizedBox(width: 6),
+                          const Icon(
+                            Icons.star,
+                            size: 11,
+                            color: AppTheme.accentGold,
+                          ),
+                          const SizedBox(width: 2),
+                          Text(
+                            product.rating!.toStringAsFixed(1),
+                            style: GoogleFonts.montserrat(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                              color: AppTheme.mutedSilver,
+                            ),
+                          ),
+                        ],
                       ],
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -555,19 +560,24 @@ class _ScentTag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-      decoration: BoxDecoration(
-        color: AppTheme.softTaupe,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Text(
-        text,
-        style: GoogleFonts.montserrat(
-          fontSize: 9,
-          fontWeight: FontWeight.w500,
-          color: AppTheme.deepCharcoal,
-          letterSpacing: 0.2,
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 70),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+        decoration: BoxDecoration(
+          color: AppTheme.softTaupe,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Text(
+          text,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: GoogleFonts.montserrat(
+            fontSize: 9,
+            fontWeight: FontWeight.w500,
+            color: AppTheme.deepCharcoal,
+            letterSpacing: 0.2,
+          ),
         ),
       ),
     );

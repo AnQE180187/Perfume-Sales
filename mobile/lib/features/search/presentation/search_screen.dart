@@ -373,7 +373,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
-                            childAspectRatio: 0.62,
+                            childAspectRatio: 0.54,
                             crossAxisSpacing: 16,
                             mainAxisSpacing: 16,
                           ),

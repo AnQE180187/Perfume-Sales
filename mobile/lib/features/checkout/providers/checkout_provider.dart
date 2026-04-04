@@ -5,6 +5,7 @@ import '../../address/services/address_service.dart';
 import '../data/checkout_api_service.dart';
 import '../models/checkout_state.dart';
 import '../../cart/providers/cart_provider.dart';
+import '../../cart/providers/cart_selection_provider.dart';
 import '../../payment/models/payment_method.dart';
 import '../../payment/providers/payment_method_provider.dart';
 
@@ -28,18 +29,21 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
         ),
       );
 
-  void syncWithCartState(CartState cartState) {
+  void syncWithCartState(CartState cartState, {Set<String>? selectedIds}) {
     // Once an order is created the backend clears the cart.
     // Don't let that empty-cart signal overwrite the checkout UI.
     if (state.createdOrderId != null) return;
 
-    final subtotal = cartState.items.fold<double>(
-      0,
-      (sum, item) => sum + item.subtotal,
-    );
+    final items = selectedIds != null
+        ? cartState.items
+              .where((item) => selectedIds.contains(item.id))
+              .toList()
+        : cartState.items;
+
+    final subtotal = items.fold<double>(0, (sum, item) => sum + item.subtotal);
 
     state = state.copyWith(
-      orderItems: cartState.items,
+      orderItems: items,
       subtotal: subtotal,
       shippingCost: 0,
       tax: 0,
@@ -207,52 +211,61 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
   }
 }
 
-final checkoutProvider = StateNotifierProvider<CheckoutNotifier, CheckoutState>(
-  (ref) {
-    // Initialize with the user's persisted payment preference.
-    final preferredMethod = ref.read(selectedPaymentMethodProvider);
-    final notifier = CheckoutNotifier(
-      ref: ref,
-      initialPaymentMethod: preferredMethod,
-    );
-    final selectedAddress = ref.read(selectedAddressProvider);
+final checkoutProvider =
+    StateNotifierProvider.autoDispose<CheckoutNotifier, CheckoutState>((ref) {
+      // Initialize with the user's persisted payment preference.
+      final preferredMethod = ref.read(selectedPaymentMethodProvider);
+      final notifier = CheckoutNotifier(
+        ref: ref,
+        initialPaymentMethod: preferredMethod,
+      );
+      final selectedAddress = ref.read(selectedAddressProvider);
 
-    notifier.syncWithCartState(ref.read(cartProvider));
-    if (selectedAddress != null) {
-      notifier.syncSelectedAddress(selectedAddress);
-    }
-
-    ref.listen<CartState>(cartProvider, (previous, next) {
-      notifier.syncWithCartState(next);
-    });
-
-    ref.listen<Address?>(selectedAddressProvider, (previous, next) {
-      notifier.syncSelectedAddress(next);
-    });
-
-    ref.listen<AsyncValue<List<Address>>>(addressListProvider, (
-      previous,
-      next,
-    ) {
-      next.whenData((_) {
-        final updated = ref.read(selectedAddressProvider);
-        notifier.syncSelectedAddress(updated);
-      });
-    });
-
-    // Keep checkout in sync when the user changes their preferred method
-    // (e.g. from the preference screen).
-    ref.listen<PaymentMethod?>(selectedPaymentMethodProvider, (prev, next) {
-      if (next != null && notifier.selectedPaymentMethodId != next.id) {
-        notifier.selectPaymentMethod(next);
+      final selectedIds = ref.read(cartSelectionProvider).selectedIds;
+      notifier.syncWithCartState(
+        ref.read(cartProvider),
+        selectedIds: selectedIds,
+      );
+      if (selectedAddress != null) {
+        notifier.syncSelectedAddress(selectedAddress);
       }
+
+      ref.listen<CartState>(cartProvider, (previous, next) {
+        final ids = ref.read(cartSelectionProvider).selectedIds;
+        notifier.syncWithCartState(next, selectedIds: ids);
+      });
+
+      ref.listen<CartSelectionState>(cartSelectionProvider, (previous, next) {
+        final cart = ref.read(cartProvider);
+        notifier.syncWithCartState(cart, selectedIds: next.selectedIds);
+      });
+
+      ref.listen<Address?>(selectedAddressProvider, (previous, next) {
+        notifier.syncSelectedAddress(next);
+      });
+
+      ref.listen<AsyncValue<List<Address>>>(addressListProvider, (
+        previous,
+        next,
+      ) {
+        next.whenData((_) {
+          final updated = ref.read(selectedAddressProvider);
+          notifier.syncSelectedAddress(updated);
+        });
+      });
+
+      // Keep checkout in sync when the user changes their preferred method
+      // (e.g. from the preference screen).
+      ref.listen<PaymentMethod?>(selectedPaymentMethodProvider, (prev, next) {
+        if (next != null && notifier.selectedPaymentMethodId != next.id) {
+          notifier.selectPaymentMethod(next);
+        }
+      });
+
+      final initialCartState = ref.read(cartProvider);
+      if (initialCartState.items.isEmpty && !initialCartState.isLoading) {
+        notifier.refreshCart();
+      }
+
+      return notifier;
     });
-
-    final initialCartState = ref.read(cartProvider);
-    if (initialCartState.items.isEmpty && !initialCartState.isLoading) {
-      notifier.refreshCart();
-    }
-
-    return notifier;
-  },
-);

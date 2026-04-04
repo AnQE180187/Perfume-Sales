@@ -99,7 +99,7 @@ class ShimmerProductGrid extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 0.60,
+        childAspectRatio: 0.54,
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
       ),
@@ -117,7 +117,8 @@ class _ShimmerProductCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
+        AspectRatio(
+          aspectRatio: 1.1,
           child: ShimmerBox(
             height: double.infinity,
             borderRadius: AppRadius.md,

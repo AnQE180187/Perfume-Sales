@@ -16,6 +16,7 @@ import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { SocialLoginDto } from './dto/social-login.dto';
 import { GoogleAuthGuard } from './google-auth.guard';
 import { FacebookAuthGuard } from './facebook-auth.guard';
 import { JwtAuthGuard } from './jwt-auth.guard';
@@ -23,7 +24,7 @@ import { Request, Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(private readonly authService: AuthService) {}
 
   @Post('register')
   async register(@Body() dto: RegisterDto) {
@@ -95,6 +96,13 @@ export class AuthController {
   @UseGuards(GoogleAuthGuard)
   async googleAuth() {
     // Guard redirects to Google
+  }
+
+  // Mobile social login (Google/Facebook SDK token)
+  @Post('social-login')
+  @HttpCode(HttpStatus.OK)
+  async socialLogin(@Body() dto: SocialLoginDto) {
+    return this.authService.socialLoginWithToken(dto);
   }
 
   @Get('google/callback')

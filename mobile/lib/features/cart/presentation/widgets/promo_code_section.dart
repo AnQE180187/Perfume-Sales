@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../providers/cart_provider.dart';
+import '../../providers/promotions_provider.dart';
 
 class PromoCodeSection extends ConsumerStatefulWidget {
   final TextEditingController controller;
@@ -208,7 +209,9 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
                               borderSide: BorderSide(
-                                color: AppTheme.accentGold.withValues(alpha: 0.5),
+                                color: AppTheme.accentGold.withValues(
+                                  alpha: 0.5,
+                                ),
                               ),
                             ),
                           ),
@@ -218,7 +221,9 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
                           ),
                           onSubmitted: (code) {
                             if (code.isNotEmpty) {
-                              ref.read(cartProvider.notifier).applyPromoCode(code);
+                              ref
+                                  .read(cartProvider.notifier)
+                                  .applyPromoCode(code);
                             }
                           },
                         ),
@@ -277,23 +282,43 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
   }
 
   Widget _buildPublicPromos() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'MÃ KHUYẾN MÃI CÓ SẴN',
-          style: GoogleFonts.montserrat(
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 1.2,
-            color: AppTheme.mutedSilver,
+    final promosAsync = ref.watch(activePromotionsProvider);
+    return promosAsync.when(
+      loading: () => const Center(
+        child: Padding(
+          padding: EdgeInsets.all(8),
+          child: SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(strokeWidth: 2),
           ),
         ),
-        const SizedBox(height: 12),
-        _buildPromoItem('LUMINA10', 'Giảm 10% cho đơn hàng đầu tiên'),
-        const SizedBox(height: 8),
-        _buildPromoItem('WELCOME20', 'Siêu ưu đãi giảm 20% cho thành viên mới'),
-      ],
+      ),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (promos) {
+        if (promos.isEmpty) return const SizedBox.shrink();
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'MÃ KHUYẾN MÃI CÓ SẴN',
+              style: GoogleFonts.montserrat(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.2,
+                color: AppTheme.mutedSilver,
+              ),
+            ),
+            const SizedBox(height: 12),
+            ...promos.map(
+              (promo) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: _buildPromoItem(promo.code, promo.displayDescription),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
