@@ -113,6 +113,93 @@ class AuthRepository {
     final token = await _tokenStorage.getAccessToken();
     return token != null;
   }
+
+  /// Send forgot-password email.
+  Future<Map<String, dynamic>> forgotPassword({required String email}) {
+    return _apiService.forgotPassword(email: email);
+  }
+
+  /// Reset password with token from email.
+  Future<Map<String, dynamic>> resetPassword({
+    required String token,
+    required String newPassword,
+  }) {
+    return _apiService.resetPassword(token: token, newPassword: newPassword);
+  }
+
+  /// Change password for authenticated user.
+  Future<Map<String, dynamic>> changePassword({
+    required String oldPassword,
+    required String newPassword,
+  }) {
+    return _apiService.changePassword(
+      oldPassword: oldPassword,
+      newPassword: newPassword,
+    );
+  }
+
+  /// Verify email with token from email link.
+  Future<Map<String, dynamic>> verifyEmail({required String token}) {
+    return _apiService.verifyEmail(token: token);
+  }
+
+  /// Resend verification email (authenticated).
+  Future<Map<String, dynamic>> resendVerification() {
+    return _apiService.resendVerification();
+  }
+
+  /// Social login via provider SDK token. Saves tokens on success.
+  Future<Map<String, dynamic>> socialLogin({
+    required String provider,
+    required String token,
+    required String email,
+    required String providerId,
+    String? fullName,
+    String? avatarUrl,
+  }) async {
+    final raw = await _apiService.socialLogin(
+      provider: provider,
+      token: token,
+      email: email,
+      providerId: providerId,
+      fullName: fullName,
+      avatarUrl: avatarUrl,
+    );
+    final data = _normalize(raw);
+
+    final accessToken =
+        _readString(data, ['accessToken', 'access_token']) ??
+        _readString(raw, ['accessToken', 'access_token']);
+    final refreshToken =
+        _readString(data, ['refreshToken', 'refresh_token']) ??
+        _readString(raw, ['refreshToken', 'refresh_token']);
+
+    if (accessToken == null || refreshToken == null) {
+      throw Exception('Social login response missing tokens.');
+    }
+
+    await _tokenStorage.saveTokens(
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+    );
+
+    return data['user'] as Map<String, dynamic>? ??
+        raw['user'] as Map<String, dynamic>? ??
+        data;
+  }
+
+  /// Fetch active promotions.
+  Future<List<dynamic>> getActivePromotions() {
+    return _apiService.getActivePromotions();
+  }
+
+  /// Validate a promo code against order amount.
+  Future<Map<String, dynamic>> validatePromoCode({
+    required String code,
+    required int amount,
+  }) {
+    return _apiService.validatePromoCode(code: code, amount: amount);
+  }
 }
 
 // ── Riverpod Providers ────────────────────────────────────────────────

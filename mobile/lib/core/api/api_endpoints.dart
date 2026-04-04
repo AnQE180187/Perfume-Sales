@@ -11,6 +11,16 @@ class ApiEndpoints {
   static const String refreshToken = '/auth/refresh';
   static const String logout = '/auth/logout';
   static const String profile = '/auth/profile';
+  static const String forgotPassword = '/auth/forgot-password';
+  static const String resetPassword = '/auth/reset-password';
+  static const String changePassword = '/auth/change-password';
+  static const String verifyEmail = '/auth/verify-email';
+  static const String resendVerification = '/auth/resend-verification';
+  static const String socialLogin = '/auth/social-login';
+
+  // ── Promotions ────────────────────────────────────────────────────
+  static const String promotionsActive = '/promotions/active';
+  static const String promotionsValidate = '/promotions/validate';
 
   // ── Products ──────────────────────────────────────────────────────
   static const String products = '/products';

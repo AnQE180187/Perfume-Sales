@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import '../data/auth_repository.dart';
 
 class AuthUser {
@@ -192,22 +194,123 @@ class AuthNotifier extends StateNotifier<AsyncValue<void>> {
 
   Future<void> signInWithGoogle() async {
     state = const AsyncValue.loading();
-    state = AsyncValue.error(
-      UnsupportedError(
-        'Google OAuth is not implemented in NestJS REST auth flow.',
-      ),
-      StackTrace.current,
-    );
+    try {
+      final googleSignIn = GoogleSignIn(
+        scopes: ['email', 'profile'],
+        serverClientId:
+            '703366728616-2vgef2fv3561b3aohkvbo0hmt44969ps.apps.googleusercontent.com',
+      );
+      final account = await googleSignIn.signIn();
+      if (account == null) {
+        state = const AsyncValue.data(null);
+        return; // User cancelled
+      }
+
+      final auth = await account.authentication;
+      final idToken = auth.idToken;
+      if (idToken == null) {
+        throw Exception('Không lấy được token từ Google');
+      }
+
+      final profile = await _repository.socialLogin(
+        provider: 'google',
+        token: idToken,
+        email: account.email,
+        providerId: account.id,
+        fullName: account.displayName,
+        avatarUrl: account.photoUrl,
+      );
+
+      Map<String, dynamic>? userProfile;
+      try {
+        userProfile = await _repository.getProfile();
+      } catch (_) {}
+
+      _ref
+          .read(authStateProvider.notifier)
+          .markAuthenticated(profile: userProfile ?? profile);
+      state = const AsyncValue.data(null);
+    } catch (e, stack) {
+      state = AsyncValue.error(e, stack);
+      rethrow;
+    }
   }
 
   Future<void> signInWithFacebook() async {
     state = const AsyncValue.loading();
-    state = AsyncValue.error(
-      UnsupportedError(
-        'Facebook OAuth is not implemented in NestJS REST auth flow.',
-      ),
-      StackTrace.current,
+    try {
+      final result = await FacebookAuth.instance.login(
+        permissions: ['email', 'public_profile'],
+      );
+      if (result.status == LoginStatus.cancelled) {
+        state = const AsyncValue.data(null);
+        return;
+      }
+      if (result.status != LoginStatus.success || result.accessToken == null) {
+        throw Exception('Đăng nhập Facebook thất bại');
+      }
+
+      final fbToken = result.accessToken!.tokenString;
+      final userData = await FacebookAuth.instance.getUserData(
+        fields: 'id,name,email,picture.type(large)',
+      );
+
+      final email = userData['email'] as String?;
+      if (email == null) {
+        throw Exception('Tài khoản Facebook cần có email công khai');
+      }
+
+      final profile = await _repository.socialLogin(
+        provider: 'facebook',
+        token: fbToken,
+        email: email,
+        providerId: userData['id'] as String,
+        fullName: userData['name'] as String?,
+        avatarUrl: (userData['picture']?['data']?['url']) as String?,
+      );
+
+      Map<String, dynamic>? userProfile;
+      try {
+        userProfile = await _repository.getProfile();
+      } catch (_) {}
+
+      _ref
+          .read(authStateProvider.notifier)
+          .markAuthenticated(profile: userProfile ?? profile);
+      state = const AsyncValue.data(null);
+    } catch (e, stack) {
+      state = AsyncValue.error(e, stack);
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> forgotPassword(String email) async {
+    return _repository.forgotPassword(email: email);
+  }
+
+  Future<Map<String, dynamic>> resetPassword({
+    required String token,
+    required String newPassword,
+  }) async {
+    return _repository.resetPassword(token: token, newPassword: newPassword);
+  }
+
+  Future<Map<String, dynamic>> changePassword({
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    return _repository.changePassword(
+      oldPassword: oldPassword,
+      newPassword: newPassword,
     );
+  }
+
+  Future<Map<String, dynamic>> verifyEmail(String token) async {
+    return _repository.verifyEmail(token: token);
+  }
+
+  Future<Map<String, dynamic>> resendVerification() async {
+    return _repository.resendVerification();
   }
 
   Future<void> logout() async {

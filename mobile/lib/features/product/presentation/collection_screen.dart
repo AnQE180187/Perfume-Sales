@@ -98,7 +98,7 @@ class CollectionScreen extends StatelessWidget {
                 crossAxisCount: 2,
                 mainAxisSpacing: 30,
                 crossAxisSpacing: 20,
-                childAspectRatio: 0.65,
+                childAspectRatio: 0.54,
               ),
               delegate: SliverChildBuilderDelegate(
                 (context, index) => const ProductCard(),

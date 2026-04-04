@@ -2,6 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
+import '../../features/auth/presentation/forgot_password_screen.dart';
+import '../../features/auth/presentation/reset_password_screen.dart';
+import '../../features/auth/presentation/verify_email_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/onboarding/providers/onboarding_provider.dart';
 import '../../features/auth/providers/auth_provider.dart';
@@ -35,7 +38,12 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: '/',
     redirect: (context, state) {
       final loc = state.matchedLocation;
-      final isAuthRoute = loc == '/login' || loc == '/register';
+      final isAuthRoute =
+          loc == '/login' ||
+          loc == '/register' ||
+          loc == '/forgot-password' ||
+          loc == '/reset-password' ||
+          loc == '/verify-email';
       final isOnboardingRoute = loc == '/onboarding';
       final isStaffRoute = loc.startsWith('/staff');
 
@@ -86,6 +94,21 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: '/forgot-password',
+        builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: '/reset-password',
+        builder: (context, state) => const ResetPasswordScreen(),
+      ),
+      GoRoute(
+        path: '/verify-email',
+        builder: (context, state) {
+          final token = state.uri.queryParameters['token'];
+          return VerifyEmailScreen(token: token);
+        },
       ),
       GoRoute(path: '/home', builder: (context, state) => const MainShell()),
       GoRoute(path: '/cart', builder: (context, state) => const CartScreen()),
