@@ -9,7 +9,12 @@ export type CatalogItem = {
 };
 
 export const catalogService = {
-  // Brands
+  // Public
+  getPublicBrands() {
+    return api.get<CatalogItem[]>('/catalog/brands').then((r) => r.data);
+  },
+
+  // Brands (Admin)
   getBrands() {
     return api.get<CatalogItem[]>('/admin/brands').then((r) => r.data);
   },

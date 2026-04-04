@@ -66,12 +66,12 @@ export const Header = () => {
 
     const menuLeft = [
         { name: t('home'), href: '/' },
-        { name: t('about'), href: '/story' },
+        { name: t('collection'), href: '/collection' },
         { name: t('boutiques'), href: '/boutiques' },
     ];
 
     const menuRight = [
-        { name: t('collection'), href: '/collection' },
+        { name: t('about'), href: '/story' },
         { name: t('journal'), href: '/journal' },
     ];
 

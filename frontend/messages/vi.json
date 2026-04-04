@@ -48,7 +48,7 @@
         "settings": "Cài Đặt",
         "dashboard": "Bảng Điều Khiển",
         "and": "và",
-        "boutiques": "Cửa Hàng",
+        "boutiques": "Thương Hiệu",
         "journal": "Tạp Chí",
         "view_profile": "Xem Hồ Sơ",
         "my_profile": "Hồ Sơ Của Tôi",
@@ -563,7 +563,7 @@
         "shipping_free": "Miễn Phí",
         "error_missing_info": "Vui lòng cung cấp đầy đủ định danh hậu cần bắt buộc.",
         "error_create_order": "Thất bại khi khởi tạo sự cộng hưởng sở hữu khứu giác.",
-        "error_create_payment": "Liên kết tổng hợp sở hữu không thể khởi tạo."
+        "error_create_payment": "Liên kết tổng hợp sở hữu không thể khởi tạo.",
     "address": {
         "recipient_name": "Tên người nhận *",
         "phone_number": "Số điện thoại *",
@@ -1923,4 +1923,5 @@
             "RETURNED": "Hoàn hàng"
         }
     }
+}
 }
