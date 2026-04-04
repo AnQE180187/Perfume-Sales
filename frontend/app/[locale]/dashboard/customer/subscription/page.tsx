@@ -3,8 +3,20 @@
 import React from 'react';
 import { Bookmark, Calendar, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTranslations, useLocale, useFormatter } from 'next-intl';
 
 export default function SubscriptionPage() {
+    const t = useTranslations('subscription_page');
+    const tFeatured = useTranslations('featured');
+    const locale = useLocale();
+    const format = useFormatter();
+
+    const priceAmount = locale === 'vi' ? 2000000 : 85;
+    const formattedPrice = format.number(priceAmount, {
+        style: 'currency',
+        currency: tFeatured('currency_code') || 'VND',
+        maximumFractionDigits: 0
+    });
     return (
         <div className="min-h-screen transition-colors">
             <main className="container mx-auto px-6 py-12 lg:py-20">
@@ -14,7 +26,9 @@ export default function SubscriptionPage() {
                         animate={{ opacity: 1, y: 0 }}
                         className="text-5xl md:text-6xl font-serif text-luxury-black dark:text-white mb-6"
                     >
-                        The Anthology <span className="italic">Club</span>
+                        {t.rich('title', {
+                            club: (chunks) => <span className="italic">{chunks}</span>
+                        })}
                     </motion.h1>
                     <motion.p
                         initial={{ opacity: 0, y: 20 }}
@@ -22,7 +36,7 @@ export default function SubscriptionPage() {
                         transition={{ delay: 0.2 }}
                         className="text-stone-500 dark:text-stone-400 text-lg font-light max-w-2xl mx-auto"
                     >
-                        Curation delivered with monastic precision every solstice.
+                        {t('subtitle')}
                     </motion.p>
                 </div>
 
@@ -36,24 +50,24 @@ export default function SubscriptionPage() {
                         <div className="absolute bottom-0 left-0 w-64 h-64 bg-gold/10 blur-[100px]" />
 
                         <div className="relative z-10">
-                            <h3 className="text-3xl font-serif italic mb-6">Seasonal Synthesis</h3>
+                            <h3 className="text-3xl font-serif italic mb-6">{t('card.title')}</h3>
                             <p className="text-stone-400 text-sm italic font-light max-w-md mx-auto mb-10">
-                                "A masterclass in curation. Every box feels like a personal letter from our atelier."
+                                {t('card.quote')}
                             </p>
                             <div className="text-6xl font-serif text-gold mb-10">
-                                2.000.000đ <span className="text-lg text-stone-500 not-italic">/ month</span>
+                                {t('card.price', { amount: formattedPrice })} <span className="text-lg text-stone-500 not-italic">{t('card.per_month')}</span>
                             </div>
                             <button className="px-12 py-5 bg-white text-luxury-black rounded-full font-bold tracking-[.3em] uppercase text-[10px] hover:bg-gold hover:text-white transition-all shadow-xl cursor-pointer">
-                                Initialize Membership
+                                {t('card.cta')}
                             </button>
                         </div>
                     </motion.div>
 
                     <div className="grid md:grid-cols-3 gap-12 text-center pt-12">
                         {[
-                            { icon: Bookmark, title: "Curated Drops", desc: "Hand-picked by our AI Lead" },
-                            { icon: Calendar, title: "Solstice Sync", desc: "Arrives exactly every quarter" },
-                            { icon: Zap, title: "Priority Retraining", desc: "Update your profile monthly" }
+                            { icon: Bookmark, title: t('perks.drops.title'), desc: t('perks.drops.desc') },
+                            { icon: Calendar, title: t('perks.sync.title'), desc: t('perks.sync.desc') },
+                            { icon: Zap, title: t('perks.retraining.title'), desc: t('perks.retraining.desc') }
                         ].map((item, i) => (
                             <motion.div
                                 key={i}

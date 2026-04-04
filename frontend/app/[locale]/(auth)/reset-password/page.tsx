@@ -4,12 +4,12 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Lock, Eye, EyeOff, Sparkles } from 'lucide-react';
 import { Header } from '@/components/common/header';
+import { useTranslations } from 'next-intl';
 import { authService } from '@/services/auth.service';
-import { useSearchParams } from 'next/navigation';
-import { useRouter } from '@/lib/i18n';
-import { useEffect } from 'react';
 
 export default function ResetPasswordPage() {
+    const t = useTranslations('auth.reset_password');
+    const tCommon = useTranslations('common');
     const searchParams = useSearchParams();
     const router = useRouter();
     const token = searchParams.get('token');
@@ -24,21 +24,21 @@ export default function ResetPasswordPage() {
 
     useEffect(() => {
         if (!token) {
-            setError("Missing or invalid reset token");
+            setError(t('error_missing_token'));
         }
-    }, [token]);
+    }, [token, t]);
 
     const handleUpdatePassword = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!token) {
-            setError("Invalid token session");
+            setError(t('error_invalid_token'));
             return;
         }
 
         setError(null);
 
         if (password !== confirmPassword) {
-            setError("Passwords do not match");
+            setError(t('error_password_match'));
             return;
         }
 
@@ -52,7 +52,7 @@ export default function ResetPasswordPage() {
                 router.push('/login');
             }, 3000);
         } catch (err: any) {
-            setError(err.response?.data?.message || err.message || 'Failed to update password');
+            setError(err.response?.data?.message || err.message || t('error_failed'));
         } finally {
             setIsLoading(false);
         }
@@ -69,10 +69,10 @@ export default function ResetPasswordPage() {
                         animate={{ opacity: 1, y: 0 }}
                     >
                         <h1 className="text-3xl font-serif text-luxury-black dark:text-white mb-2 text-center">
-                            Reset Password
+                            {t('page_title')}
                         </h1>
                         <p className="text-[10px] text-stone-400 font-bold tracking-[.4em] uppercase mb-12 text-center">
-                            Secure your molecular legacy
+                            {t('subtitle')}
                         </p>
 
                         {status === "success" ? (
@@ -80,9 +80,9 @@ export default function ResetPasswordPage() {
                                 <div className="w-20 h-20 bg-gold/10 rounded-full flex items-center justify-center mx-auto">
                                     <Sparkles className="text-gold" size={40} />
                                 </div>
-                                <h3 className="text-xl font-serif">Password Updated</h3>
-                                <p className="text-xs text-stone-500">
-                                    Redirecting you to login...
+                                <h3 className="text-xl font-serif">{t('security_updated')}</h3>
+                                <p className="text-xs text-stone-500 italic">
+                                    {t('success_message')}
                                 </p>
                             </div>
                         ) : (
@@ -94,7 +94,7 @@ export default function ResetPasswordPage() {
                                 )}
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2">New Password</label>
+                                    <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2">{t('new_password_label')}</label>
                                     <div className="relative">
                                         <Lock className="absolute left-6 top-1/2 -translate-y-1/2 text-stone-300" size={18} />
                                         <input
@@ -103,7 +103,7 @@ export default function ResetPasswordPage() {
                                             value={password}
                                             onChange={(e) => setPassword(e.target.value)}
                                             className="w-full bg-stone-50 dark:bg-white/5 border border-stone-100 dark:border-white/10 rounded-2xl px-14 py-4 outline-none focus:border-gold transition-all text-sm pr-16"
-                                            placeholder="••••••••"
+                                            placeholder={t('new_password_placeholder')}
                                         />
                                         <button
                                             type="button"
@@ -116,7 +116,7 @@ export default function ResetPasswordPage() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2">Confirm Password</label>
+                                    <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2">{t('confirm_label')}</label>
                                     <div className="relative">
                                         <Lock className="absolute left-6 top-1/2 -translate-y-1/2 text-stone-300" size={18} />
                                         <input
@@ -125,7 +125,7 @@ export default function ResetPasswordPage() {
                                             value={confirmPassword}
                                             onChange={(e) => setConfirmPassword(e.target.value)}
                                             className="w-full bg-stone-50 dark:bg-white/5 border border-stone-100 dark:border-white/10 rounded-2xl px-14 py-4 outline-none focus:border-gold transition-all text-sm pr-16"
-                                            placeholder="••••••••"
+                                            placeholder={t('confirm_placeholder')}
                                         />
                                         <button
                                             type="button"
@@ -142,7 +142,7 @@ export default function ResetPasswordPage() {
                                     disabled={isLoading}
                                     className="w-full py-5 bg-luxury-black dark:bg-gold text-white rounded-full font-bold tracking-[.3em] uppercase text-[10px] shadow-2xl hover:bg-stone-800 dark:hover:bg-gold/80 transition-all flex items-center justify-center gap-4 group disabled:opacity-50 cursor-pointer"
                                 >
-                                    {isLoading ? "Processing..." : "Update Password"}
+                                    {isLoading ? tCommon('processing').toUpperCase() : t('update_security')}
                                     {!isLoading && <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />}
                                 </button>
                             </form>

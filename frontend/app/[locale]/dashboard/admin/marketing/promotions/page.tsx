@@ -5,10 +5,12 @@ import { promotionService } from '@/services/promotion.service';
 import { Tag, Plus, Loader2, Trash2, ShieldCheck, Zap, TrendingUp, X } from 'lucide-react';
 import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useFormatter } from 'next-intl';
 
 export default function PromotionsAdmin() {
   const t = useTranslations('dashboard.admin.promotions');
+  const tFeatured = useTranslations('featured');
+  const format = useFormatter();
   const [promos, setPromos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -99,7 +101,7 @@ export default function PromotionsAdmin() {
           {[
             { label: t('stats.total'), value: promos.length, icon: Tag, color: 'text-stone-400' },
             { label: t('stats.active'), value: promos.filter(p => !isExpired(p.endDate)).length, icon: ShieldCheck, color: 'text-emerald-500' },
-              { label: t('stats.redemptions'), value: promos.reduce((acc, p) => acc + (p.usedCount || 0), 0), icon: TrendingUp, color: 'text-gold' },
+            { label: t('stats.redemptions'), value: promos.reduce((acc, p) => acc + (p.redemptionsCount || 0), 0), icon: TrendingUp, color: 'text-gold' },
           ].map((stat, i) => (
              <div key={i} className="glass p-10 rounded-[3rem] border-border relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gold/5 blur-[60px] pointer-events-none" />
@@ -141,7 +143,7 @@ export default function PromotionsAdmin() {
                   </td>
                   <td className="px-10 py-10">
                     <span className="text-xl font-serif text-gold">
-                      {p.discountType === 'PERCENTAGE' ? `${p.discountValue}%` : `-${new Intl.NumberFormat('vi-VN').format(p.discountValue)}`}
+                      {p.discountType === 'PERCENTAGE' ? `${p.discountValue}%` : `-${format.number(p.discountValue, { style: 'currency', currency: tFeatured('currency_code') || 'VND' })}`}
                     </span>
                   </td>
                   <td className="px-10 py-10">
@@ -162,9 +164,9 @@ export default function PromotionsAdmin() {
                   <td className="px-10 py-10">
                     <div className="flex flex-col gap-1">
                       <span className="text-[9px] font-bold uppercase tracking-widest text-foreground">
-                        {new Date(p.startDate).toLocaleDateString()}
+                        {format.dateTime(new Date(p.startDate))}
                       </span>
-                      <span className="text-[9px] text-muted-foreground">→ {new Date(p.endDate).toLocaleDateString()}</span>
+                      <span className="text-[9px] text-muted-foreground">→ {format.dateTime(new Date(p.endDate))}</span>
                     </div>
                   </td>
                   <td className="px-10 py-10">

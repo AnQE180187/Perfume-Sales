@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Trash2, ArrowRight, ShieldCheck, Truck, RotateCcw, ShoppingBag, Sparkles, Loader2 } from 'lucide-react';
 import { cartService, type Cart, type CartItem } from '@/services/cart.service';
 import { useAuth } from '@/hooks/use-auth';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations, useLocale, useFormatter } from 'next-intl';
 
 export default function CartPage() {
   const t = useTranslations('cart');
@@ -53,12 +53,15 @@ export default function CartPage() {
     }
   };
 
+  const format = useFormatter();
+  const tFeatured = useTranslations('featured');
+
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', {
+    return format.number(amount, {
       style: 'currency',
-      currency: 'VND',
+      currency: tFeatured('currency_code') || 'VND',
       maximumFractionDigits: 0
-    }).format(amount);
+    });
   };
 
   if (!isAuthenticated) {

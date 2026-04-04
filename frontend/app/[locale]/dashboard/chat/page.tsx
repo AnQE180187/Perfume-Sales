@@ -12,9 +12,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Link } from '@/lib/i18n';
 
+import { useTranslations, useLocale, useFormatter } from 'next-intl';
+
 type Tab = 'conversations' | 'contacts';
 
 export default function DashboardChatPage() {
+    const t = useTranslations('dashboard.profile.chat');
+    const tFeatured = useTranslations('featured');
+    const format = useFormatter();
     const { user } = useAuth();
     const [tab, setTab] = useState<Tab>('conversations');
     const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -133,8 +138,8 @@ export default function DashboardChatPage() {
 
     // ── Helpers ──
     const getConversationLabel = (conv: Conversation) => {
-        if (conv.type === 'CUSTOMER_AI') return 'AI Perfume Consultant';
-        if (conv.type === 'ADMIN_AI') return 'AI Marketing Assistant';
+        if (conv.type === 'CUSTOMER_AI') return t('ai_labels.perfume');
+        if (conv.type === 'ADMIN_AI') return t('ai_labels.marketing');
         const other = conv.participants?.find((p) => p.userId !== user?.id);
         return other?.user?.fullName || other?.user?.email || conv.type;
     };
@@ -147,8 +152,8 @@ export default function DashboardChatPage() {
 
     const getLastMessage = (conv: Conversation) => {
         const msg = conv.messages?.[0];
-        if (!msg) return 'No messages yet';
-        return (msg.content as any)?.text?.slice(0, 60) || 'Message';
+        if (!msg) return t('ai_labels.no_messages');
+        return (msg.content as any)?.text?.slice(0, 60) || t('ai_labels.message_placeholder');
     };
 
     const formatTime = (d: string) =>
@@ -175,7 +180,7 @@ export default function DashboardChatPage() {
                 {/* Header + new AI buttons */}
                 <div className="p-4 border-b border-border/50 space-y-3">
                     <h2 className="font-heading text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                        Chat
+                        {t('title')}
                     </h2>
                     <div className="flex gap-2">
                         <button
@@ -183,7 +188,7 @@ export default function DashboardChatPage() {
                             className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl gold-btn-gradient text-[10px] font-heading uppercase tracking-widest text-white shadow shadow-gold/20 hover:shadow-gold/40 transition-all"
                         >
                             <BrainCircuit size={14} />
-                            Perfume AI
+                            {t('buttons.perfume_ai')}
                         </button>
                         {user?.role === 'ADMIN' && (
                             <button
@@ -191,7 +196,7 @@ export default function DashboardChatPage() {
                                 className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl border border-gold/30 text-gold text-[10px] font-heading uppercase tracking-widest hover:bg-gold/10 transition-colors"
                             >
                                 <BarChart3 size={14} />
-                                Marketing AI
+                                {t('buttons.marketing_ai')}
                             </button>
                         )}
                     </div>
@@ -204,7 +209,7 @@ export default function DashboardChatPage() {
                         <input
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            placeholder="Search..."
+                            placeholder={t('placeholders.search')}
                             className="flex-1 bg-transparent text-xs outline-none placeholder:text-muted-foreground/50"
                         />
                     </div>
@@ -212,18 +217,18 @@ export default function DashboardChatPage() {
 
                 {/* Tabs */}
                 <div className="flex border-b border-border/50">
-                    {(['conversations', 'contacts'] as Tab[]).map((t) => (
+                    {(['conversations', 'contacts'] as Tab[]).map((tTab) => (
                         <button
-                            key={t}
-                            onClick={() => setTab(t)}
+                            key={tTab}
+                            onClick={() => setTab(tTab)}
                             className={cn(
                                 'flex-1 py-2.5 text-[10px] font-heading uppercase tracking-widest transition-colors',
-                                tab === t
+                                tab === tTab
                                     ? 'text-gold border-b-2 border-gold'
                                     : 'text-muted-foreground hover:text-foreground'
                             )}
                         >
-                            {t === 'conversations' ? 'History' : 'Contacts'}
+                            {tTab === 'conversations' ? t('tabs.history') : t('tabs.contacts')}
                         </button>
                     ))}
                 </div>
@@ -233,7 +238,7 @@ export default function DashboardChatPage() {
                     {tab === 'conversations' ? (
                         filteredConversations.length === 0 ? (
                             <p className="text-center text-xs text-muted-foreground py-8">
-                                No conversations yet
+                                {t('fallbacks.no_conversations')}
                             </p>
                         ) : (
                             filteredConversations.map((conv) => (
@@ -264,7 +269,7 @@ export default function DashboardChatPage() {
                     ) : (
                         filteredContacts.length === 0 ? (
                             <p className="text-center text-xs text-muted-foreground py-8">
-                                No contacts found
+                                {t('fallbacks.no_contacts')}
                             </p>
                         ) : (
                             filteredContacts.map((contact) => (
@@ -344,7 +349,7 @@ export default function DashboardChatPage() {
                                                     >
                                                         <div className="flex items-start justify-between gap-2">
                                                             <div className="flex-1 min-w-0">
-                                                                <p className="font-medium text-sm group-hover:text-gold transition-colors">
+                                                                 <p className="font-medium text-sm group-hover:text-gold transition-colors">
                                                                     {rec.name}
                                                                 </p>
                                                                 <p className="text-xs text-muted-foreground mt-1">
@@ -352,7 +357,7 @@ export default function DashboardChatPage() {
                                                                 </p>
                                                                 {rec.price && (
                                                                     <p className="text-xs font-semibold text-gold mt-1">
-                                                                        {Number(rec.price).toLocaleString()}₫
+                                                                        {format.number(Number(rec.price), { style: 'currency', currency: tFeatured('currency_code') || 'VND', maximumFractionDigits: 0 })}
                                                                     </p>
                                                                 )}
                                                             </div>
@@ -389,7 +394,7 @@ export default function DashboardChatPage() {
                                     value={newMessage}
                                     onChange={(e) => setNewMessage(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
-                                    placeholder="Type your message..."
+                                    placeholder={t('placeholders.type_message')}
                                     disabled={loading}
                                     className="flex-1 bg-secondary/50 rounded-2xl px-5 py-3 text-sm outline-none focus:ring-1 focus:ring-gold/50 placeholder:text-muted-foreground/50 disabled:opacity-50"
                                 />
@@ -410,10 +415,10 @@ export default function DashboardChatPage() {
                             <Bot size={36} className="text-gold/60" />
                         </div>
                         <h3 className="font-heading text-sm uppercase tracking-[0.2em] text-muted-foreground">
-                            Select a conversation
+                            {t('fallbacks.no_selection_title')}
                         </h3>
                         <p className="text-xs text-muted-foreground/60 max-w-xs">
-                            Choose an existing conversation from the list or start a new one with AI or a team member.
+                            {t('fallbacks.no_selection_subtitle')}
                         </p>
                     </div>
                 )}

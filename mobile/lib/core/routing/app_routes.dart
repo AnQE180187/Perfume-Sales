@@ -67,6 +67,14 @@ class AppRoutes {
   static const String quiz = '/quiz';
 
   // ============================================
+  // STAFF ROUTES
+  // ============================================
+  static const String staffHome = '/staff/home';
+  static const String staffPos = '/staff/pos';
+  static const String staffInventory = '/staff/inventory';
+  static const String staffOrders = '/staff/orders';
+
+  // ============================================
   // HELPER METHODS
   // ============================================
 

@@ -10,6 +10,7 @@ export const LanguageSwitch = () => {
     const router = useRouter();
     const pathname = usePathname();
     const [mounted, setMounted] = React.useState(false);
+    const [isPending, startTransition] = React.useTransition();
 
     React.useEffect(() => {
         setMounted(true);
@@ -22,13 +23,16 @@ export const LanguageSwitch = () => {
 
     const toggleLocale = () => {
         const nextLocale = locale === 'en' ? 'vi' : 'en';
-        router.replace(pathname, { locale: nextLocale });
+        startTransition(() => {
+            router.replace(pathname, { locale: nextLocale });
+        });
     };
 
     return (
         <button
             onClick={toggleLocale}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-stone-200 dark:border-white/10 hover:border-gold transition-all bg-white/5 hover:bg-gold/5 group"
+            disabled={isPending}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-full border border-stone-200 dark:border-white/10 hover:border-gold transition-all bg-white/5 hover:bg-gold/5 group ${isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
             aria-label="Switch language"
         >
             <Languages className="w-3.5 h-3.5 text-stone-400 group-hover:text-gold transition-colors" />

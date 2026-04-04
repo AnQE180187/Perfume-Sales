@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from '@/lib/i18n';
 import { motion } from 'framer-motion';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations, useLocale, useFormatter } from 'next-intl';
 import {
     MapPin,
     Truck,
@@ -21,7 +21,9 @@ import { cn } from '@/lib/utils';
  
 export default function CustomerOrdersPage() {
     const t = useTranslations('dashboard.customer.orders');
+    const tFeatured = useTranslations('featured');
     const locale = useLocale();
+    const format = useFormatter();
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
  
@@ -48,7 +50,17 @@ export default function CustomerOrdersPage() {
     useEffect(() => {
         fetchOrders();
     }, [fetchOrders]);
+
+    const formatCurrency = (amount: number) => {
+        return format.number(amount, {
+            style: 'currency',
+            currency: tFeatured('currency_code') || 'VND',
+            maximumFractionDigits: 0
+        });
+    };
  
+    const tCommon = useTranslations('common');
+
     return (
         <AuthGuard allowedRoles={['customer', 'staff', 'admin']}>
             <div className="flex flex-col gap-10 py-10 px-8">
@@ -60,7 +72,7 @@ export default function CustomerOrdersPage() {
                         {t('subtitle')}
                     </p>
                 </header>
- 
+
                 <div className="space-y-8">
                     {loading ? (
                         <div className="py-20 flex justify-center">
@@ -78,7 +90,7 @@ export default function CustomerOrdersPage() {
                         orders.map((order, i) => {
                             const style = STATUS_CONFIG[order.status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.PENDING;
                             const StatusIcon = style.icon;
- 
+
                             return (
                                 <motion.div
                                     key={order.id}
@@ -106,7 +118,7 @@ export default function CustomerOrdersPage() {
                                                 </div>
                                                 <div className="text-right">
                                                     <span className="text-xl font-heading text-foreground block mb-2">
-                                                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.finalAmount)}
+                                                        {formatCurrency(order.finalAmount)}
                                                     </span>
                                                     <div className={cn(
                                                         "inline-flex items-center gap-2 text-[8px] px-4 py-1.5 rounded-full font-bold uppercase tracking-widest border",
@@ -117,7 +129,7 @@ export default function CustomerOrdersPage() {
                                                     </div>
                                                 </div>
                                             </div>
- 
+
                                             <div className="grid md:grid-cols-2 gap-6 border-t border-border pt-6">
                                                 <div className="flex items-start gap-4">
                                                     <div className="p-2.5 bg-secondary/50 rounded-2xl text-muted-foreground border border-border">
@@ -146,10 +158,10 @@ export default function CustomerOrdersPage() {
                         })
                     )}
                 </div>
- 
+
                 <footer className="mt-10 pt-10 border-t border-border text-center">
                     <p className="text-[8px] font-bold uppercase tracking-[.4em] text-muted-foreground">
-                        Aura AI Neural Commerce Engine v2.0
+                        {tCommon('engine_version')}
                     </p>
                 </footer>
             </div>

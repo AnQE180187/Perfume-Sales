@@ -21,17 +21,20 @@ export class AddressesController {
 
   @Post()
   create(@Request() req, @Body() createAddressDto: CreateAddressDto) {
-    return this.addressesService.create(req.user.id, createAddressDto);
+    const userId = req.user?.userId ?? req.user?.sub ?? req.user?.id;
+    return this.addressesService.create(userId, createAddressDto);
   }
 
   @Get()
   findAll(@Request() req) {
-    return this.addressesService.findAll(req.user.id);
+    const userId = req.user?.userId ?? req.user?.sub ?? req.user?.id;
+    return this.addressesService.findAll(userId);
   }
 
   @Get(':id')
   findOne(@Request() req, @Param('id') id: string) {
-    return this.addressesService.findOne(req.user.id, id);
+    const userId = req.user?.userId ?? req.user?.sub ?? req.user?.id;
+    return this.addressesService.findOne(userId, id);
   }
 
   @Patch(':id')
@@ -40,16 +43,19 @@ export class AddressesController {
     @Param('id') id: string,
     @Body() updateAddressDto: UpdateAddressDto,
   ) {
-    return this.addressesService.update(req.user.id, id, updateAddressDto);
+    const userId = req.user?.userId ?? req.user?.sub ?? req.user?.id;
+    return this.addressesService.update(userId, id, updateAddressDto);
   }
 
   @Delete(':id')
   remove(@Request() req, @Param('id') id: string) {
-    return this.addressesService.remove(req.user.id, id);
+    const userId = req.user?.userId ?? req.user?.sub ?? req.user?.id;
+    return this.addressesService.remove(userId, id);
   }
 
   @Patch(':id/default')
   setDefault(@Request() req, @Param('id') id: string) {
-    return this.addressesService.setDefault(req.user.id, id);
+    const userId = req.user?.userId ?? req.user?.sub ?? req.user?.id;
+    return this.addressesService.setDefault(userId, id);
   }
 }

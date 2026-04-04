@@ -3,10 +3,11 @@
 import { AuthGuard } from '@/components/auth/auth-guard';
 import { Tag, Sparkles, ArrowUpRight, Zap, Coins, Inbox, MapPinned, User } from 'lucide-react';
 import Link from 'next/link';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useFormatter } from 'next-intl';
  
 export default function CustomerDashboard() {
     const t = useTranslations('dashboard.customer.home');
+    const format = useFormatter();
  
     return (
         <AuthGuard allowedRoles={['customer']}>
@@ -21,7 +22,9 @@ export default function CustomerDashboard() {
                             <Coins size={16} className="text-gold" />
                             <div className="text-left">
                                 <p className="text-[8px] text-muted-foreground uppercase tracking-widest font-bold">{t('credits_label')}</p>
-                                <p className="text-xs font-heading text-foreground">1,250 PTS</p>
+                                <p className="text-xs font-heading text-foreground">
+                                    {format.number(1250)} {t('credits_suffix')}
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -58,7 +61,7 @@ export default function CustomerDashboard() {
                                 <ArrowUpRight size={14} className="text-muted-foreground group-hover:text-gold transition-colors" />
                             </div>
                             <div>
-                                <p className="text-2xl font-heading text-foreground uppercase">Elite Gold</p>
+                                <p className="text-2xl font-heading text-foreground uppercase">{t('membership_tier')}</p>
                                 <div className="mt-4 h-1 w-full bg-secondary rounded-full overflow-hidden">
                                     <div className="h-full bg-gold w-[75%]" />
                                 </div>
@@ -87,12 +90,12 @@ export default function CustomerDashboard() {
                 {/* Secondary Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {[
-                        { key: "profile", label: "Profile", icon: User, href: "/dashboard/customer/profile", color: "text-purple-400" },
-                        { key: "addresses", label: "Address Book", icon: MapPinned, href: "/dashboard/customer/addresses", color: "text-green-400" },
-                        { key: "orders", label: "My Orders", icon: Inbox, href: "/dashboard/customer/orders", color: "text-blue-400" },
-                        { key: "loyalty", label: "Loyalty", icon: Coins, href: "/dashboard/customer/loyalty", color: "text-gold" },
-                        { key: "ai_chat", label: "AI Consultation", icon: Zap, href: "/dashboard/customer/ai-chat", color: "text-ai" },
-                        { key: "quiz", label: "Quiz Results", icon: Sparkles, href: "/dashboard/customer/quiz", color: "text-gold" }
+                        { key: "profile", icon: User, href: "/dashboard/profile", color: "text-purple-400" },
+                        { key: "addresses", icon: MapPinned, href: "/dashboard/customer/addresses", color: "text-green-400" },
+                        { key: "orders", icon: Inbox, href: "/dashboard/customer/orders", color: "text-blue-400" },
+                        { key: "loyalty", icon: Coins, href: "/dashboard/customer/loyalty", color: "text-gold" },
+                        { key: "ai_chat", icon: Zap, href: "/dashboard/customer/ai-chat", color: "text-ai" },
+                        { key: "quiz", icon: Sparkles, href: "/dashboard/customer/quiz", color: "text-gold" }
                     ].map((item, i) => (
                         <Link key={i} href={item.href}>
                             <div className="glass px-6 py-5 rounded-3xl border-border hover:border-gold/30 transition-all flex items-center gap-4 group">
@@ -107,6 +110,7 @@ export default function CustomerDashboard() {
                         </Link>
                     ))}
                 </div>
+
             </main>
         </AuthGuard>
     );

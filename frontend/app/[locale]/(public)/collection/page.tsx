@@ -2,13 +2,16 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from '@/lib/i18n';
-import { ChevronDown, Search } from 'lucide-react';
-import { useTranslations, useLocale } from 'next-intl';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { Filter, ChevronDown, ShoppingBag, Sparkles, Search } from 'lucide-react';
+import { useTranslations, useLocale, useFormatter } from 'next-intl';
 import { productService, type Product, type ProductListRes } from '@/services/product.service';
 
 export default function CollectionPage() {
     const tCommon = useTranslations('common');
+    const tFeatured = useTranslations('featured');
     const locale = useLocale();
+    const format = useFormatter();
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
@@ -28,11 +31,11 @@ export default function CollectionPage() {
     }, []);
 
     const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-US', {
+        return format.number(amount, {
             style: 'currency',
-            currency: 'VND', // Base currency is VND
+            currency: tFeatured('currency_code') || 'VND',
             maximumFractionDigits: 0
-        }).format(amount);
+        });
     };
 
     const getMinPrice = (p: Product) => {

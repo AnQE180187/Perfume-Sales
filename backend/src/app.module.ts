@@ -28,6 +28,7 @@ import { GHNModule } from './ghn/ghn.module';
 import { ShippingModule } from './shipping/shipping.module';
 import { BannersModule } from './banners/banners.module';
 import { JournalsModule } from './journals/journals.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -59,9 +60,10 @@ import { JournalsModule } from './journals/journals.module';
     ShippingModule,
     BannersModule,
     JournalsModule,
+    NotificationsModule,
   ],
 
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}
