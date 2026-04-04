@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { CreateAddressDto } from '@/services/address.service';
 import { AddressPicker } from './address-picker';
 import { Input } from '@/components/ui/input';
@@ -38,25 +39,27 @@ export function AddressForm({ onSubmit, initialData, loading }: AddressFormProps
         onSubmit(formData);
     };
 
+    const t = useTranslations('address');
+
     return (
         <form onSubmit={handleSubmit} className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                    <Label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2">Tên người nhận *</Label>
+                    <Label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2">{t('recipient_name')}</Label>
                     <Input
                         value={formData.recipientName}
                         onChange={(e) => setFormData({ ...formData, recipientName: e.target.value })}
-                        placeholder="Vui lòng nhập tên người nhận"
+                        placeholder={t('recipient_placeholder')}
                         required
                         className="rounded-[1.5rem]"
                     />
                 </div>
                 <div className="space-y-2">
-                    <Label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2">Số điện thoại *</Label>
+                    <Label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2">{t('phone_number')}</Label>
                     <Input
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        placeholder="Vui lòng nhập số điện thoại của bạn"
+                        placeholder={t('phone_placeholder')}
                         required
                         className="rounded-[1.5rem]"
                     />
@@ -73,11 +76,11 @@ export function AddressForm({ onSubmit, initialData, loading }: AddressFormProps
             />
 
             <div className="space-y-2">
-                <Label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2">Số nhà, tên đường *</Label>
+                <Label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2">{t('street_name')}</Label>
                 <Input
                     value={formData.detailAddress}
                     onChange={(e) => setFormData({ ...formData, detailAddress: e.target.value })}
-                    placeholder="Số 123, đường ABC..."
+                    placeholder={t('street_placeholder')}
                     required
                     className="rounded-[1.5rem]"
                 />
@@ -90,7 +93,7 @@ export function AddressForm({ onSubmit, initialData, loading }: AddressFormProps
                     onCheckedChange={(checked) => setFormData({ ...formData, isDefault: checked === true })}
                 />
                 <Label htmlFor="isDefault" className="text-xs font-medium text-stone-500 cursor-pointer">
-                    Đặt làm địa chỉ mặc định
+                    {t('set_default')}
                 </Label>
             </div>
 
@@ -100,7 +103,7 @@ export function AddressForm({ onSubmit, initialData, loading }: AddressFormProps
                 className="w-full py-6 rounded-full bg-luxury-black dark:bg-gold text-white font-bold tracking-[.3em] uppercase text-[10px] hover:scale-[1.02] active:scale-95 transition-all"
             >
                 {loading ? <Loader2 className="animate-spin mr-2" /> : <Save className="mr-2" size={16} />}
-                Lưu địa chỉ
+                {t('save_address')}
             </Button>
         </form>
     );

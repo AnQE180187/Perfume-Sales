@@ -8,6 +8,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { PromotionsService } from '../promotions/promotions.service';
 import { LoyaltyService } from '../loyalty/loyalty.service';
 import { ShippingService } from '../shipping/shipping.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class OrdersService {
@@ -16,6 +17,7 @@ export class OrdersService {
     private readonly promotionsService: PromotionsService,
     private readonly loyaltyService: LoyaltyService,
     private readonly shippingService: ShippingService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async createFromCart(userId: string, dto: CreateOrderDto) {
@@ -137,6 +139,19 @@ export class OrdersService {
       } catch (e) {
         console.warn('GHN shipment creation failed:', e?.message);
       }
+    }
+
+    // Notify user about new order
+    if (order.userId) {
+      this.notificationsService
+        .create({
+          userId: order.userId,
+          type: 'ORDER',
+          title: 'Đặt hàng thành công',
+          content: `Đơn hàng ${order.code} đã được tạo thành công.`,
+          data: { orderId: order.id, orderCode: order.code },
+        })
+        .catch(() => {});
     }
 
     return order;
@@ -276,6 +291,14 @@ export class OrdersService {
     };
   }
 
+  private readonly STATUS_LABELS: Record<string, string> = {
+    CONFIRMED: 'đã được xác nhận',
+    PROCESSING: 'đang được xử lý',
+    SHIPPED: 'đã được giao cho đơn vị vận chuyển',
+    COMPLETED: 'đã hoàn thành',
+    CANCELLED: 'đã bị hủy',
+  };
+
   async updateStatus(id: string, status?: any, paymentStatus?: any) {
     const updated = await this.prisma.order.update({
       where: { id },
@@ -291,6 +314,27 @@ export class OrdersService {
         updated.finalAmount,
         updated.id,
       );
+    }
+
+    // Notify user about status change
+    if (status && updated.userId) {
+      const label = this.STATUS_LABELS[status] || status;
+      this.notificationsService
+        .create({
+          userId: updated.userId,
+          type: 'ORDER',
+          title: 'Cập nhật đơn hàng',
+          content: `Đơn hàng ${updated.code} ${label}.`,
+          data: { orderId: updated.id, orderCode: updated.code, status },
+        })
+        .catch(() => {});
+
+      // Push real-time order status event for instant UI update
+      this.notificationsService.emitOrderStatusChanged(updated.userId, {
+        orderId: updated.id,
+        orderCode: updated.code,
+        status,
+      });
     }
 
     return updated;

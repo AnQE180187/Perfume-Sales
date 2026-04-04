@@ -147,7 +147,7 @@ export default function UsersAdmin() {
                     <td colSpan={5} className="px-10 py-20 text-center">
                       <div className="flex flex-col items-center gap-4">
                         <Loader2 className="w-8 h-8 animate-spin text-gold" />
-                        <span className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground animate-pulse">Syncing Registry...</span>
+                        <span className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground animate-pulse">{t('syncing')}</span>
                       </div>
                     </td>
                   </tr>

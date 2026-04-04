@@ -22,19 +22,22 @@ import '../../features/product/presentation/explore_screen.dart';
 import '../../features/product/presentation/product_detail_screen.dart';
 import '../../features/product/presentation/reviews_screen.dart';
 import '../../features/loyalty/presentation/loyalty_screen.dart';
+import '../../features/staff/staff_shell.dart';
 import '../widgets/main_shell.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final isLoggedIn = ref.watch(authStateProvider);
   final hasSeenOnboarding = ref.watch(onboardingProvider);
+  final profile = ref.watch(userProfileRawProvider);
+  final userRole = (profile?['role'] as String?)?.toUpperCase() ?? '';
 
   return GoRouter(
     initialLocation: '/',
     redirect: (context, state) {
-      final isAuthRoute =
-          state.matchedLocation == '/login' ||
-          state.matchedLocation == '/register';
-      final isOnboardingRoute = state.matchedLocation == '/onboarding';
+      final loc = state.matchedLocation;
+      final isAuthRoute = loc == '/login' || loc == '/register';
+      final isOnboardingRoute = loc == '/onboarding';
+      final isStaffRoute = loc.startsWith('/staff');
 
       // 1. Force Onboarding if not seen
       if (!hasSeenOnboarding) {
@@ -44,7 +47,8 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // 2. If already saw onboarding but at onboarding route, move to login/home
       if (isOnboardingRoute) {
-        return isLoggedIn ? '/home' : '/login';
+        if (!isLoggedIn) return '/login';
+        return userRole == 'STAFF' ? '/staff/home' : '/home';
       }
 
       // 3. Force Login if not logged in and not on auth route
@@ -54,6 +58,19 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // 4. Force Home if logged in but on auth route
       if (isLoggedIn && isAuthRoute) {
+        return userRole == 'STAFF' ? '/staff/home' : '/home';
+      }
+
+      // 5. Role-based routing: STAFF landing on customer home → redirect
+      if (isLoggedIn && userRole == 'STAFF') {
+        if (loc == '/' || loc == '/home') return '/staff/home';
+      }
+
+      // 6. Non-staff trying to access staff routes → redirect to home
+      if (isLoggedIn &&
+          userRole != 'STAFF' &&
+          userRole != 'ADMIN' &&
+          isStaffRoute) {
         return '/home';
       }
 
@@ -171,6 +188,24 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/rewards',
         builder: (context, state) => const LoyaltyScreen(),
+      ),
+
+      // ── Staff Routes ────────────────────────────────────────────────
+      GoRoute(
+        path: '/staff/home',
+        builder: (context, state) => const StaffShell(),
+      ),
+      GoRoute(
+        path: '/staff/pos',
+        builder: (context, state) => const StaffShell(),
+      ),
+      GoRoute(
+        path: '/staff/inventory',
+        builder: (context, state) => const StaffShell(),
+      ),
+      GoRoute(
+        path: '/staff/orders',
+        builder: (context, state) => const StaffShell(),
       ),
     ],
   );

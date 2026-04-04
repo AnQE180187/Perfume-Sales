@@ -29,7 +29,7 @@ export default function BrandsIndexPage() {
             const q = searchQuery.trim().toLowerCase();
             result = result.filter(b => b.name.toLowerCase().includes(q));
         }
-        return result.sort((a,b) => a.name.localeCompare(b.name));
+        return result.sort((a, b) => a.name.localeCompare(b.name));
     }, [brands, searchQuery, selectedLetter]);
 
     // Group by first letter
@@ -52,14 +52,14 @@ export default function BrandsIndexPage() {
                     {/* Filter Bar */}
                     <div className="flex flex-col md:flex-row items-center justify-between border-y border-border py-6 mb-20 gap-8">
                         <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-4 flex-1 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground w-full">
-                            <button 
-                                onClick={() => setSelectedLetter(null)} 
+                            <button
+                                onClick={() => setSelectedLetter(null)}
                                 className={`hover:text-foreground transition-all duration-300 ${!selectedLetter ? 'text-foreground' : ''}`}
                             >
                                 ALL BRANDS
                             </button>
                             {letters.map(l => (
-                                <button 
+                                <button
                                     key={l}
                                     onClick={() => setSelectedLetter(l)}
                                     className={`hover:text-foreground transition-all duration-300 ${selectedLetter === l ? 'text-foreground scale-125' : ''}`}
@@ -71,7 +71,7 @@ export default function BrandsIndexPage() {
 
                         <div className="relative w-full md:w-72">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                            <input 
+                            <input
                                 type="text"
                                 placeholder="Tên thương hiệu..."
                                 value={searchQuery}
@@ -100,7 +100,7 @@ export default function BrandsIndexPage() {
                                     <ul className="flex flex-col gap-4">
                                         {groupedBrands[letter].map(brand => (
                                             <li key={brand.id}>
-                                                <Link 
+                                                <Link
                                                     href={`/collection?brand=${encodeURIComponent(brand.name)}`}
                                                     className="group flex items-center text-[15px] text-muted-foreground hover:text-foreground transition-colors font-medium font-serif"
                                                 >

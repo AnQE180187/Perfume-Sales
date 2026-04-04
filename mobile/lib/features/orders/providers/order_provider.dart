@@ -19,8 +19,7 @@ class OrderListState {
 
   factory OrderListState.fromOrders(List<Order> orders) {
     final active = orders.where((order) => order.status.isActive).toList();
-    final completed =
-        orders.where((order) => order.isCompletedBucket).toList();
+    final completed = orders.where((order) => order.isCompletedBucket).toList();
     return OrderListState(all: orders, active: active, completed: completed);
   }
 }
@@ -116,38 +115,43 @@ final trackingProvider = FutureProvider.family<TrackingViewData, String>((
   final latestShipment = order.latestShipment;
 
   final mapLabel = latestShipment?.trackingCode == null
-      ? 'Dang cho tao van don GHN'
-      : 'Ma van don: ${latestShipment!.trackingCode}';
+      ? 'Đang chờ tạo vận đơn GHN'
+      : 'Mã vận đơn: ${latestShipment!.trackingCode}';
 
   final etaText = switch (order.status) {
-    OrderStatus.completed => 'Da giao thanh cong',
-    OrderStatus.cancelled => 'Don da huy',
-    OrderStatus.shipped => 'Du kien giao trong 1-2 ngay',
-    _ => 'Dang cap nhat lo trinh',
+    OrderStatus.completed => 'Đã giao thành công',
+    OrderStatus.cancelled => 'Đơn đã hủy',
+    OrderStatus.shipped => 'Dự kiến giao trong 1-2 ngày',
+    _ => 'Đang cập nhật lộ trình',
   };
 
+  // 5-step timeline matching backend OrderStatus flow
   final statusOrder = <OrderStatus>[
+    OrderStatus.pending,
     OrderStatus.confirmed,
+    OrderStatus.processing,
     OrderStatus.shipped,
     OrderStatus.completed,
   ];
 
-  final currentIndex = statusOrder.indexOf(order.status);
-  final currentSafeIndex = currentIndex < 0 ? 0 : currentIndex;
-
   final stepTitles = <String>[
-    'Confirmed',
-    'Shipped',
-    'Out for delivery',
-    'Delivered',
+    'Đặt hàng',
+    'Xác nhận',
+    'Đang xử lý',
+    'Đang giao',
+    'Hoàn thành',
   ];
 
   final descriptions = <String>[
-    'Don hang da duoc xac nhan thanh toan.',
-    'Kho da ban giao don vi van chuyen.',
-    'Shipper dang giao hang den dia chi cua ban.',
-    'Don hang da den tay ban.',
+    'Chúng tôi đã nhận đơn hàng của bạn.',
+    'Thanh toán đã xác nhận, đơn hàng đang được sắp xếp.',
+    'Đơn hàng đang được đóng gói tại kho.',
+    'Đơn hàng đang trên đường giao đến bạn.',
+    'Đơn hàng đã đến tay bạn.',
   ];
+
+  final currentIndex = statusOrder.indexOf(order.status);
+  final currentSafeIndex = currentIndex < 0 ? 0 : currentIndex;
 
   final steps = List<TrackingTimelineStep>.generate(stepTitles.length, (index) {
     final reached = order.status == OrderStatus.completed
@@ -159,21 +163,31 @@ final trackingProvider = FutureProvider.family<TrackingViewData, String>((
     return TrackingTimelineStep(
       title: stepTitles[index],
       description: descriptions[index],
-      timestamp: reached ? order.updatedAt.subtract(Duration(hours: (stepTitles.length - index) * 5)) : null,
+      timestamp: reached ? order.updatedAt : null,
       reached: reached,
       current: current,
     );
   });
 
+  final headerMap = <OrderStatus, String>{
+    OrderStatus.pending: 'Đơn hàng đang chờ xử lý',
+    OrderStatus.confirmed: 'Đơn hàng đã được xác nhận',
+    OrderStatus.processing: 'Đơn hàng đang được chuẩn bị',
+    OrderStatus.shipped: 'Đơn hàng đang trên đường giao',
+    OrderStatus.completed: 'Đơn hàng đã giao thành công',
+    OrderStatus.cancelled: 'Đơn hàng đã bị hủy',
+  };
+
   return TrackingViewData(
-    header: 'Your order is on the way',
+    header: headerMap[order.status] ?? 'Đang cập nhật',
     etaText: etaText,
     mapLabel: mapLabel,
     steps: order.status == OrderStatus.cancelled
         ? const [
             TrackingTimelineStep(
-              title: 'Cancelled',
-              description: 'Don hang da duoc huy do thanh toan that bai hoac theo yeu cau.',
+              title: 'Đã hủy',
+              description:
+                  'Đơn hàng đã được hủy do thanh toán thất bại hoặc theo yêu cầu.',
               timestamp: null,
               reached: true,
               current: true,

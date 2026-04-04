@@ -59,10 +59,45 @@ class ApiEndpoints {
   static const String brands = '/catalog/brands';
 
   // ── Reviews ───────────────────────────────────────────────────────
+  static const String createReview = '/reviews';
+  static const String uploadReviewImages = '/reviews/upload-images';
   static String reviewsByProduct(String productId) =>
       '/reviews/product/$productId';
   static String reviewStatsByProduct(String productId) =>
       '/reviews/product/$productId/stats';
   static String reviewSummaryByProduct(String productId) =>
       '/reviews/product/$productId/summary';
+
+  // ── Stores ────────────────────────────────────────────────────────
+  static const String myStores = '/stores/my-stores';
+
+  // ── Staff: Inventory ──────────────────────────────────────────────
+  static const String staffInventory = '/staff/inventory';
+  static const String staffInventoryImport = '/staff/inventory/import';
+  static const String staffInventoryAdjust = '/staff/inventory/adjust';
+  static const String staffInventoryRequests = '/staff/inventory/requests';
+  static const String staffInventoryLogs = '/staff/inventory/logs';
+  static const String staffInventorySearchProducts =
+      '/staff/inventory/search-products';
+
+  // ── Staff: Orders ─────────────────────────────────────────────────
+  static const String staffOrders = '/staff/orders';
+  static String staffOrderById(String id) => '/staff/orders/$id';
+
+  // ── Staff: POS ────────────────────────────────────────────────────
+  static const String staffPosProducts = '/staff/pos/products';
+  static const String staffPosLoyalty = '/staff/pos/loyalty';
+  static const String staffPosOrders = '/staff/pos/orders';
+  static String staffPosOrderById(String id) => '/staff/pos/orders/$id';
+  static String staffPosOrderCustomer(String id) =>
+      '/staff/pos/orders/$id/customer';
+  static String staffPosOrderItems(String id) => '/staff/pos/orders/$id/items';
+  static String staffPosPayCash(String id) => '/staff/pos/orders/$id/pay/cash';
+  static String staffPosPayQr(String id) => '/staff/pos/orders/$id/pay/qr';
+  static String staffPosCancelOrder(String id) => '/staff/pos/orders/$id';
+  static const String staffPosCheckout = '/staff/pos/checkout';
+  static const String staffPosAiConsult = '/staff/pos/ai-consult';
+
+  // ── Staff: Reports ────────────────────────────────────────────────
+  static const String staffReportsDaily = '/staff/reports/daily';
 }

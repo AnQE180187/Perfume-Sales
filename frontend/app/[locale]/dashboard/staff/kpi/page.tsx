@@ -4,11 +4,11 @@ import { AuthGuard } from '@/components/auth/auth-guard';
 import { BarChart3, Target, Award, TrendingUp, Package, DollarSign, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { staffReportsService, type DailyReport } from '@/services/staff-reports.service';
-
-const formatVND = (n: number) =>
-    new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n);
+import { useTranslations, useFormatter } from 'next-intl';
 
 export default function StaffKPI() {
+    const t = useTranslations('dashboard.kpi');
+    const format = useFormatter();
     const [report, setReport] = useState<DailyReport | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -20,21 +20,21 @@ export default function StaffKPI() {
                 const data = await staffReportsService.getDailyReport();
                 setReport(data);
             } catch (e: any) {
-                setError(e.message || 'Failed to load report');
+                setError(e.message || t('errors.load_failed'));
             } finally {
                 setLoading(false);
             }
         };
         void load();
-    }, []);
+    }, [t]);
 
     return (
         <AuthGuard allowedRoles={['staff', 'admin']}>
             <main className="p-8">
                 <header className="mb-12">
-                    <h1 className="text-4xl font-heading gold-gradient mb-2 uppercase tracking-tighter">Performance Matrix</h1>
+                    <h1 className="text-4xl font-heading gold-gradient mb-2 uppercase tracking-tighter">{t('title')}</h1>
                     <p className="text-muted-foreground font-body text-sm uppercase tracking-widest">
-                        Today&apos;s KPIs — {report?.date ?? new Date().toISOString().slice(0, 10)}
+                        {t('subtitle_prefix')} {report?.date ? format.dateTime(new Date(report.date), { dateStyle: 'medium' }) : format.dateTime(new Date(), { dateStyle: 'medium' })}
                     </p>
                 </header>
 
@@ -46,7 +46,7 @@ export default function StaffKPI() {
 
                 {loading ? (
                     <div className="flex items-center justify-center py-20 text-muted-foreground text-sm">
-                        <Loader2 className="w-5 h-5 mr-2 animate-spin" /> Loading report…
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" /> {t('loading')}
                     </div>
                 ) : report ? (
                     <>
@@ -54,29 +54,29 @@ export default function StaffKPI() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
                             <div className="glass p-8 rounded-[2.5rem] border-border hover:border-gold/30 transition-all group">
                                 <div className="flex justify-between items-start mb-4">
-                                    <h3 className="text-muted-foreground text-[10px] uppercase tracking-[0.3em] font-heading">Today&apos;s Revenue</h3>
+                                    <h3 className="text-muted-foreground text-[10px] uppercase tracking-[0.3em] font-heading">{t('cards.revenue')}</h3>
                                     <DollarSign className="w-5 h-5 text-gold" />
                                 </div>
-                                <p className="text-3xl font-heading text-gold">{formatVND(report.totalRevenue)}</p>
+                                <p className="text-3xl font-heading text-gold">{format.number(report.totalRevenue, { style: 'currency', currency: 'VND' })}</p>
                             </div>
                             <div className="glass p-8 rounded-[2.5rem] border-border hover:border-gold/30 transition-all group">
                                 <div className="flex justify-between items-start mb-4">
-                                    <h3 className="text-muted-foreground text-[10px] uppercase tracking-[0.3em] font-heading">Total Orders</h3>
+                                    <h3 className="text-muted-foreground text-[10px] uppercase tracking-[0.3em] font-heading">{t('cards.total_orders')}</h3>
                                     <Package className="w-5 h-5 text-gold" />
                                 </div>
                                 <p className="text-3xl font-heading text-foreground">{report.totalOrders}</p>
-                                <p className="text-[10px] text-muted-foreground mt-1">{report.completedOrders} completed</p>
+                                <p className="text-[10px] text-muted-foreground mt-1">{report.completedOrders} {t('cards.completed_suffix')}</p>
                             </div>
                             <div className="glass p-8 rounded-[2.5rem] border-border hover:border-gold/30 transition-all group">
                                 <div className="flex justify-between items-start mb-4">
-                                    <h3 className="text-muted-foreground text-[10px] uppercase tracking-[0.3em] font-heading">Avg Order Value</h3>
+                                    <h3 className="text-muted-foreground text-[10px] uppercase tracking-[0.3em] font-heading">{t('cards.avg_order_value')}</h3>
                                     <TrendingUp className="w-5 h-5 text-gold" />
                                 </div>
-                                <p className="text-3xl font-heading text-foreground">{formatVND(report.avgOrderValue)}</p>
+                                <p className="text-3xl font-heading text-foreground">{format.number(report.avgOrderValue, { style: 'currency', currency: 'VND' })}</p>
                             </div>
                             <div className="glass p-8 rounded-[2.5rem] border-border hover:border-gold/30 transition-all bg-gold/5 group">
                                 <div className="flex justify-between items-start mb-4">
-                                    <h3 className="text-gold text-[10px] uppercase tracking-[0.3em] font-heading">Completion Rate</h3>
+                                    <h3 className="text-gold text-[10px] uppercase tracking-[0.3em] font-heading">{t('cards.completion_rate')}</h3>
                                     <Award className="w-5 h-5 text-gold" />
                                 </div>
                                 <p className="text-3xl font-heading text-foreground">
@@ -91,10 +91,10 @@ export default function StaffKPI() {
                         <div className="glass rounded-[2.5rem] border-border p-8">
                             <div className="flex items-center gap-3 mb-6">
                                 <BarChart3 className="w-5 h-5 text-gold" />
-                                <h2 className="font-heading text-lg uppercase tracking-widest">Top Selling Products</h2>
+                                <h2 className="font-heading text-lg uppercase tracking-widest">{t('top_products.title')}</h2>
                             </div>
                             {report.topProducts.length === 0 ? (
-                                <p className="text-sm text-muted-foreground text-center py-8">No sales data for today yet.</p>
+                                <p className="text-sm text-muted-foreground text-center py-8">{t('top_products.empty')}</p>
                             ) : (
                                 <div className="space-y-4">
                                     {report.topProducts.map((p, i) => {
@@ -108,8 +108,8 @@ export default function StaffKPI() {
                                                         <span className="text-[10px] text-muted-foreground ml-2">{p.variantName}</span>
                                                     </div>
                                                     <div className="text-right">
-                                                        <span className="font-heading text-gold text-sm">{p.totalQuantity} sold</span>
-                                                        <span className="text-[10px] text-muted-foreground ml-2">{formatVND(p.totalRevenue)}</span>
+                                                        <span className="font-heading text-gold text-sm">{p.totalQuantity} {t('top_products.sold_suffix')}</span>
+                                                        <span className="text-[10px] text-muted-foreground ml-2">{format.number(p.totalRevenue, { style: 'currency', currency: 'VND' })}</span>
                                                     </div>
                                                 </div>
                                                 <div className="h-2 w-full bg-secondary/30 rounded-full overflow-hidden">

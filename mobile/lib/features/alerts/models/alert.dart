@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/notification_service.dart';
 
 enum AlertCategory { order, offer, account }
 
@@ -24,6 +25,68 @@ class Alert {
     this.actionLabel,
     required this.accentColor,
   });
+
+  /// Create from backend NotificationItem
+  factory Alert.fromNotification(NotificationItem item) {
+    final category = _mapTypeToCategory(item.type);
+    return Alert(
+      id: item.id,
+      title: item.title,
+      message: item.content,
+      timeLabel: _formatTime(item.createdAt),
+      category: category,
+      isUnread: !item.isRead,
+      actionLabel: _actionLabelFor(category),
+      accentColor: _colorFor(category),
+    );
+  }
+
+  static AlertCategory _mapTypeToCategory(String type) {
+    switch (type) {
+      case 'ORDER':
+      case 'SHIPPING':
+        return AlertCategory.order;
+      case 'PROMOTION':
+        return AlertCategory.offer;
+      case 'LOYALTY':
+      case 'SYSTEM':
+      default:
+        return AlertCategory.account;
+    }
+  }
+
+  static String _formatTime(DateTime dt) {
+    final now = DateTime.now();
+    final diff = now.difference(dt);
+    if (diff.inMinutes < 1) return 'Vừa xong';
+    if (diff.inMinutes < 60) return '${diff.inMinutes} phút trước';
+    if (diff.inHours < 24) return '${diff.inHours} giờ trước';
+    if (diff.inDays == 1) return 'Hôm qua';
+    if (diff.inDays < 7) return '${diff.inDays} ngày trước';
+    return '${dt.day}/${dt.month}/${dt.year}';
+  }
+
+  static String? _actionLabelFor(AlertCategory cat) {
+    switch (cat) {
+      case AlertCategory.order:
+        return 'Theo dõi đơn';
+      case AlertCategory.offer:
+        return 'Xem ưu đãi';
+      case AlertCategory.account:
+        return 'Xem chi tiết';
+    }
+  }
+
+  static Color _colorFor(AlertCategory cat) {
+    switch (cat) {
+      case AlertCategory.order:
+        return const Color(0xFFD4AF37);
+      case AlertCategory.offer:
+        return const Color(0xFFB9824A);
+      case AlertCategory.account:
+        return const Color(0xFF7D8F69);
+    }
+  }
 
   Alert copyWith({bool? isUnread}) {
     return Alert(

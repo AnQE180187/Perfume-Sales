@@ -8,27 +8,30 @@ import {
     XCircle, ChevronRight, User, MapPin, Phone,
     CreditCard, Loader2, ArrowLeft
 } from 'lucide-react';
+import { useTranslations, useFormatter } from 'next-intl';
 import { orderService, type Order } from '@/services/order.service';
 import { AuthGuard } from '@/components/auth/auth-guard';
 import { cn } from '@/lib/utils';
 
-const STATUS_CONFIG = {
-    PENDING: { label: 'Chờ xác nhận', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', icon: Clock },
-    CONFIRMED: { label: 'Đã xác nhận', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20', icon: CheckCircle2 },
-    PROCESSING: { label: 'Đang chuẩn bị', color: 'bg-purple-500/10 text-purple-600 border-purple-500/20', icon: PackageCheck },
-    SHIPPED: { label: 'Đang giao hàng', color: 'bg-orange-500/10 text-orange-600 border-orange-500/20', icon: Truck },
-    COMPLETED: { label: 'Hoàn thành', color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', icon: CheckCircle2 },
-    CANCELLED: { label: 'Đã hủy', color: 'bg-red-500/10 text-red-600 border-red-500/20', icon: XCircle },
-};
-
-const PAYMENT_CONFIG = {
-    PENDING: { label: 'Chờ thanh toán', color: 'text-amber-500' },
-    PAID: { label: 'Đã thanh toán', color: 'text-emerald-500' },
-    FAILED: { label: 'Lỗi thanh toán', color: 'text-red-500' },
-    REFUNDED: { label: 'Hoàn tiền', color: 'text-blue-500' },
-};
-
 export default function AdminOrders() {
+    const t = useTranslations('dashboard.admin.orders');
+    const format = useFormatter();
+
+    const STATUS_CONFIG = {
+        PENDING: { label: t('status.pending'), color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', icon: Clock },
+        CONFIRMED: { label: t('status.confirmed'), color: 'bg-blue-500/10 text-blue-600 border-blue-500/20', icon: CheckCircle2 },
+        PROCESSING: { label: t('status.processing'), color: 'bg-purple-500/10 text-purple-600 border-purple-500/20', icon: PackageCheck },
+        SHIPPED: { label: t('status.shipped'), color: 'bg-orange-500/10 text-orange-600 border-orange-500/20', icon: Truck },
+        COMPLETED: { label: t('status.completed'), color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', icon: CheckCircle2 },
+        CANCELLED: { label: t('status.cancelled'), color: 'bg-red-500/10 text-red-600 border-red-500/20', icon: XCircle },
+    };
+
+    const PAYMENT_CONFIG = {
+        PENDING: { label: t('payment_status.pending'), color: 'text-amber-500' },
+        PAID: { label: t('payment_status.paid'), color: 'text-emerald-500' },
+        FAILED: { label: t('payment_status.failed'), color: 'text-red-500' },
+        REFUNDED: { label: t('payment_status.refunded'), color: 'text-blue-500' },
+    };
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -93,7 +96,7 @@ export default function AdminOrders() {
         printWindow.document.write(`
             <html>
                 <head>
-                    <title>In Vận Đơn - AURA AI</title>
+                    <title>${t('print.title')}</title>
                     <style>
                         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
                         body { font-family: 'Inter', sans-serif; padding: 40px; color: #1a1a1a; }
@@ -110,34 +113,34 @@ export default function AdminOrders() {
                     <div class="label">
                         <div class="header">
                             <div class="brand">AURA AI</div>
-                            <div style="text-align: right font-size: 12px">
+                            <div style="text-align: right; font-size: 12px">
                                 ${selectedOrder?.code}<br/>
-                                ${new Date().toLocaleDateString()}
+                                ${format.dateTime(new Date())}
                             </div>
                         </div>
                         <div class="section">
-                            <div class="title">NGƯỜI NHẬN</div>
-                            <div class="info"><strong>${selectedOrder?.user?.name || 'Khách hàng'}</strong></div>
+                            <div class="title">${t('print.recipient')}</div>
+                            <div class="info"><strong>${selectedOrder?.user?.name || t('print.guest')}</strong></div>
                             <div class="info">${selectedOrder?.phone}</div>
                             <div class="info">${selectedOrder?.shippingAddress}</div>
                         </div>
                         <div class="section">
-                            <div class="title">NỘI DUNG</div>
+                            <div class="title">${t('print.content')}</div>
                             ${selectedOrder?.items?.map(item => `
                                 <div class="info">• ${item.product?.name} x ${item.quantity}</div>
                             `).join('')}
                         </div>
-                        <div class="section" style="border-top: 1px solid #eee; pt-10">
+                        <div class="section" style="border-top: 1px solid #eee; padding-top: 10px">
                             <div style="display: flex; justify-content: space-between">
-                                <span>Thanh toán:</span>
-                                <strong>${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedOrder?.finalAmount || 0)}</strong>
+                                <span>${t('print.payment')}</span>
+                                <strong>${format.number(selectedOrder?.finalAmount || 0, { style: 'currency', currency: 'VND' })}</strong>
                             </div>
                             <div style="display: flex; justify-content: space-between">
-                                <span>Hình thức:</span>
-                                <strong>${selectedOrder?.paymentStatus === 'PAID' ? 'Đã thanh toán' : 'COD'}</strong>
+                                <span>${t('print.method')}</span>
+                                <strong>${selectedOrder?.paymentStatus === 'PAID' ? t('print.paid') : t('print.cod')}</strong>
                             </div>
                         </div>
-                        <div class="footer">Cảm ơn bạn đã lựa chọn Aura AI Atelier.</div>
+                        <div class="footer">${t('print.footer')}</div>
                     </div>
                     <script>window.onload = () => { window.print(); window.close(); }</script>
                 </body>
@@ -159,10 +162,10 @@ export default function AdminOrders() {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
                         <h1 className="text-4xl font-serif text-luxury-black dark:text-white mb-2 transition-colors">
-                            Order <span className="italic">Registry</span>
+                            {t('title')}
                         </h1>
                         <p className="text-[10px] text-stone-500 uppercase tracking-[.4em] font-bold">
-                            Neural Fulfillment System v2.0
+                            {t('subtitle')}
                         </p>
                     </div>
                     <div className="flex items-center gap-4">
@@ -170,7 +173,7 @@ export default function AdminOrders() {
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 group-hover:text-gold transition-colors" size={16} />
                             <input
                                 type="text"
-                                placeholder="Search by Order ID, Name, Phone..."
+                                placeholder={t('search_placeholder')}
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 className="bg-white dark:bg-zinc-900 border border-stone-200 dark:border-white/10 rounded-2xl py-3 pl-12 pr-6 text-xs outline-none focus:border-gold transition-all w-80 shadow-sm"
@@ -188,13 +191,13 @@ export default function AdminOrders() {
                         <table className="w-full border-collapse">
                             <thead>
                                 <tr className="border-b border-stone-100 dark:border-white/5 bg-stone-50/50 dark:bg-white/[0.02]">
-                                    <th className="px-8 py-6 text-left text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400">Order ID</th>
-                                    <th className="px-8 py-6 text-left text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400">Customer</th>
-                                    <th className="px-8 py-6 text-left text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400">Total</th>
-                                    <th className="px-8 py-6 text-left text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400">Fulfillment</th>
-                                    <th className="px-8 py-6 text-left text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400">Payment</th>
-                                    <th className="px-8 py-6 text-left text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400">Date</th>
-                                    <th className="px-8 py-6 text-right text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400">Actions</th>
+                                    <th className="px-8 py-6 text-left text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400">{t('table.id')}</th>
+                                    <th className="px-8 py-6 text-left text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400">{t('table.customer')}</th>
+                                    <th className="px-8 py-6 text-left text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400">{t('table.total')}</th>
+                                    <th className="px-8 py-6 text-left text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400">{t('table.fulfillment')}</th>
+                                    <th className="px-8 py-6 text-left text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400">{t('table.payment')}</th>
+                                    <th className="px-8 py-6 text-left text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400">{t('table.date')}</th>
+                                    <th className="px-8 py-6 text-right text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400">{t('table.actions')}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-stone-100 dark:divide-white/5">
@@ -225,13 +228,13 @@ export default function AdminOrders() {
                                             </td>
                                             <td className="px-8 py-6">
                                                 <div className="flex flex-col">
-                                                    <span className="text-xs font-bold text-luxury-black dark:text-white">{order.user?.name || 'Guest'}</span>
+                                                    <span className="text-xs font-bold text-luxury-black dark:text-white">{order.user?.name || t('print.guest')}</span>
                                                     <span className="text-[9px] text-stone-500 mt-0.5">{order.phone}</span>
                                                 </div>
                                             </td>
                                             <td className="px-8 py-6">
                                                 <span className="text-sm font-serif text-luxury-black dark:text-white">
-                                                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.finalAmount)}
+                                                    {format.number(order.finalAmount, { style: 'currency', currency: 'VND' })}
                                                 </span>
                                             </td>
                                             <td className="px-8 py-6">
@@ -252,7 +255,7 @@ export default function AdminOrders() {
                                                 </div>
                                             </td>
                                             <td className="px-8 py-6 text-stone-400 text-[10px] uppercase font-bold tracking-wider">
-                                                {new Date(order.createdAt || '').toLocaleDateString('vi-VN')}
+                                                {format.dateTime(new Date(order.createdAt || ''))}
                                             </td>
                                             <td className="px-8 py-6 text-right">
                                                 <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -269,7 +272,7 @@ export default function AdminOrders() {
                         {!loading && filteredOrders.length === 0 && (
                             <div className="py-20 text-center space-y-4">
                                 <Receipt className="mx-auto text-stone-200 dark:text-white/5" size={64} strokeWidth={1} />
-                                <p className="text-[10px] font-bold tracking-widest uppercase text-stone-400">No orders found matching your search</p>
+                                <p className="text-[10px] font-bold tracking-widest uppercase text-stone-400">{t('table.no_orders')}</p>
                             </div>
                         )}
                     </div>
@@ -302,7 +305,7 @@ export default function AdminOrders() {
                                         <ArrowLeft size={20} />
                                     </button>
                                     <div className="text-center">
-                                        <p className="text-[8px] font-bold text-gold tracking-[.4em] uppercase mb-1">Neural Fulfillment</p>
+                                        <p className="text-[8px] font-bold text-gold tracking-[.4em] uppercase mb-1">{t('modal.header_prefix')}</p>
                                         <h2 className="text-sm font-bold uppercase tracking-widest text-luxury-black dark:text-white">{selectedOrder.code}</h2>
                                     </div>
                                     <button
@@ -317,7 +320,7 @@ export default function AdminOrders() {
                                 <div className="p-10 space-y-12">
                                     {/* Quick Actions / Status Update */}
                                     <section>
-                                        <h3 className="text-[10px] font-bold uppercase tracking-[.3em] text-stone-400 mb-6">Process Transformation</h3>
+                                        <h3 className="text-[10px] font-bold uppercase tracking-[.3em] text-stone-400 mb-6">{t('modal.transformation')}</h3>
                                         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                                             {Object.entries(STATUS_CONFIG).map(([key, config]) => {
                                                 const isActive = selectedOrder.status === key;
@@ -345,10 +348,10 @@ export default function AdminOrders() {
                                     <section className="grid grid-cols-1 md:grid-cols-2 gap-10">
                                         <div className="space-y-6">
                                             <h3 className="text-[10px] font-bold uppercase tracking-[.3em] text-stone-400 flex items-center gap-2">
-                                                <User size={12} /> Identity
+                                                <User size={12} /> {t('modal.identity')}
                                             </h3>
                                             <div className="glass p-6 rounded-3xl border border-stone-100 dark:border-white/5 space-y-2">
-                                                <p className="text-sm font-bold text-luxury-black dark:text-white">{selectedOrder.user?.name || 'Guest'}</p>
+                                                <p className="text-sm font-bold text-luxury-black dark:text-white">{selectedOrder.user?.name || t('print.guest')}</p>
                                                 <p className="text-xs text-stone-500">{selectedOrder.user?.email}</p>
                                                 <div className="flex items-center gap-2 text-xs text-gold font-bold mt-2">
                                                     <Phone size={12} />
@@ -358,7 +361,7 @@ export default function AdminOrders() {
                                         </div>
                                         <div className="space-y-6">
                                             <h3 className="text-[10px] font-bold uppercase tracking-[.3em] text-stone-400 flex items-center gap-2">
-                                                <MapPin size={12} /> Destination
+                                                <MapPin size={12} /> {t('modal.destination')}
                                             </h3>
                                             <div className="glass p-6 rounded-3xl border border-stone-100 dark:border-white/5">
                                                 <p className="text-xs leading-relaxed text-stone-500 uppercase tracking-tight">
@@ -371,7 +374,7 @@ export default function AdminOrders() {
                                     {/* Order Content */}
                                     <section className="space-y-6">
                                         <h3 className="text-[10px] font-bold uppercase tracking-[.3em] text-stone-400 flex items-center gap-2">
-                                            <PackageCheck size={12} /> Manifesto
+                                            <PackageCheck size={12} /> {t('modal.manifesto')}
                                         </h3>
                                         <div className="space-y-3">
                                             {selectedOrder.items?.map((item, i) => (
@@ -381,12 +384,12 @@ export default function AdminOrders() {
                                                             {i + 1}
                                                         </div>
                                                         <div>
-                                                            <p className="text-xs font-bold text-luxury-black dark:text-white">{item.product?.name || 'Unknown Product'}</p>
+                                                            <p className="text-xs font-bold text-luxury-black dark:text-white">{item.product?.name || t('table.product_fallback', { fallback: 'Unknown Product' })}</p>
                                                             <p className="text-[10px] text-stone-400 italic">Qty: {item.quantity}</p>
                                                         </div>
                                                     </div>
                                                     <p className="text-sm font-medium text-luxury-black dark:text-white font-serif">
-                                                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.totalPrice)}
+                                                        {format.number(item.totalPrice, { style: 'currency', currency: 'VND' })}
                                                     </p>
                                                 </div>
                                             ))}
@@ -399,7 +402,7 @@ export default function AdminOrders() {
                                             <div className="flex justify-between items-center mb-8 pb-8 border-b border-white/10">
                                                 <div className="flex items-center gap-3">
                                                     <CreditCard size={20} className="text-gold" />
-                                                    <h3 className="text-[10px] font-bold uppercase tracking-[.3em]">Financial Matrix</h3>
+                                                    <h3 className="text-[10px] font-bold uppercase tracking-[.3em]">{t('modal.financial_matrix')}</h3>
                                                 </div>
                                                 <select
                                                     value={selectedOrder.paymentStatus}
@@ -415,17 +418,17 @@ export default function AdminOrders() {
 
                                             <div className="space-y-4">
                                                 <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-stone-500">
-                                                    <span>Revenue Base</span>
-                                                    <span>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedOrder.finalAmount)}</span>
+                                                    <span>{t('modal.revenue_base')}</span>
+                                                    <span>{format.number(selectedOrder.finalAmount, { style: 'currency', currency: 'VND' })}</span>
                                                 </div>
                                                 <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-stone-500">
-                                                    <span>Delivery Fee</span>
-                                                    <span className="text-gold">Complimentary</span>
+                                                    <span>{t('modal.delivery_fee')}</span>
+                                                    <span className="text-gold">{t('modal.complimentary')}</span>
                                                 </div>
                                                 <div className="pt-6 mt-6 border-t border-white/10 flex justify-between items-baseline">
-                                                    <span className="text-[10px] font-bold uppercase tracking-[.5em] text-stone-400">Liquid Settlement</span>
+                                                    <span className="text-[10px] font-bold uppercase tracking-[.5em] text-stone-400">{t('modal.liquid_settlement')}</span>
                                                     <span className="text-3xl font-serif text-white italic">
-                                                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedOrder.finalAmount)}
+                                                        {format.number(selectedOrder.finalAmount, { style: 'currency', currency: 'VND' })}
                                                     </span>
                                                 </div>
                                             </div>
@@ -441,7 +444,7 @@ export default function AdminOrders() {
                                     <div className="absolute inset-0 bg-white/50 dark:bg-black/50 backdrop-blur-[2px] z-50 flex items-center justify-center">
                                         <div className="flex flex-col items-center gap-4">
                                             <Loader2 size={32} className="text-gold animate-spin" />
-                                            <p className="text-[10px] font-bold uppercase tracking-widest text-gold">Syncing Neural Data...</p>
+                                            <p className="text-[10px] font-bold uppercase tracking-widest text-gold">{t('modal.syncing')}</p>
                                         </div>
                                     </div>
                                 )}

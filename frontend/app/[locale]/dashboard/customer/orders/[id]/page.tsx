@@ -15,39 +15,19 @@ import {
   Truck,
   ExternalLink,
   Star,
+  Clock,
+  PackageCheck,
+  XCircle,
 } from "lucide-react";
 import ReviewForm from "@/components/review/review-form";
-
-const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  PENDING: {
-    label: "Chờ xác nhận",
-    color: "bg-amber-500/10 text-amber-600 border-amber-500/20",
-  },
-  CONFIRMED: {
-    label: "Đã xác nhận",
-    color: "bg-blue-500/10 text-blue-600 border-blue-500/20",
-  },
-  PROCESSING: {
-    label: "Đang chuẩn bị",
-    color: "bg-purple-500/10 text-purple-600 border-purple-500/20",
-  },
-  SHIPPED: {
-    label: "Đang giao hàng",
-    color: "bg-orange-500/10 text-orange-600 border-orange-500/20",
-  },
-  COMPLETED: {
-    label: "Hoàn thành",
-    color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
-  },
-  CANCELLED: {
-    label: "Đã hủy",
-    color: "bg-red-500/10 text-red-600 border-red-500/20",
-  },
-};
-
-const TRACKING_URL = "https://donhang.ghn.vn/?order_code=";
+import { useTranslations, useLocale, useFormatter } from "next-intl";
 
 export default function CustomerOrderDetailPage() {
+  const t = useTranslations("dashboard.customer.orders");
+  const tDetail = useTranslations("dashboard.customer.order_detail");
+  const tFeatured = useTranslations("featured");
+  const locale = useLocale();
+  const format = useFormatter();
   const params = useParams();
   const orderId = params?.id as string;
 
@@ -55,6 +35,44 @@ export default function CustomerOrderDetailPage() {
   const [shipments, setShipments] = useState<Shipment[]>([]);
   const [loading, setLoading] = useState(true);
   const [reviewingItemId, setReviewingItemId] = useState<number | null>(null);
+
+  const STATUS_CONFIG: Record<
+    string,
+    { label: string; color: string; icon: any }
+  > = {
+    PENDING: {
+      label: t("status.pending"),
+      color: "bg-amber-500/10 text-amber-600 border-amber-500/20",
+      icon: Clock,
+    },
+    CONFIRMED: {
+      label: t("status.confirmed"),
+      color: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+      icon: PackageCheck,
+    },
+    PROCESSING: {
+      label: t("status.processing"),
+      color: "bg-purple-500/10 text-purple-600 border-purple-500/20",
+      icon: PackageCheck,
+    },
+    SHIPPED: {
+      label: t("status.shipped"),
+      color: "bg-orange-500/10 text-orange-600 border-orange-500/20",
+      icon: Truck,
+    },
+    COMPLETED: {
+      label: t("status.completed"),
+      color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+      icon: PackageCheck,
+    },
+    CANCELLED: {
+      label: t("status.cancelled"),
+      color: "bg-red-500/10 text-red-600 border-red-500/20",
+      icon: XCircle,
+    },
+  };
+
+  const TRACKING_URL = "https://donhang.ghn.vn/?order_code=";
 
   const fetchOrder = async () => {
     if (orderId) {
@@ -77,6 +95,14 @@ export default function CustomerOrderDetailPage() {
     fetchOrder();
   }, [orderId]);
 
+  const formatCurrency = (amount: number) => {
+    return format.number(amount, {
+      style: "currency",
+      currency: tFeatured("currency_code") || "VND",
+      maximumFractionDigits: 0,
+    });
+  };
+
   if (loading) {
     return (
       <AuthGuard allowedRoles={["customer", "staff", "admin"]}>
@@ -92,13 +118,13 @@ export default function CustomerOrderDetailPage() {
       <AuthGuard allowedRoles={["customer", "staff", "admin"]}>
         <div className="py-20 text-center">
           <p className="text-stone-500 dark:text-stone-400 mb-4">
-            Không tìm thấy đơn hàng
+            {tDetail("not_found")}
           </p>
           <Link
             href="/dashboard/customer/orders"
             className="text-gold hover:underline font-bold"
           >
-            Quay lại danh sách đơn hàng
+            {tDetail("back_to_list")}
           </Link>
         </div>
       </AuthGuard>
@@ -115,18 +141,21 @@ export default function CustomerOrderDetailPage() {
         <header>
           <Link
             href="/dashboard/customer/orders"
-            className="inline-flex items-center gap-2 text-gold hover:text-gold/80 mb-6"
+            className="inline-flex items-center gap-2 text-gold hover:text-gold/80 mb-6 font-bold uppercase tracking-widest text-[10px]"
           >
-            <ArrowLeft size={18} />
-            Quay lại đơn hàng
+            <ArrowLeft size={16} />
+            {tDetail("back")}
           </Link>
-          <h1 className="text-4xl font-serif text-luxury-black dark:text-white mb-2">
-            Đơn hàng {order.code}
+          <h1 className="text-4xl md:text-5xl font-heading gold-gradient mb-2 uppercase tracking-tighter">
+            {tDetail("order_number", { code: order.code })}
           </h1>
           <p className="text-[10px] text-stone-500 uppercase tracking-[.4em] font-bold">
-            {new Date(order.createdAt!).toLocaleDateString("vi-VN", {
-              dateStyle: "full",
-            })}
+            {new Date(order.createdAt!).toLocaleDateString(
+              locale === "vi" ? "vi-VN" : "en-US",
+              {
+                dateStyle: "full",
+              }
+            )}
           </p>
         </header>
 
@@ -134,8 +163,8 @@ export default function CustomerOrderDetailPage() {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
             <div className="glass bg-white dark:bg-zinc-900 rounded-[3rem] p-8 border border-stone-100 dark:border-white/5">
-              <h2 className="text-xl font-serif text-luxury-black dark:text-white mb-6">
-                Sản phẩm
+              <h2 className="text-xl font-heading text-luxury-black dark:text-white mb-6 uppercase tracking-widest border-b border-border pb-4">
+                {tDetail("products")}
               </h2>
               {order.items && order.items.length > 0 ? (
                 <div className="space-y-6">
@@ -198,62 +227,52 @@ export default function CustomerOrderDetailPage() {
                                 {productHref ? (
                                   <Link
                                     href={productHref}
-                                    className="font-bold text-luxury-black dark:text-white hover:text-gold transition-colors line-clamp-2"
+                                    className="font-bold text-luxury-black dark:text-white hover:text-gold transition-colors line-clamp-2 uppercase tracking-tight"
                                   >
                                     {item.product?.name}
                                   </Link>
                                 ) : (
-                                  <p className="font-bold text-luxury-black dark:text-white">
+                                  <p className="font-bold text-luxury-black dark:text-white uppercase tracking-tight">
                                     {item.product?.name}
                                   </p>
                                 )}
                                 <p className="text-[10px] text-stone-400 uppercase mt-1">
                                   × {item.quantity} —{" "}
-                                  {new Intl.NumberFormat("vi-VN", {
-                                    style: "currency",
-                                    currency: "VND",
-                                  }).format(item.unitPrice)}
+                                  {formatCurrency(item.unitPrice)}
                                 </p>
                               </div>
                               <div className="flex flex-col items-end gap-2 flex-shrink-0">
                                 <span className="font-bold text-luxury-black dark:text-white">
-                                  {new Intl.NumberFormat("vi-VN", {
-                                    style: "currency",
-                                    currency: "VND",
-                                  }).format(item.totalPrice)}
+                                  {formatCurrency(item.totalPrice)}
                                 </span>
-                                {order.status === "COMPLETED" &&
-                                  !item.review && (
-                                    <button
-                                      onClick={() =>
-                                        setReviewingItemId(
-                                          reviewingItemId === item.id
-                                            ? null
-                                            : item.id,
-                                        )
-                                      }
-                                      className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-gold hover:text-gold/80"
-                                    >
-                                      <Star
-                                        size={12}
-                                        className={
-                                          reviewingItemId === item.id
-                                            ? "fill-gold"
-                                            : ""
-                                        }
-                                      />
-                                      {reviewingItemId === item.id
-                                        ? "Đang viết"
-                                        : "Viết đánh giá"}
-                                    </button>
-                                  )}
-                                {item.review && (
-                                  <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-500 flex items-center gap-1">
+                                {order.status === "COMPLETED" && !item.review && (
+                                  <button
+                                    onClick={() =>
+                                      setReviewingItemId(
+                                        reviewingItemId === item.id
+                                          ? null
+                                          : item.id
+                                      )
+                                    }
+                                    className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-gold hover:text-gold/80"
+                                  >
                                     <Star
                                       size={12}
-                                      className="fill-emerald-500"
+                                      className={
+                                        reviewingItemId === item.id
+                                          ? "fill-gold"
+                                          : ""
+                                      }
                                     />
-                                    Đã đánh giá
+                                    {reviewingItemId === item.id
+                                      ? tDetail("writing_review")
+                                      : tDetail("write_review")}
+                                  </button>
+                                )}
+                                {item.review && (
+                                  <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-500 flex items-center gap-1">
+                                    <Star size={12} className="fill-emerald-500" />
+                                    {tDetail("reviewed")}
                                   </span>
                                 )}
                               </div>
@@ -280,20 +299,20 @@ export default function CustomerOrderDetailPage() {
                   })}
                 </div>
               ) : (
-                <p className="text-stone-500">Không có sản phẩm</p>
+                <p className="text-stone-500">{tDetail("no_products")}</p>
               )}
             </div>
 
             <div className="glass bg-white dark:bg-zinc-900 rounded-[3rem] p-8 border border-stone-100 dark:border-white/5">
-              <h2 className="text-xl font-serif text-luxury-black dark:text-white mb-6 flex items-center gap-3">
+              <h2 className="text-xl font-heading text-luxury-black dark:text-white mb-6 flex items-center gap-3 uppercase tracking-widest border-b border-border pb-4">
                 <MapPin size={20} className="text-gold" />
-                Địa chỉ giao hàng
+                {tDetail("shipping_address")}
               </h2>
-              <p className="text-sm text-stone-600 dark:text-stone-300">
+              <p className="text-sm text-stone-600 dark:text-stone-300 font-medium uppercase tracking-tight">
                 {order.shippingAddress}
               </p>
               {order.phone && (
-                <p className="text-[10px] text-stone-400 mt-2 flex items-center gap-2">
+                <p className="text-[10px] text-stone-400 mt-2 flex items-center gap-2 font-bold tracking-widest">
                   <Phone size={12} /> {order.phone}
                 </p>
               )}
@@ -302,37 +321,61 @@ export default function CustomerOrderDetailPage() {
 
           {/* Sidebar */}
           <div className="space-y-8">
-            <div className="glass bg-white dark:bg-zinc-900 rounded-[3rem] p-8 border border-stone-100 dark:border-white/5">
+            <div className="glass bg-white dark:bg-zinc-900 rounded-[3rem] p-8 border border-stone-100 dark:border-white/5 shadow-xl">
               <h3 className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-4">
-                Trạng thái
+                {tDetail("status")}
               </h3>
-              <span
-                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold border ${style.color}`}
-              >
-                {style.label}
-              </span>
-              <p className="mt-6 text-[10px] text-stone-400 uppercase tracking-wider">
-                Thanh toán:{" "}
-                {order.paymentStatus === "PAID"
-                  ? "Đã thanh toán"
-                  : order.paymentStatus === "PENDING"
-                    ? "Chờ thanh toán"
-                    : order.paymentStatus}
-              </p>
-              <p className="mt-8 text-2xl font-serif text-luxury-black dark:text-white italic">
-                {new Intl.NumberFormat("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                }).format(order.finalAmount)}
-              </p>
+              <div className="flex flex-col gap-4">
+                <span
+                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border w-fit ${style.color}`}
+                >
+                  <style.icon size={12} />
+                  {style.label}
+                </span>
+                <p className="text-[10px] text-stone-400 uppercase tracking-widest font-bold">
+                  {tDetail("payment")}:{" "}
+                  <span className="text-luxury-black dark:text-white uppercase">
+                    {order.paymentStatus === "PAID"
+                      ? tDetail("payment_status.paid")
+                      : order.paymentStatus === "PENDING"
+                      ? tDetail("payment_status.pending")
+                      : order.paymentStatus}
+                  </span>
+                </p>
+              </div>
+
+              <div className="mt-8 pt-8 border-t border-border space-y-3">
+                <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
+                  <span className="text-stone-400">{tDetail("subtotal")}</span>
+                  <span className="text-luxury-black dark:text-white">
+                    {formatCurrency(order.totalAmount)}
+                  </span>
+                </div>
+                {order.discountAmount > 0 && (
+                  <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
+                    <span className="text-stone-400">{tDetail("discount")}</span>
+                    <span className="text-red-500">
+                      -{formatCurrency(order.discountAmount)}
+                    </span>
+                  </div>
+                )}
+                <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest pt-4 border-t border-stone-100 dark:border-white/5">
+                  <span className="text-luxury-black dark:text-white">
+                    {tDetail("total")}
+                  </span>
+                  <span className="text-2xl font-heading text-gold tracking-tighter">
+                    {formatCurrency(order.finalAmount)}
+                  </span>
+                </div>
+              </div>
             </div>
 
             {/* Shipment / Tracking */}
             {shipments.length > 0 && (
-              <div className="glass bg-white dark:bg-zinc-900 rounded-[3rem] p-8 border border-stone-100 dark:border-white/5">
-                <h3 className="text-xl font-serif text-luxury-black dark:text-white mb-6 flex items-center gap-3">
+              <div className="glass bg-white dark:bg-zinc-900 rounded-[3rem] p-8 border border-stone-100 dark:border-white/5 shadow-xl">
+                <h3 className="text-xl font-heading text-luxury-black dark:text-white mb-6 flex items-center gap-3 uppercase tracking-widest border-b border-border pb-4">
                   <Truck size={20} className="text-gold" />
-                  Theo dõi đơn hàng
+                  {tDetail("tracking")}
                 </h3>
                 <div className="space-y-4">
                   {shipments.map((s) => (
@@ -340,26 +383,32 @@ export default function CustomerOrderDetailPage() {
                       key={s.id}
                       className="p-4 rounded-2xl bg-stone-50 dark:bg-zinc-800 border border-stone-100 dark:border-white/5"
                     >
-                      <div className="flex justify-between items-start gap-4">
+                      <div className="flex flex-col gap-4">
                         <div>
                           <p className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-1">
-                            Mã vận đơn
+                            {tDetail("tracking_code")}
                           </p>
-                          <p className="font-mono font-bold text-luxury-black dark:text-white">
+                          <p className="font-mono font-bold text-luxury-black dark:text-white text-sm">
                             {s.trackingCode || s.ghnOrderCode || "—"}
                           </p>
-                          <p className="text-[10px] text-stone-500 mt-2">
-                            Trạng thái: {s.status}
+                          <p className="text-[10px] text-stone-500 mt-2 font-bold uppercase tracking-widest opacity-60">
+                            {tDetail("tracking_status", {
+                              status: s.status
+                                ? tDetail(`shipping_status_labels.${s.status}`)
+                                : "Awaiting",
+                            })}
                           </p>
                         </div>
                         {(s.trackingCode || s.ghnOrderCode) && (
                           <a
-                            href={`${TRACKING_URL}${s.trackingCode || s.ghnOrderCode}`}
+                            href={`${TRACKING_URL}${
+                              s.trackingCode || s.ghnOrderCode
+                            }`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-2 text-gold hover:text-gold/80 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap"
+                            className="flex items-center gap-2 text-gold hover:text-gold/80 text-[10px] font-bold uppercase tracking-widest border border-gold/20 w-fit px-4 py-2 rounded-full hover:bg-gold/5 transition-all"
                           >
-                            Tra cứu GHN <ExternalLink size={12} />
+                            {tDetail("ghn_lookup")} <ExternalLink size={12} />
                           </a>
                         )}
                       </div>
