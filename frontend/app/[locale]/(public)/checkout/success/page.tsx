@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import { Link } from '@/lib/i18n';
 import { motion } from 'framer-motion';
-import { CheckCircle, Truck, Package, Calendar } from 'lucide-react';
+import { CheckCircle, Truck, Package, Calendar, Mail, Phone } from 'lucide-react';
 import { orderService } from '@/services/order.service';
 import { useTranslations, useLocale } from 'next-intl';
 
@@ -59,6 +59,24 @@ export default function OrderSuccessPage() {
                                 </span>
                             </div>
                             <div className="flex items-center gap-4 text-stone-600 dark:text-stone-400">
+                                <Mail size={20} className="text-stone-300 dark:text-stone-600" />
+                                <span className="text-sm font-medium">
+                                    Email:{' '}
+                                    <span className="text-luxury-black dark:text-white font-bold">
+                                        {order?.user?.email || '—'}
+                                    </span>
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-4 text-stone-600 dark:text-stone-400">
+                                <Phone size={20} className="text-stone-300 dark:text-stone-600" />
+                                <span className="text-sm font-medium">
+                                    SĐT:{' '}
+                                    <span className="text-luxury-black dark:text-white font-bold">
+                                        {order?.phone || '—'}
+                                    </span>
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-4 text-stone-600 dark:text-stone-400">
                                 <Calendar size={20} className="text-stone-300 dark:text-stone-600" />
                                 <span className="text-sm font-medium">
                                     {t('estimated_arrival')}:{' '}
@@ -107,7 +125,7 @@ export default function OrderSuccessPage() {
                                 fill
                                 className="object-cover"
                             />
-                            <div className="absolute inset-x-0 bottom-0 p-10 bg-gradient-to-t from-black/80 to-transparent text-white">
+                            <div className="absolute inset-x-0 bottom-0 p-10 bg-linear-to-t from-black/80 to-transparent text-white">
                                 <p className="italic font-serif text-xl mb-4 leading-relaxed">
                                     {t('wait_quote')}
                                 </p>

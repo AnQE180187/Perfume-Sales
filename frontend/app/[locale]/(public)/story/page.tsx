@@ -51,7 +51,7 @@ export default function StoryPage() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ delay: 1.2 }}
-                            className="w-px h-24 bg-gradient-to-b from-white to-transparent mx-auto"
+                            className="w-px h-24 bg-linear-to-b from-white to-transparent mx-auto"
                         />
                     </div>
                 </section>
@@ -76,7 +76,7 @@ export default function StoryPage() {
                                     </p>
                                 </div>
                             </div>
-                            <div className="relative aspect-[4/5] rounded-[3rem] overflow-hidden shadow-2xl border border-stone-100 dark:border-white/5">
+                            <div className="relative aspect-4/5 rounded-[3rem] overflow-hidden shadow-2xl border border-stone-100 dark:border-white/5">
                                 <Image
                                     src="/luxury_ai_scent_lab.png"
                                     alt="Ingredients Analysis"
@@ -130,6 +130,48 @@ export default function StoryPage() {
                                     </div>
                                 );
                             })}
+                        </div>
+                    </div>
+                </section>
+
+                {/* Store Location Section */}
+                <section className="py-32 bg-white dark:bg-zinc-900 transition-colors">
+                    <div className="container mx-auto px-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+                            <div>
+                                <span className="text-xs font-bold tracking-[.2em] uppercase text-gold mb-6 block">
+                                    Store Location
+                                </span>
+                                <h2 className="text-4xl md:text-5xl font-serif text-luxury-black dark:text-white mb-8 italic transition-colors">
+                                    Visit our atelier
+                                </h2>
+                                <p className="text-stone-600 dark:text-stone-400 leading-[1.8] text-lg font-light transition-colors">
+                                    Bạn có thể ghé cửa hàng để trải nghiệm mùi hương trực tiếp. Bản đồ dưới đây hiển thị vị trí cửa hàng hiện tại.
+                                </p>
+                                <div className="mt-10 space-y-2 text-sm text-stone-500 dark:text-stone-400">
+                                    <p className="font-bold tracking-widest uppercase text-[10px] text-gold">NOXH An Phú Thịnh</p>
+                                    <p>Phường Quy Nhơn Đông, Tỉnh Gia Lai</p>
+                                    <a
+                                        href="https://maps.app.goo.gl/ttgEyPDpoqE93x8W6"
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="inline-flex text-[10px] font-bold uppercase tracking-widest text-gold hover:underline underline-offset-4"
+                                    >
+                                        Xem trên Google Maps
+                                    </a>
+                                </div>
+                            </div>
+                            <div className="rounded-[3rem] overflow-hidden border border-stone-100 dark:border-white/5 shadow-2xl bg-stone-50 dark:bg-zinc-800">
+                                <div className="relative aspect-16/10">
+                                    <iframe
+                                        title="NOXH An Phú Thịnh Map"
+                                        src="https://www.google.com/maps?q=NOXH%20An%20Ph%C3%BA%20Th%E1%BB%8Bnh%2C%20Ph%C6%B0%E1%BB%9Dng%20Quy%20Nh%C6%A1n%20%C4%90%C3%B4ng%2C%20T%E1%BB%89nh%20Gia%20Lai&output=embed"
+                                        className="absolute inset-0 w-full h-full"
+                                        loading="lazy"
+                                        referrerPolicy="no-referrer-when-downgrade"
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </section>
