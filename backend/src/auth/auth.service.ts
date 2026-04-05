@@ -16,9 +16,9 @@ import { LoginDto } from './dto/login.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { SocialLoginDto } from './dto/social-login.dto';
 import { UserRoleEnum } from '@prisma/client';
 import { MailService } from '../mail/mail.service';
-
 
 @Injectable()
 export class AuthService {
@@ -27,7 +27,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly mailService: MailService,
-  ) { }
+  ) {}
 
   async register(dto: RegisterDto) {
     const existing = await this.prisma.user.findFirst({
@@ -65,14 +65,16 @@ export class AuthService {
       await this.migrateGuestLoyalty(user.id, dto.phone);
     }
 
-    const frontendUrl = this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
+    const frontendUrl =
+      this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
     const verificationLink = `${frontendUrl}/vi/verify-email?token=${verificationToken}`;
 
     await this.mailService.sendVerificationMail(user.email, verificationLink);
 
     return {
       success: true,
-      message: 'Đăng ký thành công. Bạn có thể đăng nhập ngay. Xác thực email (tùy chọn) có thể làm trong Hồ sơ.',
+      message:
+        'Đăng ký thành công. Bạn có thể đăng nhập ngay. Xác thực email (tùy chọn) có thể làm trong Hồ sơ.',
     };
   }
 
@@ -145,7 +147,8 @@ export class AuthService {
     });
 
     // Send email with reset link
-    const frontendUrl = this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
+    const frontendUrl =
+      this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
     const resetLink = `${frontendUrl}/vi/reset-password?token=${resetToken}`;
 
     await this.mailService.sendPasswordResetMail(user.email, resetLink);
@@ -208,7 +211,8 @@ export class AuthService {
       },
     });
 
-    const frontendUrl = this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
+    const frontendUrl =
+      this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
     const verificationLink = `${frontendUrl}/vi/verify-email?token=${verificationToken}`;
     await this.mailService.sendVerificationMail(user.email, verificationLink);
 
@@ -223,7 +227,11 @@ export class AuthService {
       where: { emailVerificationToken: token },
     });
 
-    if (!user || (user.emailVerificationExpires && user.emailVerificationExpires < new Date())) {
+    if (
+      !user ||
+      (user.emailVerificationExpires &&
+        user.emailVerificationExpires < new Date())
+    ) {
       throw new BadRequestException('Invalid or expired verification token');
     }
 
@@ -270,6 +278,59 @@ export class AuthService {
       success: true,
       message: 'Password changed successfully',
     };
+  }
+
+  /**
+   * Mobile social login: verify provider token, then create/find user.
+   */
+  async socialLoginWithToken(dto: SocialLoginDto) {
+    let verifiedEmail: string;
+    let verifiedName: string | undefined;
+    let verifiedAvatar: string | undefined;
+    let verifiedProviderId: string;
+
+    if (dto.provider === 'google') {
+      // Verify Google ID token via tokeninfo endpoint
+      const res = await fetch(
+        `https://oauth2.googleapis.com/tokeninfo?id_token=${dto.token}`,
+      );
+      if (!res.ok) {
+        throw new UnauthorizedException('Invalid Google token');
+      }
+      const payload = (await res.json()) as Record<string, any>;
+      verifiedEmail = payload.email;
+      verifiedName = payload.name;
+      verifiedAvatar = payload.picture;
+      verifiedProviderId = payload.sub;
+    } else {
+      // Verify Facebook access token via Graph API
+      const res = await fetch(
+        `https://graph.facebook.com/me?fields=id,name,email,picture.type(large)&access_token=${dto.token}`,
+      );
+      if (!res.ok) {
+        throw new UnauthorizedException('Invalid Facebook token');
+      }
+      const payload = (await res.json()) as Record<string, any>;
+      if (!payload.email) {
+        throw new BadRequestException(
+          'Facebook account must have a public email',
+        );
+      }
+      verifiedEmail = payload.email;
+      verifiedName = payload.name;
+      verifiedAvatar = payload.picture?.data?.url;
+      verifiedProviderId = payload.id;
+    }
+
+    // Delegate to existing OAuth user creation/linking logic
+    return this.validateOAuthUser({
+      provider: dto.provider,
+      providerId: verifiedProviderId,
+      email: verifiedEmail,
+      fullName: verifiedName,
+      avatarUrl: verifiedAvatar,
+      accessToken: dto.token,
+    });
   }
 
   async validateOAuthUser(profile: {

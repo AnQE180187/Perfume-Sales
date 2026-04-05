@@ -83,11 +83,11 @@ class AppLocalizationsVi extends AppLocalizations {
       'Khám phá bản sắc nước hoa độc bản của bạn thông qua bộ sưu tập do AI tuyển chọn.';
 
   @override
-  String get onboarding2Title => 'TUYỂN CHỌN THẦN KINH';
+  String get onboarding2Title => 'TUYỂN CHỌN THÔNG MINH';
 
   @override
   String get onboarding2Subtitle =>
-      'AI của chúng tôi phân tích hàng ngàn nốt hương để tìm ra sự kết hợp hoàn hảo cho bạn.';
+      'AI phân tích hàng ngàn nốt hương để tìm ra sự hòa quyện hoàn hảo dành riêng cho bạn.';
 
   @override
   String get onboarding3Title => 'SỰ SANG TRỌNG VĨNH CỬU';

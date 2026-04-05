@@ -45,7 +45,7 @@ class WishlistScreen extends ConsumerWidget {
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  childAspectRatio: 0.62,
+                  childAspectRatio: 0.54,
                   crossAxisSpacing: 16,
                   mainAxisSpacing: 16,
                 ),

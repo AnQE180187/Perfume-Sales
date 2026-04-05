@@ -4,10 +4,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import {
-  ConversationType,
-  ConversationParticipantRole,
-} from '@prisma/client';
+import { ConversationType, ConversationParticipantRole } from '@prisma/client';
 
 const INCLUDE_CONV = {
   participants: {
@@ -34,10 +31,7 @@ export class ConversationService {
     otherUserId?: string,
   ) {
     // ── Human-to-Human: reuse existing conversation ──
-    if (
-      (type === 'CUSTOMER_ADMIN' || type === 'ADMIN_STAFF') &&
-      otherUserId
-    ) {
+    if ((type === 'CUSTOMER_ADMIN' || type === 'ADMIN_STAFF') && otherUserId) {
       const existing = await this.prisma.conversation.findFirst({
         where: {
           type,
@@ -69,9 +63,25 @@ export class ConversationService {
 
   async listByUser(userId: string) {
     return this.prisma.conversation.findMany({
-      where: { participants: { some: { userId } } },
+      where: {
+        participants: { some: { userId } },
+        messages: { some: {} },
+        deletedAt: null,
+      },
       include: INCLUDE_CONV,
       orderBy: { updatedAt: 'desc' },
+    });
+  }
+
+  /**
+   * Soft-delete a conversation (set deletedAt = now).
+   * Only a participant can delete their conversation.
+   */
+  async softDelete(id: string, userId: string) {
+    await this.getByIdOrFail(id, userId);
+    return this.prisma.conversation.update({
+      where: { id },
+      data: { deletedAt: new Date() },
     });
   }
 
@@ -88,9 +98,7 @@ export class ConversationService {
     if (!conv) throw new NotFoundException('Conversation not found');
 
     // AI participants have userId = null, so we only check real users
-    const isParticipant = conv.participants.some(
-      (p) => p.userId === userId,
-    );
+    const isParticipant = conv.participants.some((p) => p.userId === userId);
     if (!isParticipant)
       throw new ForbiddenException('Not a participant of this conversation');
 

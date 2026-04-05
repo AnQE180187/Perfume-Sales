@@ -94,7 +94,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   ),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    childAspectRatio: 0.60,
+                    childAspectRatio: 0.54,
                     crossAxisSpacing: 16,
                     mainAxisSpacing: 16,
                   ),

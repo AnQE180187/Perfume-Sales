@@ -1,7 +1,9 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../core/routing/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_async_widget.dart';
 import '../../../core/widgets/shimmer_loading.dart';
@@ -52,7 +54,7 @@ class AlertsScreen extends ConsumerWidget {
                                 Text(
                                   'Thông báo của bạn',
                                   style: GoogleFonts.playfairDisplay(
-                                    fontSize: 32,
+                                    fontSize: 26,
                                     fontWeight: FontWeight.w600,
                                     color: AppTheme.deepCharcoal,
                                   ),
@@ -210,18 +212,19 @@ class _AlertsListView extends StatelessWidget {
         children: [
           if (todayAlerts.isNotEmpty) ...[
             _SectionLabel(title: 'Mới hôm nay'),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             for (final alert in todayAlerts) ...[
               _AlertCard(alert: alert, onTap: () => onTap(alert)),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
             ],
           ],
           if (olderAlerts.isNotEmpty) ...[
+            if (todayAlerts.isNotEmpty) const SizedBox(height: 8),
             _SectionLabel(title: 'Trước đó'),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             for (final alert in olderAlerts) ...[
               _AlertCard(alert: alert, onTap: () => onTap(alert)),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
             ],
           ],
         ],
@@ -263,74 +266,76 @@ class _AlertsHeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final total = alertsAsync.value?.length ?? 0;
     final unread = alertsAsync.value?.where((a) => a.isUnread).length ?? 0;
 
     return Container(
-      padding: const EdgeInsets.all(22),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [Color(0xFFF5E8D5), Color(0xFFE0C79E)],
         ),
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.deepCharcoal.withValues(alpha: 0.08),
-            blurRadius: 18,
-            offset: const Offset(0, 10),
+            color: AppTheme.deepCharcoal.withValues(alpha: 0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.65),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    unread == 0 ? 'Bạn đã xem hết' : '$unread chưa đọc',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.deepCharcoal,
+                    ),
+                  ),
                 ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.68),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Text(
-                  unread == 0 ? 'Bạn đã xem hết' : '$unread chưa đọc',
-                  style: GoogleFonts.montserrat(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
+                const SizedBox(height: 10),
+                Text(
+                  unread == 0
+                      ? 'Bạn đã cập nhật mọi thứ!'
+                      : 'Bạn có $unread thông báo mới đang chờ.',
+                  style: GoogleFonts.playfairDisplay(
+                    fontSize: 18,
+                    height: 1.2,
+                    fontWeight: FontWeight.w600,
                     color: AppTheme.deepCharcoal,
                   ),
                 ),
-              ),
-              const Spacer(),
-              const Icon(
-                Icons.notifications_active_outlined,
-                color: AppTheme.deepCharcoal,
-              ),
-            ],
-          ),
-          const SizedBox(height: 18),
-          Text(
-            'Theo sát mọi chuyển động của đơn hàng và từng ưu đãi dành riêng cho bạn.',
-            style: GoogleFonts.playfairDisplay(
-              fontSize: 28,
-              height: 1.05,
-              fontWeight: FontWeight.w600,
-              color: AppTheme.deepCharcoal,
+              ],
             ),
           ),
-          const SizedBox(height: 12),
-          Text(
-            '$total cập nhật gần đây được gom lại tại đây.',
-            style: GoogleFonts.montserrat(
-              fontSize: 12,
-              height: 1.6,
-              fontWeight: FontWeight.w500,
-              color: AppTheme.deepCharcoal.withValues(alpha: 0.72),
+          const SizedBox(width: 12),
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Icon(
+              Icons.notifications_active_outlined,
+              color: AppTheme.deepCharcoal,
+              size: 22,
             ),
           ),
         ],
@@ -575,45 +580,38 @@ class _AlertCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(24),
+      color: alert.isUnread
+          ? alert.accentColor.withValues(alpha: 0.06)
+          : Colors.white,
+      borderRadius: BorderRadius.circular(16),
       child: InkWell(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(16),
         onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 220),
-          padding: const EdgeInsets.all(18),
+        child: Container(
+          padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: alert.isUnread
-                  ? alert.accentColor.withValues(alpha: 0.32)
-                  : AppTheme.softTaupe,
+                  ? alert.accentColor.withValues(alpha: 0.3)
+                  : AppTheme.softTaupe.withValues(alpha: 0.5),
             ),
-            gradient: alert.isUnread
-                ? LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.white,
-                      alert.accentColor.withValues(alpha: 0.07),
-                    ],
-                  )
-                : null,
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Icon
               Container(
-                width: 50,
-                height: 50,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
-                  color: alert.accentColor.withValues(alpha: 0.14),
-                  borderRadius: BorderRadius.circular(16),
+                  color: alert.accentColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(alert.icon, color: alert.accentColor),
+                child: Icon(alert.icon, size: 20, color: alert.accentColor),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 12),
+              // Content
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -623,17 +621,26 @@ class _AlertCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             alert.title,
-                            style: GoogleFonts.playfairDisplay(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                              color: AppTheme.deepCharcoal,
+                            style: GoogleFonts.montserrat(
+                              fontSize: 13,
+                              fontWeight: alert.isUnread
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                              color: alert.isUnread
+                                  ? AppTheme.deepCharcoal
+                                  : AppTheme.deepCharcoal.withValues(
+                                      alpha: 0.7,
+                                    ),
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         if (alert.isUnread)
                           Container(
-                            width: 10,
-                            height: 10,
+                            width: 8,
+                            height: 8,
+                            margin: const EdgeInsets.only(left: 6),
                             decoration: BoxDecoration(
                               color: alert.accentColor,
                               shape: BoxShape.circle,
@@ -641,27 +648,29 @@ class _AlertCard extends StatelessWidget {
                           ),
                       ],
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 3),
                     Text(
                       alert.message,
                       style: GoogleFonts.montserrat(
                         fontSize: 12,
-                        height: 1.6,
-                        fontWeight: FontWeight.w500,
-                        color: AppTheme.deepCharcoal.withValues(alpha: 0.72),
+                        height: 1.4,
+                        fontWeight: FontWeight.w400,
+                        color: AppTheme.deepCharcoal.withValues(alpha: 0.6),
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
                     Row(
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 9,
-                            vertical: 5,
+                            horizontal: 8,
+                            vertical: 3,
                           ),
                           decoration: BoxDecoration(
-                            color: AppTheme.ivoryBackground,
-                            borderRadius: BorderRadius.circular(999),
+                            color: alert.accentColor.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
                             alert.categoryLabel,
@@ -673,34 +682,33 @@ class _AlertCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            alert.timeLabel,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.montserrat(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                              color: AppTheme.mutedSilver,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (alert.actionLabel != null) ...[
-                      const SizedBox(height: 8),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: Text(
-                          alert.actionLabel!,
+                        Text(
+                          alert.timeLabel,
                           style: GoogleFonts.montserrat(
                             fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.deepCharcoal,
+                            fontWeight: FontWeight.w500,
+                            color: AppTheme.mutedSilver,
                           ),
                         ),
-                      ),
-                    ],
+                        if (alert.actionLabel != null) ...[
+                          const Spacer(),
+                          Text(
+                            alert.actionLabel!,
+                            style: GoogleFonts.montserrat(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: alert.accentColor,
+                            ),
+                          ),
+                          const SizedBox(width: 2),
+                          Icon(
+                            Icons.chevron_right_rounded,
+                            size: 14,
+                            color: alert.accentColor,
+                          ),
+                        ],
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -715,6 +723,13 @@ class _AlertCard extends StatelessWidget {
 class _AlertDetailSheet extends StatelessWidget {
   final Alert alert;
   const _AlertDetailSheet({required this.alert});
+
+  void _handleAction(BuildContext context) {
+    Navigator.pop(context);
+    if (alert.category == AlertCategory.order && alert.orderId != null) {
+      context.push(AppRoutes.trackOrderWithId(alert.orderId!));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -742,24 +757,24 @@ class _AlertDetailSheet extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Container(
-              width: 52,
-              height: 52,
+              width: 44,
+              height: 44,
               decoration: BoxDecoration(
-                color: alert.accentColor.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(18),
+                color: alert.accentColor.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(14),
               ),
-              child: Icon(alert.icon, color: alert.accentColor),
+              child: Icon(alert.icon, size: 22, color: alert.accentColor),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             Text(
               alert.title,
               style: GoogleFonts.playfairDisplay(
-                fontSize: 24,
+                fontSize: 22,
                 fontWeight: FontWeight.w600,
                 color: AppTheme.deepCharcoal,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               alert.timeLabel,
               style: GoogleFonts.montserrat(
@@ -768,29 +783,29 @@ class _AlertDetailSheet extends StatelessWidget {
                 color: AppTheme.mutedSilver,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             Text(
               alert.message,
               style: GoogleFonts.montserrat(
-                fontSize: 14,
-                height: 1.7,
+                fontSize: 13,
+                height: 1.6,
                 fontWeight: FontWeight.w400,
                 color: AppTheme.deepCharcoal.withValues(alpha: 0.8),
               ),
             ),
             if (alert.actionLabel != null) ...[
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => _handleAction(context),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.accentGold,
-                    foregroundColor: AppTheme.primaryDb,
+                    backgroundColor: alert.accentColor,
+                    foregroundColor: Colors.white,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                   ),
                   child: Text(
