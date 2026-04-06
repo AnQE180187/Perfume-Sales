@@ -6,16 +6,27 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import {
     Search, ShoppingCart, CreditCard, Plus, Minus, Receipt, QrCode,
     Store, CheckCircle, AlertTriangle, X, Printer, Sparkles,
-    ChevronDown, ChevronUp, Loader2, Phone, User, Award
+    ChevronDown, ChevronUp, Loader2, Phone, User, Award, Camera
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { staffPosService, type PosOrder } from '@/services/staff-pos.service';
+import { PosBarcodeCameraDialog } from '@/components/staff/pos-barcode-camera-dialog';
 import { storesService, type Store as StoreType } from '@/services/stores.service';
 import type { Product } from '@/services/product.service';
 import type { PayOSPaymentResponse } from '@/services/payment.service';
 
 type PaymentMethod = 'CASH' | 'QR';
 const LOW_STOCK_THRESHOLD = 5;
+
+/** Heuristic: USB scanners send compact codes; free-text product search usually has spaces or is short. */
+function isPlausibleBarcodeScan(value: string): boolean {
+    const t = value.trim();
+    if (t.length < 4) return false;
+    if (/\s/.test(t)) return false;
+    if (/^\d{4,24}$/.test(t)) return true;
+    if (/^[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9]$/.test(t) && t.length <= 48) return true;
+    return false;
+}
 
 function formatVND(n: number) {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n);
@@ -65,6 +76,8 @@ export default function PosPage() {
         productId: string; productName: string; variantId?: string; variantName?: string; price: number; reason: string;
     }[]>([]);
     const [aiError, setAiError] = useState<string | null>(null);
+    const [cameraScannerOpen, setCameraScannerOpen] = useState(false);
+    const searchInputRef = useRef<HTMLInputElement>(null);
 
     const subtotal = order?.items?.reduce((acc, item) => acc + item.totalPrice, 0) ?? 0;
     const isOrderCompleted = order?.paymentStatus === 'PAID' || order?.status === 'COMPLETED';
@@ -98,6 +111,23 @@ export default function PosPage() {
     useEffect(() => {
         if (selectedStoreId) loadProducts(search, selectedStoreId);
     }, [selectedStoreId]);
+
+    // Focus product search when entering POS or changing store / starting a new order
+    useEffect(() => {
+        const id = window.setTimeout(() => searchInputRef.current?.focus(), 0);
+        return () => window.clearTimeout(id);
+    }, [selectedStoreId, order?.id]);
+
+    // F2 — focus ô tìm sản phẩm (POS)
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key !== 'F2') return;
+            e.preventDefault();
+            searchInputRef.current?.focus();
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, []);
 
     // ─── QR polling cleanup ───
     useEffect(() => {
@@ -171,6 +201,48 @@ export default function PosPage() {
             } else {
                 setError(e?.response?.data?.message || e.message || t('errors.add_item'));
             }
+        }
+    };
+
+    const tryAddByBarcode = async (rawCode: string) => {
+        const code = rawCode.trim();
+        if (!code) return;
+        if (!selectedStoreId) {
+            setError(t('errors.barcode_no_store'));
+            return;
+        }
+        if (isOrderCompleted) return;
+
+        setLoadingProducts(true);
+        setError(null);
+        try {
+            const list = await staffPosService.searchProductsByBarcode(code, selectedStoreId);
+            if (!list.length) {
+                setError(t('errors.barcode_not_found'));
+                return;
+            }
+            let matched: { id: string; stock: number } | null = null;
+            for (const p of list) {
+                for (const v of p.variants ?? []) {
+                    if (v.barcode === code) {
+                        matched = { id: v.id, stock: v.stock };
+                        break;
+                    }
+                }
+                if (matched) break;
+            }
+            if (!matched) {
+                setError(t('errors.barcode_not_found'));
+                return;
+            }
+            await handleAddVariant(matched.id, matched.stock);
+            setSearch('');
+            await loadProducts('', selectedStoreId);
+            searchInputRef.current?.focus();
+        } catch (e: any) {
+            setError(e?.response?.data?.message || e.message || t('errors.load_products'));
+        } finally {
+            setLoadingProducts(false);
         }
     };
 
@@ -317,36 +389,63 @@ export default function PosPage() {
 
                 {/* ═══════════ Catalog Area ═══════════ */}
                 <div className="flex-1 flex flex-col border-r border-border min-w-0">
-                    <header className="p-8 border-b border-border flex flex-wrap justify-between items-center gap-4 bg-secondary/10 shrink-0">
-                        <div className="flex items-center gap-4 flex-1 min-w-0">
-                            <div className="flex items-center gap-2 shrink-0">
-                                <Store className="w-4 h-4 text-gold" />
-                                <label className="text-[10px] uppercase tracking-widest text-muted-foreground">{t('store')}:</label>
-                                <select
-                                    value={order?.storeId ?? selectedStoreId}
-                                    onChange={(e) => {
-                                        if (!order) setSelectedStoreId(e.target.value);
-                                    }}
-                                    disabled={!!order}
-                                    className="rounded-lg border border-border bg-background px-3 py-2 text-xs font-heading uppercase tracking-wider focus:border-gold/60 disabled:opacity-70"
-                                >
-                                    <option value="">{t('select_store')}</option>
-                                    {myStores.map((s) => (
-                                        <option key={s.id} value={s.id}>{s.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="relative flex-1 max-w-lg min-w-0">
-                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                                <input
-                                    type="text"
-                                    value={search}
-                                    onChange={handleSearchChange}
-                                    placeholder={t('search_placeholder')}
-                                    className="w-full bg-background border border-border rounded-full py-3.5 pl-12 pr-4 text-sm focus:border-gold/50 outline-none transition-all shadow-sm"
-                                />
+                    <header className="p-8 border-b border-border flex flex-col gap-2 bg-secondary/10 shrink-0">
+                        <div className="flex flex-wrap justify-between items-center gap-4">
+                            <div className="flex items-center gap-4 flex-1 min-w-0">
+                                <div className="flex items-center gap-2 shrink-0">
+                                    <Store className="w-4 h-4 text-gold" />
+                                    <label className="text-[10px] uppercase tracking-widest text-muted-foreground">{t('store')}:</label>
+                                    <select
+                                        value={order?.storeId ?? selectedStoreId}
+                                        onChange={(e) => {
+                                            if (!order) setSelectedStoreId(e.target.value);
+                                        }}
+                                        disabled={!!order}
+                                        className="rounded-lg border border-border bg-background px-3 py-2 text-xs font-heading uppercase tracking-wider focus:border-gold/60 disabled:opacity-70"
+                                    >
+                                        <option value="">{t('select_store')}</option>
+                                        {myStores.map((s) => (
+                                            <option key={s.id} value={s.id}>{s.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="flex items-center gap-2 flex-1 max-w-xl min-w-0">
+                                    <div className="relative flex-1 min-w-0">
+                                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                                        <input
+                                            ref={searchInputRef}
+                                            type="text"
+                                            value={search}
+                                            onChange={handleSearchChange}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    e.preventDefault();
+                                                    if (isPlausibleBarcodeScan(search)) {
+                                                        void tryAddByBarcode(search);
+                                                    }
+                                                }
+                                            }}
+                                            placeholder={t('search_placeholder')}
+                                            autoComplete="off"
+                                            className="w-full bg-background border border-border rounded-full py-3.5 pl-12 pr-4 text-sm focus:border-gold/50 outline-none transition-all shadow-sm"
+                                        />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        title={t('scan_camera_btn')}
+                                        aria-label={t('scan_camera_btn')}
+                                        onClick={() => setCameraScannerOpen(true)}
+                                        disabled={!selectedStoreId || isOrderCompleted}
+                                        className="shrink-0 p-3 rounded-full border border-border bg-background text-gold hover:bg-gold/10 hover:border-gold/40 transition-all disabled:opacity-40 disabled:pointer-events-none"
+                                    >
+                                        <Camera className="w-4 h-4" />
+                                    </button>
+                                </div>
                             </div>
                         </div>
+                        <p className="text-[10px] text-muted-foreground font-heading uppercase tracking-wider">
+                            {t('barcode_hint')}
+                        </p>
                     </header>
 
                     {/* Product Grid */}
@@ -700,6 +799,15 @@ export default function PosPage() {
                         </motion.div>
                     )}
                 </AnimatePresence>
+
+                <PosBarcodeCameraDialog
+                    open={cameraScannerOpen}
+                    onOpenChange={setCameraScannerOpen}
+                    onDetected={(text) => { void tryAddByBarcode(text); }}
+                    onError={() => setError(t('errors.camera_scan_failed'))}
+                    title={t('scan_camera_title')}
+                    description={t('scan_camera_desc')}
+                />
             </div>
         </AuthGuard>
     );

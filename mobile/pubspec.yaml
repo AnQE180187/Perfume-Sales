@@ -55,6 +55,7 @@ dependencies:
   http_parser: ^4.1.0
   flutter_localizations:
     sdk: flutter
+  mobile_scanner: ^7.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

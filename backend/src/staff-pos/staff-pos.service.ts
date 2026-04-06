@@ -4,14 +4,15 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
 import {
+  InventoryLogType,
+  OrderChannel,
+  OrderStatus,
   PaymentProvider,
   PaymentStatus,
-  OrderStatus,
-  OrderChannel,
+  Prisma,
 } from '@prisma/client';
-import { InventoryLogType } from '@prisma/client';
+import { PrismaService } from '../prisma/prisma.service';
 import { PaymentsService } from '../payments/payments.service';
 import { StoresService } from '../stores/stores.service';
 
@@ -21,7 +22,7 @@ export class StaffPosService {
     private readonly prisma: PrismaService,
     private readonly paymentsService: PaymentsService,
     private readonly storesService: StoresService,
-  ) {}
+  ) { }
 
   /**
    * Search products **available in the given store** (filtered by StoreStock).
@@ -29,18 +30,21 @@ export class StaffPosService {
    * Includes product images.
    */
   async searchProducts(query: string, storeId?: string) {
-    const where: any = { isActive: true };
+    const q = query.trim();
+    const productFilter: Prisma.ProductWhereInput = {};
 
-    if (query) {
-      where.OR = [
-        { name: { contains: query, mode: 'insensitive' } },
-        { slug: { contains: query, mode: 'insensitive' } },
+    if (q) {
+      productFilter.OR = [
+        { name: { contains: q, mode: 'insensitive' } },
+        { slug: { contains: q, mode: 'insensitive' } },
         {
           variants: {
             some: {
+              isActive: true,
               OR: [
-                { name: { contains: query, mode: 'insensitive' } },
-                { sku: { contains: query, mode: 'insensitive' } },
+                { name: { contains: q, mode: 'insensitive' } },
+                { sku: { contains: q, mode: 'insensitive' } },
+                { barcode: q },
               ],
             },
           },
@@ -48,7 +52,50 @@ export class StaffPosService {
       ];
     }
 
-    // If storeId provided, only show products that have at least one variant in stock at this store
+    return this.findPosProducts(productFilter, storeId);
+  }
+
+  /**
+   * Exact barcode lookup on `ProductVariant.barcode` (trimmed).
+   * Only returns the product if the matching variant is active and (when storeId is set) in stock at that store.
+   */
+  async searchProductsByBarcode(barcode: string, storeId?: string) {
+    const b = barcode.trim();
+    if (!b) {
+      return [];
+    }
+
+    const variant = await this.prisma.productVariant.findFirst({
+      where: {
+        barcode: b,
+        isActive: true,
+        ...(storeId
+          ? {
+              storeStocks: {
+                some: { storeId, quantity: { gt: 0 } },
+              },
+            }
+          : {}),
+      },
+      select: { productId: true },
+    });
+
+    if (!variant) {
+      return [];
+    }
+
+    return this.findPosProducts({ id: variant.productId }, storeId);
+  }
+
+  private async findPosProducts(
+    productFilter: Prisma.ProductWhereInput,
+    storeId?: string,
+  ) {
+    const where: Prisma.ProductWhereInput = {
+      ...productFilter,
+      isActive: true,
+    };
+
     if (storeId) {
       where.variants = {
         some: {
@@ -86,7 +133,6 @@ export class StaffPosService {
       orderBy: { createdAt: 'desc' },
     });
 
-    // Map variants to include store-level stock if storeId
     if (storeId) {
       return products.map((p) => ({
         ...p,

@@ -831,6 +831,10 @@
             "store": "Quầy",
             "select_store": "-- Chọn quầy --",
             "search_placeholder": "Tìm sản phẩm, SKU hoặc quét mã vạch...",
+            "barcode_hint": "Máy quét USB: giữ con trỏ trong ô này — quét mã rồi Enter để thêm nhanh. Phím F2: focus ô tìm kiếm.",
+            "scan_camera_btn": "Quét bằng camera",
+            "scan_camera_title": "Quét mã vạch",
+            "scan_camera_desc": "Cho phép trình duyệt dùng camera. Hướng mã vạch vào khung hình.",
             "loading_products": "Đang tải sản phẩm...",
             "no_products": {
                 "select_store": "Vui lòng chọn quầy để xem sản phẩm.",
@@ -913,7 +917,10 @@
                 "update_qty": "Lỗi cập nhật số lượng",
                 "pay_cash": "Lỗi thanh toán tiền mặt",
                 "create_qr": "Lỗi tạo mã QR",
-                "lookup_customer": "Lỗi tra cứu khách hàng"
+                "lookup_customer": "Lỗi tra cứu khách hàng",
+                "barcode_not_found": "Không tìm thấy sản phẩm với mã vạch này tại quầy đã chọn.",
+                "barcode_no_store": "Vui lòng chọn quầy trước khi quét mã vạch.",
+                "camera_scan_failed": "Không thể bật camera quét mã. Vui lòng kiểm tra quyền camera hoặc nhập mã thủ công."
             }
         },
         "staff": {
