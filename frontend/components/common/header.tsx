@@ -23,6 +23,7 @@ import { cartService } from '@/services/cart.service';
 
 export const Header = () => {
     const t = useTranslations('common');
+    const tNav = useTranslations('navigation');
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [cartCount, setCartCount] = useState(0);
@@ -68,6 +69,7 @@ export const Header = () => {
         { name: t('home'), href: '/' },
         { name: t('collection'), href: '/collection' },
         { name: t('boutiques'), href: '/boutiques' },
+        { name: tNav('customer.quiz'), href: '/quiz' },
     ];
 
     const menuRight = [

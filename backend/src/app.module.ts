@@ -29,6 +29,7 @@ import { ShippingModule } from './shipping/shipping.module';
 import { BannersModule } from './banners/banners.module';
 import { JournalsModule } from './journals/journals.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { QuizModule } from './quiz/quiz.module';
 
 @Module({
   imports: [
@@ -61,6 +62,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     BannersModule,
     JournalsModule,
     NotificationsModule,
+    QuizModule,
   ],
 
   controllers: [AppController],

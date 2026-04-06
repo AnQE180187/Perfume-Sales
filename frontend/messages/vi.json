@@ -195,28 +195,90 @@
         ]
     },
     "quiz": {
-        "title": "Khám Phá Bản Sắc Thần Kinh",
-        "subtitle": "Khởi tạo các thông số cảm giác của bạn thông qua các kịch bản môi trường.",
-        "question": "Môi trường cộng hưởng nào phản ánh trạng thái hiện tại của bạn?",
-        "options": {
-            "city": {
-                "title": "Siêu Đô Thị Nửa Đêm",
-                "desc": "Mưa lạnh trên bê tông, thép nguội và nhịp đập điện tử."
+        "intro": {
+            "label": "Trắc Nghiệm Mùi Hương AI",
+            "title": "Khám Phá Dấu Ấn Riêng",
+            "description": "Trả lời 5 câu hỏi nhanh về sở thích của bạn. AI sẽ phân tích hồ sơ và gợi ý những chai nước hoa hoàn hảo từ bộ sưu tập.",
+            "start_btn": "Bắt Đầu",
+            "login_btn": "Đăng Nhập Để Bắt Đầu",
+            "login_required": "Vui lòng đăng nhập để làm trắc nghiệm và lưu kết quả.",
+            "time_estimate": "Mất khoảng 2 phút"
+        },
+        "step_label": "Bước",
+        "prev_step": "Quay lại",
+        "steps": {
+            "gender": {
+                "title": "Dành cho ai?",
+                "subtitle": "Chọn giới tính cho mùi hương lý tưởng của bạn.",
+                "options": {
+                    "male": "Nam",
+                    "female": "Nữ",
+                    "unisex": "Unisex"
+                }
             },
-            "sea": {
-                "title": "Vực Thẳm Xanh Thẳm",
-                "desc": "Những luồng khí giàu ozone, hơi muối và gỗ mục bên bờ biển."
+            "occasion": {
+                "title": "Bạn sẽ dùng khi nào?",
+                "subtitle": "Chọn dịp sử dụng chính cho mùi hương.",
+                "options": {
+                    "daily": "Hàng ngày",
+                    "office": "Công sở",
+                    "date": "Hẹn hò",
+                    "party": "Tiệc tùng",
+                    "special": "Sự kiện đặc biệt"
+                }
             },
-            "library": {
-                "title": "Cổ Thư & Mực",
-                "desc": "Những bản thảo cổ xưa, da cũ và lá thuốc lá."
+            "budget": {
+                "title": "Ngân sách của bạn?",
+                "subtitle": "Chọn mức giá phù hợp với bạn.",
+                "options": {
+                    "under_500k": "Dưới 500K",
+                    "500k_1m": "500K – 1 triệu",
+                    "1m_2m": "1 – 2 triệu",
+                    "2m_5m": "2 – 5 triệu",
+                    "over_5m": "Trên 5 triệu"
+                }
             },
-            "garden": {
-                "title": "Hạ Chí Nở Rộ",
-                "desc": "Đất ẩm, hoa nhài nở đêm và xạ hương trắng."
+            "scent_family": {
+                "title": "Bạn thích nhóm hương nào?",
+                "subtitle": "Chọn hướng mùi hương bạn yêu thích.",
+                "options": {
+                    "fresh": "Tươi mát",
+                    "floral": "Hương hoa",
+                    "woody": "Hương gỗ",
+                    "oriental": "Phương Đông",
+                    "aromatic": "Thảo mộc"
+                }
+            },
+            "longevity": {
+                "title": "Bạn muốn lưu hương bao lâu?",
+                "subtitle": "Chọn thời gian lưu hương mong muốn.",
+                "options": {
+                    "light": "Nhẹ nhàng",
+                    "moderate": "Trung bình",
+                    "long": "Lâu dài",
+                    "very_long": "Rất lâu"
+                }
             }
         },
-        "cta": "Tiến Tới Tổng Hợp"
+        "analyzing": {
+            "step1": "Đang khởi động hệ thống AI tư vấn...",
+            "step2": "Đang tải dữ liệu danh mục sản phẩm...",
+            "step3": "Đang so khớp sở thích của bạn...",
+            "step4": "Đang tạo gợi ý cá nhân hóa...",
+            "message": "AI đang tuyển chọn những chai nước hoa hoàn hảo cho bạn..."
+        },
+        "results": {
+            "ai_picked": "AI Tuyển Chọn",
+            "title": "Nước Hoa Dành Cho Bạn",
+            "subtitle": "Dựa trên sở thích của bạn, AI đã chọn những chai nước hoa phù hợp nhất.",
+            "view_detail": "Xem chi tiết",
+            "retake": "Làm lại trắc nghiệm",
+            "no_results_title": "Không tìm thấy kết quả",
+            "no_results_desc": "Không tìm thấy sản phẩm phù hợp. Hãy thử điều chỉnh tiêu chí của bạn."
+        },
+        "error": {
+            "generic": "Đã có lỗi xảy ra. Vui lòng thử lại."
+        }
     },
     "auth": {
         "login": {

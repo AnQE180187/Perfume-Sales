@@ -37,8 +37,6 @@ export const Sidebar = () => {
         ];
 
         const customer = [
-            { icon: BrainCircuit, label: navT('customer.quiz'), href: '/dashboard/customer/quiz' },
-
 
             { icon: Heart, label: commonT('favorites'), href: '/dashboard/customer/favorite' },
             { icon: ClipboardList, label: commonT('orders'), href: '/dashboard/customer/orders' },

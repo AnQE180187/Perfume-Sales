@@ -195,28 +195,90 @@
         ]
     },
     "quiz": {
-        "title": "Neural Taste Discovery",
-        "subtitle": "Initialize your sensory parameters through ambient scenarios.",
-        "question": "Which resonance environment speaks to your current state?",
-        "options": {
-            "city": {
-                "title": "Midnight Metropolis",
-                "desc": "Crisp rain on concrete, cold steel, and electric pulse."
+        "intro": {
+            "label": "AI Scent Quiz",
+            "title": "Discover Your Signature",
+            "description": "Answer 5 quick questions about your preferences. Our AI will analyze your profile and recommend the perfect fragrances from our collection.",
+            "start_btn": "Begin Quiz",
+            "login_btn": "Sign In to Start",
+            "login_required": "Please sign in to take the quiz and save your results.",
+            "time_estimate": "Takes about 2 minutes"
+        },
+        "step_label": "Step",
+        "prev_step": "Previous",
+        "steps": {
+            "gender": {
+                "title": "Who is it for?",
+                "subtitle": "Select the gender profile for your ideal fragrance.",
+                "options": {
+                    "male": "Masculine",
+                    "female": "Feminine",
+                    "unisex": "Unisex"
+                }
             },
-            "sea": {
-                "title": "Azure Abyss",
-                "desc": "Ozone-rich drafts, salt spray, and sun-bleached wood."
+            "occasion": {
+                "title": "When will you wear it?",
+                "subtitle": "Choose the primary occasion for your fragrance.",
+                "options": {
+                    "daily": "Everyday",
+                    "office": "Work / Office",
+                    "date": "Date Night",
+                    "party": "Party / Nightout",
+                    "special": "Special Event"
+                }
             },
-            "library": {
-                "title": "Vellum & Ink",
-                "desc": "Ancient manuscripts, aged leather, and tobacco leaf."
+            "budget": {
+                "title": "What's your budget?",
+                "subtitle": "Select your comfortable price range.",
+                "options": {
+                    "under_500k": "Under 500K",
+                    "500k_1m": "500K – 1M",
+                    "1m_2m": "1M – 2M",
+                    "2m_5m": "2M – 5M",
+                    "over_5m": "Over 5M"
+                }
             },
-            "garden": {
-                "title": "Solstice Bloom",
-                "desc": "Wet earth, night-blooming jasmine, and white musk."
+            "scent_family": {
+                "title": "Which scent family appeals to you?",
+                "subtitle": "Pick the fragrance direction you're drawn to.",
+                "options": {
+                    "fresh": "Fresh",
+                    "floral": "Floral",
+                    "woody": "Woody",
+                    "oriental": "Oriental",
+                    "aromatic": "Aromatic"
+                }
+            },
+            "longevity": {
+                "title": "How long should it last?",
+                "subtitle": "Choose your preferred fragrance longevity.",
+                "options": {
+                    "light": "Light",
+                    "moderate": "Moderate",
+                    "long": "Long-lasting",
+                    "very_long": "Very Long"
+                }
             }
         },
-        "cta": "Proceed to Synthesis"
+        "analyzing": {
+            "step1": "Initializing AI recommendation engine...",
+            "step2": "Loading product catalog data...",
+            "step3": "Cross-referencing your preferences...",
+            "step4": "Generating personalized recommendations...",
+            "message": "Our AI is curating the perfect selection for you..."
+        },
+        "results": {
+            "ai_picked": "AI-Curated Selection",
+            "title": "Your Perfect Matches",
+            "subtitle": "Based on your preferences, our AI has selected these fragrances just for you.",
+            "view_detail": "View Details",
+            "retake": "Retake Quiz",
+            "no_results_title": "No Matches Found",
+            "no_results_desc": "We couldn't find products matching your criteria. Try adjusting your preferences."
+        },
+        "error": {
+            "generic": "Something went wrong. Please try again."
+        }
     },
     "auth": {
         "login": {

@@ -221,4 +221,58 @@ Rules:
 
     return response.text ?? 'Sorry, I could not generate a response.';
   }
+
+  // ──────────────────────────────────────────────────────
+  // Quiz Consultant
+  // ──────────────────────────────────────────────────────
+  async quizConsult(answers: {
+    gender?: string;
+    occasion?: string;
+    budgetMin?: number;
+    budgetMax?: number;
+    preferredFamily?: string;
+    longevity?: string;
+  }): Promise<Array<{ productId: string; name: string; reason: string; price: number }>> {
+    const catalog = await this.getProductCatalog();
+
+    const customerInfo: string[] = [];
+    if (answers.gender) customerInfo.push(`Giới tính: ${answers.gender}`);
+    if (answers.occasion) customerInfo.push(`Dịp sử dụng: ${answers.occasion}`);
+    if (answers.budgetMin && answers.budgetMax) {
+      customerInfo.push(`Ngân sách: ${answers.budgetMin.toLocaleString()} - ${answers.budgetMax.toLocaleString()} VND`);
+    }
+    if (answers.preferredFamily) customerInfo.push(`Gia đình hương: ${answers.preferredFamily}`);
+    if (answers.longevity) customerInfo.push(`Thời gian lưu hương: ${answers.longevity}`);
+
+    const prompt = `Bạn là chuyên gia tư vấn nước hoa tại PerfumeGPT. Khách hàng đã trả lời khảo sát với thông tin sau:
+
+THÔNG TIN KHÁCH HÀNG:
+${customerInfo.join('\n')}
+
+DANH MỤC SẢN PHẨM:
+${catalog}
+
+YÊU CẦU:
+- Chọn 3-5 sản phẩm phù hợp nhất dựa trên thông tin khách hàng.
+- Ưu tiên: phù hợp giới tính, dịp sử dụng, ngân sách, gia đình hương, thời gian lưu hương.
+- Trả kết quả dạng JSON array: [{"productId": "<ID từ catalog>", "name": "<tên chính xác>", "reason": "<giải thích ngắn gọn bằng tiếng Việt>", "price": <giá thấp nhất số>}].
+- Chỉ trả JSON, không thêm text ngoài.`;
+
+    const response = await this.ai.models.generateContent({
+      model: this.model,
+      contents: prompt,
+    });
+
+    const text = response.text ?? '[]';
+    try {
+      const jsonMatch = text.match(/\[[\s\S]*\]/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        return Array.isArray(parsed) ? parsed.slice(0, 5) : [];
+      }
+    } catch (error) {
+      this.logger.error('Failed to parse quiz AI response', error);
+    }
+    return [];
+  }
 }
