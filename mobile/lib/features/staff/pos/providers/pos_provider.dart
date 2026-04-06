@@ -291,6 +291,89 @@ class PosNotifier extends StateNotifier<PosState> {
   void clearOrder() {
     state = const PosState();
   }
+
+  /// Resolve [rawCode] via backend barcode lookup and add one unit to cart or server order.
+  /// Returns `true` if a line item was added or quantity increased.
+  Future<bool> applyBarcode(String rawCode, String storeId) async {
+    final code = rawCode.trim();
+    if (code.isEmpty) return false;
+
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final list = await _service.searchProducts(
+        barcode: code,
+        storeId: storeId,
+      );
+      if (list.isEmpty) {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'Không tìm thấy sản phẩm với mã vạch này.',
+        );
+        return false;
+      }
+
+      PosVariant? match;
+      String? productName;
+      for (final p in list) {
+        for (final v in p.variants) {
+          if (v.barcode != null && v.barcode == code) {
+            match = v;
+            productName = p.name;
+            break;
+          }
+        }
+        if (match != null) break;
+      }
+
+      if (match == null) {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'Không tìm thấy sản phẩm với mã vạch này.',
+        );
+        return false;
+      }
+
+      if (match.stock <= 0) {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'Sản phẩm đã hết hàng tại quầy.',
+        );
+        return false;
+      }
+
+      final order = state.currentOrder;
+      if (order != null && !order.isPaid) {
+        int nextQty = 1;
+        for (final it in order.items) {
+          if (it.variantId == match.id) {
+            nextQty = it.quantity + 1;
+            break;
+          }
+        }
+        if (nextQty > match.stock) {
+          state = state.copyWith(
+            isLoading: false,
+            error: 'Vượt quá số lượng tồn kho (${match.stock}).',
+          );
+          return false;
+        }
+        final updated = await _service.upsertItem(
+          orderId: order.id,
+          variantId: match.id,
+          quantity: nextQty,
+        );
+        state = state.copyWith(currentOrder: updated, isLoading: false);
+        return true;
+      } else {
+        addToCart(match, productName ?? '');
+        state = state.copyWith(isLoading: false);
+        return true;
+      }
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
+    }
+  }
 }
 
 final posProvider = StateNotifierProvider<PosNotifier, PosState>((ref) {

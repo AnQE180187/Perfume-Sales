@@ -82,23 +82,19 @@ class _ReviewsScreenState extends ConsumerState<ReviewsScreen> {
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+
         children: [
           // ── AI Insight Card ──────────────────────────────────────
           summaryAsync.when(
-            loading: () => const SizedBox.shrink(),
-            error: (_, __) => const SizedBox.shrink(),
+            loading: () => _AiInsightCard(summary: ''),
+            error: (_, __) => _AiInsightCard(summary: ''),
             data: (summary) {
-              if (summary == null || summary.summary.isEmpty) {
-                return const SizedBox.shrink();
-              }
-              return Column(
-                children: [
-                  _AiInsightCard(summary: summary.summary),
-                  const SizedBox(height: 24),
-                ],
-              );
+              final text = summary?.summary ?? '';
+              return _AiInsightCard(summary: text);
             },
           ),
+
+          const SizedBox(height: 20),
 
           // ── Rating Summary ───────────────────────────────────────
           statsAsync.when(
@@ -225,6 +221,7 @@ class _AiInsightCardState extends State<_AiInsightCard> {
 
   @override
   Widget build(BuildContext context) {
+    final isEmpty = widget.summary.trim().isEmpty;
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -262,22 +259,32 @@ class _AiInsightCardState extends State<_AiInsightCard> {
                   ),
                 ),
                 const SizedBox(height: 6),
-                GestureDetector(
-                  onTap: () => setState(() => _expanded = !_expanded),
-                  child: Text(
-                    widget.summary,
+                if (isEmpty)
+                  Text(
+                    'Chưa có tổng hợp AI cho sản phẩm này.',
                     style: GoogleFonts.montserrat(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
-                      height: 1.5,
-                      color: AppTheme.deepCharcoal.withValues(alpha: 0.85),
+                      color: AppTheme.mutedSilver,
                     ),
-                    maxLines: _expanded ? null : 2,
-                    overflow: _expanded
-                        ? TextOverflow.visible
-                        : TextOverflow.ellipsis,
+                  )
+                else
+                  GestureDetector(
+                    onTap: () => setState(() => _expanded = !_expanded),
+                    child: Text(
+                      widget.summary,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                        height: 1.5,
+                        color: AppTheme.deepCharcoal.withValues(alpha: 0.85),
+                      ),
+                      maxLines: _expanded ? null : 2,
+                      overflow: _expanded
+                          ? TextOverflow.visible
+                          : TextOverflow.ellipsis,
+                    ),
                   ),
-                ),
               ],
             ),
           ),
@@ -305,117 +312,147 @@ class _RatingSummary extends StatelessWidget {
 
     final starsFilled = stats.average.floor();
     final hasHalf = (stats.average - starsFilled) >= 0.5;
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Left: big number + stars + label
-        Column(
-          children: [
-            Text(
-              stats.average.toStringAsFixed(1),
-              style: GoogleFonts.playfairDisplay(
-                fontSize: 64,
-                fontWeight: FontWeight.w600,
-                color: AppTheme.deepCharcoal,
-                height: 1,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Row(
-              children: List.generate(5, (i) {
-                if (i < starsFilled) {
-                  return const Icon(
-                    Icons.star,
-                    color: AppTheme.accentGold,
-                    size: 18,
-                  );
-                } else if (i == starsFilled && hasHalf) {
-                  return const Icon(
-                    Icons.star_half,
-                    color: AppTheme.accentGold,
-                    size: 18,
-                  );
-                } else {
-                  return const Icon(
-                    Icons.star_border,
-                    color: AppTheme.accentGold,
-                    size: 18,
-                  );
-                }
-              }),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              '${stats.total} đánh giá đã xác thực',
-              style: GoogleFonts.montserrat(
-                fontSize: 11,
-                color: AppTheme.mutedSilver,
-              ),
-            ),
-          ],
-        ),
-
-        const SizedBox(width: 24),
-
-        // Right: distribution bars 5→1
-        Expanded(
-          child: Column(
-            children: [5, 4, 3, 2, 1].map((star) {
-              final count = stats.distribution[star] ?? 0;
-              final ratio = stats.total > 0 ? count / stats.total : 0.0;
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Row(
-                  children: [
-                    Text(
-                      '$star',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 11,
-                        color: AppTheme.mutedSilver,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    const Icon(
-                      Icons.star,
-                      size: 10,
-                      color: AppTheme.accentGold,
-                    ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(3),
-                        child: LinearProgressIndicator(
-                          value: ratio.toDouble(),
-                          minHeight: 6,
-                          backgroundColor: AppTheme.softTaupe.withValues(
-                            alpha: 0.3,
-                          ),
-                          valueColor: const AlwaysStoppedAnimation<Color>(
-                            AppTheme.accentGold,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    SizedBox(
-                      width: 24,
-                      child: Text(
-                        '$count',
-                        style: GoogleFonts.montserrat(
-                          fontSize: 10,
-                          color: AppTheme.mutedSilver,
-                        ),
-                        textAlign: TextAlign.right,
-                      ),
-                    ),
-                  ],
-                ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isNarrow = constraints.maxWidth < 340;
+        return isNarrow
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _RatingLeft(
+                    stats: stats,
+                    starsFilled: starsFilled,
+                    hasHalf: hasHalf,
+                  ),
+                  const SizedBox(height: 16),
+                  _RatingRight(stats: stats),
+                ],
+              )
+            : Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _RatingLeft(
+                    stats: stats,
+                    starsFilled: starsFilled,
+                    hasHalf: hasHalf,
+                  ),
+                  const SizedBox(width: 24),
+                  Expanded(child: _RatingRight(stats: stats)),
+                ],
               );
-            }).toList(),
+      },
+    );
+  }
+}
+
+class _RatingLeft extends StatelessWidget {
+  final ReviewStats stats;
+  final int starsFilled;
+  final bool hasHalf;
+  const _RatingLeft({
+    required this.stats,
+    required this.starsFilled,
+    required this.hasHalf,
+  });
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          stats.average.toStringAsFixed(1),
+          style: GoogleFonts.playfairDisplay(
+            fontSize: 64,
+            fontWeight: FontWeight.w600,
+            color: AppTheme.deepCharcoal,
+            height: 1,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(5, (i) {
+            if (i < starsFilled) {
+              return const Icon(
+                Icons.star,
+                color: AppTheme.accentGold,
+                size: 18,
+              );
+            } else if (i == starsFilled && hasHalf) {
+              return const Icon(
+                Icons.star_half,
+                color: AppTheme.accentGold,
+                size: 18,
+              );
+            } else {
+              return const Icon(
+                Icons.star_border,
+                color: AppTheme.accentGold,
+                size: 18,
+              );
+            }
+          }),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          '${stats.total} đánh giá đã xác thực',
+          style: GoogleFonts.montserrat(
+            fontSize: 11,
+            color: AppTheme.mutedSilver,
           ),
         ),
       ],
+    );
+  }
+}
+
+class _RatingRight extends StatelessWidget {
+  final ReviewStats stats;
+  const _RatingRight({required this.stats});
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [5, 4, 3, 2, 1].map((star) {
+        final count = stats.distribution[star] ?? 0;
+        final ratio = stats.total > 0 ? count / stats.total : 0.0;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 6),
+          child: Row(
+            children: [
+              Text(
+                '$star',
+                style: GoogleFonts.montserrat(
+                  fontSize: 11,
+                  color: AppTheme.mutedSilver,
+                ),
+              ),
+              const SizedBox(width: 4),
+              const Icon(Icons.star, size: 10, color: AppTheme.accentGold),
+              const SizedBox(width: 6),
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(3),
+                  child: LinearProgressIndicator(
+                    value: ratio.toDouble(),
+                    minHeight: 6,
+                    backgroundColor: AppTheme.softTaupe.withValues(alpha: 0.3),
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      AppTheme.accentGold,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                '$count',
+                style: GoogleFonts.montserrat(
+                  fontSize: 11,
+                  color: AppTheme.mutedSilver,
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
     );
   }
 }
@@ -504,6 +541,8 @@ class _ReviewCard extends StatelessWidget {
                   children: [
                     Text(
                       name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.montserrat(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -511,7 +550,9 @@ class _ReviewCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 2),
-                    Row(
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 6,
                       children: [
                         Text(
                           timeAgo,
@@ -521,7 +562,6 @@ class _ReviewCard extends StatelessWidget {
                           ),
                         ),
                         if (review.isVerified) ...[
-                          const SizedBox(width: 6),
                           const Text(
                             '•',
                             style: TextStyle(
@@ -529,7 +569,6 @@ class _ReviewCard extends StatelessWidget {
                               color: AppTheme.mutedSilver,
                             ),
                           ),
-                          const SizedBox(width: 6),
                           Text(
                             'Người mua xác thực',
                             style: GoogleFonts.montserrat(

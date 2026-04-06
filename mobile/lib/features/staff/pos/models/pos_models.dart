@@ -67,6 +67,7 @@ class PosVariant {
   final String name;
   final double price;
   final String? sku;
+  final String? barcode;
   final int stock;
 
   const PosVariant({
@@ -74,6 +75,7 @@ class PosVariant {
     required this.name,
     required this.price,
     this.sku,
+    this.barcode,
     required this.stock,
   });
 
@@ -83,6 +85,7 @@ class PosVariant {
       name: json['name'] as String,
       price: (json['price'] as num).toDouble(),
       sku: json['sku'] as String?,
+      barcode: json['barcode'] as String?,
       stock: (json['stock'] as num?)?.toInt() ?? 0,
     );
   }

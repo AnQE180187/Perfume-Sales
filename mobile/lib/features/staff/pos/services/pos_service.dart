@@ -22,12 +22,14 @@ class StaffPosService {
   /// Search products available in a store.
   Future<List<PosProduct>> searchProducts({
     String? query,
+    String? barcode,
     String? storeId,
   }) async {
     final response = await _client.get(
       ApiEndpoints.staffPosProducts,
       queryParameters: {
         if (query != null && query.isNotEmpty) 'q': query,
+        if (barcode != null && barcode.isNotEmpty) 'barcode': barcode,
         if (storeId != null) 'storeId': storeId,
       },
     );

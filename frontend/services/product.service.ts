@@ -8,6 +8,7 @@ export type ProductVariant = {
   id: string;
   name: string;
   sku?: string | null;
+  barcode?: string | null;
   price: number;
   stock: number;
   isActive: boolean;

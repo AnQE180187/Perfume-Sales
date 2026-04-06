@@ -810,6 +810,10 @@
                 "store": "Store",
                 "select_store": "-- Select Store --",
                 "search_placeholder": "Search products, SKU or scan barcode...",
+            "barcode_hint": "USB scanner: keep focus in this field — scan then press Enter to add. F2: focus search.",
+            "scan_camera_btn": "Scan with camera",
+            "scan_camera_title": "Scan barcode",
+            "scan_camera_desc": "Allow camera access. Point the barcode at the frame.",
                 "loading_products": "Loading products...",
                 "no_products": {
                     "select_store": "Please select a store to view products.",
@@ -892,7 +896,10 @@
                     "update_qty": "Failed to update quantity",
                     "pay_cash": "Failed to complete payment",
                     "create_qr": "Failed to create QR payment",
-                    "lookup_customer": "Customer lookup failed"
+                    "lookup_customer": "Customer lookup failed",
+                    "barcode_not_found": "No product with this barcode at the selected store.",
+                    "barcode_no_store": "Select a store before scanning a barcode.",
+                    "camera_scan_failed": "Unable to start camera scanning. Check camera permission or enter the barcode manually."
                 }
             },
             "user": {

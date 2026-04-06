@@ -196,6 +196,7 @@ model ProductVariant {
   productId String
   name      String   // e.g. "5ml", "10ml", "50ml", "100ml"
   sku       String?  @unique
+  barcode   String?  @unique
   price     Int
   stock     Int      @default(0)
   isActive  Boolean  @default(true)
@@ -211,6 +212,7 @@ model ProductVariant {
   inventoryRequests InventoryRequest[]
 
   @@index([productId])
+  @@index([barcode])
 }
 
 /// Quầy / cửa hàng (nhiều quầy, mỗi quầy có tồn riêng)

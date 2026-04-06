@@ -44,6 +44,15 @@ export const staffPosService = {
       .then((r) => r.data);
   },
 
+  /** Exact match on variant barcode (recommended after hardware scanner or camera). */
+  searchProductsByBarcode(barcode: string, storeId?: string) {
+    return api
+      .get<Product[]>('/staff/pos/products', {
+        params: { barcode: barcode.trim(), storeId },
+      })
+      .then((r) => r.data);
+  },
+
   lookupLoyalty(phone: string): Promise<{
     registered: boolean;
     userId: string | null;

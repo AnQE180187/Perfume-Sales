@@ -10,6 +10,19 @@ import '../../../../core/theme/app_radius.dart';
 import '../../../../core/widgets/shimmer_loading.dart';
 import '../models/pos_models.dart';
 import '../providers/pos_provider.dart';
+import 'pos_barcode_sheet.dart';
+
+bool _looksLikeBarcodeInput(String raw) {
+  final t = raw.trim();
+  if (t.length < 4) return false;
+  if (RegExp(r'\s').hasMatch(t)) return false;
+  if (RegExp(r'^\d{4,24}$').hasMatch(t)) return true;
+  if (RegExp(r'^[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9]$').hasMatch(t) &&
+      t.length <= 48) {
+    return true;
+  }
+  return false;
+}
 
 class StaffPosScreen extends ConsumerStatefulWidget {
   const StaffPosScreen({super.key});
@@ -278,7 +291,7 @@ class _StaffPosScreenState extends ConsumerState<StaffPosScreen> {
         if (!isEdit && posState.customerPhone != null)
           _buildCustomerHintBar(posState.customerPhone!),
         // Search bar
-        _buildSearchBar(),
+        _buildSearchBar(storeId),
         // Products
         Expanded(
           child: isEdit
@@ -509,7 +522,7 @@ class _StaffPosScreenState extends ConsumerState<StaffPosScreen> {
 
   // (Search bar is shared; product grid for edit mode already exists)
 
-  Widget _buildSearchBar() {
+  Widget _buildSearchBar(String storeId) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.md,
@@ -517,48 +530,105 @@ class _StaffPosScreenState extends ConsumerState<StaffPosScreen> {
         AppSpacing.md,
         AppSpacing.xs,
       ),
-      child: TextField(
-        controller: _searchController,
-        onChanged: (v) {
-          ref.read(posSearchQueryProvider.notifier).state = v;
-        },
-        decoration: InputDecoration(
-          hintText: 'Tìm sản phẩm, SKU...',
-          hintStyle: GoogleFonts.montserrat(
-            fontSize: 13,
-            color: AppTheme.mutedSilver,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _searchController,
+              onChanged: (v) {
+                ref.read(posSearchQueryProvider.notifier).state = v;
+                setState(() {});
+              },
+              textInputAction: TextInputAction.search,
+              onSubmitted: (v) async {
+                if (!_looksLikeBarcodeInput(v)) return;
+                final ok = await ref
+                    .read(posProvider.notifier)
+                    .applyBarcode(v, storeId);
+                if (!mounted) return;
+                if (ok) {
+                  _searchController.clear();
+                  ref.read(posSearchQueryProvider.notifier).state = '';
+                }
+              },
+              decoration: InputDecoration(
+                hintText: 'Tìm sản phẩm, SKU, mã vạch…',
+                hintStyle: GoogleFonts.montserrat(
+                  fontSize: 13,
+                  color: AppTheme.mutedSilver,
+                ),
+                prefixIcon: const Icon(
+                  Icons.search_rounded,
+                  color: AppTheme.mutedSilver,
+                  size: 20,
+                ),
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear_rounded, size: 18),
+                        onPressed: () {
+                          _searchController.clear();
+                          ref.read(posSearchQueryProvider.notifier).state = '';
+                          setState(() {});
+                        },
+                      )
+                    : null,
+                contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                filled: true,
+                fillColor: AppTheme.creamWhite,
+                border: OutlineInputBorder(
+                  borderRadius: AppRadius.inputBorder,
+                  borderSide: BorderSide(color: AppTheme.softTaupe),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: AppRadius.inputBorder,
+                  borderSide: BorderSide(color: AppTheme.softTaupe),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: AppRadius.inputBorder,
+                  borderSide: const BorderSide(color: AppTheme.accentGold),
+                ),
+              ),
+              style: GoogleFonts.montserrat(fontSize: 13),
+            ),
           ),
-          prefixIcon: const Icon(
-            Icons.search_rounded,
-            color: AppTheme.mutedSilver,
-            size: 20,
-          ),
-          suffixIcon: _searchController.text.isNotEmpty
-              ? IconButton(
-                  icon: const Icon(Icons.clear_rounded, size: 18),
-                  onPressed: () {
-                    _searchController.clear();
-                    ref.read(posSearchQueryProvider.notifier).state = '';
-                  },
-                )
-              : null,
-          contentPadding: const EdgeInsets.symmetric(vertical: 10),
-          filled: true,
-          fillColor: AppTheme.creamWhite,
-          border: OutlineInputBorder(
+          const SizedBox(width: 6),
+          Material(
+            color: AppTheme.creamWhite,
             borderRadius: AppRadius.inputBorder,
-            borderSide: BorderSide(color: AppTheme.softTaupe),
+            child: InkWell(
+              onTap: () async {
+                final code = await showPosBarcodeSheet(context);
+                if (!mounted || code == null || code.isEmpty) return;
+                final ok =
+                    await ref.read(posProvider.notifier).applyBarcode(
+                          code,
+                          storeId,
+                        );
+                if (!mounted) return;
+                if (ok) {
+                  _searchController.clear();
+                  ref.read(posSearchQueryProvider.notifier).state = '';
+                }
+              },
+              borderRadius: AppRadius.inputBorder,
+              child: Container(
+                height: 48,
+                width: 48,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  borderRadius: AppRadius.inputBorder,
+                  border: Border.all(color: AppTheme.softTaupe),
+                ),
+                child: const Icon(
+                  Icons.qr_code_scanner_rounded,
+                  color: AppTheme.accentGold,
+                  size: 22,
+                ),
+              ),
+            ),
           ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: AppRadius.inputBorder,
-            borderSide: BorderSide(color: AppTheme.softTaupe),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: AppRadius.inputBorder,
-            borderSide: const BorderSide(color: AppTheme.accentGold),
-          ),
-        ),
-        style: GoogleFonts.montserrat(fontSize: 13),
+        ],
       ),
     );
   }

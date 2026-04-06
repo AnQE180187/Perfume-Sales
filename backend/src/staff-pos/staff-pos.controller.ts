@@ -13,16 +13,37 @@ import {
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../auth/roles.decorator';
 import { RolesGuard } from '../auth/roles.guard';
+import { StoresService } from '../stores/stores.service';
 import { StaffPosService } from './staff-pos.service';
 
 @Controller('staff/pos')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('STAFF', 'ADMIN')
 export class StaffPosController {
-  constructor(private readonly staffPosService: StaffPosService) {}
+  constructor(
+    private readonly staffPosService: StaffPosService,
+    private readonly storesService: StoresService,
+  ) { }
 
   @Get('products')
-  searchProducts(@Query('q') q?: string, @Query('storeId') storeId?: string) {
+  async searchProducts(
+    @Req() req: any,
+    @Query('q') q?: string,
+    @Query('barcode') barcode?: string,
+    @Query('storeId') storeId?: string,
+  ) {
+    const user = req.user as { userId: string; role: string };
+    if (storeId) {
+      await this.storesService.ensureStaffCanAccessStore(
+        user.userId,
+        storeId,
+        user.role,
+      );
+    }
+    const b = barcode?.trim();
+    if (b) {
+      return this.staffPosService.searchProductsByBarcode(b, storeId);
+    }
     return this.staffPosService.searchProducts(q ?? '', storeId);
   }
 
