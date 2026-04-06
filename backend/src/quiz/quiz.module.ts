@@ -5,9 +5,9 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { AiModule } from '../ai/ai.module';
 
 @Module({
-  imports: [PrismaModule, AiModule],
-  controllers: [QuizController],
-  providers: [QuizService],
-  exports: [QuizService],
+    imports: [PrismaModule, AiModule],
+    controllers: [QuizController],
+    providers: [QuizService],
+    exports: [QuizService],
 })
-export class QuizModule {}
+export class QuizModule { }
