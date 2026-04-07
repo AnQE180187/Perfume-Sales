@@ -97,4 +97,75 @@ export class LoyaltyService {
       discountAmount,
     };
   }
+
+  async exchangePointsForVoucher(userId: string, points: number) {
+    // Proposed packages: 100, 200, 500
+    const packages: Record<number, { discount: number; label: string }> = {
+      100: { discount: 50000, label: '50k VND Voucher' },
+      200: { discount: 100000, label: '100k VND Voucher' },
+      500: { discount: 250000, label: '250k VND Voucher' },
+    };
+
+    const pkg = packages[points];
+    if (!pkg) {
+      throw new BadRequestException('Gói đổi điểm không hợp lệ');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user || user.loyaltyPoints < points) {
+      throw new BadRequestException('Bạn không đủ điểm để thực hiện giao dịch này');
+    }
+
+    const code = `LOY-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
+    const now = new Date();
+    const expiry = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days
+
+    return await this.prisma.$transaction(async (tx) => {
+      // 1. Update User Points
+      await tx.user.update({
+        where: { id: userId },
+        data: { loyaltyPoints: { decrement: points } },
+      });
+
+      // 2. Create Loyalty Transaction
+      await tx.loyaltyTransaction.create({
+        data: {
+          userId,
+          points: -points,
+          reason: `EXCHANGED_FOR_VOUCHER_${code}`,
+        },
+      });
+
+      // 3. Create Promotion Code
+      const promo = await tx.promotionCode.create({
+        data: {
+          code,
+          description: `Voucher đổi từ ${points} điểm loyalty`,
+          discountType: 'FIXED_AMOUNT',
+          discountValue: pkg.discount,
+          minOrderAmount: pkg.discount * 2, // 2x value min order to avoid abuse
+          startDate: now,
+          endDate: expiry,
+          usageLimit: 1,
+          isActive: true,
+        },
+      });
+
+      // 4. Notify user about exchange
+      this.notificationsService
+        .create({
+          userId,
+          type: 'LOYALTY',
+          title: 'Đổi điểm lấy quà thành công',
+          content: `Bạn đã đổi ${points} điểm lấy mã giảm giá ${code} giảm ${pkg.discount.toLocaleString()}đ.`,
+          data: { code, points, discountValue: pkg.discount },
+        })
+        .catch(() => {});
+
+      return promo;
+    });
+  }
 }

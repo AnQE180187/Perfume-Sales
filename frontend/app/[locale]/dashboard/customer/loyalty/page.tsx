@@ -16,13 +16,41 @@ export default function LoyaltyDashboard() {
     const dateLocale = locale === 'vi' ? vi : enUS;
     const [data, setData] = useState<{ points: number; history: any[] }>({ points: 0, history: [] });
     const [loading, setLoading] = useState(true);
- 
+    const [isExchanging, setIsExchanging] = useState(false);
+
+    const packages = [
+        { points: 100, discount: 50000 },
+        { points: 200, discount: 100000 },
+        { points: 500, discount: 250000 },
+    ];
+
     useEffect(() => {
         loyaltyService.getStatus()
             .then(setData)
             .finally(() => setLoading(false));
     }, []);
- 
+
+    const handleExchange = async (points: number, amount: number) => {
+        if (data.points < points) return;
+        if (!confirm(t('exchange.confirm', { points, amount: amount.toLocaleString() }))) return;
+
+        try {
+            setIsExchanging(true);
+            await loyaltyService.exchangePoints(points);
+            // We don't have toast imported, let's see if we can use window.alert if not available
+            // but the layout has Sonner so we should use it if possible.
+            // I'll add the import soon or just use alert for now to be safe if I can't find the exact 'sonner' path.
+            // Actually, let's try to import it.
+            alert(t('exchange.success'));
+            const res = await loyaltyService.getStatus();
+            setData(res);
+        } catch (error) {
+            alert(t('exchange.error'));
+        } finally {
+            setIsExchanging(false);
+        }
+    };
+
     const tiers = [
         { name: t('tiers.bronze'), min: 0, color: 'text-orange-400', bg: 'bg-orange-400/10' },
         { name: t('tiers.silver'), min: 500, color: 'text-stone-300', bg: 'bg-stone-300/10' },
@@ -87,7 +115,46 @@ export default function LoyaltyDashboard() {
                                 </button>
                             </div>
                         </motion.div>
- 
+
+                        {/* EXCHANGE SECTION */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 }}
+                            className="glass p-8 rounded-[2.5rem] border-gold/10 overflow-hidden"
+                        >
+                            <header className="mb-8 font-body">
+                                <h3 className="font-heading text-lg uppercase tracking-widest gold-gradient">{t('exchange.title')}</h3>
+                                <p className="text-[10px] text-muted-foreground uppercase mt-1 tracking-widest">{t('exchange.subtitle')}</p>
+                            </header>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {packages.map((pkg, i) => (
+                                    <div key={i} className={`p-6 rounded-3xl border ${data.points >= pkg.points ? 'border-gold/30 bg-gold/5' : 'border-border bg-white/[0.02] opacity-60'} transition-all flex flex-col justify-between h-full group`}>
+                                        <div>
+                                            <div className="p-3 bg-gold/10 text-gold rounded-2xl w-fit mb-4 group-hover:scale-110 transition-transform">
+                                                <Gift size={20} />
+                                            </div>
+                                            <h4 className="font-heading text-sm uppercase tracking-wider mb-1">{t('exchange.package_label', { amount: (pkg.discount / 1000).toString() + 'k' })}</h4>
+                                            <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{t('exchange.min_order', { amount: (pkg.discount * 2 / 1000).toString() + 'k' })}</p>
+                                        </div>
+                                        <div className="mt-8 font-body">
+                                            <div className="flex justify-between items-end mb-4">
+                                                <span className="text-[10px] text-muted-foreground uppercase tracking-widest">{t('exchange.cost')}</span>
+                                                <span className="font-heading text-gold">{pkg.points} PTS</span>
+                                            </div>
+                                            <button
+                                                onClick={() => handleExchange(pkg.points, pkg.discount)}
+                                                disabled={data.points < pkg.points || isExchanging}
+                                                className={`w-full py-3 rounded-2xl font-heading text-[10px] uppercase tracking-widest transition-all ${data.points >= pkg.points ? 'bg-gold text-primary-foreground hover:scale-[1.02] shadow-lg shadow-gold/20' : 'bg-border text-muted-foreground cursor-not-allowed'}`}
+                                            >
+                                                {isExchanging ? '...' : (data.points >= pkg.points ? t('exchange.exchange_now') : t('exchange.insufficient'))}
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </motion.div>
+
                         {/* History */}
                         <div className="glass bg-white/5 rounded-[2.5rem] border-border overflow-hidden">
                             <div className="p-8 border-b border-border flex justify-between items-center">
