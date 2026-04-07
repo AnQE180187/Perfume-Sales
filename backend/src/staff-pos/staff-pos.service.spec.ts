@@ -12,7 +12,7 @@ describe('StaffPosService (barcode)', () => {
       productVariant: { findFirst: jest.fn() },
       product: { findMany: jest.fn().mockResolvedValue([]) },
     };
-    service = new StaffPosService(prisma as any, {} as any, {} as any);
+    service = new StaffPosService(prisma as any, {} as any, {} as any, {} as any);
   });
 
   it('searchProductsByBarcode returns [] for blank barcode', async () => {

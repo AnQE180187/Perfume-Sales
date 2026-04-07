@@ -23,4 +23,9 @@ export class LoyaltyController {
   async redeem(@Request() req, @Body('points') points: number) {
     return this.loyaltyService.redeemPoints(req.user.userId, points);
   }
+
+  @Post('exchange')
+  async exchange(@Request() req, @Body('points') points: number) {
+    return this.loyaltyService.exchangePointsForVoucher(req.user.userId, points);
+  }
 }

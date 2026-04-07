@@ -48,7 +48,7 @@
         "settings": "Cài Đặt",
         "dashboard": "Bảng Điều Khiển",
         "and": "và",
-        "boutiques": "Thương Hiệu",
+        "boutiques": "Cửa Hàng",
         "journal": "Tạp Chí",
         "view_profile": "Xem Hồ Sơ",
         "my_profile": "Hồ Sơ Của Tôi",
@@ -195,90 +195,28 @@
         ]
     },
     "quiz": {
-        "intro": {
-            "label": "Trắc Nghiệm Mùi Hương AI",
-            "title": "Khám Phá Dấu Ấn Riêng",
-            "description": "Trả lời 5 câu hỏi nhanh về sở thích của bạn. AI sẽ phân tích hồ sơ và gợi ý những chai nước hoa hoàn hảo từ bộ sưu tập.",
-            "start_btn": "Bắt Đầu",
-            "login_btn": "Đăng Nhập Để Bắt Đầu",
-            "login_required": "Vui lòng đăng nhập để làm trắc nghiệm và lưu kết quả.",
-            "time_estimate": "Mất khoảng 2 phút"
-        },
-        "step_label": "Bước",
-        "prev_step": "Quay lại",
-        "steps": {
-            "gender": {
-                "title": "Dành cho ai?",
-                "subtitle": "Chọn giới tính cho mùi hương lý tưởng của bạn.",
-                "options": {
-                    "male": "Nam",
-                    "female": "Nữ",
-                    "unisex": "Unisex"
-                }
+        "title": "Khám Phá Bản Sắc Thần Kinh",
+        "subtitle": "Khởi tạo các thông số cảm giác của bạn thông qua các kịch bản môi trường.",
+        "question": "Môi trường cộng hưởng nào phản ánh trạng thái hiện tại của bạn?",
+        "options": {
+            "city": {
+                "title": "Siêu Đô Thị Nửa Đêm",
+                "desc": "Mưa lạnh trên bê tông, thép nguội và nhịp đập điện tử."
             },
-            "occasion": {
-                "title": "Bạn sẽ dùng khi nào?",
-                "subtitle": "Chọn dịp sử dụng chính cho mùi hương.",
-                "options": {
-                    "daily": "Hàng ngày",
-                    "office": "Công sở",
-                    "date": "Hẹn hò",
-                    "party": "Tiệc tùng",
-                    "special": "Sự kiện đặc biệt"
-                }
+            "sea": {
+                "title": "Vực Thẳm Xanh Thẳm",
+                "desc": "Những luồng khí giàu ozone, hơi muối và gỗ mục bên bờ biển."
             },
-            "budget": {
-                "title": "Ngân sách của bạn?",
-                "subtitle": "Chọn mức giá phù hợp với bạn.",
-                "options": {
-                    "under_500k": "Dưới 500K",
-                    "500k_1m": "500K – 1 triệu",
-                    "1m_2m": "1 – 2 triệu",
-                    "2m_5m": "2 – 5 triệu",
-                    "over_5m": "Trên 5 triệu"
-                }
+            "library": {
+                "title": "Cổ Thư & Mực",
+                "desc": "Những bản thảo cổ xưa, da cũ và lá thuốc lá."
             },
-            "scent_family": {
-                "title": "Bạn thích nhóm hương nào?",
-                "subtitle": "Chọn hướng mùi hương bạn yêu thích.",
-                "options": {
-                    "fresh": "Tươi mát",
-                    "floral": "Hương hoa",
-                    "woody": "Hương gỗ",
-                    "oriental": "Phương Đông",
-                    "aromatic": "Thảo mộc"
-                }
-            },
-            "longevity": {
-                "title": "Bạn muốn lưu hương bao lâu?",
-                "subtitle": "Chọn thời gian lưu hương mong muốn.",
-                "options": {
-                    "light": "Nhẹ nhàng",
-                    "moderate": "Trung bình",
-                    "long": "Lâu dài",
-                    "very_long": "Rất lâu"
-                }
+            "garden": {
+                "title": "Hạ Chí Nở Rộ",
+                "desc": "Đất ẩm, hoa nhài nở đêm và xạ hương trắng."
             }
         },
-        "analyzing": {
-            "step1": "Đang khởi động hệ thống AI tư vấn...",
-            "step2": "Đang tải dữ liệu danh mục sản phẩm...",
-            "step3": "Đang so khớp sở thích của bạn...",
-            "step4": "Đang tạo gợi ý cá nhân hóa...",
-            "message": "AI đang tuyển chọn những chai nước hoa hoàn hảo cho bạn..."
-        },
-        "results": {
-            "ai_picked": "AI Tuyển Chọn",
-            "title": "Nước Hoa Dành Cho Bạn",
-            "subtitle": "Dựa trên sở thích của bạn, AI đã chọn những chai nước hoa phù hợp nhất.",
-            "view_detail": "Xem chi tiết",
-            "retake": "Làm lại trắc nghiệm",
-            "no_results_title": "Không tìm thấy kết quả",
-            "no_results_desc": "Không tìm thấy sản phẩm phù hợp. Hãy thử điều chỉnh tiêu chí của bạn."
-        },
-        "error": {
-            "generic": "Đã có lỗi xảy ra. Vui lòng thử lại."
-        }
+        "cta": "Tiến Tới Tổng Hợp"
     },
     "auth": {
         "login": {
@@ -580,52 +518,6 @@
             "refill_desc": "Sự bền vững trong từng chai nước hoa."
         }
     },
-    "checkout": {
-        "return_to_cart": "Quay Lại Kho Lưu Trữ (Giỏ Hàng)",
-        "page_title": "Tiến Hành Sở Hữu",
-        "recipient_name": "Họ Tên Người Nhận (Định Danh)",
-        "select_province": "Chọn Tỉnh/Thành Phố",
-        "select_district": "Chọn Quận/Huyện",
-        "select_ward": "Chọn Phường/Xã",
-        "shipping_service": "Dịch Vụ Vận Chuyển",
-        "shipping_fee": "Phí Vận Chuyển Hệ Thống",
-        "shipping_address": "Điểm Đến Sở Hữu (Địa Chỉ)",
-        "phone_number": "Kênh Liên Lạc (Số Điện Thoại)",
-        "continue_to_payment": "Tiếp Tục Đến Tổng Hợp Tài Chính",
-        "select_payment_method": "Chọn Phương Thức Giao Dịch",
-        "cod": "Thanh Toán Khi Hiện Hữu (COD)",
-        "online_payment": "Liên Kết Tài Chính Thần Kinh (Online)",
-        "qr_scan": "Quét Mã Liên Kết (QR) Để Tổng Hợp",
-        "qr_desc": "Khởi tạo liên kết tài chính an toàn để hoàn tất sở hữu",
-        "waiting_confirmation": "Đang Chờ Cộng Hưởng Tài Chính...",
-        "pay_via_payos": "Thanh Toán Qua Cổng PayOS",
-        "other_method": "Phương Thức Tổng Hợp Khác",
-        "order_summary": "Tóm Tắt Sở Hữu",
-        "empty_cart": "Hàng Đợi Sở Hữu Trống",
-        "coupon_code": "MÃ CHỮ KÝ ƯU ĐÃI",
-        "apply": "TỔNG HỢP",
-        "invalid_coupon": "Chữ Ký Không Hợp Lệ",
-        "coupon_success": "Chữ Ký Đã Xác Minh: Giảm {amount}",
-        "loyalty_points": "Tín Dụng Thần Kinh",
-        "use_points": "Sử Dụng Tín Dụng Aura",
-        "points_balance": "Bạn có {points} tín dụng (Giá trị: {value})",
-        "points_discount": "Khấu Trừ Tín Dụng",
-        "subtotal": "Giá Trị Khứu Giác Gốc",
-        "total": "Tổng Giá Trị Sở Hữu",
-        "shipping_placeholder": "Số nhà, tên đường, phường/xã...",
-        "name_placeholder": "Vui lòng nhập tên của bạn",
-        "phone_placeholder": "Vui lòng nhập số điện thoại của bạn",
-        "loading": "Đang Xử Lý...",
-        "page_title_part1": "Tiến Hành",
-        "page_title_part2": "Sở Hữu",
-        "download_qr": "Tải mã QR",
-        "street_name": "Số nhà, tên đường",
-        "street_placeholder": "Ví dụ: 123 Đường Luxury",
-        "pay_via_payos_desc": "Hoặc nhấn nút bên dưới để thanh toán qua cổng PayOS",
-        "shipping_free": "Miễn Phí",
-        "error_missing_info": "Vui lòng cung cấp đầy đủ định danh hậu cần bắt buộc.",
-        "error_create_order": "Thất bại khi khởi tạo sự cộng hưởng sở hữu khứu giác.",
-        "error_create_payment": "Liên kết tổng hợp sở hữu không thể khởi tạo.",
     "address": {
         "recipient_name": "Tên người nhận *",
         "phone_number": "Số điện thoại *",
@@ -893,10 +785,6 @@
             "store": "Quầy",
             "select_store": "-- Chọn quầy --",
             "search_placeholder": "Tìm sản phẩm, SKU hoặc quét mã vạch...",
-            "barcode_hint": "Máy quét USB: giữ con trỏ trong ô này — quét mã rồi Enter để thêm nhanh. Phím F2: focus ô tìm kiếm.",
-            "scan_camera_btn": "Quét bằng camera",
-            "scan_camera_title": "Quét mã vạch",
-            "scan_camera_desc": "Cho phép trình duyệt dùng camera. Hướng mã vạch vào khung hình.",
             "loading_products": "Đang tải sản phẩm...",
             "no_products": {
                 "select_store": "Vui lòng chọn quầy để xem sản phẩm.",
@@ -979,10 +867,7 @@
                 "update_qty": "Lỗi cập nhật số lượng",
                 "pay_cash": "Lỗi thanh toán tiền mặt",
                 "create_qr": "Lỗi tạo mã QR",
-                "lookup_customer": "Lỗi tra cứu khách hàng",
-                "barcode_not_found": "Không tìm thấy sản phẩm với mã vạch này tại quầy đã chọn.",
-                "barcode_no_store": "Vui lòng chọn quầy trước khi quét mã vạch.",
-                "camera_scan_failed": "Không thể bật camera quét mã. Vui lòng kiểm tra quyền camera hoặc nhập mã thủ công."
+                "lookup_customer": "Lỗi tra cứu khách hàng"
             }
         },
         "staff": {
@@ -1073,8 +958,23 @@
                     "redeem": "Quy đổi Khí quyển",
                     "order_completed": "Giao dịch Hoàn tất",
                     "order": "Cộng hưởng Đơn hàng",
-                    "earned_from_order": "Tích lũy từ đơn hàng #{id}"
-                }
+                    "earned_from_order": "Tích lũy từ đơn hàng #{id}",
+                    "exchanged_for_voucher": "Quy đổi mã khứu ký",
+                    "exchanged_for_voucher_loy-84solfcb": "Quy đổi mã giảm giá LOY-84SOLFCB"
+                },
+                "exchange": {
+                    "title": "Đổi điểm Aura",
+                    "subtitle": "Quy đổi điểm tích lũy thành các mã giảm giá đặc quyền.",
+                    "package_label": "Gói ưu đãi",
+                    "min_order": "Đơn hàng tối thiểu",
+                    "cost": "Chi phí",
+                    "exchange_now": "Đổi ngay",
+                    "insufficient": "Không đủ điểm",
+                    "confirm": "Bạn có chắc chắn muốn đổi {points} điểm lấy voucher trị giá {amount}đ?",
+                    "success": "Đổi điểm thành công! Mã giảm giá đã được thêm vào tài khoản của bạn.",
+                    "error": "Có lỗi xảy ra khi đổi điểm. Vui lòng thử lại sau."
+                },
+                "history": "Lịch sử giao dịch"
             },
             "home": {
                 "title": "Thánh Đường Của Tôi",
@@ -1992,5 +1892,4 @@
             "RETURNED": "Hoàn hàng"
         }
     }
-}
 }
