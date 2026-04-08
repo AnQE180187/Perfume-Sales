@@ -41,7 +41,7 @@ export type ProductListRes = {
 };
 
 interface IProductService {
-  list(params?: { search?: string; skip?: number; take?: number; brandId?: number; categoryId?: number }): Promise<ProductListRes>;
+  list(params?: { search?: string; skip?: number; take?: number; brandId?: number; categoryId?: number; isFeatured?: boolean | string; isBestseller?: boolean | string }): Promise<ProductListRes>;
   getById(id: string): Promise<Product>;
   adminList(params?: { search?: string; skip?: number; take?: number; brandId?: number; categoryId?: number }): Promise<ProductListRes>;
   adminCreate(dto: {
@@ -66,7 +66,7 @@ interface IProductService {
 
 export const productService: IProductService = {
   // Public
-  list(params?: { search?: string; skip?: number; take?: number; brandId?: number; categoryId?: number }) {
+  list(params?: { search?: string; skip?: number; take?: number; brandId?: number; categoryId?: number; isFeatured?: boolean | string; isBestseller?: boolean | string }) {
     return api.get<ProductListRes>('/products', { params }).then((r) => r.data);
   },
   getById(id: string) {

@@ -15,6 +15,21 @@ export const promotionService = {
     getActive() {
         return api.get<any[]>('/promotions/active').then((r) => r.data);
     },
+    getPublic() {
+        return api.get<any[]>('/promotions/public').then((r) => r.data);
+    },
+    getRedeemable() {
+        return api.get<any[]>('/promotions/redeemable').then((r) => r.data);
+    },
+    getMyPromotions() {
+        return api.get<any[]>('/promotions/my-promotions').then((r) => r.data);
+    },
+    claim(id: string) {
+        return api.post(`/promotions/claim/${id}`).then((r) => r.data);
+    },
+    redeem(id: string) {
+        return api.post(`/promotions/redeem/${id}`).then((r) => r.data);
+    },
     // Admin services
     findAll() {
         return api.get<any[]>('/promotions').then((r) => r.data);

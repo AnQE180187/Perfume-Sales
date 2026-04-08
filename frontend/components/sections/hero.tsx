@@ -24,7 +24,7 @@ export const Hero = ({ heroY: parentHeroY, heroScale: parentHeroScale, heroOpaci
 
     useEffect(() => {
         setIsMounted(true);
-        bannerService.list('HOMEPAGE').then(res => {
+        bannerService.list().then(res => {
             if (res.length > 0) setBanners(res);
         }).catch(console.error);
     }, []);

@@ -9,7 +9,7 @@ import QRCode from 'qrcode';
 import {
     ArrowLeft, ArrowRight, CreditCard, Wallet,
     MapPin, Phone, Loader2, Download, Tag, Check, X, User,
-    MapPinned
+    MapPinned, Plus
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { cartService } from '@/services/cart.service';
@@ -101,9 +101,18 @@ export default function CheckoutPage() {
     const [appliedCoupon, setAppliedCoupon] = useState<PromotionValidationResponse | null>(null);
     const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
     const [couponError, setCouponError] = useState<string | null>(null);
-    const [loyaltyInfo, setLoyaltyInfo] = useState({ points: 0 });
-    const [usePoints, setUsePoints] = useState(false);
-    const [pointsToUse, setPointsToUse] = useState(0);
+    const [myVouchers, setMyVouchers] = useState<any[]>([]);
+    const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
+    const [loadingVouchers, setLoadingVouchers] = useState(false);
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            setLoadingVouchers(true);
+            promotionService.getMyPromotions()
+                .then(setMyVouchers)
+                .finally(() => setLoadingVouchers(false));
+        }
+    }, [isAuthenticated]);
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -115,7 +124,6 @@ export default function CheckoutPage() {
             setLoading(false);
         }).catch(() => setLoading(false));
 
-        loyaltyService.getStatus().then(setLoyaltyInfo);
 
         ghnService.isConfigured().then((r) => {
             if (r.configured) setGhnEnabled(true);
@@ -176,8 +184,7 @@ export default function CheckoutPage() {
 
     const subtotal = cartItems.reduce((acc, i) => acc + i.variant.price * i.quantity, 0);
     const couponDiscount = appliedCoupon ? appliedCoupon.discountAmount : 0;
-    const loyaltyDiscount = usePoints ? pointsToUse * 500 : 0;
-    const total = Math.max(0, subtotal - couponDiscount - loyaltyDiscount + shippingFee);
+    const total = Math.max(0, subtotal - couponDiscount + shippingFee);
 
     const canProceedStep1 = Boolean(selectedAddress && (ghnEnabled ? selectedServiceId : true));
 
@@ -216,7 +223,6 @@ export default function CheckoutPage() {
                 recipientName: selectedAddress.recipientName,
                 phone: selectedAddress.phone,
                 promotionCode: appliedCoupon?.code,
-                redeemPoints: usePoints ? pointsToUse : undefined,
                 paymentMethod: method ?? undefined,
                 ...(ghnEnabled && selectedAddress.provinceId
                     ? {
@@ -550,99 +556,133 @@ export default function CheckoutPage() {
                                     )}
                                 </div>
 
-                                {/* Coupon Section */}
-                                <div className="mt-8 pt-8 border-t border-stone-100 dark:border-white/5">
-                                    <div className="flex gap-3">
-                                        <div className="relative flex-1">
-                                            <input
-                                                type="text"
-                                                value={couponCode}
-                                                onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                                                placeholder={t('coupon_code')}
-                                                disabled={!!appliedCoupon || isApplyingCoupon}
-                                                className="w-full h-14 bg-stone-50 dark:bg-zinc-950 border border-stone-100 dark:border-white/5 rounded-2xl px-6 text-[10px] font-bold tracking-[.3em] uppercase focus:ring-0 focus:border-gold transition-all disabled:opacity-50"
-                                            />
-                                            {appliedCoupon && (
-                                                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-green-500">
-                                                    <Check size={20} />
-                                                </div>
-                                            )}
-                                        </div>
-                                        {appliedCoupon ? (
-                                            <button
-                                                onClick={handleRemoveCoupon}
-                                                className="h-14 aspect-square bg-stone-100 dark:bg-white/5 rounded-2xl flex items-center justify-center text-stone-400 hover:text-red-500 transition-colors"
-                                            >
-                                                <X size={20} />
-                                            </button>
-                                        ) : (
-                                            <button
-                                                onClick={handleApplyCoupon}
-                                                disabled={!couponCode || isApplyingCoupon}
-                                                className="px-8 bg-luxury-black dark:bg-white text-white dark:text-luxury-black rounded-2xl text-[10px] font-bold tracking-[.3em] uppercase hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 flex items-center gap-3"
-                                            >
-                                                {isApplyingCoupon ? <Loader2 className="animate-spin" size={16} /> : <Tag size={16} />}
-                                                {t('apply')}
-                                            </button>
-                                        )}
-                                    </div>
-                                    {couponError && (
-                                        <p className="mt-4 text-[10px] font-bold text-red-500 uppercase tracking-widest leading-relaxed italic pl-2">
-                                            {couponError}
-                                        </p>
-                                    )}
-                                    {appliedCoupon && (
-                                        <p className="mt-4 text-[10px] font-bold text-green-500 uppercase tracking-widest leading-relaxed flex items-center gap-2 italic pl-2">
-                                            <Tag size={12} /> {t('coupon_applied', { amount: formatCurrency(appliedCoupon.discountAmount) })}
-                                        </p>
-                                    )}
+                                 {/* Coupon Section */}
+                                 <div className="mt-8 pt-8 border-t border-stone-100 dark:border-white/5">
+                                     <div className="flex flex-col gap-4">
+                                         <label className="text-[10px] font-bold tracking-[.3em] uppercase text-stone-400 pl-2 italic">
+                                            {t('promotion_label')}
+                                         </label>
+                                         
+                                         {appliedCoupon ? (
+                                             <div className="p-6 rounded-3xl bg-gold/5 border border-gold/30 flex items-center justify-between group">
+                                                 <div className="flex items-center gap-4">
+                                                     <div className="w-10 h-10 rounded-xl bg-gold flex items-center justify-center text-black">
+                                                         <Tag size={20} />
+                                                     </div>
+                                                     <div>
+                                                         <p className="text-xs font-bold text-luxury-black dark:text-white uppercase tracking-wider">{appliedCoupon.code}</p>
+                                                         <p className="text-[9px] text-gold uppercase tracking-widest font-bold italic">
+                                                             -{formatCurrency(appliedCoupon.discountAmount)}
+                                                         </p>
+                                                     </div>
+                                                 </div>
+                                                 <button
+                                                     onClick={handleRemoveCoupon}
+                                                     className="p-3 text-stone-400 hover:text-red-500 hover:glass rounded-xl transition-all"
+                                                 >
+                                                     <X size={18} />
+                                                 </button>
+                                             </div>
+                                         ) : (
+                                             <button
+                                                 onClick={() => setIsVoucherModalOpen(true)}
+                                                 className="w-full p-6 h-20 rounded-[2rem] border-2 border-dashed border-stone-200 dark:border-white/10 flex items-center justify-between hover:border-gold group transition-all"
+                                             >
+                                                 <div className="flex items-center gap-4">
+                                                     <Tag className="text-stone-300 group-hover:text-gold transition-colors" size={24} />
+                                                     <span className="text-xs font-bold text-stone-400 group-hover:text-gold transition-colors uppercase tracking-widest italic">
+                                                         {t('select_voucher')}
+                                                     </span>
+                                                 </div>
+                                                 <div className="w-10 h-10 rounded-full bg-stone-50 dark:bg-white/5 flex items-center justify-center text-stone-300 group-hover:bg-gold group-hover:text-white transition-all">
+                                                     <Plus size={20} />
+                                                 </div>
+                                             </button>
+                                         )}
+                                     </div>
 
-                                    {loyaltyInfo.points >= 100 && (
-                                        <div className="mt-8 pt-6 border-t border-stone-100 dark:border-white/5">
-                                            <label className="flex items-center gap-4 cursor-pointer group">
-                                                <div className="relative">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={usePoints}
-                                                        onChange={(e) => {
-                                                            setUsePoints(e.target.checked);
-                                                            if (e.target.checked) setPointsToUse(Math.min(loyaltyInfo.points, Math.floor((subtotal - couponDiscount) / 500)));
-                                                        }}
-                                                        className="sr-only"
-                                                    />
-                                                    <div className={`w-10 h-6 rounded-full transition-colors ${usePoints ? 'bg-gold' : 'bg-stone-100 dark:bg-zinc-800'}`} />
-                                                    <div className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform ${usePoints ? 'translate-x-4' : ''}`} />
-                                                </div>
-                                                <div className="flex-1">
-                                                    <p className="text-[10px] font-bold uppercase tracking-widest text-luxury-black dark:text-white">
-                                                        {t('loyalty_points')}
-                                                    </p>
-                                                    <p className="text-[8px] text-stone-400 uppercase tracking-tighter font-bold">
-                                                        {t('points_balance_summary', { points: loyaltyInfo.points, value: formatCurrency(loyaltyInfo.points * 500) })}
-                                                    </p>
-                                                </div>
-                                            </label>
+                                     {/* Voucher Selection Modal */}
+                                     <AnimatePresence>
+                                         {isVoucherModalOpen && (
+                                             <motion.div
+                                                 initial={{ opacity: 0 }}
+                                                 animate={{ opacity: 1 }}
+                                                 exit={{ opacity: 0 }}
+                                                 className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-6"
+                                                 onClick={() => setIsVoucherModalOpen(false)}
+                                             >
+                                                 <motion.div
+                                                     initial={{ scale: 0.9, y: 20 }}
+                                                     animate={{ scale: 1, y: 0 }}
+                                                     exit={{ scale: 0.9, y: 20 }}
+                                                     className="glass rounded-[3rem] border border-white/10 p-10 w-full max-w-xl bg-background/50 relative overflow-hidden flex flex-col max-h-[80vh]"
+                                                     onClick={(e) => e.stopPropagation()}
+                                                 >
+                                                     <div className="flex justify-between items-center mb-8">
+                                                         <div>
+                                                             <h3 className="text-2xl font-serif text-gold italic uppercase tracking-tighter">{t('vouchers_modal_title')}</h3>
+                                                             <p className="text-[9px] text-stone-400 uppercase tracking-widest font-bold mt-1">{t('vouchers_modal_subtitle')}</p>
+                                                         </div>
+                                                         <button onClick={() => setIsVoucherModalOpen(false)} className="p-3 hover:glass rounded-full text-stone-400 transition-all">
+                                                             <X size={20} />
+                                                         </button>
+                                                     </div>
 
-                                            {usePoints && (
-                                                <motion.div
-                                                    initial={{ height: 0, opacity: 0 }}
-                                                    animate={{ height: 'auto', opacity: 1 }}
-                                                    className="mt-4 pl-14"
-                                                >
-                                                    <div className="flex items-center gap-4">
-                                                        <input
-                                                            type="number"
-                                                            value={pointsToUse}
-                                                            onChange={(e) => setPointsToUse(Math.min(loyaltyInfo.points, Number(e.target.value)))}
-                                                            className="w-24 h-10 bg-stone-50 dark:bg-zinc-950 border border-stone-100 dark:border-white/5 rounded-xl px-4 text-xs font-bold outline-none border-gold"
-                                                        />
-                                                        <span className="text-[10px] text-stone-400 uppercase font-bold tracking-widest italic">-{formatCurrency(pointsToUse * 500)}</span>
-                                                    </div>
-                                                </motion.div>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
+                                                     <div className="flex-1 overflow-y-auto pr-4 space-y-4 custom-scrollbar">
+                                                         {loadingVouchers ? (
+                                                             <div className="py-20 flex justify-center">
+                                                                 <Loader2 className="animate-spin text-gold" size={32} />
+                                                             </div>
+                                                         ) : myVouchers.length > 0 ? (
+                                                             myVouchers.map((uv) => (
+                                                                 <button
+                                                                     key={uv.id}
+                                                                     onClick={async () => {
+                                                                         setCouponCode(uv.promotion.code);
+                                                                         setIsVoucherModalOpen(false);
+                                                                         // Auto apply
+                                                                         setIsApplyingCoupon(true);
+                                                                         try {
+                                                                             const result = await promotionService.validate(uv.promotion.code, subtotal);
+                                                                             setAppliedCoupon(result);
+                                                                         } catch (e: any) {
+                                                                             setCouponError(e.response?.data?.message || t('invalid_coupon'));
+                                                                         } finally {
+                                                                             setIsApplyingCoupon(false);
+                                                                         }
+                                                                     }}
+                                                                     className="w-full p-6 rounded-3xl border border-stone-100 dark:border-white/5 bg-white/5 text-left hover:border-gold/50 transition-all flex items-center justify-between group"
+                                                                 >
+                                                                     <div className="flex items-center gap-5">
+                                                                         <div className="w-12 h-12 rounded-2xl bg-gold/10 text-gold flex items-center justify-center">
+                                                                             <Tag size={20} />
+                                                                         </div>
+                                                                         <div>
+                                                                             <p className="text-xs font-bold text-luxury-black dark:text-white uppercase tracking-wider">{uv.promotion.code}</p>
+                                                                             <p className="text-[9px] text-stone-400 uppercase tracking-widest mt-1">
+                                                                                 {uv.promotion.discountType === 'PERCENTAGE' 
+                                                                                    ? `-${uv.promotion.discountValue}%` 
+                                                                                    : `-${formatCurrency(uv.promotion.discountValue)}`}
+                                                                             </p>
+                                                                         </div>
+                                                                     </div>
+                                                                     <div className="text-stone-300 group-hover:text-gold transition-colors">
+                                                                         <ArrowRight size={18} />
+                                                                     </div>
+                                                                 </button>
+                                                             ))
+                                                         ) : (
+                                                             <div className="py-20 text-center space-y-4 opacity-30">
+                                                                 <Tag className="mx-auto" size={40} />
+                                                                 <p className="text-[10px] font-bold tracking-widest uppercase italic">{t('no_vouchers')}</p>
+                                                             </div>
+                                                         )}
+                                                     </div>
+                                                 </motion.div>
+                                             </motion.div>
+                                         )}
+                                     </AnimatePresence>
+                                 </div>
 
                                 <div className="space-y-6 pt-12 border-t border-stone-100 dark:border-white/5">
                                     <div className="space-y-4">
@@ -657,14 +697,6 @@ export default function CheckoutPage() {
                                                 <span>{t('coupon_discount_label')}</span>
                                                 <span className="">
                                                     -{formatCurrency(couponDiscount)}
-                                                </span>
-                                            </div>
-                                        )}
-                                        {usePoints && loyaltyDiscount > 0 && (
-                                            <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-gold italic">
-                                                <span>{t('loyalty_points_summary')}</span>
-                                                <span className="">
-                                                    -{formatCurrency(loyaltyDiscount)}
                                                 </span>
                                             </div>
                                         )}

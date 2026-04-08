@@ -79,7 +79,10 @@ export default function PosPage() {
     const [cameraScannerOpen, setCameraScannerOpen] = useState(false);
     const searchInputRef = useRef<HTMLInputElement>(null);
 
+
     const subtotal = order?.items?.reduce((acc, item) => acc + item.totalPrice, 0) ?? 0;
+    const discount = order?.discountAmount ?? 0;
+    const finalTotal = order?.finalAmount ?? subtotal;
     const isOrderCompleted = order?.paymentStatus === 'PAID' || order?.status === 'COMPLETED';
 
     // ─── Store loading ───
@@ -317,6 +320,7 @@ export default function PosPage() {
         if (!customerPhone.trim()) return;
         setLookingUpCustomer(true);
         setError(null);
+        setLoyaltyInfo(null);
         try {
             // Lookup loyalty info (registered user or guest)
             const info = await staffPosService.lookupLoyalty(customerPhone.trim());
@@ -333,6 +337,7 @@ export default function PosPage() {
             setLookingUpCustomer(false);
         }
     };
+
 
     // ─── AI ───
     const handleAiConsult = async () => {
@@ -685,9 +690,14 @@ export default function PosPage() {
                         <div className="flex justify-between text-muted-foreground text-[10px] uppercase tracking-widest font-heading">
                             <span>{t('cart.subtotal')}</span><span>{formatVND(subtotal)}</span>
                         </div>
-                        <div className="flex justify-between text-2xl font-heading pt-4 text-foreground">
+                        {discount > 0 && (
+                            <div className="flex justify-between text-gold text-[10px] uppercase tracking-widest font-heading">
+                                <span>{t('receipt.discount')}</span><span>-{formatVND(discount)}</span>
+                            </div>
+                        )}
+                        <div className="flex justify-between text-2xl font-heading pt-4 text-foreground border-t border-border/50">
                             <span className="tracking-tighter uppercase">{t('cart.total')}</span>
-                            <span className="text-gold">{formatVND(subtotal)}</span>
+                            <span className="text-gold">{formatVND(finalTotal)}</span>
                         </div>
 
                         {isOrderCompleted ? (

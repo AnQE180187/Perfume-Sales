@@ -16,24 +16,15 @@ export default function LoyaltyDashboard() {
     const dateLocale = locale === 'vi' ? vi : enUS;
     const [data, setData] = useState<{ points: number; history: any[] }>({ points: 0, history: [] });
     const [loading, setLoading] = useState(true);
- 
+
+
     useEffect(() => {
         loyaltyService.getStatus()
             .then(setData)
             .finally(() => setLoading(false));
     }, []);
- 
-    const tiers = [
-        { name: t('tiers.bronze'), min: 0, color: 'text-orange-400', bg: 'bg-orange-400/10' },
-        { name: t('tiers.silver'), min: 500, color: 'text-stone-300', bg: 'bg-stone-300/10' },
-        { name: t('tiers.gold'), min: 2000, color: 'text-gold', bg: 'bg-gold/10' },
-        { name: t('tiers.platinum'), min: 5000, color: 'text-blue-400', bg: 'bg-blue-400/10' },
-    ];
- 
-    const currentTier = [...tiers].reverse().find(t => data.points >= t.min) || tiers[0];
-    const nextTier = tiers[tiers.indexOf(currentTier) + 1];
-    const progress = nextTier ? (data.points / nextTier.min) * 100 : 100;
- 
+
+
     return (
         <AuthGuard allowedRoles={['customer']}>
             <main className="p-8 max-w-7xl mx-auto">
@@ -54,40 +45,22 @@ export default function LoyaltyDashboard() {
                                 <div className="relative">
                                     <div className="w-32 h-32 rounded-full border-4 border-gold/20 flex items-center justify-center relative">
                                         <Coins size={48} className="text-gold animate-pulse" />
-                                        <svg className="absolute inset-0 w-full h-full -rotate-90">
-                                            <circle
-                                                cx="64" cy="64" r="60"
-                                                fill="transparent"
-                                                stroke="currentColor"
-                                                strokeWidth="4"
-                                                className="text-gold"
-                                                strokeDasharray={377}
-                                                strokeDashoffset={377 - (377 * Math.min(progress, 100)) / 100}
-                                            />
-                                        </svg>
                                     </div>
                                 </div>
                                 <div className="flex-1 text-center md:text-left">
                                     <h2 className="text-5xl font-heading text-foreground mb-2">
                                         {data.points} <span className="text-sm font-body text-muted-foreground tracking-[0.3em] uppercase">{t('credits_suffix')}</span>
                                     </h2>
-                                    <div className="flex items-center gap-3 justify-center md:justify-start">
-                                        <span className={`px-4 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${currentTier.bg} ${currentTier.color} border border-current/20`}>
-                                            {currentTier.name} {t('member_suffix')}
-                                        </span>
-                                        {nextTier && (
-                                            <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
-                                                {t('to_next_tier', { count: nextTier.min - data.points, name: nextTier.name })}
-                                            </p>
-                                        )}
+                                    <div>
+                                        <p className="text-[10px] text-muted-foreground uppercase tracking-widest leading-relaxed">
+                                            {t('ai_insight_desc')}
+                                        </p>
                                     </div>
                                 </div>
-                                <button className="bg-gold text-primary-foreground px-8 py-4 rounded-full font-heading text-[10px] uppercase tracking-widest font-bold hover:scale-105 transition-all shadow-xl shadow-gold/20">
-                                    {t('redeem_btn')}
-                                </button>
                             </div>
                         </motion.div>
- 
+
+
                         {/* History */}
                         <div className="glass bg-white/5 rounded-[2.5rem] border-border overflow-hidden">
                             <div className="p-8 border-b border-border flex justify-between items-center">
@@ -114,7 +87,15 @@ export default function LoyaltyDashboard() {
                                                                 const id = tx.reason.split('_').pop();
                                                                 return t('reasons.earned_from_order', { id });
                                                             }
-                                                            return t(`reasons.${r}`);
+                                                            if (r.startsWith('exchanged_for_voucher')) {
+                                                                const code = tx.reason.split('_').pop()?.toUpperCase();
+                                                                return t('reasons.exchanged_for_voucher_generic', { code });
+                                                            }
+                                                            try {
+                                                                return t(`reasons.${r}`);
+                                                            } catch (e) {
+                                                                return r.replace(/_/g, ' ').toUpperCase();
+                                                            }
                                                         })()}
                                                     </p>
                                                     <p className="text-[10px] text-muted-foreground uppercase mt-0.5">
