@@ -1,11 +1,17 @@
 {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 6895363bec791bab09f783242b260721fe6561d2
   "Returns": {
     "title": "My Returns",
     "backToOrders": "Back to Orders"
   }
 }
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> 6895363bec791bab09f783242b260721fe6561d2
     "featured": {
         "currency_code": "USD",
         "currency_symbol": "$",
@@ -2190,4 +2196,7 @@
         }
     }
 }
+<<<<<<< HEAD
 >>>>>>> 08a965ec6697c90ae79317173d0f85f2cd91ed80
+=======
+>>>>>>> 6895363bec791bab09f783242b260721fe6561d2

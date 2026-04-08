@@ -51,6 +51,12 @@ model User {
   addresses           UserAddress[]
   inventoryRequests         InventoryRequest[] @relation("StaffInventoryRequests")
   reviewedInventoryRequests InventoryRequest[] @relation("ReviewedInventoryRequests")
+<<<<<<< HEAD
+=======
+  returnRequests      ReturnRequest[]     @relation("CustomerReturns")
+  staffReturnRequests ReturnRequest[]     @relation("StaffReturns")
+  userPromotions            UserPromotion[]
+>>>>>>> 6895363bec791bab09f783242b260721fe6561d2
 }
 
 model UserAddress {
