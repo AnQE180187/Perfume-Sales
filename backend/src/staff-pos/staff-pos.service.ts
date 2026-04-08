@@ -545,23 +545,6 @@ export class StaffPosService {
         },
       });
 
-      // Deduct loyalty points if used
-      if (order.discountAmount > 0 && order.userId) {
-        const pointsToRedeem = Math.floor(order.discountAmount / 500);
-        if (pointsToRedeem > 0) {
-          await tx.user.update({
-            where: { id: order.userId },
-            data: { loyaltyPoints: { decrement: pointsToRedeem } },
-          });
-          await tx.loyaltyTransaction.create({
-            data: {
-              userId: order.userId,
-              points: -pointsToRedeem,
-              reason: `REDEEMED_FOR_POS_ORDER_${order.code}`,
-            },
-          });
-        }
-      }
 
       // Award loyalty points (1 point per 10,000 VND)
       const fullOrder = await tx.order.findUnique({ where: { id: order.id } });
@@ -888,52 +871,4 @@ export class StaffPosService {
     return { success: true, orderId: order.id };
   }
 
-  async applyLoyaltyPoints(
-    staffUserId: string,
-    orderId: string,
-    points: number,
-  ) {
-    const order = await this.getStaffOrderOrThrow(staffUserId, orderId);
-    if (!order.userId) {
-      throw new BadRequestException('Order must have a customer attached to use loyalty points');
-    }
-
-    const user = await this.prisma.user.findUnique({
-      where: { id: order.userId },
-      select: { loyaltyPoints: true },
-    });
-
-    if (!user || user.loyaltyPoints < points) {
-      throw new BadRequestException('Insufficient loyalty points');
-    }
-
-    const discountAmount = points * 500; // 1pt = 500đ
-    if (discountAmount > order.totalAmount) {
-      throw new BadRequestException('Discount amount exceeds order total');
-    }
-
-    const updated = await this.prisma.order.update({
-      where: { id: order.id },
-      data: {
-        discountAmount,
-        finalAmount: Math.max(0, order.totalAmount - discountAmount),
-      },
-      include: {
-        items: {
-          include: { variant: { include: { product: true } } },
-        },
-        store: true,
-        user: {
-          select: {
-            id: true,
-            fullName: true,
-            phone: true,
-            loyaltyPoints: true,
-          },
-        },
-      },
-    });
-
-    return updated;
-  }
 }

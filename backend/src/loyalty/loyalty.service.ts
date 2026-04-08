@@ -11,7 +11,7 @@ export class LoyaltyService {
 
   // Calculation constants
   private readonly EARN_RATE = 10000; // 10,000đ = 1 point
-  private readonly REDEEM_VALUE = 500; // 1 point = 500đ discount (100 pts = 50,000đ)
+  private readonly REDEEM_RATE = 1000; // 1 point = 1,000đ
 
   async getLoyaltyInfo(userId: string) {
     try {
@@ -34,6 +34,48 @@ export class LoyaltyService {
       console.error('Error in getLoyaltyInfo:', error);
       throw error;
     }
+  }
+
+  async validateRedemption(userId: string, points: number) {
+    if (points <= 0) {
+      throw new BadRequestException('Số điểm đổi phải lớn hơn 0');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { loyaltyPoints: true },
+    });
+
+    if (!user || user.loyaltyPoints < points) {
+      throw new BadRequestException('Không đủ điểm thưởng để đổi');
+    }
+
+    return {
+      discountAmount: points * this.REDEEM_RATE,
+    };
+  }
+
+  /**
+   * Actual points deduction, should be called within the order transaction
+   */
+  async redeemPoints(userId: string, points: number, orderId: string, tx: any) {
+    const discountAmount = points * this.REDEEM_RATE;
+
+    await tx.user.update({
+      where: { id: userId },
+      data: { loyaltyPoints: { decrement: points } },
+    });
+
+    await tx.loyaltyTransaction.create({
+      data: {
+        userId,
+        orderId,
+        points: -points,
+        reason: `REDEEMED_FOR_ORDER_${orderId}`,
+      },
+    });
+
+    return { discountAmount };
   }
 
   async earnPoints(userId: string, amount: number, orderId: string) {
@@ -67,105 +109,4 @@ export class LoyaltyService {
       .catch(() => {});
   }
 
-  async redeemPoints(userId: string, points: number) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-    });
-
-    if (!user || user.loyaltyPoints < points) {
-      throw new BadRequestException('Insufficient loyalty points');
-    }
-
-    const discountAmount = points * this.REDEEM_VALUE;
-
-    await this.prisma.$transaction([
-      this.prisma.user.update({
-        where: { id: userId },
-        data: { loyaltyPoints: { decrement: points } },
-      }),
-      this.prisma.loyaltyTransaction.create({
-        data: {
-          userId,
-          points: -points,
-          reason: `REDEEMED_FOR_DISCOUNT`,
-        },
-      }),
-    ]);
-
-    return {
-      pointsRedeemed: points,
-      discountAmount,
-    };
-  }
-
-  async exchangePointsForVoucher(userId: string, points: number) {
-    // Proposed packages: 100, 200, 500
-    const packages: Record<number, { discount: number; label: string }> = {
-      100: { discount: 50000, label: '50k VND Voucher' },
-      200: { discount: 100000, label: '100k VND Voucher' },
-      500: { discount: 250000, label: '250k VND Voucher' },
-    };
-
-    const pkg = packages[points];
-    if (!pkg) {
-      throw new BadRequestException('Gói đổi điểm không hợp lệ');
-    }
-
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-    });
-
-    if (!user || user.loyaltyPoints < points) {
-      throw new BadRequestException('Bạn không đủ điểm để thực hiện giao dịch này');
-    }
-
-    const code = `LOY-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
-    const now = new Date();
-    const expiry = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days
-
-    return await this.prisma.$transaction(async (tx) => {
-      // 1. Update User Points
-      await tx.user.update({
-        where: { id: userId },
-        data: { loyaltyPoints: { decrement: points } },
-      });
-
-      // 2. Create Loyalty Transaction
-      await tx.loyaltyTransaction.create({
-        data: {
-          userId,
-          points: -points,
-          reason: `EXCHANGED_FOR_VOUCHER_${code}`,
-        },
-      });
-
-      // 3. Create Promotion Code
-      const promo = await tx.promotionCode.create({
-        data: {
-          code,
-          description: `Voucher đổi từ ${points} điểm loyalty`,
-          discountType: 'FIXED_AMOUNT',
-          discountValue: pkg.discount,
-          minOrderAmount: pkg.discount * 2, // 2x value min order to avoid abuse
-          startDate: now,
-          endDate: expiry,
-          usageLimit: 1,
-          isActive: true,
-        },
-      });
-
-      // 4. Notify user about exchange
-      this.notificationsService
-        .create({
-          userId,
-          type: 'LOYALTY',
-          title: 'Đổi điểm lấy quà thành công',
-          content: `Bạn đã đổi ${points} điểm lấy mã giảm giá ${code} giảm ${pkg.discount.toLocaleString()}đ.`,
-          data: { code, points, discountValue: pkg.discount },
-        })
-        .catch(() => {});
-
-      return promo;
-    });
-  }
 }

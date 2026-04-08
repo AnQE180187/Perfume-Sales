@@ -37,6 +37,35 @@ export class PromotionsController {
     return this.promotionsService.findActive();
   }
 
+  @Get('public')
+  async findPublic() {
+    return this.promotionsService.findPublic();
+  }
+
+  @Get('redeemable')
+  @UseGuards(JwtAuthGuard)
+  async findRedeemable() {
+    return this.promotionsService.findRedeemable();
+  }
+
+  @Get('my-promotions')
+  @UseGuards(JwtAuthGuard)
+  async getMyPromotions(@Request() req) {
+    return this.promotionsService.getMyPromotions(req.user.userId);
+  }
+
+  @Post('claim/:id')
+  @UseGuards(JwtAuthGuard)
+  async claim(@Param('id') id: string, @Request() req) {
+    return this.promotionsService.claim(req.user.userId, id);
+  }
+
+  @Post('redeem/:id')
+  @UseGuards(JwtAuthGuard)
+  async redeem(@Param('id') id: string, @Request() req) {
+    return this.promotionsService.redeem(req.user.userId, id);
+  }
+
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN', 'STAFF')
