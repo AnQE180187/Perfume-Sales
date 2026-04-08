@@ -16,8 +16,8 @@ export const FeaturedProducts = () => {
 
     useEffect(() => {
         Promise.all([
-            productService.list({ isFeatured: 'true' as any, take: 3 }),
-            productService.list({ isBestseller: 'true' as any, take: 3 }),
+            productService.list({ isFeatured: true, take: 3 }),
+            productService.list({ isBestseller: true, take: 3 }),
             productService.list({ take: 3 })
         ]).then(([f, b, n]) => {
             setFeatured(f.items);

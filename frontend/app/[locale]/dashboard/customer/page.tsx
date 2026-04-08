@@ -55,18 +55,22 @@ export default function CustomerDashboard() {
  
                     {/* Quick Stats Grid */}
                     <div className="grid grid-cols-1 gap-6">
-                        <div className="glass p-8 rounded-[2.5rem] border-gold/10 flex flex-col justify-between group hover:border-gold/30 transition-all">
-                            <div className="flex justify-between items-start mb-4">
-                                <h3 className="text-gold font-heading text-[10px] uppercase tracking-[0.4em]">{t('membership_label')}</h3>
-                                <ArrowUpRight size={14} className="text-muted-foreground group-hover:text-gold transition-colors" />
-                            </div>
-                            <div>
-                                <p className="text-2xl font-heading text-foreground uppercase">{t('membership_tier')}</p>
-                                <div className="mt-4 h-1 w-full bg-secondary rounded-full overflow-hidden">
-                                    <div className="h-full bg-gold w-[75%]" />
+                        <Link href="/dashboard/customer/loyalty">
+                            <div className="glass p-8 rounded-[2.5rem] border-gold/10 flex flex-col justify-between h-full group hover:border-gold/30 transition-all">
+                                <div className="flex justify-between items-start mb-4">
+                                    <h3 className="text-gold font-heading text-[10px] uppercase tracking-[0.4em]">{t('credits_label')}</h3>
+                                    <ArrowUpRight size={14} className="text-muted-foreground group-hover:text-gold transition-colors" />
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-2xl bg-gold/10 flex items-center justify-center text-gold">
+                                        <Coins size={24} />
+                                    </div>
+                                    <p className="text-2xl font-heading text-foreground uppercase">
+                                        {format.number(1250)} <span className="text-sm font-body text-muted-foreground">{t('credits_suffix')}</span>
+                                    </p>
                                 </div>
                             </div>
-                        </div>
+                        </Link>
  
                         <Link href="/dashboard/customer/promotions">
                             <div className="glass p-8 rounded-[2.5rem] border-gold/10 flex flex-col justify-between h-full bg-gradient-to-br from-transparent to-gold/5 hover:border-gold/30 transition-all group">

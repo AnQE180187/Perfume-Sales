@@ -51,8 +51,6 @@ model User {
   addresses           UserAddress[]
   inventoryRequests         InventoryRequest[] @relation("StaffInventoryRequests")
   reviewedInventoryRequests InventoryRequest[] @relation("ReviewedInventoryRequests")
-  returnRequests      ReturnRequest[]     @relation("CustomerReturns")
-  staffReturnRequests ReturnRequest[]     @relation("StaffReturns")
 }
 
 model UserAddress {
@@ -408,9 +406,36 @@ model PromotionCode {
   startDate       DateTime
   endDate         DateTime
   isActive        Boolean               @default(true)
+  
+  // New fields
+  isPublic        Boolean               @default(false) // Mã công khai (free)
+  pointsCost      Int                   @default(0)     // Điểm cần đổi (nếu isPublic = false)
+  
   createdAt       DateTime              @default(now())
   updatedAt       DateTime              @updatedAt
   appliedOrders   AppliedPromotion[]
+  userPromotions  UserPromotion[]      // Liên kết với người dùng
+}
+
+model UserPromotion {
+  id              String        @id @default(cuid())
+  userId          String
+  promotionId     String
+  status          UserPromotionStatus @default(UNUSED)
+  redeemedAt      DateTime      @default(now())
+  usedAt          DateTime?
+
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  promotion       PromotionCode @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  appliedOrders   AppliedPromotion[]
+
+  @@unique([userId, promotionId])
+}
+
+enum UserPromotionStatus {
+  UNUSED
+  USED
+  EXPIRED
 }
 
 model AppliedPromotion {
@@ -418,8 +443,10 @@ model AppliedPromotion {
   orderId         String
   discountAmount  Int
   promotionCodeId String
+  userPromotionId String?       // Link to the specific user's voucher record
   order           Order         @relation(fields: [orderId], references: [id])
   promotionCode   PromotionCode @relation(fields: [promotionCodeId], references: [id])
+  userPromotion   UserPromotion? @relation(fields: [userPromotionId], references: [id])
 }
 
 /// Reviews & AI summarization

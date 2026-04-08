@@ -22,6 +22,8 @@ export default function PromotionsAdmin() {
     usageLimit: 100,
     startDate: new Date().toISOString().split('T')[0],
     endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    isPublic: true,
+    pointsCost: 0,
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -49,6 +51,7 @@ export default function PromotionsAdmin() {
         ...form,
         discountValue: Number(form.discountValue),
         usageLimit: Number(form.usageLimit),
+        pointsCost: Number(form.pointsCost),
         startDate: new Date(form.startDate).toISOString(),
         endDate: new Date(form.endDate).toISOString(),
       });
@@ -139,7 +142,12 @@ export default function PromotionsAdmin() {
                 <tr key={p.id} className="hover:bg-white/2 transition-colors group">
                   <td className="px-10 py-10">
                     <span className="font-heading text-lg tracking-wider text-foreground group-hover:text-gold transition-colors">{p.code}</span>
-                    <p className="text-[9px] text-muted-foreground font-mono mt-1 opacity-60 truncate max-w-[150px]">{p.description}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className={`text-[8px] uppercase tracking-widest font-bold px-2 py-0.5 rounded border ${p.isPublic ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-gold/10 text-gold border-gold/20'}`}>
+                        {p.isPublic ? 'Public' : `Private (${p.pointsCost} pts)`}
+                      </span>
+                    </div>
+                    <p className="text-[9px] text-muted-foreground font-mono mt-2 opacity-60 truncate max-w-[150px]">{p.description}</p>
                   </td>
                   <td className="px-10 py-10">
                     <span className="text-xl font-serif text-gold">
@@ -248,7 +256,7 @@ export default function PromotionsAdmin() {
                         required
                         value={form.discountValue}
                         onChange={(e) => setForm({ ...form, discountValue: Number(e.target.value) })}
-                        className="w-full h-16 bg-white/5 border border-white/5 rounded-[1.5rem] px-8 text-xs font-bold tracking-widest outline-none focus:border-gold/50 transition-all"
+                        className="w-full h-16 bg-white/5 border border-white/5 rounded-[1.5rem] px-8 text-xs font-bold uppercase tracking-widest outline-none focus:border-gold/50 transition-all"
                       />
                     </div>
                     <div className="space-y-4">
@@ -258,7 +266,7 @@ export default function PromotionsAdmin() {
                         required
                         value={form.usageLimit}
                         onChange={(e) => setForm({ ...form, usageLimit: Number(e.target.value) })}
-                        className="w-full h-16 bg-white/5 border border-white/5 rounded-[1.5rem] px-8 text-xs font-bold tracking-widest outline-none focus:border-gold/50 transition-all"
+                        className="w-full h-16 bg-white/5 border border-white/5 rounded-[1.5rem] px-8 text-xs font-bold uppercase tracking-widest outline-none focus:border-gold/50 transition-all"
                       />
                     </div>
 
@@ -269,7 +277,7 @@ export default function PromotionsAdmin() {
                         required
                         value={form.startDate}
                         onChange={(e) => setForm({ ...form, startDate: e.target.value })}
-                        className="w-full h-16 bg-white/5 border border-white/5 rounded-[1.5rem] px-8 text-xs font-bold tracking-widest outline-none focus:border-gold/50 transition-all invert dark:invert-0"
+                        className="w-full h-16 bg-white/5 border border-white/5 rounded-[1.5rem] px-8 text-xs font-bold uppercase tracking-widest outline-none focus:border-gold/50 transition-all invert dark:invert-0"
                       />
                     </div>
                     <div className="space-y-4">
@@ -279,9 +287,42 @@ export default function PromotionsAdmin() {
                         required
                         value={form.endDate}
                         onChange={(e) => setForm({ ...form, endDate: e.target.value })}
-                        className="w-full h-16 bg-white/5 border border-white/5 rounded-[1.5rem] px-8 text-xs font-bold tracking-widest outline-none focus:border-gold/50 transition-all invert dark:invert-0"
+                        className="w-full h-16 bg-white/5 border border-white/5 rounded-[1.5rem] px-8 text-xs font-bold uppercase tracking-widest outline-none focus:border-gold/50 transition-all invert dark:invert-0"
                       />
                     </div>
+
+                    <div className="space-y-4">
+                      <label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground ml-1">{t('modals.is_public')}</label>
+                      <div className="flex items-center gap-4 h-16">
+                        <button
+                          type="button"
+                          onClick={() => setForm({ ...form, isPublic: true })}
+                          className={`flex-1 h-full rounded-2xl border transition-all text-[10px] font-bold uppercase tracking-widest ${form.isPublic ? 'bg-gold text-black border-gold' : 'border-white/5 text-muted-foreground hover:border-gold/30'}`}
+                        >
+                          {t('types.public')}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setForm({ ...form, isPublic: false })}
+                          className={`flex-1 h-full rounded-2xl border transition-all text-[10px] font-bold uppercase tracking-widest ${!form.isPublic ? 'bg-gold text-black border-gold' : 'border-white/5 text-muted-foreground hover:border-gold/30'}`}
+                        >
+                          {t('types.private')}
+                        </button>
+                      </div>
+                    </div>
+
+                    {!form.isPublic && (
+                      <div className="space-y-4">
+                        <label className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground ml-1">{t('modals.points_cost')}</label>
+                        <input
+                          type="number"
+                          required
+                          value={form.pointsCost}
+                          onChange={(e) => setForm({ ...form, pointsCost: Number(e.target.value) })}
+                          className="w-full h-16 bg-white/5 border border-white/5 rounded-[1.5rem] px-8 text-xs font-bold uppercase tracking-widest outline-none focus:border-gold/50 transition-all"
+                        />
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-4">

@@ -6,6 +6,7 @@ import {
   IsString,
   Min,
   IsDateString,
+  IsBoolean,
 } from 'class-validator';
 import { PromotionDiscountType } from '@prisma/client';
 
@@ -45,6 +46,15 @@ export class CreatePromotionDto {
 
   @IsDateString()
   endDate: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isPublic?: boolean;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  pointsCost?: number;
 }
 
 export class ValidatePromotionDto {

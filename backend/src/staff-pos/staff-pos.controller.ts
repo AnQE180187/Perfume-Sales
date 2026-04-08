@@ -99,6 +99,7 @@ export class StaffPosController {
     );
   }
 
+
   @Get('orders/:id')
   getOrder(@Req() req: any, @Param('id') orderId: string) {
     const user = req.user as { userId: string };

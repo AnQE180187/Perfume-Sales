@@ -11,7 +11,7 @@ export class LoyaltyService {
 
   // Calculation constants
   private readonly EARN_RATE = 10000; // 10,000đ = 1 point
-  private readonly REDEEM_VALUE = 500; // 1 point = 500đ discount (100 pts = 50,000đ)
+  private readonly REDEEM_RATE = 1000; // 1 point = 1,000đ
 
   async getLoyaltyInfo(userId: string) {
     try {
@@ -34,6 +34,48 @@ export class LoyaltyService {
       console.error('Error in getLoyaltyInfo:', error);
       throw error;
     }
+  }
+
+  async validateRedemption(userId: string, points: number) {
+    if (points <= 0) {
+      throw new BadRequestException('Số điểm đổi phải lớn hơn 0');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { loyaltyPoints: true },
+    });
+
+    if (!user || user.loyaltyPoints < points) {
+      throw new BadRequestException('Không đủ điểm thưởng để đổi');
+    }
+
+    return {
+      discountAmount: points * this.REDEEM_RATE,
+    };
+  }
+
+  /**
+   * Actual points deduction, should be called within the order transaction
+   */
+  async redeemPoints(userId: string, points: number, orderId: string, tx: any) {
+    const discountAmount = points * this.REDEEM_RATE;
+
+    await tx.user.update({
+      where: { id: userId },
+      data: { loyaltyPoints: { decrement: points } },
+    });
+
+    await tx.loyaltyTransaction.create({
+      data: {
+        userId,
+        orderId,
+        points: -points,
+        reason: `REDEEMED_FOR_ORDER_${orderId}`,
+      },
+    });
+
+    return { discountAmount };
   }
 
   async earnPoints(userId: string, amount: number, orderId: string) {
@@ -67,34 +109,4 @@ export class LoyaltyService {
       .catch(() => {});
   }
 
-  async redeemPoints(userId: string, points: number) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-    });
-
-    if (!user || user.loyaltyPoints < points) {
-      throw new BadRequestException('Insufficient loyalty points');
-    }
-
-    const discountAmount = points * this.REDEEM_VALUE;
-
-    await this.prisma.$transaction([
-      this.prisma.user.update({
-        where: { id: userId },
-        data: { loyaltyPoints: { decrement: points } },
-      }),
-      this.prisma.loyaltyTransaction.create({
-        data: {
-          userId,
-          points: -points,
-          reason: `REDEEMED_FOR_DISCOUNT`,
-        },
-      }),
-    ]);
-
-    return {
-      pointsRedeemed: points,
-      discountAmount,
-    };
-  }
 }

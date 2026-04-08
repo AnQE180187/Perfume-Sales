@@ -60,13 +60,13 @@ export const Sidebar = () => {
             { icon: Package, label: navT('admin.products'), href: '/dashboard/admin/products' },
             { icon: FolderTree, label: navT('admin.catalog'), href: '/dashboard/admin/catalog' },
             { icon: MessageSquare, label: navT('admin.reviews'), href: '/dashboard/admin/reviews' },
-            { icon: BookOpen, label: 'Tạp chí', href: '/dashboard/admin/manage-journal' },
+            { icon: BookOpen, label: navT('admin.manage_journal'), href: '/dashboard/admin/manage-journal' },
             { icon: Tag, label: navT('admin.promotions'), href: '/dashboard/admin/marketing/promotions' },
             { icon: Receipt, label: commonT('orders'), href: '/dashboard/admin/orders' },
             { icon: RotateCcw, label: 'Đổi trả', href: '/dashboard/admin/returns' },
             { icon: BarChart3, label: navT('admin.analytics'), href: '/dashboard/admin/analytics' },
             { icon: Mail, label: navT('admin.marketing'), href: '/dashboard/admin/marketing' },
-            { icon: Sparkles, label: 'Banners', href: '/dashboard/admin/manage-banner' },
+            { icon: Sparkles, label: navT('admin.manage_banner'), href: '/dashboard/admin/manage-banner' },
             { icon: Settings2, label: commonT('settings'), href: '/dashboard/admin/settings' },
         ];
 

@@ -19,8 +19,8 @@ export class LoyaltyController {
     return this.loyaltyService.getLoyaltyInfo(req.user.userId);
   }
 
-  @Post('redeem')
-  async redeem(@Request() req, @Body('points') points: number) {
-    return this.loyaltyService.redeemPoints(req.user.userId, points);
+  @Post('validate-points')
+  async validatePoints(@Request() req, @Body('points') points: number) {
+    return this.loyaltyService.validateRedemption(req.user.userId, points);
   }
 }

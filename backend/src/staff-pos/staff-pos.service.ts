@@ -16,12 +16,15 @@ import { PrismaService } from '../prisma/prisma.service';
 import { PaymentsService } from '../payments/payments.service';
 import { StoresService } from '../stores/stores.service';
 
+import { LoyaltyService } from '../loyalty/loyalty.service';
+
 @Injectable()
 export class StaffPosService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly paymentsService: PaymentsService,
     private readonly storesService: StoresService,
+    private readonly loyaltyService: LoyaltyService,
   ) { }
 
   /**
@@ -428,12 +431,16 @@ export class StaffPosService {
         0,
       );
 
+      // Preserve and clamp old discountAmount
+      const oldDiscount = order.discountAmount || 0;
+      const newDiscount = Math.min(oldDiscount, totalAmount);
+
       await tx.order.update({
         where: { id: order.id },
         data: {
           totalAmount,
-          discountAmount: 0,
-          finalAmount: totalAmount,
+          discountAmount: newDiscount,
+          finalAmount: totalAmount - newDiscount,
         },
       });
     });
@@ -537,6 +544,7 @@ export class StaffPosService {
           status: OrderStatus.COMPLETED,
         },
       });
+
 
       // Award loyalty points (1 point per 10,000 VND)
       const fullOrder = await tx.order.findUnique({ where: { id: order.id } });
@@ -862,4 +870,5 @@ export class StaffPosService {
 
     return { success: true, orderId: order.id };
   }
+
 }
