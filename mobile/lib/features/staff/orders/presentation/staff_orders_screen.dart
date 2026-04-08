@@ -9,6 +9,7 @@ import '../../../../core/theme/app_radius.dart';
 import '../../../../core/widgets/shimmer_loading.dart';
 import '../models/orders_models.dart';
 import '../providers/orders_provider.dart';
+import '../../pos/models/pos_models.dart';
 import '../../pos/providers/pos_provider.dart';
 import '../../staff_shell.dart';
 
@@ -595,6 +596,10 @@ class _OrderDetailSheet extends ConsumerWidget {
                         AppSpacing.vertMd,
                         _buildPaymentInfo(order),
                       ],
+                      if (order.isPaid) ...[
+                        AppSpacing.vertMd,
+                        _buildReturnButton(context, ref, order),
+                      ],
                       if (!order.isPaid && order.status != 'CANCELLED') ...[
                         AppSpacing.vertMd,
                         _buildActionButtons(context, ref, order),
@@ -692,6 +697,106 @@ class _OrderDetailSheet extends ConsumerWidget {
           ],
         ),
       ],
+    );
+  }
+
+  Widget _buildReturnButton(
+    BuildContext context,
+    WidgetRef ref,
+    StaffOrder order,
+  ) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: () async {
+          final confirmed = await showDialog<bool>(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: AppRadius.cardBorder),
+              title: Text(
+                'Xác nhận trả hàng',
+                style: GoogleFonts.playfairDisplay(
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.deepCharcoal,
+                ),
+              ),
+              content: Text(
+                'Tạo yêu cầu trả hàng & hoàn tiền cho đơn ${order.code}?',
+                style: GoogleFonts.montserrat(
+                  fontSize: 13,
+                  color: AppTheme.mutedSilver,
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: const Text('Không'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  child: const Text('Xác nhận'),
+                ),
+              ],
+            ),
+          );
+
+          if (confirmed != true) return;
+
+          final ok = await ref
+              .read(posProvider.notifier)
+              .createPosReturn(
+                orderId: order.id,
+                orderItems: order.items
+                    .map(
+                      (e) => PosOrderItem(
+                        id: e.id.toString(),
+                        variantId: e.variantId,
+                        quantity: e.quantity,
+                        unitPrice: e.unitPrice,
+                        totalPrice: e.totalPrice,
+                        variant: e.variant != null
+                            ? PosOrderItemVariant(
+                                id: e.variant!.id,
+                                name: e.variant!.name,
+                                price: e.variant!.price,
+                                product: e.variant!.product == null
+                                    ? null
+                                    : PosOrderItemProduct(
+                                        id: e.variant!.product!.id,
+                                        name: e.variant!.product!.name,
+                                      ),
+                              )
+                            : null,
+                      ),
+                    )
+                    .toList(),
+                reason: 'Khách trả hàng tại quầy',
+              );
+
+          if (!context.mounted) return;
+          Navigator.pop(context);
+          ref.read(ordersProvider.notifier).loadOrders();
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                ok
+                    ? 'Đã tạo trả hàng & hoàn tiền thành công'
+                    : 'Không thể xử lý trả hàng',
+              ),
+              backgroundColor: ok ? Colors.green.shade600 : Colors.red.shade600,
+            ),
+          );
+        },
+        icon: const Icon(Icons.keyboard_return_rounded, size: 18),
+        label: const Text('Trả hàng / Hoàn tiền'),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.blueGrey.shade700,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+          shape: RoundedRectangleBorder(borderRadius: AppRadius.buttonBorder),
+        ),
+      ),
     );
   }
 

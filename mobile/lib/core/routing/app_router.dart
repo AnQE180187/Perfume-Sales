@@ -14,6 +14,7 @@ import '../../features/checkout/presentation/order_success_screen.dart';
 import '../../features/orders/presentation/orders_screen.dart';
 import '../../features/orders/presentation/order_detail_screen.dart';
 import '../../features/orders/presentation/screens/track_order_screen.dart';
+import '../../features/orders/presentation/screens/return_order_screen.dart';
 import '../../features/payment/presentation/payment_method_screen.dart';
 import '../../features/payment/presentation/payment_result_screen.dart';
 import '../../features/payment/presentation/screens/payment_method_screen.dart';
@@ -136,6 +137,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final orderId = state.pathParameters['id']!;
           return TrackOrderScreen(orderId: orderId);
+        },
+      ),
+      GoRoute(
+        path: '/orders/:id/return',
+        builder: (context, state) {
+          final orderId = state.pathParameters['id']!;
+          return ReturnOrderScreen(orderId: orderId);
         },
       ),
       GoRoute(

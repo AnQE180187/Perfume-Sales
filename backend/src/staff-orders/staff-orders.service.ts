@@ -1,10 +1,14 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { OrderChannel } from '@prisma/client';
 
 @Injectable()
 export class StaffOrdersService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   async listStaffPosOrders(
     userId: string,
@@ -102,6 +106,47 @@ export class StaffOrdersService {
 
     if (!order) {
       throw new NotFoundException('Order not found');
+    }
+
+    // Staff can only view their own POS orders
+    if (role === 'STAFF' && order.staffId !== userId) {
+      throw new ForbiddenException('You can only view your own orders');
+    }
+
+    return order;
+  }
+
+  async getOrderByCode(code: string, userId: string, role: 'STAFF' | 'ADMIN') {
+    const normalizedCode = code.trim();
+
+    const order = await this.prisma.order.findUnique({
+      where: { code: normalizedCode },
+      include: {
+        items: {
+          include: {
+            variant: {
+              include: { product: true },
+            },
+          },
+        },
+        staff: {
+          select: { id: true, fullName: true, email: true },
+        },
+        payments: true,
+        user: {
+          select: { id: true, fullName: true, email: true, phone: true },
+        },
+        store: true,
+        statusHistory: { orderBy: { createdAt: 'desc' } },
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    if (order.channel !== OrderChannel.POS) {
+      throw new ForbiddenException('Only POS orders are allowed in this flow');
     }
 
     // Staff can only view their own POS orders

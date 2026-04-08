@@ -163,6 +163,14 @@ class OrderDetailScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 10),
                     ],
+                    if (order.status.name.toLowerCase() == 'completed') ...[
+                      _OutlineButton(
+                        icon: Icons.assignment_return_rounded,
+                        label: 'Yêu cầu trả hàng',
+                        onPressed: () => context.push(AppRoutes.returnOrderWithId(order.id)),
+                      ),
+                      const SizedBox(height: 10),
+                    ],
                     _OutlineButton(
                       icon: Icons.headset_mic_rounded,
                       label: 'Liên hệ hỗ trợ',

@@ -6,7 +6,7 @@ import {
     MessageSquare, BrainCircuit, Heart, History, Coins, Tag,
     Monitor, Box, ClipboardList, BarChart3, ShieldCheck,
     Globe, Mail, FileText, Settings2, Smartphone, Receipt, FolderTree,
-    Sparkles, Zap, Store, Warehouse, BookOpen
+    Sparkles, Zap, Store, Warehouse, BookOpen, RotateCcw
 } from 'lucide-react';
 import { Link, usePathname } from '@/lib/i18n';
 import { useAuth } from '@/hooks/use-auth';
@@ -48,6 +48,7 @@ export const Sidebar = () => {
             { icon: Smartphone, label: navT('staff.pos'), href: '/dashboard/staff/pos' },
             { icon: Box, label: navT('staff.inventory'), href: '/dashboard/staff/inventory' },
             { icon: ClipboardList, label: navT('staff.orders'), href: '/dashboard/staff/orders' },
+            { icon: RotateCcw, label: 'Đổi trả', href: '/dashboard/staff/returns' },
             { icon: BarChart3, label: navT('staff.kpi'), href: '/dashboard/staff/kpi' },
         ];
 
@@ -62,6 +63,7 @@ export const Sidebar = () => {
             { icon: BookOpen, label: 'Tạp chí', href: '/dashboard/admin/manage-journal' },
             { icon: Tag, label: navT('admin.promotions'), href: '/dashboard/admin/marketing/promotions' },
             { icon: Receipt, label: commonT('orders'), href: '/dashboard/admin/orders' },
+            { icon: RotateCcw, label: 'Đổi trả', href: '/dashboard/admin/returns' },
             { icon: BarChart3, label: navT('admin.analytics'), href: '/dashboard/admin/analytics' },
             { icon: Mail, label: navT('admin.marketing'), href: '/dashboard/admin/marketing' },
             { icon: Sparkles, label: 'Banners', href: '/dashboard/admin/manage-banner' },

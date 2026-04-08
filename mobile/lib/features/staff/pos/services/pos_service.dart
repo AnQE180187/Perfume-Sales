@@ -1,136 +1,299 @@
 import '../../../../core/api/api_client.dart';
 import '../../../../core/api/api_endpoints.dart';
+import '../../../../core/utils/api_error_mapper.dart';
 import '../../models/staff_store.dart';
 import '../models/pos_models.dart';
 
+class ReturnItemRequest {
+  final String variantId;
+  final int quantity;
+  final String? reason;
+
+  ReturnItemRequest({
+    required this.variantId,
+    required this.quantity,
+    this.reason,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'variantId': variantId,
+    'quantity': quantity,
+    if (reason != null && reason!.isNotEmpty) 'reason': reason,
+  };
+}
+
+class CreateReturnRequest {
+  final String orderId;
+  final List<ReturnItemRequest> items;
+  final String? reason;
+
+  CreateReturnRequest({
+    required this.orderId,
+    required this.items,
+    this.reason,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'orderId': orderId,
+    'origin': 'POS',
+    'items': items.map((e) => e.toJson()).toList(),
+    if (reason != null && reason!.isNotEmpty) 'reason': reason,
+  };
+}
+
 class StaffPosService {
-  final ApiClient _client;
+  final ApiClient client;
+  StaffPosService({required this.client});
 
-  StaffPosService({required ApiClient client}) : _client = client;
+  Never _rethrowMapped(dynamic e) =>
+      throw Exception(ApiErrorMapper.toUserMessage(e));
 
-  /// Fetch stores assigned to current user.
-  Future<List<StaffStore>> getMyStores() async {
-    final response = await _client.get(ApiEndpoints.myStores);
-    final data = response.data;
-    if (data is! List) return const [];
-    return data
-        .whereType<Map<String, dynamic>>()
-        .map((e) => StaffStore.fromJson(e))
-        .toList();
-  }
-
-  /// Search products available in a store.
   Future<List<PosProduct>> searchProducts({
     String? query,
     String? barcode,
     String? storeId,
+    int page = 1,
+    int limit = 50,
   }) async {
-    final response = await _client.get(
-      ApiEndpoints.staffPosProducts,
-      queryParameters: {
-        if (query != null && query.isNotEmpty) 'q': query,
-        if (barcode != null && barcode.isNotEmpty) 'barcode': barcode,
-        if (storeId != null) 'storeId': storeId,
-      },
-    );
-    final data = response.data;
-    if (data is! List) return const [];
-    return data
-        .whereType<Map<String, dynamic>>()
-        .map((e) => PosProduct.fromJson(e))
-        .toList();
+    try {
+      final response = await client.get(
+        ApiEndpoints.staffPosProducts,
+        queryParameters: {
+          if (query != null && query.isNotEmpty) 'q': query,
+          if (barcode != null && barcode.isNotEmpty) 'barcode': barcode,
+          if (storeId != null && storeId.isNotEmpty) 'storeId': storeId,
+          'page': page,
+          'limit': limit,
+        },
+      );
+
+      final data = response.data;
+      if (data is List) {
+        return data
+            .map((e) => PosProduct.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+      }
+      if (data is Map && data['data'] is List) {
+        final list = data['data'] as List;
+        return list
+            .map((e) => PosProduct.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+      }
+      return const [];
+    } catch (e) {
+      _rethrowMapped(e);
+    }
   }
 
-  /// Create a new draft POS order.
-  Future<PosOrder> createDraftOrder({
-    required String storeId,
-    String? customerPhone,
-  }) async {
-    final response = await _client.post(
-      ApiEndpoints.staffPosOrders,
-      data: {
-        'storeId': storeId,
-        if (customerPhone != null) 'customerPhone': customerPhone,
-      },
-    );
-    return PosOrder.fromJson(response.data as Map<String, dynamic>);
+  Future<List<StaffStore>> getMyStores() async {
+    try {
+      final response = await client.get(ApiEndpoints.myStores);
+      final data = response.data;
+      if (data is List) {
+        return data
+            .map((e) => StaffStore.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+      }
+      if (data is Map && data['data'] is List) {
+        final list = data['data'] as List;
+        return list
+            .map((e) => StaffStore.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+      }
+      return const [];
+    } catch (e) {
+      _rethrowMapped(e);
+    }
   }
 
-  /// Attach / change customer on an order.
-  Future<PosOrder> setCustomer({
-    required String orderId,
-    required String customerPhone,
-  }) async {
-    final response = await _client.patch(
-      ApiEndpoints.staffPosOrderCustomer(orderId),
-      data: {'customerPhone': customerPhone},
-    );
-    return PosOrder.fromJson(response.data as Map<String, dynamic>);
+  Future<PosOrder> createDraftOrder({required String storeId}) async {
+    try {
+      final response = await client.post(
+        ApiEndpoints.staffPosOrders,
+        data: {'storeId': storeId},
+      );
+      final data = response.data is Map && response.data['data'] != null
+          ? response.data['data']
+          : response.data;
+      return PosOrder.fromJson(Map<String, dynamic>.from(data));
+    } catch (e) {
+      _rethrowMapped(e);
+    }
   }
 
-  /// Add/update/remove item in a POS order.
-  Future<PosOrder> upsertItem({
-    required String orderId,
-    required String variantId,
-    required int quantity,
-  }) async {
-    final response = await _client.patch(
-      ApiEndpoints.staffPosOrderItems(orderId),
-      data: {'variantId': variantId, 'quantity': quantity},
-    );
-    return PosOrder.fromJson(response.data as Map<String, dynamic>);
-  }
-
-  /// Get current order details.
-  Future<PosOrder> getOrder(String orderId) async {
-    final response = await _client.get(ApiEndpoints.staffPosOrderById(orderId));
-    return PosOrder.fromJson(response.data as Map<String, dynamic>);
-  }
-
-  /// Pay by cash.
-  Future<PosOrder> payCash(String orderId) async {
-    final response = await _client.post(ApiEndpoints.staffPosPayCash(orderId));
-    return PosOrder.fromJson(response.data as Map<String, dynamic>);
-  }
-
-  /// Pay by QR.
-  Future<Map<String, dynamic>> payQr(String orderId) async {
-    final response = await _client.post(ApiEndpoints.staffPosPayQr(orderId));
-    return response.data as Map<String, dynamic>;
-  }
-
-  /// Lookup customer loyalty by phone.
-  Future<LoyaltyResult> lookupLoyalty(String phone) async {
-    final response = await _client.get(
-      ApiEndpoints.staffPosLoyalty,
-      queryParameters: {'phone': phone},
-    );
-    return LoyaltyResult.fromJson(response.data as Map<String, dynamic>);
-  }
-
-  /// Cancel a pending POS order.
-  Future<void> cancelOrder(String orderId) async {
-    await _client.delete(ApiEndpoints.staffPosCancelOrder(orderId));
-  }
-
-  /// Checkout: create order + items + pay in one shot.
-  /// For CASH: returns a fully paid PosOrder.
-  /// For QR: returns a map with { order, checkoutUrl, ... }.
   Future<Map<String, dynamic>> checkout({
     required String storeId,
     required List<Map<String, dynamic>> items,
     required String paymentMethod,
     String? customerPhone,
   }) async {
-    final response = await _client.post(
-      ApiEndpoints.staffPosCheckout,
-      data: {
-        'storeId': storeId,
-        'items': items,
-        'paymentMethod': paymentMethod,
-        if (customerPhone != null) 'customerPhone': customerPhone,
-      },
-    );
-    return response.data as Map<String, dynamic>;
+    try {
+      final response = await client.post(
+        ApiEndpoints.staffPosCheckout,
+        data: {
+          'storeId': storeId,
+          'items': items,
+          'paymentMethod': paymentMethod,
+          if (customerPhone != null && customerPhone.isNotEmpty)
+            'customerPhone': customerPhone,
+        },
+      );
+      final data = response.data is Map && response.data['data'] != null
+          ? response.data['data']
+          : response.data;
+      return Map<String, dynamic>.from(data as Map);
+    } catch (e) {
+      _rethrowMapped(e);
+    }
+  }
+
+  Future<PosOrder> upsertItem({
+    required String orderId,
+    required String variantId,
+    required int quantity,
+  }) async {
+    try {
+      final response = await client.patch(
+        ApiEndpoints.staffPosOrderItems(orderId),
+        data: {'variantId': variantId, 'quantity': quantity},
+      );
+      final data = response.data is Map && response.data['data'] != null
+          ? response.data['data']
+          : response.data;
+      return PosOrder.fromJson(Map<String, dynamic>.from(data));
+    } catch (e) {
+      _rethrowMapped(e);
+    }
+  }
+
+  Future<PosOrder> setCustomer({
+    required String orderId,
+    required String customerPhone,
+  }) async {
+    try {
+      final response = await client.patch(
+        ApiEndpoints.staffPosOrderCustomer(orderId),
+        data: {'customerPhone': customerPhone},
+      );
+      final data = response.data is Map && response.data['data'] != null
+          ? response.data['data']
+          : response.data;
+      return PosOrder.fromJson(Map<String, dynamic>.from(data));
+    } catch (e) {
+      _rethrowMapped(e);
+    }
+  }
+
+  Future<PosOrder> payCash(String orderId) async {
+    try {
+      final response = await client.post(ApiEndpoints.staffPosPayCash(orderId));
+      final data = response.data is Map && response.data['data'] != null
+          ? response.data['data']
+          : response.data;
+      return PosOrder.fromJson(Map<String, dynamic>.from(data));
+    } catch (e) {
+      _rethrowMapped(e);
+    }
+  }
+
+  Future<Map<String, dynamic>> payQr(String orderId) async {
+    try {
+      final response = await client.post(ApiEndpoints.staffPosPayQr(orderId));
+      final data = response.data is Map && response.data['data'] != null
+          ? response.data['data']
+          : response.data;
+      return Map<String, dynamic>.from(data as Map);
+    } catch (e) {
+      _rethrowMapped(e);
+    }
+  }
+
+  Future<PosOrder> getOrder(String orderId) async {
+    try {
+      final response = await client.get(
+        ApiEndpoints.staffPosOrderById(orderId),
+      );
+      final data = response.data is Map && response.data['data'] != null
+          ? response.data['data']
+          : response.data;
+      return PosOrder.fromJson(Map<String, dynamic>.from(data));
+    } catch (e) {
+      _rethrowMapped(e);
+    }
+  }
+
+  Future<bool> cancelOrder(String orderId) async {
+    try {
+      await client.patch(ApiEndpoints.staffPosCancelOrder(orderId));
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<Map<String, dynamic>> createPosReturn(
+    CreateReturnRequest request,
+  ) async {
+    try {
+      final response = await client.post(
+        '/returns/admin/pos/create',
+        data: request.toJson(),
+      );
+      final data = response.data is Map && response.data['data'] != null
+          ? response.data['data']
+          : response.data;
+      return Map<String, dynamic>.from(data as Map);
+    } catch (e) {
+      _rethrowMapped(e);
+    }
+  }
+
+  Future<Map<String, dynamic>> receiveReturn({
+    required String returnId,
+    required List<Map<String, dynamic>> items,
+    String? note,
+    String receivedLocation = 'POS',
+  }) async {
+    try {
+      final response = await client.patch(
+        '/returns/admin/$returnId/receive',
+        data: {
+          'items': items,
+          'receivedLocation': receivedLocation,
+          if (note != null && note.isNotEmpty) 'note': note,
+        },
+      );
+      final data = response.data is Map && response.data['data'] != null
+          ? response.data['data']
+          : response.data;
+      return Map<String, dynamic>.from(data as Map);
+    } catch (e) {
+      _rethrowMapped(e);
+    }
+  }
+
+  Future<Map<String, dynamic>> refundReturn({
+    required String returnId,
+    required String method,
+    String? transactionId,
+    String? note,
+  }) async {
+    try {
+      final response = await client.post(
+        '/returns/admin/$returnId/refund',
+        data: {
+          'method': method,
+          if (transactionId != null && transactionId.isNotEmpty)
+            'transactionId': transactionId,
+          if (note != null && note.isNotEmpty) 'note': note,
+        },
+      );
+      final data = response.data is Map && response.data['data'] != null
+          ? response.data['data']
+          : response.data;
+      return Map<String, dynamic>.from(data as Map);
+    } catch (e) {
+      _rethrowMapped(e);
+    }
   }
 }

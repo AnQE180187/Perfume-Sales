@@ -30,6 +30,7 @@ import { BannersModule } from './banners/banners.module';
 import { JournalsModule } from './journals/journals.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { QuizModule } from './quiz/quiz.module';
+import { ReturnsModule } from './returns/returns.module';
 
 @Module({
   imports: [
@@ -63,6 +64,7 @@ import { QuizModule } from './quiz/quiz.module';
     JournalsModule,
     NotificationsModule,
     QuizModule,
+    ReturnsModule,
   ],
 
   controllers: [AppController],
