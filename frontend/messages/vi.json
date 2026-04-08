@@ -1,4 +1,9 @@
 {
+  "Returns": {
+    "title": "Yêu cầu trả hàng của tôi",
+    "backToOrders": "Quay lại đơn hàng"
+  }
+}
     "featured": {
         "currency_code": "VND",
         "currency_symbol": "đ",

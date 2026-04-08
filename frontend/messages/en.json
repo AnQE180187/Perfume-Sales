@@ -1,4 +1,9 @@
 {
+  "Returns": {
+    "title": "My Returns",
+    "backToOrders": "Back to Orders"
+  }
+}
     "featured": {
         "currency_code": "USD",
         "currency_symbol": "$",

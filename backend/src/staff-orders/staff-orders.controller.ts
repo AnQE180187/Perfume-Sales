@@ -8,7 +8,7 @@ import { StaffOrdersService } from './staff-orders.service';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('STAFF', 'ADMIN')
 export class StaffOrdersController {
-  constructor(private readonly staffOrdersService: StaffOrdersService) { }
+  constructor(private readonly staffOrdersService: StaffOrdersService) {}
 
   @Get()
   list(
@@ -27,6 +27,16 @@ export class StaffOrdersController {
       s,
       t,
       search,
+    );
+  }
+
+  @Get('by-code/:code')
+  getByCode(@Req() req: any, @Param('code') code: string) {
+    const user = req.user as { userId: string; role: string };
+    return this.staffOrdersService.getOrderByCode(
+      code,
+      user.userId,
+      (user.role as 'STAFF' | 'ADMIN') || 'STAFF',
     );
   }
 

@@ -50,6 +50,9 @@ class PosState {
   final bool isLoading;
   final String? error;
   final String? successMessage;
+  final bool isReturnLoading;
+  final String? returnError;
+  final String? returnSuccessMessage;
 
   const PosState({
     this.currentOrder,
@@ -58,6 +61,9 @@ class PosState {
     this.isLoading = false,
     this.error,
     this.successMessage,
+    this.isReturnLoading = false,
+    this.returnError,
+    this.returnSuccessMessage,
   });
 
   /// Whether we're editing a server-side order (from Orders tab).
@@ -76,6 +82,9 @@ class PosState {
     bool? isLoading,
     String? error,
     String? successMessage,
+    bool? isReturnLoading,
+    String? returnError,
+    String? returnSuccessMessage,
     bool clearOrder = false,
     bool clearCustomer = false,
   }) {
@@ -88,6 +97,9 @@ class PosState {
       isLoading: isLoading ?? this.isLoading,
       error: error,
       successMessage: successMessage,
+      isReturnLoading: isReturnLoading ?? this.isReturnLoading,
+      returnError: returnError,
+      returnSuccessMessage: returnSuccessMessage,
     );
   }
 }
@@ -373,6 +385,82 @@ class PosNotifier extends StateNotifier<PosState> {
       state = state.copyWith(isLoading: false, error: e.toString());
       return false;
     }
+  }
+
+  Future<bool> createPosReturn({
+    required String orderId,
+    required List<PosOrderItem> orderItems,
+    String? reason,
+  }) async {
+    if (orderItems.isEmpty) {
+      state = state.copyWith(returnError: 'Không có sản phẩm để trả.');
+      return false;
+    }
+
+    state = state.copyWith(
+      isReturnLoading: true,
+      returnError: null,
+      returnSuccessMessage: null,
+    );
+
+    try {
+      final request = CreateReturnRequest(
+        orderId: orderId,
+        reason: reason,
+        items: orderItems
+            .map(
+              (e) => ReturnItemRequest(
+                variantId: e.variantId,
+                quantity: e.quantity,
+                reason: reason,
+              ),
+            )
+            .toList(),
+      );
+
+      final created = await _service.createPosReturn(request);
+      final returnId = (created['id'] ?? '').toString();
+      if (returnId.isEmpty) {
+        throw Exception('Không tạo được phiếu trả hàng');
+      }
+
+      final receiveItems = orderItems
+          .map(
+            (e) => {
+              'variantId': e.variantId,
+              'qtyReceived': e.quantity,
+              'condition': 'NEW_SEALED',
+              'sealIntact': true,
+            },
+          )
+          .toList();
+
+      await _service.receiveReturn(
+        returnId: returnId,
+        items: receiveItems,
+        receivedLocation: 'POS',
+        note: 'Nhận hàng trực tiếp tại quầy',
+      );
+
+      await _service.refundReturn(
+        returnId: returnId,
+        method: 'cash',
+        note: 'Hoàn tiền tại quầy (mobile staff)',
+      );
+
+      state = state.copyWith(
+        isReturnLoading: false,
+        returnSuccessMessage: 'Tạo trả hàng & hoàn tiền thành công',
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(isReturnLoading: false, returnError: e.toString());
+      return false;
+    }
+  }
+
+  void clearReturnMessages() {
+    state = state.copyWith(returnError: null, returnSuccessMessage: null);
   }
 }
 
