@@ -135,11 +135,4 @@ export const staffPosService = {
       .post('/staff/pos/ai-consult', body)
       .then((r) => r.data);
   },
-  applyLoyaltyPoints(orderId: string, points: number): Promise<PosOrder> {
-    return api
-      .patch<PosOrder>(`/staff/pos/orders/${orderId}/loyalty`, {
-        points,
-      })
-      .then((r) => r.data);
-  },
 };

@@ -65,7 +65,7 @@ export class OrdersService {
     let loyaltyDiscount = 0;
     if (dto.redeemPoints) {
       const { discountAmount: lpDiscount } =
-        await this.loyaltyService.redeemPoints(userId, dto.redeemPoints);
+        await this.loyaltyService.validateRedemption(userId, dto.redeemPoints);
       loyaltyDiscount = lpDiscount;
     }
 
@@ -122,6 +122,15 @@ export class OrdersService {
           where: { id: promoData.promoId },
           data: { usedCount: { increment: 1 } },
         });
+      }
+
+      if (dto.redeemPoints) {
+        await this.loyaltyService.redeemPoints(
+          userId,
+          dto.redeemPoints,
+          created.id,
+          tx,
+        );
       }
 
       await tx.cartItem.deleteMany({ where: { cartId: cart.id } });

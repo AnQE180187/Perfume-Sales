@@ -5,11 +5,15 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePromotionDto, ValidatePromotionDto } from './dto/promotion.dto';
-import { PromotionCode } from '@prisma/client';
+import { PromotionCode, UserPromotionStatus } from '@prisma/client';
+import { LoyaltyService } from '../loyalty/loyalty.service';
 
 @Injectable()
 export class PromotionsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly loyaltyService: LoyaltyService,
+  ) {}
 
   async create(dto: CreatePromotionDto) {
     return this.prisma.promotionCode.create({
@@ -39,6 +43,110 @@ export class PromotionsService {
     });
   }
 
+  async findPublic() {
+    const now = new Date();
+    return this.prisma.promotionCode.findMany({
+      where: {
+        isActive: true,
+        isPublic: true,
+        startDate: { lte: now },
+        endDate: { gte: now },
+        usageLimit: {
+          gt: this.prisma.promotionCode.fields.usedCount as any, // Simple check
+        },
+      },
+      orderBy: { endDate: 'asc' },
+    });
+  }
+
+  async findRedeemable() {
+    const now = new Date();
+    return this.prisma.promotionCode.findMany({
+      where: {
+        isActive: true,
+        isPublic: false,
+        pointsCost: { gt: 0 },
+        startDate: { lte: now },
+        endDate: { gte: now },
+      },
+      orderBy: { pointsCost: 'asc' },
+    });
+  }
+
+  async claim(userId: string, promoId: string) {
+    const promo = await this.prisma.promotionCode.findUnique({
+      where: { id: promoId },
+    });
+
+    if (!promo || !promo.isPublic || !promo.isActive) {
+      throw new BadRequestException('Mã giảm giá không hợp lệ hoặc đã hết hạn');
+    }
+
+    const existing = await this.prisma.userPromotion.findUnique({
+      where: { userId_promotionId: { userId, promotionId: promoId } },
+    });
+
+    if (existing) {
+      throw new BadRequestException('Bạn đã lưu mã giảm giá này rồi');
+    }
+
+    return this.prisma.userPromotion.create({
+      data: {
+        userId,
+        promotionId: promoId,
+        status: UserPromotionStatus.UNUSED,
+      },
+    });
+  }
+
+  async redeem(userId: string, promoId: string) {
+    const promo = await this.prisma.promotionCode.findUnique({
+      where: { id: promoId },
+    });
+
+    if (!promo || promo.isPublic || promo.pointsCost <= 0 || !promo.isActive) {
+      throw new BadRequestException('Mã giảm giá không hợp lệ');
+    }
+
+    const existing = await this.prisma.userPromotion.findUnique({
+      where: { userId_promotionId: { userId, promotionId: promoId } },
+    });
+
+    if (existing) {
+      throw new BadRequestException('Bạn đã quy đổi mã giảm giá này rồi');
+    }
+
+    // Use a transaction to deduct points and create UserPromotion
+    return this.prisma.$transaction(async (tx) => {
+      // Deduct points
+      await this.loyaltyService.redeemPoints(
+        userId,
+        promo.pointsCost,
+        `VOUCHER_REDEEM_${promo.code}`, // Reason instead of orderId
+        tx,
+      );
+
+      // Create UserPromotion
+      return tx.userPromotion.create({
+        data: {
+          userId,
+          promotionId: promoId,
+          status: UserPromotionStatus.UNUSED,
+        },
+      });
+    });
+  }
+
+  async getMyPromotions(userId: string) {
+    return this.prisma.userPromotion.findMany({
+      where: { userId, status: UserPromotionStatus.UNUSED },
+      include: {
+        promotion: true,
+      },
+      orderBy: { redeemedAt: 'desc' },
+    });
+  }
+
   async validate(dto: ValidatePromotionDto, userId?: string) {
     const promo = await this.prisma.promotionCode.findUnique({
       where: { code: dto.code.toUpperCase() },
@@ -57,6 +165,22 @@ export class PromotionsService {
 
     if (promo.usageLimit !== null && promo.usedCount >= promo.usageLimit) {
       throw new BadRequestException('Promotion code usage limit reached');
+    }
+
+    // Check if user owns the promotion (if it's not a global/general public code)
+    // Actually, for this system, we force users to "claim" or "redeem" first to pick from list
+    if (userId) {
+      const userPromo = await this.prisma.userPromotion.findFirst({
+        where: {
+          userId,
+          promotionId: promo.id,
+          status: UserPromotionStatus.UNUSED,
+        },
+      });
+
+      if (!userPromo) {
+        throw new BadRequestException('Bạn không sở hữu mã giảm giá này hoặc mã đã được sử dụng');
+      }
     }
 
     if (promo.minOrderAmount !== null && dto.amount < promo.minOrderAmount) {

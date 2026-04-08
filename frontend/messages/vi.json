@@ -21,6 +21,25 @@
             "woody": "Hương Gỗ"
         }
     },
+    "vouchers": {
+        "title": "Ưu Đãi",
+        "subtitle": "Khám phá và quy đổi các đặc quyền olfactory dành riêng cho bạn.",
+        "badge": "Trung Tâm Ưu Đãi",
+        "public_section": "Ưu Đãi Công Khai",
+        "redeemable_section": "Đổi Điểm Thưởng",
+        "your_points": "Loyal Point",
+        "claim_btn": "Lưu Mã Ngay",
+        "redeem_btn": "Đổi bằng {points} Loyal Point",
+        "no_public": "Hiện không có ưu đãi công khai nào.",
+        "no_redeemable": "Hiện không có voucher nào để quy đổi.",
+        "loading": "Đang đồng bộ kho dữ liệu...",
+        "login_required": "Vui lòng đăng nhập để thực hiện giao thức này.",
+        "claim_success": "Mã giảm giá đã được thêm vào Ví của bạn.",
+        "redeem_success": "Quy đổi thành công! Voucher đã có trong Ví của bạn.",
+        "insufficient_points": "Số dư điểm thưởng không đủ để thực hiện quy đổi này.",
+        "confirm_redeem": "Bạn có chắc chắn muốn dùng {points} điểm để đổi voucher này?",
+        "action_failed": "Giao thức không thể hoàn tất. Vui lòng thử lại sau."
+    },
     "common": {
         "title": "Aura AI | Nước Hoa Cao Cấp Cá Nhân Hóa",
         "consultation": "Tư Vấn AI",
@@ -107,8 +126,8 @@
             "quiz": "Trắc Nghiệm Mùi Hương",
             "recommendations": "Gợi Ý Từ AI",
             "history": "Lịch Sử Tư Vấn",
-            "loyalty": "Điểm Tích Lũy",
-            "promotions": "Ưu Đãi",
+            "loyalty": "Loyal Point",
+            "promotions": "Ưu đãi",
             "consultation": "Tư Vấn AI",
             "subscription": "Gói Hội Viên"
         },
@@ -129,7 +148,9 @@
             "stores": "Hệ thống Cửa hàng",
             "stock": "Tồn kho chi nhánh",
             "catalog": "Danh mục sản phẩm",
-            "reviews": "Đánh giá khách hàng"
+            "reviews": "Đánh giá khách hàng",
+            "manage_journal": "Quản lý Tạp chí",
+            "manage_banner": "Quản lý Banner"
         },
         "shared": {
             "chat": "Trò chuyện Aura"
@@ -325,15 +346,6 @@
             "title": "Đặc Quyền Thượng Lưu",
             "desc": "Bạn đã mở khóa dịch vụ chuyển phát nhanh miễn phí cho tất cả các giao dịch trong tương lai.",
             "cta": "Xem Tất Cả Đặc Quyền"
-        },
-        "redeem": {
-            "title": "Trung Tâm Quy Đổi",
-            "cta": "Quy Đổi",
-            "items": {
-                "kit": "Bộ Mẫu Thử Đặc Trưng",
-                "engraving": "Khắc Tên Cá Nhân",
-                "masterclass": "Lớp Học AI Riêng Tư"
-            }
         }
     },
     "product_detail": {
@@ -655,7 +667,7 @@
             },
             "premium_member": "Thành Viên Cao Cấp",
             "active": "Đang Hoạt Động",
-            "loyalty_points": "Điểm Tích Lũy",
+            "loyalty_points": "Loyalty Point",
             "ai_profile_badge": "Hồ Sơ Tạo Bởi AI",
             "match_score": "Điểm Tương Thích",
             "preferred_families": "Nhóm Hương Ưa Thích",
@@ -930,25 +942,16 @@
                 "title": "Điểm Aura",
                 "subtitle": "Phần thưởng cộng hưởng khứu giác của bạn.",
                 "credits_suffix": "ĐIỂM",
-                "member_suffix": "Thành viên",
-                "to_next_tier": "Còn {count} điểm để lên hạng {name}",
-                "redeem_btn": "ĐỔI THƯỞNG",
                 "history_title": "Lịch sử giao dịch",
                 "syncing": "Đang đồng bộ...",
                 "empty": "Không tìm thấy giao dịch nào.",
-                "perks_title": "Đặc quyền Đẳng cấp",
+                "perks_title": "Đặc quyền",
                 "ai_insight_title": "Phân tích Cộng hưởng AI",
                 "ai_insight_desc": "Điểm tích lũy của bạn cho thấy sự ưu tiên cho các chiết xuất quý hiếm và nồng độ lưu hương cao.",
                 "perks_list": {
                     "free_shipping": "Logistics Ưu tiên",
                     "discount_10": "Chữ ký Giảm giá 10%",
                     "rare_case": "Hộp lưu trữ Thủ công"
-                },
-                "tiers": {
-                    "bronze": "Đồng",
-                    "silver": "Bạc",
-                    "gold": "Vàng",
-                    "platinum": "Bạch kim"
                 },
                 "reasons": {
                     "purchase": "Cộng hưởng Sở hữu",
@@ -960,20 +963,10 @@
                     "order": "Cộng hưởng Đơn hàng",
                     "earned_from_order": "Tích lũy từ đơn hàng #{id}",
                     "exchanged_for_voucher": "Quy đổi mã khứu ký",
-                    "exchanged_for_voucher_loy-84solfcb": "Quy đổi mã giảm giá LOY-84SOLFCB"
+                    "exchanged_for_voucher_generic": "Quy đổi mã giảm giá {code}",
+                    "redeemed_for_order_voucher_redeem_freeship_max": "Sử dụng ưu đãi Miễn phí vận chuyển"
                 },
-                "exchange": {
-                    "title": "Đổi điểm Aura",
-                    "subtitle": "Quy đổi điểm tích lũy thành các mã giảm giá đặc quyền.",
-                    "package_label": "Gói ưu đãi",
-                    "min_order": "Đơn hàng tối thiểu",
-                    "cost": "Chi phí",
-                    "exchange_now": "Đổi ngay",
-                    "insufficient": "Không đủ điểm",
-                    "confirm": "Bạn có chắc chắn muốn đổi {points} điểm lấy voucher trị giá {amount}đ?",
-                    "success": "Đổi điểm thành công! Mã giảm giá đã được thêm vào tài khoản của bạn.",
-                    "error": "Có lỗi xảy ra khi đổi điểm. Vui lòng thử lại sau."
-                },
+
                 "history": "Lịch sử giao dịch"
             },
             "home": {
@@ -985,8 +978,7 @@
                 "evolving_title": "Dấu ấn Khứu giác đang tiến hóa",
                 "evolving_desc": "AI của chúng tôi đã phát hiện các cộng hưởng khứu giác mới dựa trên tương tác gần đây. Cập nhật hồ sơ để đồng bộ.",
                 "refresh_btn": "Làm mới Tổng hợp",
-                "membership_label": "Hạng Thành viên",
-                "membership_tier": "Hạng Vàng VIP",
+                "loyalty_points": "Điểm Loyalty",
                 "offers_title": "Ưu đãi Hiện có",
                 "offers_new": "Mới",
                 "offers_desc": "{count} Phần thưởng sẵn sàng tổng hợp",
@@ -996,8 +988,27 @@
                     "orders": "Đơn hàng của tôi",
                     "loyalty": "Điểm thưởng",
                     "ai_chat": "Tư vấn AI",
-                    "quiz": "Kết quả Trắc nghiệm",
-                    "explore": "Khám phá module →"
+                    "quiz": "Kết quả Trắc nghiệm"
+                }
+            },
+            "promotions": {
+                "title": "Ví Voucher Của Tôi",
+                "marketplace_title": "Ưu đãi Khả dụng",
+                "subtitle": "Quản lý các đặc quyền và mã giảm giá dành riêng cho hồ sơ của bạn.",
+                "expired": "Hết hạn",
+                "time_left": "Còn lại {time}",
+                "fallback_desc": "Đặc quyền olfactory đặc biệt dành cho khách hàng của House.",
+                "benefit_label": "LỢI ÍCH",
+                "discount_off": "GIẢM {value}%",
+                "discount_fixed": "GIẢM {value} {currency}",
+                "copied": "Đã sao chép",
+                "copy_btn": "Sao chép mã",
+                "no_promos": "Ví của bạn đang trống",
+                "no_promos_desc": "Hãy đổi điểm thưởng để nhận thêm ưu đãi mới.",
+                "referral": {
+                    "title": "Mạng Lưới Lan Tỏa",
+                    "desc": "Chia sẻ mã giới thiệu của bạn để nhận thêm 500 Loyal Point cho mỗi cộng hưởng thành công.",
+                    "cta": "Mời bằng hữu"
                 }
             },
             "orders": {
@@ -1059,25 +1070,6 @@
                     "DELIVERING": "Đang giao hàng",
                     "DELIVERED": "Đã giao hàng",
                     "RETURN": "Đã trả hàng"
-                }
-            },
-            "promotions": {
-                "title": "Ưu đãi Khứu giác",
-                "subtitle": "Lợi ích toán học độc quyền cho khám phá tiếp theo của bạn.",
-                "time_left": "còn {time}",
-                "expired": "Cộng hưởng Thời gian đã Kết thúc",
-                "copy_btn": "Truy vết Chữ ký",
-                "copied": "Đã truy vết",
-                "benefit_label": "Lợi ích Tổng hợp",
-                "no_promos": "Không có Tổng hợp Hoạt động",
-                "no_promos_desc": "Vui lòng quay lại sau để xem các cơ hội AI dự đoán.",
-                "discount_off": "GIẢM {value}%",
-                "discount_fixed": "THƯỞNG -{value} {currency}",
-                "fallback_desc": "Lợi ích kỹ thuật số cho lần sở hữu khứu giác tiếp theo của bạn.",
-                "referral": {
-                    "title": "Chương trình Giới thiệu Nghệ nhân",
-                    "desc": "Chia sẻ trải nghiệm Aura với một người sành sỏi khác và mở khóa chai chiết 10ml quý hiếm khi họ hoàn thành lần tổng hợp đầu tiên.",
-                    "cta": "Mời Người sành sỏi"
                 }
             },
             "notifications": {
@@ -1244,22 +1236,88 @@
                     "report_btn": "Tạo Báo cáo Đầy đủ"
                 }
             },
-            "analytics": {
-                "title": "Đo lường Hệ sinh thái Thần kinh",
-                "stats": {
-                    "revenue": "Tổng Doanh thu",
-                    "users": "Người dùng Hoạt động",
-                    "acceptance": "Chấp nhận AI",
-                    "inventory": "Sức khỏe Kho hàng"
+            "manageJournal": {
+                "list": {
+                    "title": "Quản lý Tạp chí",
+                    "create_btn": "Viết Bài Mới",
+                    "loading": "Đang tải...",
+                    "delete_confirm": "Xoá bài tạp chí này?",
+                    "delete_error": "Lỗi xoá tạp chí",
+                    "priority_label": "Ưu tiên: {value}",
+                    "no_excerpt": "Không có mô tả ngắn...",
+                    "date_locale": "vi-VN"
                 },
-                "performance": {
-                    "title": "Chỉ số Hiệu suất"
+                "fields": {
+                    "title": "Tiêu đề chính (*)",
+                    "title_placeholder": "Nhập tiêu đề ấn tượng...",
+                    "category": "Chuyên mục",
+                    "category_placeholder": "VD: science, philosophy, artistry",
+                    "main_image": "Ảnh Bìa",
+                    "main_image_hint": "(Để trống để giữ ảnh cũ)",
+                    "priority": "Độ Ưu Tiên Hiển Thị",
+                    "excerpt": "Trích dẫn (Excerpt)",
+                    "excerpt_placeholder": "Đoạn văn ngắn giới thiệu...",
+                    "sections": "Cấu trúc Nội dung (Sections)",
+                    "add_section": "Thêm đoạn",
+                    "section_index": "Nội dung {index}",
+                    "subtitle": "Phụ đề (Không bắt buộc)",
+                    "subtitle_placeholder": "Phụ đề nhỏ...",
+                    "product_link": "Liên kết tới Sản Phẩm",
+                    "no_product_link": "-- Không gắn link sản phẩm --",
+                    "section_image": "Hình ảnh minh hoạ",
+                    "existing_image": "Đã có ảnh cũ",
+                    "current_image": "Ảnh hiện tại",
+                    "content": "Đoạn văn chính (*)",
+                    "content_placeholder": "Nội dung cho đoạn này..."
                 },
-                "feed": {
-                    "title": "Nguồn cấp Trực tiếp",
-                    "event_label": "SỰ KIỆN:",
-                    "sync_complete": "Đồng bộ Người dùng #{id} hoàn tất",
-                    "active_now": "Đang hoạt động"
+                "create": {
+                    "title": "Soạn Bài Tạp Chí",
+                    "submit_btn": "XUẤT BẢN TẠP CHÍ",
+                    "submitting": "ĐANG TẢI LÊN...",
+                    "success": "Tạo bài viết thành công!",
+                    "error_main_image": "Bắt buộc phải có ảnh bìa chính",
+                    "error_content": "Mỗi đoạn nội dung bắt buộc phải có văn bản",
+                    "error_failed": "Lỗi khi tạo tạp chí"
+                },
+                "edit": {
+                    "title": "Sửa Bài Tạp Chí",
+                    "loading": "Đang tải trình soạn thảo...",
+                    "submit_btn": "LƯU THAY ĐỔI",
+                    "submitting": "ĐANG LƯU...",
+                    "success": "Cập nhật bài viết thành công!",
+                    "error_load": "Lỗi tải bài viết",
+                    "error_failed": "Lỗi khi cập nhật tạp chí"
+                }
+            },
+            "manageBanner": {
+                "title": "Quản lý Banner",
+                "form": {
+                    "add_title": "Thêm Banner Mới",
+                    "update_title": "Cập Nhật Banner",
+                    "cancel_edit": "Hủy sửa",
+                    "image_label": "Ảnh Banner",
+                    "image_hint": "(Bỏ trống nếu không muốn đổi ảnh)",
+                    "title_label": "Tiêu đề chính",
+                    "title_placeholder": "VD: Khám phá mùa xuân",
+                    "subtitle_label": "Tiêu đề phụ",
+                    "subtitle_placeholder": "VD: Bộ sưu tập mới...",
+                    "link_label": "Link URL (nếu có)",
+                    "link_placeholder": "VD: /collection/...",
+                    "submit_add": "THÊM MỚI",
+                    "submit_update": "LƯU THAY ĐỔI",
+                    "submitting": "ĐANG LƯU..."
+                },
+                "list": {
+                    "title": "Banners Hiện Có",
+                    "loading": "Đang tải...",
+                    "no_title": "Không có tiêu đề",
+                    "no_subtitle": "—",
+                    "delete_confirm": "Bạn có chắc xoá banner này?",
+                    "delete_error": "Lỗi xoá banner",
+                    "update_success": "Cập nhật banner thành công",
+                    "create_success": "Thêm banner thành công",
+                    "action_error": "Thao tác thất bại",
+                    "error_no_image": "Vui lòng chọn ảnh"
                 }
             },
             "users": {
@@ -1438,13 +1496,17 @@
                     "limit": "ĐỊNH LƯỢNG SỬ DỤNG",
                     "start": "NGÀY BẮT ĐẦU",
                     "end": "NGÀY HẾT HẠN",
+                    "is_public": "LOẠI TIẾP CẬN",
+                    "points_cost": "PHÍ QUY ĐỔI (ĐIỂM)",
                     "submit": "Kích hoạt Giao thức",
                     "submitting": "Đang rèn...",
                     "error_create": "Lỗi khởi tạo giao thức."
                 },
                 "types": {
                     "percentage": "PHẦN TRĂM (%)",
-                    "fixed": "SỐ TIỀN CỐ ĐỊNH (VNĐ)"
+                    "fixed": "SỐ TIỀN CỐ ĐỊNH (VNĐ)",
+                    "public": "CÔNG KHAI (MIỄN PHÍ)",
+                    "private": "NỘI BỘ (DÙNG ĐIỂM)"
                 },
                 "delete_confirm": "Bạn có chắc chắn muốn vô hiệu hóa chữ ký này không?"
             },
@@ -1682,7 +1744,7 @@
         "apply": "Áp dụng",
         "coupon_applied": "Áp dụng thành công (Giảm {amount})",
         "loyalty_points": "Điểm Aura",
-        "points_balance_summary": "Bạn có {points} điểm (quy đổi {value})",
+
         "subtotal": "Tạm tính",
         "total": "Tổng cộng",
         "invalid_coupon": "Mã không hợp lệ hoặc đã hết hạn",
@@ -1691,7 +1753,12 @@
         "error_create_order": "Thất bại khi khởi tạo sự cộng hưởng sở hữu khứu giác.",
         "error_calculate_fee": "Lỗi tính phí vận chuyển",
         "coupon_discount_label": "Coupon giảm giá",
-        "loyalty_points_summary": "Điểm đã khấu trừ",
+        "promotion_label": "ƯU ĐÃI NƠ-RON",
+        "select_voucher": "Chọn ƯU ĐÃI PHÙ HỢP",
+        "vouchers_modal_title": "Ví Voucher Của Bạn",
+        "vouchers_modal_subtitle": "Chọn mã giảm giá khả dụng để áp dụng cho nghi lễ.",
+        "no_vouchers": "Hiện không có đặc quyền nào khả dụng.",
+
         "shipping_fee_summary": "Phụ phí Logistics"
     },
     "consultation_page": {

@@ -99,19 +99,6 @@ export class StaffPosController {
     );
   }
 
-  @Patch('orders/:id/loyalty')
-  applyLoyaltyPoints(
-    @Req() req: any,
-    @Param('id') orderId: string,
-    @Body() body: { points: number },
-  ) {
-    const user = req.user as { userId: string };
-    return this.staffPosService.applyLoyaltyPoints(
-      user.userId,
-      orderId,
-      body.points,
-    );
-  }
 
   @Get('orders/:id')
   getOrder(@Req() req: any, @Param('id') orderId: string) {

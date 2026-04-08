@@ -21,6 +21,26 @@
             "woody": "Woody"
         }
     },
+    "vouchers": {
+        "title": "Offers",
+        "subtitle": "Discover and redeem exclusive olfactory privileges tailored for you.",
+        "badge": "Privilege Hub",
+        "public_section": "Public Offers",
+        "redeemable_section": "Point Redemption",
+        "your_points": "Loyalty Points",
+        "claim_btn": "Claim Now",
+        "redeem_btn": "Redeem for {points} Points",
+        "no_public": "No public offers are currently active.",
+        "no_redeemable": "No redeemable vouchers available.",
+        "loading": "Synchronizing vault data...",
+        "login_required": "Please login to perform this protocol.",
+        "claim_success": "Voucher has been added to your vault.",
+        "redeem_success": "Redemption successful! Your voucher is ready in your vault.",
+        "insufficient_points": "Insufficient point resonance for this redemption.",
+        "confirm_redeem": "Authorize redemption of {points} points for this voucher?",
+        "action_failed": "Protocol failed to complete. Please retry.",
+        "loyalty_reason": "Loyalty reward for your continued patronage."
+    },
     "common": {
         "title": "Aura AI | Personalized Luxury Perfume",
         "consultation": "AI Consultation",
@@ -129,7 +149,9 @@
             "stores": "Boutique Network",
             "stock": "Store Inventory",
             "catalog": "Collection Catalog",
-            "reviews": "Guest Reviews"
+            "reviews": "Guest Reviews",
+            "manage_journal": "Manage Journal",
+            "manage_banner": "Manage Banners"
         },
         "shared": {
             "chat": "Aura Chat"
@@ -861,9 +883,6 @@
                 "title": "Aura Credits",
                 "subtitle": "Your olfactory resonance history and member privileges.",
                 "credits_suffix": "Credits",
-                "member_suffix": "Member",
-                "to_next_tier": "{count} more to reach {name}",
-                "redeem_btn": "Redeem Rewards",
                 "history_title": "Sync History",
                 "syncing": "Synchronizing data...",
                 "empty": "No resonance recorded yet.",
@@ -874,7 +893,7 @@
                     "rare_case": "Bespoke Collector's Archive"
                 },
                 "ai_insight_title": "AI Olfactory Insight",
-                "ai_insight_desc": "Your spending patterns suggest a preference for high-longevity extraits. We recommend maintaining your current tier to unlock seasonal sample extractions.",
+                "ai_insight_desc": "Your spending patterns suggest a preference for high-longevity extraits.",
                 "reasons": {
                     "purchase": "Acquisition Resonance",
                     "refund": "Refinement Reversal",
@@ -885,27 +904,11 @@
                     "order": "Order Synthesis",
                     "earned_from_order": "Earned from order #{id}",
                     "exchanged_for_voucher": "Exchanged for discount signature",
-                    "exchanged_for_voucher_loy-84solfcb": "Exchanged for Voucher LOY-84SOLFCB"
+                    "exchanged_for_voucher_generic": "Exchanged for voucher {code}",
+                    "redeemed_for_order_voucher_redeem_freeship_max": "Applied Free Shipping Offer"
                 },
-                "exchange": {
-                    "title": "Aura Exchange",
-                    "subtitle": "Transmute your credits into exclusive vouchers.",
-                    "package_label": "Package",
-                    "min_order": "Min Order",
-                    "cost": "Cost",
-                    "exchange_now": "Exchange Now",
-                    "insufficient": "Insufficient Credits",
-                    "confirm": "Are you sure you want to exchange {points} PTS for {amount} VND voucher?",
-                    "success": "Exchange successful! Your voucher is ready in your account.",
-                    "error": "Exchange failed. Please try again later."
-                },
-                "history": "Transaction History",
-                "tiers": {
-                    "bronze": "Bronze Essence",
-                    "silver": "Silver Mist",
-                    "gold": "Golden Sillage",
-                    "platinum": "Platinum Essence"
-                }
+
+                "history": "Transaction History"
             },
             "home": {
                 "title": "My Sanctuary",
@@ -916,8 +919,7 @@
                 "evolving_title": "Your Neural Signature is evolving",
                 "evolving_desc": "Our AI has detected new olfactory resonances based on your recent interactions. Update your profile to synchronize.",
                 "refresh_btn": "Refresh Synthesis",
-                "membership_label": "Membership",
-                "membership_tier": "Elite Gold",
+                "loyalty_points": "Loyalty Resonance",
                 "offers_title": "Active Offers",
                 "offers_new": "New",
                 "offers_desc": "{count} Rewards available for synthesis",
@@ -929,6 +931,25 @@
                     "ai_chat": "AI Consultation",
                     "quiz": "Quiz Results",
                     "explore": "Explore module →"
+                }
+            },
+            "promotions": {
+                "title": "Olfactory Incentives",
+                "subtitle": "Exclusive mathematical benefits for your next discovery.",
+                "time_left": "{time} left",
+                "expired": "Temporal Resonance Expired",
+                "copy_btn": "Trace Signature",
+                "copied": "Traced",
+                "benefit_label": "Synthesis Benefit",
+                "no_promos": "No Active Synthesis",
+                "no_promos_desc": "Check back later for exclusive AI-predicted opportunities.",
+                "discount_off": "{value}% OFF",
+                "discount_fixed": "-{value} {currency}",
+                "fallback_desc": "Digital benefit for your next neural acquisition.",
+                "referral": {
+                    "title": "Artisan Referral Program",
+                    "desc": "Share the Aura experience with a fellow connoisseur and unlock a 10ml rare decant once they complete their first synthesis.",
+                    "cta": "Invite Connoisseurs"
                 }
             },
             "orders": {
@@ -996,25 +1017,6 @@
                     "DELIVERING": "Delivering",
                     "DELIVERED": "Delivered",
                     "RETURN": "Returned"
-                }
-            },
-            "promotions": {
-                "title": "Olfactory Incentives",
-                "subtitle": "Exclusive mathematical benefits for your next discovery.",
-                "time_left": "{time} left",
-                "expired": "Temporal Resonance Expired",
-                "copy_btn": "Trace Signature",
-                "copied": "Traced",
-                "benefit_label": "Synthesis Benefit",
-                "no_promos": "No Active Synthesis",
-                "no_promos_desc": "Check back later for exclusive AI-predicted opportunities.",
-                "discount_off": "{value}% OFF",
-                "discount_fixed": "-{value} {currency}",
-                "fallback_desc": "Digital benefit for your next neural acquisition.",
-                "referral": {
-                    "title": "Artisan Referral Program",
-                    "desc": "Share the Aura experience with a fellow connoisseur and unlock a 10ml rare decant once they complete their first synthesis.",
-                    "cta": "Invite Connoisseurs"
                 }
             },
             "notifications": {
@@ -1128,6 +1130,90 @@
                     "tier_platinum": "Luxury Platinum Tier",
                     "tier_niche": "Artisanal Niche",
                     "report_btn": "Generate Full Report"
+                }
+            },
+            "manageJournal": {
+                "list": {
+                    "title": "Manage Journal",
+                    "create_btn": "Write New Article",
+                    "loading": "Loading...",
+                    "delete_confirm": "Delete this journal article?",
+                    "delete_error": "Error deleting journal",
+                    "priority_label": "Priority: {value}",
+                    "no_excerpt": "No excerpt provided...",
+                    "date_locale": "en-US"
+                },
+                "fields": {
+                    "title": "Main Title (*)",
+                    "title_placeholder": "Enter an impressive title...",
+                    "category": "Category",
+                    "category_placeholder": "e.g. science, philosophy, artistry",
+                    "main_image": "Main Image",
+                    "main_image_hint": "(Leave empty to keep existing image)",
+                    "priority": "Display Priority",
+                    "excerpt": "Excerpt",
+                    "excerpt_placeholder": "Short introductory text...",
+                    "sections": "Content Structure (Sections)",
+                    "add_section": "Add Section",
+                    "section_index": "Content {index}",
+                    "subtitle": "Subtitle (Optional)",
+                    "subtitle_placeholder": "Small subtitle...",
+                    "product_link": "Link Subtitle to Product",
+                    "no_product_link": "-- No product link --",
+                    "section_image": "Illustrative Image",
+                    "existing_image": "Existing image available",
+                    "current_image": "Current image",
+                    "content": "Main Content (*)",
+                    "content_placeholder": "Content for this section..."
+                },
+                "create": {
+                    "title": "Compose New Journal",
+                    "submit_btn": "PUBLISH JOURNAL",
+                    "submitting": "UPLOADING...",
+                    "success": "Journal article created successfully!",
+                    "error_main_image": "Main image is required",
+                    "error_content": "Each section content is required",
+                    "error_failed": "Error creating journal"
+                },
+                "edit": {
+                    "title": "Edit Journal Article",
+                    "loading": "Loading editor...",
+                    "submit_btn": "SAVE CHANGES",
+                    "submitting": "SAVING...",
+                    "success": "Journal article updated successfully!",
+                    "error_load": "Error loading article",
+                    "error_failed": "Error updating journal"
+                }
+            },
+            "manageBanner": {
+                "title": "Manage Banners",
+                "form": {
+                    "add_title": "Add New Banner",
+                    "update_title": "Update Banner",
+                    "cancel_edit": "Cancel edit",
+                    "image_label": "Banner Image",
+                    "image_hint": "(Leave empty to keep current image)",
+                    "title_label": "Main Title",
+                    "title_placeholder": "e.g. Discover Spring",
+                    "subtitle_label": "Subtitle",
+                    "subtitle_placeholder": "e.g. New collection...",
+                    "link_label": "Link URL (optional)",
+                    "link_placeholder": "e.g. /collection/...",
+                    "submit_add": "ADD NEW",
+                    "submit_update": "SAVE CHANGES",
+                    "submitting": "SAVING..."
+                },
+                "list": {
+                    "title": "Existing Banners",
+                    "loading": "Loading...",
+                    "no_title": "No title",
+                    "no_subtitle": "—",
+                    "delete_confirm": "Are you sure you want to delete this banner?",
+                    "delete_error": "Error deleting banner",
+                    "update_success": "Banner updated successfully",
+                    "create_success": "Banner added successfully",
+                    "action_error": "Action failed",
+                    "error_no_image": "Please select an image"
                 }
             },
             "analytics": {
@@ -1330,13 +1416,17 @@
                     "limit": "USAGE QUANTUM",
                     "start": "COMMENCEMENT",
                     "end": "EXPIRATION",
+                    "is_public": "ACCESS TYPE",
+                    "points_cost": "REDEMPTION COST (POINTS)",
                     "submit": "Activate Protocol",
                     "submitting": "Forging...",
                     "error_create": "Protocol initialization failure."
                 },
                 "types": {
                     "percentage": "PERCENTAGE (%)",
-                    "fixed": "FIXED AMOUNT (VND)"
+                    "fixed": "FIXED AMOUNT (USD)",
+                    "public": "PUBLIC (FREE)",
+                    "private": "PRIVATE (REDEEMABLE)"
                 },
                 "delete_confirm": "Are you sure you want to void this signature?"
             },
@@ -1877,7 +1967,7 @@
         "apply": "Apply",
         "coupon_applied": "Signature Verified (Benefit {amount})",
         "loyalty_points": "Aura Credits",
-        "points_balance_summary": "You have {points} credits (Value {value})",
+
         "subtotal": "Scent Base Value",
         "total": "Total",
         "invalid_coupon": "Signature invalid or expired",
@@ -1886,7 +1976,12 @@
         "error_create_order": "A neural resonance failure occurred during acquisition creation.",
         "error_calculate_fee": "Logistics calculation failure",
         "coupon_discount_label": "Signature Discount",
-        "loyalty_points_summary": "Credits Deducted",
+        "promotion_label": "NEURAL INCENTIVES",
+        "select_voucher": "Select Eligible Signature",
+        "vouchers_modal_title": "Your Signature Wallet",
+        "vouchers_modal_subtitle": "Select an active reward signature to apply to this ceremony.",
+        "no_vouchers": "No eligible signatures detected in your wallet.",
+
         "shipping_fee_summary": "Logistics Surcharge"
     },
     "consultation_page": {
