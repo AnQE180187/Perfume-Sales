@@ -1,9 +1,4 @@
 {
-  "Returns": {
-    "title": "Yêu cầu trả hàng của tôi",
-    "backToOrders": "Quay lại đơn hàng"
-  }
-}
     "featured": {
         "currency_code": "VND",
         "currency_symbol": "đ",
@@ -971,7 +966,6 @@
                     "exchanged_for_voucher_generic": "Quy đổi mã giảm giá {code}",
                     "redeemed_for_order_voucher_redeem_freeship_max": "Sử dụng ưu đãi Miễn phí vận chuyển"
                 },
-
                 "history": "Lịch sử giao dịch"
             },
             "home": {
@@ -1749,7 +1743,6 @@
         "apply": "Áp dụng",
         "coupon_applied": "Áp dụng thành công (Giảm {amount})",
         "loyalty_points": "Điểm Aura",
-
         "subtotal": "Tạm tính",
         "total": "Tổng cộng",
         "invalid_coupon": "Mã không hợp lệ hoặc đã hết hạn",
@@ -1763,7 +1756,6 @@
         "vouchers_modal_title": "Ví Voucher Của Bạn",
         "vouchers_modal_subtitle": "Chọn mã giảm giá khả dụng để áp dụng cho nghi lễ.",
         "no_vouchers": "Hiện không có đặc quyền nào khả dụng.",
-
         "shipping_fee_summary": "Phụ phí Logistics"
     },
     "consultation_page": {

@@ -73,6 +73,7 @@ export const Header = () => {
     ];
 
     const menuRight = [
+        {},
         { name: t('about'), href: '/story' },
         { name: t('journal'), href: '/journal' },
     ];

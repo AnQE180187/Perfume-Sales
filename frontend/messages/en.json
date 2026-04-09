@@ -1,9 +1,4 @@
 {
-  "Returns": {
-    "title": "My Returns",
-    "backToOrders": "Back to Orders"
-  }
-}
     "featured": {
         "currency_code": "USD",
         "currency_symbol": "$",
@@ -912,7 +907,6 @@
                     "exchanged_for_voucher_generic": "Exchanged for voucher {code}",
                     "redeemed_for_order_voucher_redeem_freeship_max": "Applied Free Shipping Offer"
                 },
-
                 "history": "Transaction History"
             },
             "home": {
@@ -1972,7 +1966,6 @@
         "apply": "Apply",
         "coupon_applied": "Signature Verified (Benefit {amount})",
         "loyalty_points": "Aura Credits",
-
         "subtotal": "Scent Base Value",
         "total": "Total",
         "invalid_coupon": "Signature invalid or expired",
@@ -1986,7 +1979,6 @@
         "vouchers_modal_title": "Your Signature Wallet",
         "vouchers_modal_subtitle": "Select an active reward signature to apply to this ceremony.",
         "no_vouchers": "No eligible signatures detected in your wallet.",
-
         "shipping_fee_summary": "Logistics Surcharge"
     },
     "consultation_page": {
