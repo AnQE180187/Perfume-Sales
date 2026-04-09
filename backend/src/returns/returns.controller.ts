@@ -6,9 +6,13 @@ import {
   Patch,
   Post,
   Req,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { ReturnsService } from './returns.service';
 import { CreateReturnDto } from './dto/create-return.dto';
 import { CreateReturnShipmentDto } from './dto/create-shipment.dto';
@@ -16,7 +20,10 @@ import { CreateReturnShipmentDto } from './dto/create-shipment.dto';
 @Controller('returns')
 @UseGuards(JwtAuthGuard)
 export class ReturnsController {
-  constructor(private readonly returnsService: ReturnsService) {}
+  constructor(
+    private readonly returnsService: ReturnsService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
 
   /** Customer: tạo yêu cầu trả hàng */
   @Post()
@@ -64,5 +71,22 @@ export class ReturnsController {
       id,
       body?.reason,
     );
+  }
+
+  /** Customer: upload video minh chứng (resource_type: video) */
+  @Post('upload-video')
+  @UseInterceptors(FileInterceptor('video'))
+  async uploadVideo(
+    @Req() _req: any,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) {
+      return { url: null };
+    }
+    const result = await this.cloudinaryService.uploadVideo(
+      file.buffer,
+      'perfume-gpt/returns/videos',
+    );
+    return { url: result.url };
   }
 }

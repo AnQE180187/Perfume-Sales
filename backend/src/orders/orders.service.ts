@@ -256,6 +256,10 @@ export class OrdersService {
           },
         },
         promotions: { include: { promotionCode: true } },
+        returnRequests: {
+          where: { status: { not: 'CANCELLED' } },
+          include: { items: true },
+        },
       },
     });
     if (!order) throw new NotFoundException('Order not found');
@@ -287,6 +291,10 @@ export class OrdersService {
         },
         user: true,
         promotions: { include: { promotionCode: true } },
+        returnRequests: {
+          where: { status: { not: 'CANCELLED' } },
+          include: { items: true },
+        },
       },
     });
     if (!order) throw new NotFoundException('Order not found');
