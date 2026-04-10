@@ -22,6 +22,9 @@ class ReturnOrderScreen extends ConsumerStatefulWidget {
 
 class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
   final _reasonController = TextEditingController();
+  final _bankNameController = TextEditingController();
+  final _accountNumberController = TextEditingController();
+  final _accountNameController = TextEditingController();
   final List<File> _images = [];
   final ImagePicker _picker = ImagePicker();
   
@@ -63,12 +66,28 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
       );
       return;
     }
+    if (_bankNameController.text.trim().isEmpty || _accountNumberController.text.trim().isEmpty || _accountNameController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng nhập đầy đủ thông tin thanh toán hoàn tiền')),
+      );
+      return;
+    }
     
     setState(() => _isSubmitting = true);
     
     try {
       // Stub: in reality, call returnRequestProvider or API service
-      // e.g. await ref.read(returnServiceProvider).createReturn(widget.orderId, _selectedItems, _reasonController.text, _images);
+      // final Map<String, dynamic> payload = {
+      //   'orderId': widget.orderId,
+      //   'items': _selectedItems.entries.map((e) => {'variantId': e.key, 'quantity': e.value}).toList(),
+      //   'reason': _reasonController.text.trim(),
+      //   'paymentInfo': {
+      //     'bankName': _bankNameController.text.trim(),
+      //     'accountNumber': _accountNumberController.text.trim(),
+      //     'accountName': _accountNameController.text.trim(),
+      //   }
+      // };
+      // await ref.read(returnServiceProvider).createReturn(payload, _images);
       
       await Future.delayed(const Duration(seconds: 2));
       
@@ -100,6 +119,9 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
   @override
   void dispose() {
     _reasonController.dispose();
+    _bankNameController.dispose();
+    _accountNumberController.dispose();
+    _accountNameController.dispose();
     super.dispose();
   }
 
@@ -305,6 +327,60 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
                 borderRadius: BorderRadius.circular(16),
                 borderSide: const BorderSide(color: AppTheme.accentGold),
               ),
+            ),
+          ),
+          
+          const SizedBox(height: 24),
+          
+          // Payment Info
+          Text(
+            'Thông tin nhận hoàn tiền',
+            style: GoogleFonts.montserrat(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.deepCharcoal,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppTheme.mutedSilver.withValues(alpha: 0.2)),
+            ),
+            child: Column(
+              children: [
+                TextField(
+                  controller: _bankNameController,
+                  decoration: InputDecoration(
+                    labelText: 'Ngân hàng / Ví điện tử',
+                    hintText: 'VD: MB Bank, Momo...',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _accountNumberController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Số tài khoản / Số điện thoại',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _accountNameController,
+                  decoration: InputDecoration(
+                    labelText: 'Chủ tài khoản',
+                    hintText: 'NGUYEN VAN A',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  ),
+                ),
+              ],
             ),
           ),
           

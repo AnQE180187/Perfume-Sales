@@ -59,6 +59,7 @@ export class ReturnsAdminController {
   }
 
   /** Admin: review (approve / reject) */
+  @Roles('ADMIN')
   @Patch(':id/review')
   async review(
     @Req() req: any,
@@ -120,6 +121,7 @@ export class ReturnsAdminController {
   }
 
   /** Staff (POS): tạo return cho khách tại quầy */
+  @Roles('STAFF')
   @Post('pos/create')
   async posCreate(@Req() req: any, @Body() dto: CreateReturnDto) {
     const idempotencyKey = req.headers['idempotency-key'] as string | undefined;

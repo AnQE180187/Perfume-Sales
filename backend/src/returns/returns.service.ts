@@ -27,14 +27,18 @@ const RETURN_WINDOW_DAYS = 7;
 const VALID_TRANSITIONS: Record<ReturnStatus, ReturnStatus[]> = {
   REQUESTED: [
     ReturnStatus.REVIEWING,
+    ReturnStatus.APPROVED,
+    ReturnStatus.REJECTED,
     ReturnStatus.AWAITING_CUSTOMER,
     ReturnStatus.CANCELLED,
+    ReturnStatus.RECEIVED, // For POS direct jump
   ],
   REVIEWING: [
     ReturnStatus.APPROVED,
     ReturnStatus.REJECTED,
     ReturnStatus.AWAITING_CUSTOMER,
     ReturnStatus.CANCELLED,
+    ReturnStatus.RECEIVED, // For POS direct jump
   ],
   AWAITING_CUSTOMER: [ReturnStatus.REVIEWING, ReturnStatus.CANCELLED],
   APPROVED: [ReturnStatus.RETURNING, ReturnStatus.CANCELLED],
@@ -282,6 +286,7 @@ export class ReturnsService {
           origin,
           createdBy: isStaff ? staffId : undefined,
           reason: dto.reason,
+          paymentInfo: dto.paymentInfo ? dto.paymentInfo : undefined,
           totalAmount,
           items: {
             create: dto.items.map((item) => ({
@@ -329,6 +334,28 @@ export class ReturnsService {
           data: { returnRequestId: result.id, orderId: order.id },
         })
         .catch(() => {});
+    }
+
+    // Notify all admins so they can review/approve the POS return
+    try {
+      const admins = await this.prisma.user.findMany({
+        where: { role: 'ADMIN' },
+      });
+      await Promise.all(
+        admins.map((a) =>
+          this.notificationsService
+            .create({
+              userId: a.id,
+              type: 'ORDER',
+              title: 'Yêu cầu trả hàng mới (POS)',
+              content: `Có yêu cầu trả hàng mới (${result.id}) từ POS cho đơn ${order.code}. Vui lòng kiểm tra và xét duyệt.`,
+              data: { returnRequestId: result.id, orderId: order.id },
+            })
+            .catch(() => {}),
+        ),
+      );
+    } catch (e) {
+      // don't block on notification failures
     }
 
     return result;
@@ -505,20 +532,43 @@ export class ReturnsService {
       throw new BadRequestException('Yêu cầu không ở trạng thái có thể review');
     }
 
-    const newStatus =
-      dto.action === 'approve' ? ReturnStatus.APPROVED : ReturnStatus.REJECTED;
+    const isPosApprove = ret.origin === 'POS' && dto.action === 'approve';
+    const newStatus = isPosApprove
+      ? ReturnStatus.RECEIVED
+      : dto.action === 'approve'
+        ? ReturnStatus.APPROVED
+        : ReturnStatus.REJECTED;
+
     this.validateTransition(ret.status, newStatus);
 
     const updated = await this.prisma.$transaction(async (tx) => {
       const result = await tx.returnRequest.update({
         where: { id },
-        data: { status: newStatus, note: dto.note },
+        data: {
+          status: newStatus,
+          note: dto.note,
+          ...(isPosApprove && {
+            receivedAt: new Date(),
+            receivedLocation: 'POS',
+          }),
+        },
       });
 
       await this.createAudit(tx, id, adminId, dto.action.toUpperCase(), {
         previousStatus: ret.status,
         note: dto.note,
+        isPosJump: isPosApprove,
       });
+
+      if (isPosApprove) {
+        // Update quantities as received if jumping
+        for (const item of ret.items) {
+          await tx.returnItem.update({
+            where: { id: item.id },
+            data: { qtyReceived: item.quantity },
+          });
+        }
+      }
 
       return result;
     });
@@ -754,13 +804,8 @@ export class ReturnsService {
       throw new BadRequestException('Số tiền hoàn trả phải lớn hơn 0');
     }
 
-    // Role limit: staff cannot refund more than defined threshold directly
-    const STAFF_REFUND_LIMIT = 1000000;
-    if (role === 'STAFF' && refundAmount > STAFF_REFUND_LIMIT) {
-      throw new ForbiddenException(
-        `Nhân viên không thể hoàn tiền vượt quá ${STAFF_REFUND_LIMIT.toLocaleString('vi-VN')}đ. Xin vui lòng liên hệ Admin.`,
-      );
-    }
+    // Role limit: Removing the STAFF_REFUND_LIMIT as Admin has already approved the return request at an earlier stage.
+    // If we wanted to keep some sanity check, we could, but the user explicitly requested removal.
 
     // Gateway or manual - stub gateway for now (PayOS refund if available)
     const isGateway = dto.method === 'gateway';
@@ -790,6 +835,7 @@ export class ReturnsService {
           transactionId: dto.transactionId || gatewayRefundId,
           status: refundStatus,
           note: dto.note,
+          receiptImage: dto.receiptImage,
           attempts:
             ret.status === ReturnStatus.REFUND_FAILED
               ? (ret.refunds[0]?.attempts || 0) + 1
@@ -811,9 +857,15 @@ export class ReturnsService {
         },
       });
 
+      const totalRefunded = order.refundAmount + refundAmount;
+      const newPaymentStatus = totalRefunded >= order.finalAmount ? 'REFUNDED' : 'PARTIALLY_REFUNDED';
+
       await tx.order.update({
         where: { id: ret.orderId },
-        data: { paymentStatus: 'REFUNDED' },
+        data: { 
+          paymentStatus: newPaymentStatus,
+          refundAmount: totalRefunded
+        },
       });
 
       await this.createAudit(tx, id, adminId, 'REFUND_TRIGGERED', {

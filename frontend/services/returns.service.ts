@@ -25,6 +25,7 @@ export type CreateReturnDto = {
   orderId: string;
   items: ReturnItemDto[];
   reason?: string;
+  paymentInfo?: any;
   origin?: "ONLINE" | "POS";
 };
 
@@ -44,6 +45,18 @@ export type TriggerRefundDto = {
   method: "manual" | "cash" | "bank_transfer" | "gateway";
   transactionId?: string;
   note?: string;
+  receiptImage?: string;
+};
+
+export type Refund = {
+  id: string;
+  amount: number;
+  method: string;
+  status: string;
+  note?: string;
+  receiptImage?: string;
+  transactionId?: string;
+  createdAt?: string;
 };
 
 export type ReturnRequest = {
@@ -51,6 +64,7 @@ export type ReturnRequest = {
   orderId: string;
   status: ReturnStatus;
   reason?: string;
+  paymentInfo?: any;
   totalAmount?: number;
   refundAmount?: number;
   items: {
@@ -59,7 +73,11 @@ export type ReturnRequest = {
     quantity: number;
     reason?: string;
     images: string[];
+    qtyReceived?: number;
+    condition?: string;
   }[];
+  refunds?: Refund[];
+  origin?: "ONLINE" | "POS";
   // ... other fields
 };
 
@@ -127,6 +145,10 @@ export const returnsService = {
 
   getRefunds(id: string) {
     return api.get(`/returns/admin/${id}/refunds`).then((r) => r.data);
+  },
+
+  adminCancelReturn(id: string, reason?: string) {
+    return api.patch(`/returns/admin/${id}/cancel`, { reason }).then((r) => r.data);
   },
 
   posCreateReturn(dto: CreateReturnDto, idempotencyKey?: string) {

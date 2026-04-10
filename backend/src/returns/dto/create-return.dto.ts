@@ -6,6 +6,7 @@ import {
   Min,
   ValidateNested,
   ArrayMinSize,
+  IsObject,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -40,6 +41,10 @@ export class CreateReturnDto {
   @IsOptional()
   @IsString()
   reason?: string;
+
+  @IsOptional()
+  @IsObject()
+  paymentInfo?: Record<string, any>;
 
   // POS fields (staff only)
   @IsOptional()
