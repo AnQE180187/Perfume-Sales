@@ -63,12 +63,14 @@ export class StaffReportsService {
 
     // Revenue from orders that are NOT cancelled
     // (A partially refunded order is still successful but with less revenue)
+    const paidStatuses: PaymentStatus[] = [
+      PaymentStatus.PAID,
+      PaymentStatus.REFUNDED,
+      PaymentStatus.PARTIALLY_REFUNDED,
+    ];
+
     const paidOrders = orders.filter((o) =>
-      [
-        PaymentStatus.PAID,
-        PaymentStatus.REFUNDED,
-        PaymentStatus.PARTIALLY_REFUNDED,
-      ].includes(o.paymentStatus),
+      paidStatuses.includes(o.paymentStatus),
     );
 
     const totalRevenue = paidOrders.reduce(
