@@ -317,6 +317,7 @@ model Order {
   totalAmount         Int
   discountAmount      Int                  @default(0)
   finalAmount         Int
+  refundAmount        Int                  @default(0)
   status              OrderStatus          @default(PENDING)
   paymentStatus       PaymentStatus        @default(PENDING)
   channel             OrderChannel         @default(ONLINE)
@@ -669,6 +670,7 @@ enum PaymentStatus {
   PAID
   FAILED
   REFUNDED
+  PARTIALLY_REFUNDED
 }
 
 enum PaymentProvider {
@@ -832,6 +834,7 @@ model ReturnRequest {
   createdBy        String?          // staff/admin id if created by staff
   status           ReturnStatus     @default(REQUESTED)
   reason           String?
+  paymentInfo      Json?
   note             String?
   totalAmount      Int?             // cached refundable amount
   refundAmount     Int?             // actual refunded amount
@@ -909,6 +912,7 @@ model Refund {
   attempts        Int          @default(0)
   error           Json?
   note            String?
+  receiptImage    String?
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 
