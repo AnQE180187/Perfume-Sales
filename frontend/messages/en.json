@@ -1,24 +1,25 @@
 {
-  "Returns": {
-    "title": "My Returns",
-    "backToOrders": "Back to Orders"
-  },
-
-  "featured": {
-    "currency_code": "USD",
-    "currency_symbol": "$",
-    "badge_ai": "Neural Sync",
-    "badge_limited": "Limited Edition",
-    "badge_bestseller": "Bestseller",
-    "badge_new": "New Release",
-    "badge": "The Archive",
-    "title": "The Permanent Collection",
-    "cta": "Explore All Works",
-    "add": "Add to Collection",
-    "types": {
-      "extrait": "Extrait de Parfum",
-      "pure": "Pure Essence",
-      "eau": "Eau de Parfum"
+    "featured": {
+        "currency_code": "USD",
+        "currency_symbol": "$",
+        "badge_ai": "Neural Sync",
+        "badge_limited": "Limited Edition",
+        "badge_bestseller": "Bestseller",
+        "badge_new": "New Release",
+        "badge": "The Archive",
+        "title": "The Permanent Collection",
+        "cta": "Explore All Works",
+        "add": "Add to Collection",
+        "types": {
+            "extrait": "Extrait de Parfum",
+            "pure": "Pure Essence",
+            "eau": "Eau de Parfum"
+        },
+        "accents": {
+            "floral": "Floral",
+            "oriental": "Oriental",
+            "woody": "Woody"
+        }
     },
     "accents": {
       "floral": "Floral",
@@ -1776,17 +1777,169 @@
           "staff": "Boutique Staff",
           "admin": "Administrator"
         },
-        "labels": {
-          "fullName": "Full Name",
-          "phone": "Phone",
-          "email": "Email",
-          "gender": "Gender",
-          "dob": "Date of Birth",
-          "address": "Address",
-          "city": "City",
-          "country": "Country",
-          "min_budget": "Min Budget",
-          "max_budget": "Max Budget"
+        "user": {
+            "explorer": "Aura Explorer",
+            "guest": "House Guest",
+            "admin": "Administrator",
+            "staff": "Boutique Staff",
+            "customer": "House Guest"
+        },
+        "customer": {
+            "loyalty": {
+                "title": "Aura Credits",
+                "subtitle": "Your olfactory resonance history and member privileges.",
+                "credits_suffix": "Credits",
+                "history_title": "Sync History",
+                "syncing": "Synchronizing data...",
+                "empty": "No resonance recorded yet.",
+                "perks_title": "Active Privileges",
+                "perks_list": {
+                    "free_shipping": "Logistical Priority (Free Shipping)",
+                    "discount_10": "10% Resonance Deduction",
+                    "rare_case": "Bespoke Collector's Archive"
+                },
+                "ai_insight_title": "AI Olfactory Insight",
+                "ai_insight_desc": "Your spending patterns suggest a preference for high-longevity extraits.",
+                "reasons": {
+                    "purchase": "Acquisition Resonance",
+                    "refund": "Refinement Reversal",
+                    "referral": "Ambassador Synchronization",
+                    "bonus": "Celestial Gift",
+                    "redeem": "Atmospheric Redemption",
+                    "order_completed": "Synthesis Fulfilled",
+                    "order": "Order Synthesis",
+                    "earned_from_order": "Earned from order #{id}",
+                    "exchanged_for_voucher": "Exchanged for discount signature",
+                    "exchanged_for_voucher_generic": "Exchanged for voucher {code}",
+                    "redeemed_for_order_voucher_redeem_freeship_max": "Applied Free Shipping Offer"
+                },
+                "history": "Transaction History"
+            },
+            "home": {
+                "title": "My Sanctuary",
+                "subtitle": "Tailored for your unique essence.",
+                "credits_label": "Aura Credits",
+                "credits_suffix": "PTS",
+                "analyzing": "Analyzing DNA...",
+                "evolving_title": "Your Neural Signature is evolving",
+                "evolving_desc": "Our AI has detected new olfactory resonances based on your recent interactions. Update your profile to synchronize.",
+                "refresh_btn": "Refresh Synthesis",
+                "loyalty_points": "Loyalty Resonance",
+                "offers_title": "Active Offers",
+                "offers_new": "New",
+                "offers_desc": "{count} Rewards available for synthesis",
+                "modules": {
+                    "profile": "Profile",
+                    "addresses": "Address Book",
+                    "orders": "My Orders",
+                    "loyalty": "Loyalty",
+                    "ai_chat": "AI Consultation",
+                    "quiz": "Quiz Results",
+                    "explore": "Explore module →"
+                }
+            },
+            "promotions": {
+                "title": "Olfactory Incentives",
+                "subtitle": "Exclusive mathematical benefits for your next discovery.",
+                "time_left": "{time} left",
+                "expired": "Temporal Resonance Expired",
+                "copy_btn": "Trace Signature",
+                "copied": "Traced",
+                "benefit_label": "Synthesis Benefit",
+                "no_promos": "No Active Synthesis",
+                "no_promos_desc": "Check back later for exclusive AI-predicted opportunities.",
+                "discount_off": "{value}% OFF",
+                "discount_fixed": "-{value} {currency}",
+                "fallback_desc": "Digital benefit for your next neural acquisition.",
+                "referral": {
+                    "title": "Artisan Referral Program",
+                    "desc": "Share the Aura experience with a fellow connoisseur and unlock a 10ml rare decant once they complete their first synthesis.",
+                    "cta": "Invite Connoisseurs"
+                }
+            },
+            "orders": {
+                "title": "My Collection",
+                "subtitle": "A chronicle of your signature olfactory journeys.",
+                "empty_title": "Archives Are Empty",
+                "empty_desc": "Begin your expedition into luxury scents today.",
+                "order_label": "Sequence",
+                "more_suffix": "(+{count} more)",
+                "fragrance_acquisition": "Fragrance Acquisition",
+                "destination": "Destination",
+                "view_details": "View Details & Tracking",
+                "status": {
+                    "pending": "Pending",
+                    "confirmed": "Confirmed",
+                    "processing": "Processing",
+                    "shipped": "Dispatched",
+                    "completed": "Fulfilled",
+                    "cancelled": "Revoked"
+                }
+            },
+            "favorite": {
+                "title": "Favorite Products",
+                "subtitle": "A curated list of perfumes you've saved.",
+                "loading": "Loading favorites...",
+                "empty_title": "No Favorite Products Yet",
+                "view_collection": "View Collection",
+                "details": "View Details",
+                "remove": "Remove",
+                "brand_fallback": "Brand",
+                "size_label": "Size: {name}"
+            },
+            "order_detail": {
+                "back": "Back to Archive",
+                "order_number": "Sequence {code}",
+                "date": "Timestamp",
+                "status": "Resonance State",
+                "shipping_address": "Delivery Coordinates",
+                "items": "Curated Units",
+                "summary": "Financial Synthesis",
+                "subtotal": "Base Resonance",
+                "shipping": "Logistics Surcharge",
+                "discount": "Incentive Deduction",
+                "total": "Total Valuation",
+                "payment": "Settlement Protocol",
+                "products": "Acquisitions",
+                "no_products": "No items recorded",
+                "tracking": "Neural Tracking",
+                "tracking_code": "Logistics Identifier",
+                "tracking_status": "Current Status: {status}",
+                "ghn_lookup": "GHN Inquiry",
+                "write_review": "Document Experience",
+                "writing_review": "Recording...",
+                "reviewed": "Documented",
+                "not_found": "Sequence Not Found",
+                "back_to_list": "Return to Archives",
+                "payment_status": {
+                    "paid": "Settled",
+                    "pending": "Awaiting Fulfillment"
+                },
+                "shipping_status_labels": {
+                    "READY_TO_PICK": "Ready to Pick",
+                    "PICKING": "Picking",
+                    "CANCEL": "Cancelled",
+                    "DELIVERING": "Delivering",
+                    "DELIVERED": "Delivered",
+                    "RETURN": "Returned"
+                }
+            },
+            "notifications": {
+                "title": "Notifi{italic}",
+                "subtitle": "Monitor your acquisitions, incentives, and account resonance.",
+                "mark_all_read": "Mark all as read",
+                "mark_read": "Mark as read",
+                "empty": "No transmissions received.",
+                "view_details": "View Details",
+                "load_more": "Load More Transcripts",
+                "time": {
+                    "just_now": "Just now",
+                    "mins_ago": "{count} minutes ago",
+                    "hours_ago": "{count} hours ago",
+                    "yesterday": "Yesterday",
+                    "days_ago": "{count} days ago"
+                }
+            }
         },
         "gender_options": {
           "male": "Male",
