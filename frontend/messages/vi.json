@@ -216,28 +216,87 @@
         ]
     },
     "quiz": {
-        "title": "Khám Phá Bản Sắc Thần Kinh",
-        "subtitle": "Khởi tạo các thông số cảm giác của bạn thông qua các kịch bản môi trường.",
-        "question": "Môi trường cộng hưởng nào phản ánh trạng thái hiện tại của bạn?",
-        "options": {
-            "city": {
-                "title": "Siêu Đô Thị Nửa Đêm",
-                "desc": "Mưa lạnh trên bê tông, thép nguội và nhịp đập điện tử."
+        "intro": {
+            "label": "Khám phá Khứu giác",
+            "title": "Tìm kiếm Dấu ấn Riêng",
+            "description": "Công cụ mùi hương AI của chúng tôi phân tích hồ sơ giác quan độc nhất của bạn để tuyển chọn bộ sưu tập phù hợp với bản sắc cốt lõi của bạn.",
+            "start_btn": "Bắt đầu Khám phá",
+            "login_btn": "Đăng nhập để Bắt đầu",
+            "login_required": "Hồ sơ giác quan của bạn cần một ngôi nhà nơ-ron để lưu kết quả.",
+            "time_estimate": "Thời gian dự kiến: 2 Phút"
+        },
+        "step_label": "Bước",
+        "prev_step": "Quay lại",
+        "steps": {
+            "gender": {
+                "title": "Dấu ấn này dành cho ai?",
+                "subtitle": "Tổng hợp phân tử thường thay đổi dựa trên xu hướng cộng hưởng dự kiến.",
+                "options": {
+                    "male": "Nam tính",
+                    "female": "Nữ tính",
+                    "unisex": "Phi giới tính"
+                }
             },
-            "sea": {
-                "title": "Vực Thẳm Xanh Thẳm",
-                "desc": "Những luồng khí giàu ozone, hơi muối và gỗ mục bên bờ biển."
+            "occasion": {
+                "title": "Nó sẽ cộng hưởng trong môi trường nào?",
+                "subtitle": "Dịp sử dụng quyết định yêu cầu về độ tỏa hương (sillage) và độ bám tỏa.",
+                "options": {
+                    "daily": "Sử dụng hàng ngày",
+                    "office": "Môi trường Công sở",
+                    "date": "Hẹn hò Lãng mạn",
+                    "party": "Tiệc tùng & Sự kiện",
+                    "special": "Dịp đặc biệt Hiếm gặp"
+                }
             },
-            "library": {
-                "title": "Cổ Thư & Mực",
-                "desc": "Những bản thảo cổ xưa, da cũ và lá thuốc lá."
+            "budget": {
+                "title": "Thiết lập định giá sở hữu.",
+                "subtitle": "Sự xa xỉ là một khoản đầu tư vào kho lưu trữ khứu giác cá nhân của bạn.",
+                "options": {
+                    "under_500k": "Khám phá Cơ bản",
+                    "500k_1m": "Tổng hợp Tiêu chuẩn",
+                    "1m_2m": "Lựa chọn Cao cấp",
+                    "2m_5m": "Phân khúc Nghệ nhân",
+                    "over_5m": "Tuyệt phẩm Sưu tầm"
+                }
             },
-            "garden": {
-                "title": "Hạ Chí Nở Rộ",
-                "desc": "Đất ẩm, hoa nhài nở đêm và xạ hương trắng."
+            "scent_family": {
+                "title": "Bạn thích nhóm phân tử nào hơn?",
+                "subtitle": "DNA cốt lõi trong sở thích mùi hương của bạn.",
+                "options": {
+                    "fresh": "Tươi mát (Fresh)",
+                    "floral": "Hương hoa (Floral)",
+                    "woody": "Gỗ & Vỏ cây (Woody)",
+                    "oriental": "Gia vị & Nhựa (Oriental)",
+                    "aromatic": "Thảo mộc (Aromatic)"
+                }
+            },
+            "longevity": {
+                "title": "Yêu cầu về độ bền theo thời gian.",
+                "subtitle": "Dấu ấn nên lưu lại trên da trong bao lâu?",
+                "options": {
+                    "light": "Nhẹ nhàng (2-4h)",
+                    "moderate": "Trung bình (4-6h)",
+                    "long": "Kéo dài (6-8h)",
+                    "very_long": "Tuyệt đối (8h+)"
+                }
             }
         },
-        "cta": "Tiến Tới Tổng Hợp"
+        "analyzing": {
+            "step1": "Khởi tạo Trọng số Thần kinh...",
+            "step2": "Quét Cơ sở Dữ liệu Khứu giác...",
+            "step3": "Bản đồ hóa Sự Phù hợp Phân tử...",
+            "step4": "Dự đoán Độ Tỏa hương Cá nhân...",
+            "message": "AI của chúng tôi đang chưng cất hồ sơ bản chất độc đáo của bạn..."
+        },
+        "results": {
+            "no_results_title": "Không Tìm Thấy Kết Quả",
+            "no_results_desc": "AI của chúng tôi không thể tìm thấy sự phù hợp hoàn hảo cho các thông số cụ thể đó. Hãy thử điều chỉnh lại quá trình khám phá của bạn.",
+            "retake": "Thực hiện lại Khám phá",
+            "ai_picked": "Lựa chọn từ Aura AI",
+            "title": "Bản Thiết Kế Khứu Giác Của Bạn",
+            "subtitle": "Dựa trên hồ sơ sinh học của bạn, công cụ thần kinh của chúng tôi đã tuyển chọn các dấu ấn này với độ chính xác 98,4%.",
+            "view_detail": "Xem chi tiết"
+        }
     },
     "auth": {
         "login": {
@@ -945,6 +1004,7 @@
                 "history_title": "Lịch sử giao dịch",
                 "syncing": "Đang đồng bộ...",
                 "empty": "Không tìm thấy giao dịch nào.",
+                "discover_market": "Khám phá Thị trường",
                 "perks_title": "Đặc quyền",
                 "ai_insight_title": "Phân tích Cộng hưởng AI",
                 "ai_insight_desc": "Điểm tích lũy của bạn cho thấy sự ưu tiên cho các chiết xuất quý hiếm và nồng độ lưu hương cao.",
@@ -991,18 +1051,19 @@
                 }
             },
             "promotions": {
-                "title": "Ví Voucher Của Tôi",
-                "marketplace_title": "Ưu đãi Khả dụng",
-                "subtitle": "Quản lý các đặc quyền và mã giảm giá dành riêng cho hồ sơ của bạn.",
-                "expired": "Hết hạn",
+                "title": "Ưu đãi Khứu ký",
+                "marketplace_title": "Thị trường Đặc quyền",
+                "subtitle": "Khám phá các mã ưu đãi hiếm và những dấu ấn kỹ thuật số cho bộ sưu tập của bạn.",
+                "verified_signature": "Dấu ấn Đã xác thực",
+                "expired": "Hết hạn Cộng hưởng",
                 "time_left": "Còn lại {time}",
                 "fallback_desc": "Đặc quyền olfactory đặc biệt dành cho khách hàng của House.",
-                "benefit_label": "LỢI ÍCH",
+                "benefit_label": "Lợi ích Tổng hợp",
                 "discount_off": "GIẢM {value}%",
                 "discount_fixed": "GIẢM {value} {currency}",
                 "copied": "Đã sao chép",
                 "copy_btn": "Sao chép mã",
-                "no_promos": "Ví của bạn đang trống",
+                "no_promos": "Bộ sưu tập của bạn đang trống",
                 "no_promos_desc": "Hãy đổi điểm thưởng để nhận thêm ưu đãi mới.",
                 "referral": {
                     "title": "Mạng Lưới Lan Tỏa",

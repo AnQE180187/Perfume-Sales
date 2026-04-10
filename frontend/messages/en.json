@@ -217,28 +217,87 @@
         ]
     },
     "quiz": {
-        "title": "Neural Taste Discovery",
-        "subtitle": "Initialize your sensory parameters through ambient scenarios.",
-        "question": "Which resonance environment speaks to your current state?",
-        "options": {
-            "city": {
-                "title": "Midnight Metropolis",
-                "desc": "Crisp rain on concrete, cold steel, and electric pulse."
+        "intro": {
+            "label": "Olfactory Discovery",
+            "title": "Find Your Signature",
+            "description": "Our AI-powered fragrance engine analyzes your unique sensory profile to curate a collection that resonates with your core identity.",
+            "start_btn": "Begin Discovery",
+            "login_btn": "Sign in to Begin",
+            "login_required": "Your sensory profile needs a neural home to save results.",
+            "time_estimate": "Estimated Time: 2 Minutes"
+        },
+        "step_label": "Step",
+        "prev_step": "Back",
+        "steps": {
+            "gender": {
+                "title": "Who is this signature for?",
+                "subtitle": "Molecular synthesis often varies based on intended resonance orientation.",
+                "options": {
+                    "male": "Masculine",
+                    "female": "Feminine",
+                    "unisex": "Universal"
+                }
             },
-            "sea": {
-                "title": "Azure Abyss",
-                "desc": "Ozone-rich drafts, salt spray, and sun-bleached wood."
+            "occasion": {
+                "title": "In what environment will it resonate?",
+                "subtitle": "Occasion determines the projection and sillage requirements.",
+                "options": {
+                    "daily": "Daily Presence",
+                    "office": "Professional Node",
+                    "date": "Intimate Resonance",
+                    "party": "Social Density",
+                    "special": "Rare Occasions"
+                }
             },
-            "library": {
-                "title": "Vellum & Ink",
-                "desc": "Ancient manuscripts, aged leather, and tobacco leaf."
+            "budget": {
+                "title": "Set your acquisition valuation.",
+                "subtitle": "Luxury is an investment in your personal olfactory archive.",
+                "options": {
+                    "under_500k": "Accessible Discovery",
+                    "500k_1m": "Standard Synthesis",
+                    "1m_2m": "Premium Selection",
+                    "2m_5m": "Artisanal Tier",
+                    "over_5m": "Collector Absolute"
+                }
             },
-            "garden": {
-                "title": "Solstice Bloom",
-                "desc": "Wet earth, night-blooming jasmine, and white musk."
+            "scent_family": {
+                "title": "Which molecular family do you prefer?",
+                "subtitle": "The core DNA of your fragrance preference.",
+                "options": {
+                    "fresh": "Fresh & Crisp",
+                    "floral": "Floral & Rare",
+                    "woody": "Raw Wood & Bark",
+                    "oriental": "Spice & Resin",
+                    "aromatic": "Herbal & Botanical"
+                }
+            },
+            "longevity": {
+                "title": "Required temporal persistence.",
+                "subtitle": "How long should the signature remain on the dermis?",
+                "options": {
+                    "light": "Light Presence",
+                    "moderate": "Moderate Sillage",
+                    "long": "Extended Persistence",
+                    "very_long": "Absolute Performance"
+                }
             }
         },
-        "cta": "Proceed to Synthesis"
+        "analyzing": {
+            "step1": "Initializing Neural Weights...",
+            "step2": "Scanning Olfactory Database...",
+            "step3": "Mapping Molecular Affinity...",
+            "step4": "Predicting Personal Sillage...",
+            "message": "Our AI is distilling your unique essence profile..."
+        },
+        "results": {
+            "no_results_title": "No Matches Found",
+            "no_results_desc": "Our AI couldn't find a perfect match for those specific parameters. Try refining your discovery.",
+            "retake": "Retake Discovery",
+            "ai_picked": "Aura AI Selection",
+            "title": "Your Olfactory Blueprint",
+            "subtitle": "Based on your bio-profile, our neural engine has curated these signatures with 98.4% precision.",
+            "view_detail": "View Detail"
+        }
     },
     "auth": {
         "login": {
@@ -886,6 +945,7 @@
                 "history_title": "Sync History",
                 "syncing": "Synchronizing data...",
                 "empty": "No resonance recorded yet.",
+                "discover_market": "Discover Market",
                 "perks_title": "Active Privileges",
                 "perks_list": {
                     "free_shipping": "Logistical Priority (Free Shipping)",
@@ -934,7 +994,9 @@
             },
             "promotions": {
                 "title": "Olfactory Incentives",
-                "subtitle": "Exclusive mathematical benefits for your next discovery.",
+                "subtitle": "Discover rare vouchers and digital signatures for your collection.",
+                "marketplace_title": "Marketplace",
+                "verified_signature": "Signature Verified",
                 "time_left": "{time} left",
                 "expired": "Temporal Resonance Expired",
                 "copy_btn": "Trace Signature",
