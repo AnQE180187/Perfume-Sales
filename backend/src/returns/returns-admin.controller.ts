@@ -52,6 +52,11 @@ export class ReturnsAdminController {
     return this.returnsService.listAudits(id);
   }
 
+  @Get(':id/suggested-refund')
+  getSuggestedRefund(@Param('id') id: string) {
+    return this.returnsService.getSuggestedRefundAmount(id);
+  }
+
   /** Admin/Staff: xem refund history */
   @Get(':id/refunds')
   async getRefunds(@Param('id') id: string) {

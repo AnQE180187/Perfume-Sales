@@ -73,6 +73,12 @@ export class ReturnsController {
     );
   }
 
+  /** Customer: xác nhận đã bàn giao hàng cho shipper */
+  @Patch(':id/handover')
+  async handover(@Req() req: any, @Param('id') id: string) {
+    return this.returnsService.handoverReturn(req.user.userId, id);
+  }
+
   /** Customer: upload video minh chứng (resource_type: video) */
   @Post('upload-video')
   @UseInterceptors(FileInterceptor('video'))

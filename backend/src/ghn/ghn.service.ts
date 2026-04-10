@@ -177,6 +177,11 @@ export class GHNService {
         toAddress: string;
         toWardCode: string;
         toDistrictId: number;
+        fromName?: string;
+        fromPhone?: string;
+        fromAddress?: string;
+        fromWardCode?: string;
+        fromDistrictId?: number;
         weight: number;
         length: number;
         width: number;
@@ -185,6 +190,7 @@ export class GHNService {
         serviceTypeId: number;
         paymentTypeId: number;
         codAmount: number;
+        insuranceValue?: number;
         content?: string;
         clientOrderCode?: string;
         items: { name: string; quantity: number; price: number; weight?: number }[];
@@ -198,6 +204,11 @@ export class GHNService {
             return_district_id: this.fromDistrictId || null,
             return_ward_code: this.fromWardCode || '',
             client_order_code: params.clientOrderCode ?? '',
+            from_name: params.fromName,
+            from_phone: params.fromPhone,
+            from_address: params.fromAddress,
+            from_ward_code: params.fromWardCode,
+            from_district_id: params.fromDistrictId,
             to_name: params.toName,
             to_phone: params.toPhone,
             to_address: params.toAddress,
@@ -209,7 +220,7 @@ export class GHNService {
             length: params.length,
             width: params.width,
             height: params.height,
-            insurance_value: Math.min(params.codAmount, 5000000),
+            insurance_value: params.insuranceValue ?? Math.min(params.codAmount, 5000000),
             service_id: params.serviceId,
             service_type_id: params.serviceTypeId,
             items: params.items.map((i) => ({
