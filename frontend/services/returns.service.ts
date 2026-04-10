@@ -75,6 +75,16 @@ export type ReturnRequest = {
     images: string[];
     qtyReceived?: number;
     condition?: string;
+    variant?: {
+      id: string;
+      name: string;
+      volume?: string;
+      product?: {
+        id: string;
+        name: string;
+        images?: { id: number; url: string }[];
+      };
+    };
   }[];
   refunds?: Refund[];
   origin?: "ONLINE" | "POS";

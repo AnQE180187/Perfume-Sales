@@ -1,5 +1,10 @@
 import api from "@/lib/axios";
 
+export type ProductImage = {
+  id: number;
+  url: string;
+};
+
 export type StaffPosOrderItem = {
   id: number;
   orderId: string;
@@ -10,11 +15,12 @@ export type StaffPosOrderItem = {
   product?: {
     id: string;
     name: string;
+    images?: ProductImage[];
   } | null;
   variant?: {
     id: string;
     name: string;
-    product?: { id: string; name: string } | null;
+    product?: { id: string; name: string; images?: ProductImage[] } | null;
   };
 };
 
