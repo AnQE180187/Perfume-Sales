@@ -29,12 +29,13 @@ import {
 import { Select } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Check, X, Box, CreditCard, RotateCcw, Search, Store, Globe, RefreshCcw, Loader2, Banknote } from "lucide-react";
+import { Check, X, Box, CreditCard, RotateCcw, Search, Store, Globe, RefreshCcw, Loader2, Banknote, Truck } from "lucide-react";
 import api from "@/lib/axios";
 import {
   staffOrdersService,
   StaffPosOrder,
 } from "@/services/staff-orders.service";
+import { cn } from "@/lib/utils";
 
 const getStatusColor = (status: ReturnStatus) => {
   switch (status) {
@@ -60,6 +61,13 @@ const getStatusColor = (status: ReturnStatus) => {
     default:
       return "bg-gray-500/10 text-gray-400 border-gray-500/20";
   }
+};
+
+const formatVND = (amount: number) => {
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(amount);
 };
 
 const getStatusLabel = (status: ReturnStatus) => {
@@ -103,7 +111,10 @@ export const AdminReturnManagement = ({
   const [note, setNote] = useState("");
   const [receiptImageUrl, setReceiptImageUrl] = useState("");
   const [isUploadingReceipt, setIsUploadingReceipt] = useState(false);
+  const [calculatingRefund, setCalculatingRefund] = useState(false);
   const [receiveItemsState, setReceiveItemsState] = useState<Record<string, { qtyReceived: number, sealIntact: boolean }>>({});
+  const [audits, setAudits] = useState<any[]>([]);
+  const [auditsLoading, setAuditsLoading] = useState(false);
 
   useEffect(() => {
     if (isReceiveOpen && selectedReturn) {
@@ -113,7 +124,36 @@ export const AdminReturnManagement = ({
       });
       setReceiveItemsState(initial);
     }
-  }, [isReceiveOpen, selectedReturn]);
+    
+    if (selectedReturn && (isReviewOpen || isReceiveOpen || isRefundOpen)) {
+      fetchAudits(selectedReturn.id);
+      
+      // Default refund method based on origin
+      if (isRefundOpen) {
+        if (selectedReturn.origin === "ONLINE") {
+          setRefundMethod("bank_transfer");
+        } else {
+          setRefundMethod("cash");
+        }
+        setNote("");
+        setReceiptImageUrl("");
+      }
+    } else {
+      setAudits([]);
+    }
+  }, [isReceiveOpen, isReviewOpen, isRefundOpen, selectedReturn]);
+
+  const fetchAudits = async (returnId: string) => {
+    setAuditsLoading(true);
+    try {
+      const res = await api.get(`/returns/admin/${returnId}/audits`);
+      setAudits(res.data);
+    } catch (err) {
+      console.error("Failed to fetch audits", err);
+    } finally {
+      setAuditsLoading(false);
+    }
+  };
 
   const handleReceiptUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -220,6 +260,20 @@ export const AdminReturnManagement = ({
       toast.error("Lỗi nhận hàng", {
         description: err?.response?.data?.message || err.message,
       });
+    }
+  };
+
+  const handleAutoCalc = async () => {
+    if (!selectedReturn) return;
+    setCalculatingRefund(true);
+    try {
+      const res = await returnsService.getSuggestedRefund(selectedReturn.id);
+      setSelectedReturn(prev => prev ? { ...prev, refundAmount: res.suggestedAmount } : null);
+      toast.success("Đã tính toán số tiền hoàn dựa trên thực nhận");
+    } catch (err: any) {
+      toast.error("Lỗi tính toán số tiền", { description: err.message });
+    } finally {
+      setCalculatingRefund(false);
     }
   };
 
@@ -387,6 +441,7 @@ export const AdminReturnManagement = ({
                 <TableHead className="w-[140px]">Mã Đơn</TableHead>
                 <TableHead className="w-[120px]">Ngày tạo</TableHead>
                 <TableHead>Lý do</TableHead>
+                <TableHead className="w-[180px]">Vận chuyển</TableHead>
                 <TableHead className="w-[180px]">Trạng thái</TableHead>
                 <TableHead className="text-right w-[160px]">Hành động</TableHead>
               </TableRow>
@@ -394,7 +449,7 @@ export const AdminReturnManagement = ({
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-12">
+                  <TableCell colSpan={8} className="text-center py-12">
                     <div className="flex flex-col items-center justify-center space-y-3">
                       <RefreshCcw className="w-8 h-8 animate-spin text-gold/50" />
                       <p className="text-muted-foreground text-sm">Đang đồng bộ dữ liệu...</p>
@@ -403,7 +458,7 @@ export const AdminReturnManagement = ({
                 </TableRow>
               ) : filteredData.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-16">
+                  <TableCell colSpan={8} className="text-center py-16">
                     <div className="flex flex-col items-center justify-center space-y-3">
                       <Box className="w-12 h-12 text-muted-foreground/30" />
                       <p className="text-muted-foreground">Không tìm thấy yêu cầu trả hàng nào trong mục này</p>
@@ -438,6 +493,42 @@ export const AdminReturnManagement = ({
                     </TableCell>
                     <TableCell className="max-w-[200px] truncate text-sm">
                       {req.reason || <span className="text-muted-foreground/50 italic">Không có lý do</span>}
+                    </TableCell>
+                    <TableCell>
+                      {req.shipments && req.shipments.length > 0 ? (
+                        <div className="flex flex-col gap-1">
+                          {req.shipments.map((s, idx) => {
+                            const isAutomated = s.courier === 'GHN';
+                            return (
+                              <div key={idx} className="flex flex-col gap-0.5">
+                                <a
+                                  href={isAutomated ? `https://ghn.vn/blogs/trang-thai-don-hang?order_code=${s.trackingNumber}` : '#'}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className={cn(
+                                    "text-[10px] font-mono font-bold flex items-center gap-1 px-2 py-0.5 rounded border w-fit transition-colors",
+                                    isAutomated 
+                                      ? "text-cyan-400 bg-cyan-500/10 border-cyan-500/20 hover:bg-cyan-500/20" 
+                                      : "text-amber-400 bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20"
+                                  )}
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <Truck className="w-2.5 h-2.5" />
+                                  {s.trackingNumber}
+                                  {isAutomated && <Badge className="h-3 px-1 text-[7px] bg-cyan-500 text-black border-none ml-1">GHN</Badge>}
+                                </a>
+                                {s.status && (
+                                  <span className="text-[8px] text-muted-foreground ml-1 uppercase font-medium">
+                                    • {s.status}
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <span className="text-[10px] text-muted-foreground/40 italic">Chưa có vận đơn</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className={`${getStatusColor(req.status)} text-[10px] px-2 py-0.5 tracking-wide`}>
@@ -602,6 +693,39 @@ export const AdminReturnManagement = ({
                </div>
             </div>
 
+            <div className="space-y-3 pt-4 border-t border-border/50">
+               <h3 className="text-xs font-semibold text-foreground flex items-center gap-2 uppercase tracking-wider">
+                  <RotateCcw className="w-3 h-3 text-gold" /> Nhật ký xử lý
+               </h3>
+               <div className="bg-black/20 rounded-xl border border-border/50 overflow-hidden">
+                  {auditsLoading ? (
+                    <div className="p-4 flex justify-center"><Loader2 className="w-4 h-4 animate-spin text-gold/50" /></div>
+                  ) : audits.length === 0 ? (
+                    <div className="p-4 text-center text-[10px] text-muted-foreground italic">Chưa có nhật ký hoạt động</div>
+                  ) : (
+                    <div className="max-h-40 overflow-y-auto custom-scrollbar">
+                       {audits.map((a, idx) => (
+                         <div key={a.id} className="p-3 border-b border-border/30 last:border-0 flex justify-between items-start gap-3">
+                            <div className="flex-1">
+                               <p className={cn(
+                                 "text-[10px] font-bold uppercase tracking-widest mb-0.5",
+                                 a.action.includes('FAILED') ? 'text-red-400' : 'text-gold/80'
+                               )}>
+                                 {a.action.replace(/_/g, ' ')}
+                               </p>
+                               {a.payload?.message && <p className="text-[9px] text-muted-foreground italic">{a.payload.message}</p>}
+                               {a.payload?.orderCode && (
+                                 <p className="text-[9px] text-cyan-400 font-mono mt-0.5">Vận đơn: {a.payload.orderCode}</p>
+                               )}
+                            </div>
+                            <span className="text-[9px] text-muted-foreground font-mono">{new Date(a.createdAt).toLocaleString('vi-VN')}</span>
+                         </div>
+                       ))}
+                    </div>
+                  )}
+               </div>
+            </div>
+
             <div className="space-y-2 pt-4 border-t border-border/50">
               <label className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
                 Ghi chú hoặc Phản hồi cho {selectedReturn?.origin === "POS" ? "Staff" : "khách"} (nếu từ chối)
@@ -666,37 +790,61 @@ export const AdminReturnManagement = ({
                               {item.variant?.product?.name || `Mẫu #${item.variantId.slice(-6).toUpperCase()}`}
                            </span>
                            <span className="text-xs text-muted-foreground mt-0.5">
-                              {item.variant?.volume && `${item.variant.volume} • `}SL chuẩn bị trả: {item.quantity}
+                              {item.variant?.volume && `${item.variant.volume} • `}SL Yêu cầu: {item.quantity}
                            </span>
                         </div>
                      </div>
-                     <div 
-                        className="flex items-center space-x-2 bg-background/50 px-3 py-2 rounded-lg border border-border cursor-pointer hover:bg-white/5 transition-colors"
-                        onClick={() => {
-                           setReceiveItemsState(prev => ({
-                              ...prev,
-                              [item.variantId]: {
-                                  ...prev[item.variantId],
-                                  sealIntact: !(prev[item.variantId]?.sealIntact ?? true)
-                              }
-                           }))
-                        }}
-                     >
-                        <Checkbox 
-                           checked={receiveItemsState[item.variantId]?.sealIntact ?? true} 
-                           onCheckedChange={(checked) => {
+                     
+                     <div className="flex items-center space-x-4">
+                       <div className="flex items-center gap-2 bg-background/50 px-2 py-1.5 rounded-lg border border-border">
+                         <label className="text-[10px] text-muted-foreground uppercase font-bold">Thực nhận:</label>
+                         <input 
+                           type="number"
+                           min="0"
+                           max={item.quantity}
+                           value={receiveItemsState[item.variantId]?.qtyReceived ?? item.quantity}
+                           onChange={(e) => {
+                             const v = parseInt(e.target.value) || 0;
                              setReceiveItemsState(prev => ({
                                ...prev,
                                [item.variantId]: {
                                  ...prev[item.variantId],
-                                 sealIntact: checked === true
+                                 qtyReceived: Math.min(item.quantity, Math.max(0, v))
                                }
-                             }))
+                             }));
                            }}
-                        />
-                        <span className={`text-sm font-semibold ${receiveItemsState[item.variantId]?.sealIntact !== false ? 'text-teal-400' : 'text-red-400'}`}>
-                           {receiveItemsState[item.variantId]?.sealIntact !== false ? '✅ Nguyên seal' : '❌ Đã bóc / Hư hỏng'}
-                        </span>
+                           className="bg-transparent border-none text-sm w-10 text-center text-gold font-bold focus:ring-0 p-0"
+                         />
+                       </div>
+
+                       <div 
+                          className="flex items-center space-x-2 bg-background/50 px-3 py-2 rounded-lg border border-border cursor-pointer hover:bg-white/5 transition-colors"
+                          onClick={() => {
+                             setReceiveItemsState(prev => ({
+                                ...prev,
+                                [item.variantId]: {
+                                    ...prev[item.variantId],
+                                    sealIntact: !(prev[item.variantId]?.sealIntact ?? true)
+                                }
+                             }))
+                          }}
+                       >
+                          <Checkbox 
+                             checked={receiveItemsState[item.variantId]?.sealIntact ?? true} 
+                             onCheckedChange={(checked) => {
+                               setReceiveItemsState(prev => ({
+                                 ...prev,
+                                 [item.variantId]: {
+                                   ...prev[item.variantId],
+                                   sealIntact: checked === true
+                                 }
+                               }))
+                             }}
+                          />
+                          <span className={`text-sm font-semibold ${receiveItemsState[item.variantId]?.sealIntact !== false ? 'text-teal-400' : 'text-red-400'}`}>
+                             {receiveItemsState[item.variantId]?.sealIntact !== false ? 'Nguyên seal' : 'Lỗi/Hư'}
+                          </span>
+                       </div>
                      </div>
                   </div>
                ))}
@@ -734,29 +882,34 @@ export const AdminReturnManagement = ({
           <DialogHeader className="border-b border-border/50 pb-4">
             <DialogTitle className="text-xl text-indigo-400">Xác Nhận Hoàn Đơn Hàng</DialogTitle>
           </DialogHeader>
-          <div className="space-y-5 py-4">
-            <div className="bg-indigo-500/10 border border-indigo-500/20 p-4 rounded-xl">
-               <p className="text-sm text-indigo-200">
-                  Hoàn tiền cho đơn hàng <strong className="font-mono text-white">{selectedReturn?.orderId.substring(0, 8)}</strong>
+          <div className="space-y-4 py-4 px-1 max-h-[70vh] overflow-y-auto custom-scrollbar">
+            <div className="bg-indigo-500/10 border border-indigo-500/20 p-3 rounded-xl flex items-baseline justify-between">
+               <p className="text-xs text-indigo-300">
+                  Đơn hàng: <strong className="font-mono text-white">{selectedReturn?.orderId.substring(0, 8)}</strong>
                </p>
+               {selectedReturn?.origin === "ONLINE" && (
+                 <Badge className="bg-cyan-500/20 text-cyan-400 border-none text-[8px] h-4">Trực Tuyến</Badge>
+               )}
             </div>
 
-            <div className="space-y-3">
+             <div className="space-y-3">
               <label className="text-xs uppercase tracking-wider font-semibold text-muted-foreground block">
                 Phương thức hoàn tiền thực tế
               </label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => setRefundMethod("cash")}
-                  className={`flex items-center justify-center gap-2 p-3 rounded-xl border transition-all ${
-                    refundMethod === "cash" 
-                      ? "bg-indigo-500/20 border-indigo-500 text-indigo-300 shadow-lg shadow-indigo-900/20" 
-                      : "bg-black/20 border-border/50 text-muted-foreground hover:border-indigo-500/30"
-                  }`}
-                >
-                  <Banknote className="w-4 h-4" />
-                  <span className="text-sm font-medium">Tiền mặt</span>
-                </button>
+               <div className={cn("grid gap-3", selectedReturn?.origin === "ONLINE" ? "grid-cols-1" : "grid-cols-2")}>
+                {selectedReturn?.origin !== "ONLINE" && (
+                  <button
+                    onClick={() => setRefundMethod("cash")}
+                    className={`flex items-center justify-center gap-2 p-3 rounded-xl border transition-all ${
+                      refundMethod === "cash" 
+                        ? "bg-indigo-500/20 border-indigo-500 text-indigo-300 shadow-lg shadow-indigo-900/20" 
+                        : "bg-black/20 border-border/50 text-muted-foreground hover:border-indigo-500/30"
+                    }`}
+                  >
+                    <Banknote className="w-4 h-4" />
+                    <span className="text-sm font-medium">Tiền mặt</span>
+                  </button>
+                )}
                 <button
                   onClick={() => setRefundMethod("bank_transfer")}
                   className={`flex items-center justify-center gap-2 p-3 rounded-xl border transition-all ${
@@ -771,18 +924,73 @@ export const AdminReturnManagement = ({
               </div>
             </div>
 
+            {/* Refund Amount Info */}
+            <div className="bg-indigo-500/10 border border-indigo-500/30 p-3 rounded-xl flex justify-between items-center group">
+               <div>
+                  <p className="text-[9px] uppercase tracking-widest text-indigo-300/70 font-bold mb-0.5">Tiền hoàn trả</p>
+                  <p className="text-xl font-heading font-bold text-indigo-400 group-hover:text-indigo-300 transition-colors leading-none">
+                    {formatVND(selectedReturn?.refundAmount || 0)}
+                  </p>
+               </div>
+               <Button 
+                size="sm"
+                variant="ghost"
+                onClick={handleAutoCalc}
+                disabled={calculatingRefund}
+                className="h-7 text-[9px] font-bold text-indigo-400 hover:text-white hover:bg-indigo-500/30 border border-indigo-500/20"
+               >
+                 {calculatingRefund ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Auto Calc"}
+               </Button>
+            </div>
+
+            {/* Bank Info for Chuyển khoản */}
+            {refundMethod === "bank_transfer" && selectedReturn?.paymentInfo && (
+              <div className="bg-black/20 border border-white/5 rounded-xl p-3 space-y-2 animate-in fade-in slide-in-from-top-2">
+                 <div className="flex justify-between items-center border-b border-white/5 pb-1.5">
+                    <h4 className="text-[10px] font-bold text-indigo-300 uppercase tracking-widest">Thông tin thụ hưởng</h4>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-6 px-2 text-[9px] text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10"
+                      onClick={() => {
+                        const info = selectedReturn.paymentInfo as any;
+                        const text = `STK: ${info.accountNumber}\nNH: ${info.bankName}\nTen: ${info.accountName}`;
+                        navigator.clipboard.writeText(text);
+                        toast.success("Đã sao chép thông tin tài khoản");
+                      }}
+                    >
+                      <RefreshCcw className="w-3 h-3 mr-1" /> Sao chép
+                    </Button>
+                 </div>
+                 <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-[11px]">
+                    <div>
+                       <p className="text-[8px] text-muted-foreground uppercase font-semibold">Ngân hàng</p>
+                       <p className="font-semibold text-foreground italic">{(selectedReturn.paymentInfo as any).bankName}</p>
+                    </div>
+                    <div>
+                       <p className="text-[8px] text-muted-foreground uppercase font-semibold">Số tài khoản</p>
+                       <p className="font-mono font-bold text-indigo-400">{(selectedReturn.paymentInfo as any).accountNumber}</p>
+                    </div>
+                    <div className="col-span-2">
+                       <p className="text-[8px] text-muted-foreground uppercase font-semibold">Chủ tài khoản</p>
+                       <p className="font-semibold text-foreground uppercase">{(selectedReturn.paymentInfo as any).accountName}</p>
+                    </div>
+                 </div>
+              </div>
+            )}
+
             <div className="space-y-4">
               {refundMethod === "bank_transfer" && (
                 <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-                  <label className="text-xs uppercase tracking-wider font-semibold text-muted-foreground block mb-2">
-                    Tải lên Ảnh Hóa Đơn Chuyển Khoản
+                  <label className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground block mb-1">
+                    Ảnh Hóa Đơn (Nếu có)
                   </label>
                   <Input
                     type="file"
                     accept="image/*"
                     onChange={handleReceiptUpload}
                     disabled={isUploadingReceipt}
-                    className="bg-background/50 border-indigo-500/20 focus-visible:ring-indigo-500 file:bg-indigo-500 file:text-white file:border-0 file:py-1 file:px-3 file:mr-4 file:rounded-md cursor-pointer text-xs h-auto py-2"
+                    className="bg-black/20 border-indigo-500/10 focus-visible:ring-indigo-500 file:bg-indigo-600 file:text-white file:border-0 file:py-1 file:px-2 file:mr-3 file:rounded file:text-[10px] cursor-pointer text-[10px] h-8 p-1 px-2"
                   />
                   {isUploadingReceipt && (
                     <div className="flex items-center text-xs text-indigo-400 mt-2 font-medium">
@@ -821,7 +1029,7 @@ export const AdminReturnManagement = ({
                 <Input
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
-                  placeholder="Ví dụ: Đã trả tiền mặt cho khách..."
+                  placeholder={refundMethod === "cash" ? "Ví dụ: Đã trả tiền mặt cho khách..." : "Ví dụ: Mã giao dịch hoặc ghi chú hoàn tiền..."}
                   className="bg-background/50 border-indigo-500/20 h-11 focus-visible:ring-indigo-500"
                 />
               </div>

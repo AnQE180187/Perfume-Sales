@@ -882,6 +882,8 @@ model ReturnShipment {
   shippedAt        DateTime?
   receivedAt       DateTime?
   receivedLocation ReceivedLocation?
+  status           String?           // e.g. PENDING, SHIPPED, DELIVERED, FAILED
+  rawProviderData  String?           @db.Text
   createdAt        DateTime          @default(now())
 
   returnRequest    ReturnRequest @relation(fields: [returnRequestId], references: [id], onDelete: Cascade)

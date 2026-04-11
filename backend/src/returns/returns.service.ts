@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { ShippingService } from '../shipping/shipping.service';
 import {
   ReturnStatus,
   ReturnOrigin,
@@ -57,11 +58,39 @@ export class ReturnsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notificationsService: NotificationsService,
+    private readonly shippingService: ShippingService,
   ) {}
 
   // ─────────── HELPERS ───────────
 
-  private async findReturnOrThrow(id: string) {
+  async getSuggestedRefundAmount(id: string) {
+    const ret = await this.prisma.returnRequest.findUnique({
+      where: { id },
+      include: { items: true },
+    });
+    if (!ret) throw new NotFoundException('Return not found');
+
+    const order = await this.prisma.order.findUnique({
+      where: { id: ret.orderId },
+      include: { items: true },
+    });
+    if (!order) throw new NotFoundException('Order not found');
+
+    const refundAmount = this.calculateRefundAmount(
+      order.items,
+      ret.items.map((ri) => ({
+        variantId: ri.variantId,
+        quantity: ri.quantity,
+        qtyReceived: ri.qtyReceived,
+      })),
+      order.discountAmount,
+      0, // shipping
+    );
+
+    return { suggestedAmount: refundAmount };
+  }
+
+  async findReturnOrThrow(id: string) {
     const ret = await this.prisma.returnRequest.findUnique({
       where: { id },
       include: {
@@ -379,6 +408,7 @@ export class ReturnsService {
           },
         },
         order: { select: { id: true, code: true, finalAmount: true } },
+        shipments: true,
         refunds: {
           select: { id: true, amount: true, status: true, method: true },
         },
@@ -469,6 +499,36 @@ export class ReturnsService {
     });
   }
 
+  async handoverReturn(userId: string, id: string) {
+    const ret = await this.findReturnOrThrow(id);
+    if (ret.userId !== userId) throw new ForbiddenException();
+
+    // Handover is valid if in APPROVED (for automated) or RETURNING (for manual retry)
+    const VALID_HANDOVER: ReturnStatus[] = [
+      ReturnStatus.APPROVED,
+      ReturnStatus.RETURNING,
+    ];
+
+    if (!VALID_HANDOVER.includes(ret.status)) {
+      throw new BadRequestException(
+        'Không thể xác nhận bàn giao ở trạng thái hiện tại',
+      );
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const updated = await tx.returnRequest.update({
+        where: { id },
+        data: { status: ReturnStatus.RETURNING },
+      });
+
+      await this.createAudit(tx, id, userId, 'HANDOVER_CONFIRMED', {
+        previousStatus: ret.status,
+      });
+
+      return updated;
+    });
+  }
+
   // ─────────── ADMIN: LIST ALL ───────────
 
   async listAllReturns(
@@ -505,6 +565,7 @@ export class ReturnsService {
             select: { id: true, fullName: true, email: true, phone: true },
           },
           staff: { select: { id: true, fullName: true } },
+          shipments: true,
           refunds: { select: { id: true, amount: true, status: true } },
         },
         orderBy: { createdAt: 'desc' },
@@ -514,6 +575,8 @@ export class ReturnsService {
 
     return { data, total, skip, take, pages: Math.ceil(total / take) };
   }
+
+
 
   async getReturnById(id: string) {
     return this.findReturnOrThrow(id);
@@ -577,8 +640,10 @@ export class ReturnsService {
     if (ret.userId) {
       const msg =
         dto.action === 'approve'
-          ? 'Yêu cầu trả hàng đã được duyệt. Vui lòng gửi hàng về.'
+          ? 'Yêu cầu trả hàng đã được duyệt. Vui lòng gửi hàng về và cung cấp mã vận đơn.'
           : `Yêu cầu trả hàng bị từ chối. ${dto.note || ''}`;
+
+
       this.notificationsService
         .create({
           userId: ret.userId,
@@ -591,6 +656,33 @@ export class ReturnsService {
           data: { returnRequestId: id },
         })
         .catch(() => {});
+    }
+
+    // ─────────── AUTOMATED GHN PICKUP ───────────
+    if (newStatus === ReturnStatus.APPROVED && ret.origin === 'ONLINE') {
+      try {
+        const pickupResult = await this.shippingService.createGhnReturnPickup(id);
+        await this.prisma.returnAudit.create({
+          data: {
+            returnId: id,
+            actorId: adminId,
+            action: 'AUTOMATED_PICKUP_CREATED',
+            payload: { ...pickupResult, provider: 'GHN' },
+          },
+        });
+      } catch (err) {
+        console.error('Failed to create automated GHN pickup:', err);
+        await this.prisma.returnAudit.create({
+          data: {
+            returnId: id,
+            actorId: adminId,
+            action: 'AUTOMATED_PICKUP_FAILED',
+            payload: { message: err.message },
+          },
+        });
+        // We don't throw here to avoid rolling back the approval, 
+        // but we might want to notify staff to retry manually.
+      }
     }
 
     return updated;
@@ -654,8 +746,9 @@ export class ReturnsService {
 
     // Check for seal integrity - reject if broken seal on perfume
     const hasUnsealedItem = dto.items.some((item) => item.sealIntact === false);
+    const allUnsealed = dto.items.every((item) => item.sealIntact === false);
 
-    const newStatus = hasUnsealedItem
+    const newStatus = allUnsealed
       ? ReturnStatus.REJECTED_AFTER_RETURN
       : ReturnStatus.RECEIVED;
 
@@ -882,6 +975,25 @@ export class ReturnsService {
         refundAmount,
         refundStatus,
       });
+
+      // Loyalty points reversal
+      if (ret.userId && refundStatus === RefundStatus.SUCCESS) {
+        const pointsToDeduct = Math.floor(refundAmount / 10000);
+        if (pointsToDeduct > 0) {
+          await tx.loyaltyTransaction.create({
+            data: {
+              userId: ret.userId,
+              points: -pointsToDeduct,
+              reason: `Tru points do hoan tra don hang \${ret.order.code}`,
+            },
+          });
+
+          await tx.user.update({
+            where: { id: ret.userId },
+            data: { loyaltyPoints: { decrement: pointsToDeduct } },
+          });
+        }
+      }
 
       // Stub retry queue
       if (

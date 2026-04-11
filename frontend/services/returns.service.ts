@@ -87,7 +87,22 @@ export type ReturnRequest = {
     };
   }[];
   refunds?: Refund[];
+  shipments?: {
+    id: string;
+    courier?: string;
+    trackingNumber?: string;
+    shippedAt?: string;
+    receivedAt?: string;
+  }[];
   origin?: "ONLINE" | "POS";
+  order?: {
+    id: string;
+    code: string;
+    recipientName?: string;
+    phone?: string;
+    shippingAddress?: string;
+    channel?: string;
+  };
   // ... other fields
 };
 
@@ -114,6 +129,10 @@ export const returnsService = {
 
   cancelReturn(id: string, reason?: string) {
     return api.patch(`/returns/${id}/cancel`, { reason }).then((r) => r.data);
+  },
+  
+  handoverReturn(id: string) {
+    return api.patch(`/returns/${id}/handover`).then((r) => r.data);
   },
 
   // Admin endpoints (use with admin auth)
@@ -151,6 +170,10 @@ export const returnsService = {
 
   getAudits(id: string) {
     return api.get(`/returns/admin/${id}/audits`).then((r) => r.data);
+  },
+
+  getSuggestedRefund(id: string) {
+    return api.get<{ suggestedAmount: number }>(`/returns/admin/${id}/suggested-refund`).then((r) => r.data);
   },
 
   getRefunds(id: string) {

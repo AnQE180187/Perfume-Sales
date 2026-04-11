@@ -30,6 +30,7 @@ import {
 } from "@/services/returns.service";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 
 const STATUS_CONFIG: Record<ReturnStatus, { icon: any; color: string }> = {
   REQUESTED: {
@@ -108,6 +109,7 @@ export default function CustomerReturnDetailPage() {
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [cancelling, setCancelling] = useState(false);
+  const [confirmingHandover, setConfirmingHandover] = useState(false);
 
   const fetchReturn = async () => {
     if (!returnId) return;
@@ -165,6 +167,19 @@ export default function CustomerReturnDetailPage() {
       toast.error(err?.response?.data?.message || "Lỗi hủy yêu cầu");
     } finally {
       setCancelling(false);
+    }
+  };
+
+  const handleHandover = async () => {
+    setConfirmingHandover(true);
+    try {
+      await returnsService.handoverReturn(returnId);
+      toast.success("Đã xác nhận bàn giao hàng cho shipper");
+      fetchReturn();
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Lỗi xác nhận bàn giao");
+    } finally {
+      setConfirmingHandover(false);
     }
   };
 
@@ -298,81 +313,185 @@ export default function CustomerReturnDetailPage() {
               </div>
             </motion.div>
 
-            {/* Shipment section (for APPROVED status) */}
+            {/* Shipment section */}
             {canAddShipment && (
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="glass bg-background/40 rounded-[3rem] p-8 border border-amber-500/20"
+                className={cn(
+                  "glass rounded-[3rem] p-8 border backdrop-blur-md",
+                  returnReq.origin === "ONLINE" && returnReq.shipments?.some(s => s.courier === "GHN")
+                    ? "bg-blue-500/10 border-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.1)]"
+                    : "bg-background/40 border-amber-500/20"
+                )}
               >
+                {/* Header */}
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-8 h-8 rounded-xl bg-amber-500/10 flex items-center justify-center">
-                    <Truck size={16} className="text-amber-500" />
+                  <div className={cn(
+                    "w-8 h-8 rounded-xl flex items-center justify-center",
+                    returnReq.origin === "ONLINE" && returnReq.shipments?.some(s => s.courier === "GHN")
+                      ? "bg-blue-500/20"
+                      : "bg-amber-500/10"
+                  )}>
+                    <Truck size={16} className={cn(
+                      returnReq.origin === "ONLINE" && returnReq.shipments?.some(s => s.courier === "GHN")
+                        ? "text-blue-400"
+                        : "text-amber-500"
+                    )} />
                   </div>
                   <h2 className="text-lg font-heading uppercase tracking-widest text-foreground">
                     {t("shipment_title")}
                   </h2>
+                  {returnReq.origin === "ONLINE" && returnReq.shipments?.some(s => s.courier === "GHN") && (
+                    <Badge className="ml-auto bg-blue-500 text-white border-none text-[8px] font-black tracking-[0.2em] px-3">Hỗ trợ Pickup</Badge>
+                  )}
                 </div>
-                <p className="text-[11px] text-muted-foreground mb-6 leading-relaxed">
-                  {t("shipment_desc")}
-                </p>
 
-                {!showShipment ? (
-                  <button
-                    onClick={() => setShowShipment(true)}
-                    className="flex items-center gap-2 px-5 py-3 bg-amber-500/10 text-amber-600 border border-amber-500/30 rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-amber-500/20 transition-all"
-                  >
-                    <Send size={12} />
-                    {t("submit_shipment")}
-                  </button>
-                ) : (
+                {/* Automated GHN Pickup UI */}
+                {returnReq.origin === "ONLINE" && returnReq.shipments?.some(s => s.courier === "GHN") ? (
+                   <div className="space-y-6">
+                      <div className="bg-blue-500/5 border border-blue-500/10 p-5 rounded-3xl animate-in fade-in zoom-in-95">
+                         <p className="text-sm font-bold text-blue-300 mb-2 flex items-center gap-2">
+                           <CheckCircle size={14} /> Hệ thống đã đặt lịch thu hồi tận nơi
+                         </p>
+                         <p className="text-[11px] text-blue-200/60 leading-relaxed mb-4">
+                           Shipper của <strong>GHN</strong> sẽ liên hệ với bạn qua số điện thoại <strong>{returnReq.order?.phone || 'đã đăng ký'}</strong> để đến lấy hàng tại địa chỉ của đơn hàng gốc. Vui lòng đóng gói hàng cẩn thận và chờ shipper liên hệ.
+                         </p>
+                         
+                         {returnReq.shipments.filter(s => s.courier === 'GHN').map(s => (
+                            <div key={s.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-black/40 p-4 rounded-2xl border border-blue-500/20 group">
+                               <div>
+                                  <p className="text-[9px] font-black uppercase tracking-widest text-blue-500/70 mb-1">Mã vận đơn GHN</p>
+                                  <p className="font-mono text-base font-bold text-blue-400 select-all group-hover:text-blue-300 transition-colors uppercase">{s.trackingNumber}</p>
+                               </div>
+                               <a 
+                                  href={`https://ghn.vn/blogs/trang-thai-don-hang?order_code=${s.trackingNumber}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-2 px-4 py-2 bg-blue-500/10 text-blue-400 border border-blue-500/30 rounded-full text-[9px] font-black uppercase tracking-widest hover:bg-blue-500 hover:text-white transition-all w-fit"
+                               >
+                                  {t("tracking_btn", { defaultValue: "Theo dõi hành trình" })}
+                                  <ArrowLeft size={10} className="rotate-180" />
+                               </a>
+                            </div>
+                         ))}
+
+                         {returnReq.status === "APPROVED" && (
+                            <button
+                              onClick={handleHandover}
+                              disabled={confirmingHandover}
+                              className="w-full mt-4 flex items-center justify-center gap-2 px-6 py-4 bg-blue-500/10 text-blue-400 border border-blue-500/30 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-500 hover:text-white transition-all shadow-lg hover:shadow-blue-500/20 disabled:opacity-50"
+                            >
+                              {confirmingHandover ? (
+                                <Loader2 size={14} className="animate-spin" />
+                              ) : (
+                                <Send size={14} />
+                              )}
+                              {t("confirm_handover")}
+                            </button>
+                          )}
+                      </div>
+                   </div>
+                ) : returnReq.shipments && returnReq.shipments.length > 0 ? (
+                  /* Manual Shipment UI (Already submitted) */
                   <div className="space-y-4">
-                    <div>
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-2">
-                        {t("courier")}
-                      </label>
-                      <input
-                        type="text"
-                        value={courier}
-                        onChange={(e) => setCourier(e.target.value)}
-                        placeholder={t("courier_placeholder")}
-                        className="w-full bg-background/60 border border-border rounded-xl px-4 py-2.5 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-gold/50 transition-colors"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-2">
-                        {t("tracking_number")}
-                      </label>
-                      <input
-                        type="text"
-                        value={trackingNumber}
-                        onChange={(e) => setTrackingNumber(e.target.value)}
-                        placeholder={t("tracking_placeholder")}
-                        className="w-full bg-background/60 border border-border rounded-xl px-4 py-2.5 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-gold/50 transition-colors"
-                      />
-                    </div>
-                    <div className="flex gap-3">
-                      <button
-                        onClick={handleAddShipment}
-                        disabled={submittingShipment || !trackingNumber.trim()}
-                        className="flex items-center gap-2 px-5 py-3 bg-gold text-primary-foreground rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-gold/90 transition-all disabled:opacity-40"
-                      >
-                        {submittingShipment ? (
-                          <Loader2 size={12} className="animate-spin" />
-                        ) : (
-                          <Send size={12} />
+                    {returnReq.shipments.map((s) => (
+                      <div key={s.id} className="p-5 bg-background/40 rounded-3xl border border-border/50 group hover:border-gold/30 transition-colors">
+                        <div className="flex justify-between items-start mb-2">
+                           <div>
+                              <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-1">Mã vận đơn đã gửi</p>
+                              <p className="text-sm font-mono font-bold text-foreground uppercase tracking-widest">{s.trackingNumber}</p>
+                           </div>
+                           {s.courier && <Badge variant="outline" className="border-gold/30 text-gold bg-gold/5">{s.courier}</Badge>}
+                        </div>
+                        {s.status && (
+                          <div className="mt-3 pt-3 border-t border-border/30 flex items-center justify-between">
+                             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gold/80">
+                                <Clock size={12} /> {s.status}
+                             </div>
+                             <span className="text-[9px] text-muted-foreground italic font-mono uppercase">Cập nhật bởi hệ thống</span>
+                          </div>
                         )}
-                        {submittingShipment ? t("submitting") : t("submit_shipment")}
-                      </button>
-                      <button
-                        onClick={() => setShowShipment(false)}
-                        className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        <X size={14} />
-                      </button>
-                    </div>
+                      </div>
+                    ))}
                   </div>
+                ) : (
+                  /* Form to add shipment (Manual) */
+                  <>
+                    <p className="text-[11px] text-muted-foreground mb-6 leading-relaxed">
+                      Để hoàn tất quá trình, vui lòng gửi sản phẩm về địa chỉ bên dưới và cung cấp mã vận đơn để chúng tôi theo dõi.
+                    </p>
+
+                    <div className="bg-background/40 p-5 rounded-3xl border border-border/50 mb-6 group hover:border-gold/20 transition-all">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-gold mb-3">Địa chỉ nhận hàng (Showroom)</p>
+                      <div className="space-y-1">
+                        <p className="text-sm text-foreground font-black uppercase tracking-tight">Cửa hàng Perfume GPT Luxury</p>
+                        <p className="text-[11px] text-muted-foreground leading-relaxed">
+                          123 Nguyễn Huệ, P. Bến Nghé, Quận 1 <br />
+                          Thành phố Hồ Chí Minh <br />
+                          <span className="text-gold/80 font-bold">Hotline: 0123 456 789</span>
+                        </p>
+                      </div>
+                    </div>
+
+                    {!showShipment ? (
+                      <button
+                        onClick={() => setShowShipment(true)}
+                        className="flex items-center gap-2 px-6 py-4 bg-gold/10 text-gold border border-gold/30 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-gold hover:text-black transition-all shadow-lg hover:shadow-gold/20"
+                      >
+                        <Send size={14} />
+                        {t("submit_shipment")}
+                      </button>
+                    ) : (
+                      <div className="space-y-4 animate-in slide-in-from-top-4 duration-300">
+                        <div>
+                          <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-2">
+                            {t("courier")}
+                          </label>
+                          <input
+                            type="text"
+                            value={courier}
+                            onChange={(e) => setCourier(e.target.value)}
+                            placeholder={t("courier_placeholder")}
+                            className="w-full bg-background/60 border border-border rounded-xl px-4 py-3 text-sm placeholder:text-muted-foreground/30 focus:outline-none focus:border-gold/50 transition-colors"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-2">
+                            {t("tracking_number")}
+                          </label>
+                          <input
+                            type="text"
+                            value={trackingNumber}
+                            onChange={(e) => setTrackingNumber(e.target.value)}
+                            placeholder={t("tracking_placeholder")}
+                            className="w-full bg-background/60 border border-border rounded-xl px-4 py-3 text-sm placeholder:text-muted-foreground/30 focus:outline-none focus:border-gold/50 transition-colors uppercase font-mono"
+                          />
+                        </div>
+                        <div className="flex gap-3 pt-2">
+                          <button
+                            onClick={handleAddShipment}
+                            disabled={submittingShipment || !trackingNumber.trim()}
+                            className="flex-1 flex items-center justify-center gap-2 px-5 py-4 bg-gold text-primary-foreground rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-gold/90 transition-all disabled:opacity-40 shadow-xl shadow-gold/20"
+                          >
+                            {submittingShipment ? (
+                              <Loader2 size={14} className="animate-spin" />
+                            ) : (
+                              <Send size={14} />
+                            )}
+                            {submittingShipment ? t("submitting") : t("submit_shipment")}
+                          </button>
+                          <button
+                            onClick={() => setShowShipment(false)}
+                            className="px-6 py-4 bg-background/40 border border-border rounded-2xl text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-all"
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </motion.div>
             )}
