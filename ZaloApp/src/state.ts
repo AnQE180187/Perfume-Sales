@@ -3,42 +3,86 @@ import { atomFamily, unwrap } from "jotai/utils";
 import { Cart, Category, Color, Product } from "@/types";
 import { requestWithFallback } from "@/utils/request";
 import { getUserInfo } from "zmp-sdk";
+import axiosClient from "@/services/axiosClient";
 
+import { authService } from "./services/auth.service";
+
+// Zalo's built-in User Info
 export const userState = atom(() =>
   getUserInfo({
     avatarType: "normal",
   })
 );
 
-export const bannersState = atom(() =>
-  requestWithFallback<string[]>("/banners", [])
+// Backend system's User Info (from Prisma)
+export const systemUserState = atom<any | null>(null);
+
+// Atom to trigger initialization (login & fetch base data)
+export const appInitState = atom(
+  (get) => get(systemUserState),
+  async (get, set) => {
+    try {
+      console.log("Initializing App & Zalo Login...");
+      const sysUser = await authService.login();
+      if (sysUser) {
+        set(systemUserState, sysUser);
+      }
+    } catch (error) {
+      console.error("Initialization Failed:", error);
+    }
+  }
 );
+
+export const bannersState = atom(async () => {
+  try {
+    const res = await axiosClient.get("/banners");
+    const data = res.data || res;
+    // Map backend response (which has imageUrl) or fallback to string array
+    return data.map((b: any) => typeof b === 'string' ? b : b.imageUrl);
+  } catch (err) {
+    return [];
+  }
+});
 
 export const tabsState = atom(["Tất cả", "Nam", "Nữ", "Trẻ em"]);
 
 export const selectedTabIndexState = atom(0);
 
-export const categoriesState = atom(() =>
-  requestWithFallback<Category[]>("/categories", [])
-);
+export const productsState = atom(async (get) => {
+  try {
+    const categories: any[] = await get(categoriesState);
+    const res = await axiosClient.get("/products");
+    const response = res.data || res;
+    const items = response.products || response; // Handle both list Public schema and mock array
+    return items.map((p: any) => ({
+      ...p,
+      image: p.images?.[0]?.url || p.image || "https://file.hstatic.net/1000388226/file/nuoc-hoa-thu-hut-phai-dep.jpg",
+      price: p.variants?.[0]?.price || p.price || 0,
+      sizes: p.variants ? p.variants.map((v: any) => v.label || `${v.volume}ml`) : p.sizes,
+      description: p.description,
+      variants: p.variants,
+      category: categories.find((c: any) => c.id === p.categoryId) || { name: 'Chưa có phân loại' } // Safe fallback
+    }));
+  } catch (err) {
+    return [];
+  }
+});
+
+export const categoriesState = atom(async () => {
+  try {
+    const res = await axiosClient.get("/catalog/categories");
+    return res.data || res || [];
+  } catch {
+    return [];
+  }
+});
 
 export const categoriesStateUpwrapped = unwrap(
   categoriesState,
   (prev) => prev ?? []
 );
 
-export const productsState = atom(async (get) => {
-  const categories = await get(categoriesState);
-  const products = await requestWithFallback<
-    (Product & { categoryId: number })[]
-  >("/products", []);
-  return products.map((product) => ({
-    ...product,
-    category: categories.find(
-      (category) => category.id === product.categoryId
-    )!,
-  }));
-});
+
 
 export const flashSaleProductsState = atom((get) => get(productsState));
 
