@@ -93,6 +93,7 @@ export type ReturnRequest = {
     trackingNumber?: string;
     shippedAt?: string;
     receivedAt?: string;
+    status?: string;
   }[];
   origin?: "ONLINE" | "POS";
   order?: {

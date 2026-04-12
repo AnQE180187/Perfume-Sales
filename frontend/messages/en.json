@@ -137,6 +137,7 @@
       "pos": "Sale Terminal (POS)",
       "inventory": "Store Inventory",
       "orders": "Store Orders",
+      "returns": "Returns Management",
       "kpi": "Daily Performance"
     },
     "admin": {
@@ -152,7 +153,8 @@
       "catalog": "Collection Catalog",
       "reviews": "Guest Reviews",
       "manage_journal": "Manage Journal",
-      "manage_banner": "Manage Banners"
+      "manage_banner": "Manage Banners",
+      "returns": "Return Requests"
     },
     "shared": {
       "chat": "Aura Chat"
@@ -1474,6 +1476,141 @@
           "status": "Active for Synchronization"
         }
       },
+      "returns": {
+        "title": "Return Management",
+        "subtitle": "CRM system for tracking and processing return requests, streamlining the refund cycle.",
+        "buttons": {
+          "refresh": "Refresh",
+          "create_pos": "Create POS Return"
+        },
+        "tabs": {
+          "all": "All",
+          "online": "Online",
+          "pos": "At Counter (POS)"
+        },
+        "table": {
+          "source": "Source",
+          "id": "Request ID",
+          "order_id": "Order ID",
+          "date": "Date",
+          "reason": "Reason",
+          "shipping": "Shipping",
+          "status": "Status",
+          "actions": "Actions",
+          "no_reason": "No reason provided",
+          "no_shipment": "No shipment yet",
+          "syncing": "Syncing ledger...",
+          "no_returns": "No return requests found"
+        },
+        "status": {
+          "REQUESTED": "New Request",
+          "AWAITING_CUSTOMER": "Awaiting Callback",
+          "REVIEWING": "Reviewing",
+          "APPROVED": "Approved, Waiting Return",
+          "RETURNING": "Returning",
+          "RECEIVED": "Received",
+          "REFUNDING": "Refunding",
+          "REFUND_FAILED": "Refund Failed",
+          "COMPLETED": "Completed",
+          "REJECTED": "Rejected",
+          "REJECTED_AFTER_RETURN": "Rejected Post-Return",
+          "CANCELLED": "Cancelled"
+        },
+        "dialogs": {
+          "review_title": "Review Return Request",
+          "receive_title": "Confirm Receipt",
+          "refund_title": "Refund Protocol",
+          "request_id": "Request ID",
+          "order_id": "Order ID",
+          "source": "Source",
+          "reason_general": "General Reason:",
+          "no_reason_general": "No general reason",
+          "product_details": "Returned Product Details",
+          "evidence": "Evidence Files ({count}):",
+          "audit_log": "Processing Logs",
+          "no_audit": "No activity logs yet",
+          "note_label": "Note or Feedback for {target}",
+          "note_placeholder_staff": "Enter notes or detailed reasons to feedback to the counter staff...",
+          "note_placeholder_customer": "Enter notes or detailed reasons to notify the customer...",
+          "btn_reject": "Reject Request",
+          "btn_approve": "Accept & Allow Shipping",
+          "receive_desc": "The system will update the inventory for {target} and mark the return process for the refund stage. If the seal is broken, the request will be automatically REJECTED.",
+          "receive_condition": "Product Condition Upon Arrival",
+          "actual_receive": "Actual Received:",
+          "seal_intact": "Seal Intact",
+          "seal_broken": "Seal Broken",
+          "btn_receive": "Confirm Receipt",
+          "refund_suggest": "Suggested Refund Amount",
+          "refund_calc_btn": "Auto Calculate",
+          "refund_method": "Refund Method",
+          "refund_note": "Refund Note",
+          "refund_receipt": "Receipt Image",
+          "upload_success": "Receipt image uploaded successfully",
+          "upload_error": "Image upload failure",
+          "btn_refund": "Execute Refund",
+          "btn_cancel": "Cancel",
+          "note_label_receive": "Inventory Receipt Notes",
+          "note_placeholder_receive": "Example: All items inspected and seal-checked...",
+          "btn_receive_success": "Confirm Receipt Success",
+          "tracking_label": "Tracking:",
+          "cash_refund_desc": "Confirm refund by cash directly at the counter. Staff please carefully check the amount paid to the customer.",
+          "refund_note_placeholder_cash": "Example: Cash paid to customer...",
+          "refund_note_placeholder_bank": "Example: Transaction ID or refund notes...",
+          "variant": "Variant:",
+          "cash": "Cash",
+          "bank_transfer": "Bank Transfer",
+          "refund_amount": "Refund Amount",
+          "bank_info": "Bank Account Info",
+          "account_number": "Account No.:",
+          "bank_name": "Bank:",
+          "account_name": "Holder:",
+          "copy_info": "Copy Info",
+          "actual_refund": "Actual Refund Amount:"
+        },
+        "pos": {
+          "error_not_found": "Order not found. Verify POS order code.",
+          "title": "Initialize POS Return Request",
+          "searching": "Searching...",
+          "loading": "Retrieving data...",
+          "order_info": "Transaction Information",
+          "guest": "Walk-in Guest",
+          "select_items": "Select products to return",
+          "variant": "Type",
+          "qty_bought": "Qty Bought",
+          "reason_label": "Return Reason (Required)",
+          "reason_placeholder": "Note condition: Damaged, Broken seal, Customer changed mind...",
+          "search_placeholder": "Enter POS order code (e.g. POS-123)...",
+          "submitting": "Submitting request...",
+          "btn_submit": "Initialize Request",
+          "btn_cancel": "Cancel",
+          "verify_btn": "Verify Order",
+          "order_total": "Order Total:",
+          "order_created_at": "Order created at {date}",
+          "customer_label": "Customer:"
+        },
+        "toasts": {
+          "error_fetch": "Error loading return requests",
+          "error_review": "Error reviewing request",
+          "approved": "Request approved successfully",
+          "rejected": "Request rejected successfully",
+          "confirm_cancel": "Are you sure you want to cancel this return request?",
+          "receive_success": "Return receipt confirmed successfully",
+          "receive_error": "Error confirming receipt",
+          "refund_success": "Refund processed and customer notified",
+          "refund_error": "Error processing refund",
+          "auto_calc_success": "Refund amount calculated based on actual received items",
+          "auto_calc_error": "Error calculating refund amount",
+          "pos_search_error_today": "Constraint: Only orders placed today can be returned.",
+          "pos_search_error_not_found": "Order not found. Please check POS order code.",
+          "pos_items_required": "Please select at least one item to return",
+          "pos_success": "POS return request created successfully",
+          "pos_error": "Error creating POS return",
+          "cancel_success": "Return request cancelled successfully",
+          "cancel_error": "Error cancelling return request",
+          "cancel_reason_default": "Cancelled by staff/admin",
+          "copied": "Copied to clipboard"
+        }
+      },
       "products": {
         "title": "Olfactory Inventory Console",
         "subtitle": "Fragrance Collection Management & Neural Synthesis.",
@@ -1529,6 +1666,7 @@
         "confirm_show": "Restore visibility of this asset?"
       },
       "promotions": {
+        "promotion_singular": "promotion",
         "title": "Promotions Engine",
         "subtitle": "Neural Rewards & Incentives Control.",
         "search_placeholder": "Search signatures...",
@@ -1551,7 +1689,7 @@
           "expired": "Expired"
         },
         "modals": {
-          "create_title": "Forge New Signature",
+          "create_title": "Forge New {type}",
           "create_subtitle": "Configure Incentive Logic",
           "code": "SIGNATURE CODE",
           "type": "BENEFIT TYPE",
@@ -1572,7 +1710,7 @@
           "public": "PUBLIC (FREE)",
           "private": "PRIVATE (REDEEMABLE)"
         },
-        "delete_confirm": "Are you sure you want to void this signature?"
+        "delete_confirm": "Deauthorize this {type}? This protocol will cascade to all associated artifacts."
       },
       "reviews": {
         "title": "Review Moderation",
@@ -1721,7 +1859,7 @@
           "active": "Active Resonance"
         },
         "promotions": {
-          "title": "Promotions Registry",
+          "title": "Promotion Registry",
           "desc": "Manage your coupon registry, seasonal incentives, and loyalty-linked rewards.",
           "manage_btn": "Manage Coupons"
         },
