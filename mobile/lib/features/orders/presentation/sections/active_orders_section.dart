@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-
 import '../../models/order.dart';
 import '../widgets/empty_orders_widget.dart';
 import '../widgets/order_card.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class ActiveOrdersSection extends StatelessWidget {
   final List<Order> orders;
@@ -21,9 +21,9 @@ class ActiveOrdersSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (orders.isEmpty) {
-      return const EmptyOrdersWidget(
-        title: 'No active orders',
-        subtitle: 'Your current deliveries will appear here.',
+      return EmptyOrdersWidget(
+        title: AppLocalizations.of(context)!.noOrdersYet,
+        subtitle: AppLocalizations.of(context)!.orderHistoryAppear,
       );
     }
 

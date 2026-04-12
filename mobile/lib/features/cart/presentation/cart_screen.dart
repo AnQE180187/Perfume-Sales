@@ -18,7 +18,6 @@ class CartScreen extends ConsumerStatefulWidget {
 }
 
 class _CartScreenState extends ConsumerState<CartScreen> {
-  bool _showAIBanner = true;
   final TextEditingController _promoController = TextEditingController();
 
   @override
@@ -92,14 +91,6 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                       vertical: 12,
                     ),
                     children: [
-                      // AI Upsell Banner (dismissible)
-                      if (_showAIBanner) ...[
-                        _AIUpsellBanner(
-                          onDismiss: () =>
-                              setState(() => _showAIBanner = false),
-                        ),
-                        const SizedBox(height: 12),
-                      ],
 
                       // Cart Items
                       ...cartState.items.map((item) {
@@ -168,67 +159,65 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     return AppBar(
       backgroundColor: const Color(0xFFFAF7F2),
       elevation: 0,
+      centerTitle: true,
       leading: IconButton(
         icon: const Icon(
-          Icons.arrow_back,
-          size: 20,
+          Icons.arrow_back_ios_new_rounded,
+          size: 18,
           color: AppTheme.deepCharcoal,
         ),
         onPressed: () => Navigator.pop(context),
       ),
       title: Text(
-        'Gio hang (${cartState.items.length})',
-        style: GoogleFonts.playfairDisplay(
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
+        'Giỏ hàng'.toUpperCase(),
+        style: GoogleFonts.montserrat(
+          fontSize: 14,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 2,
           color: AppTheme.deepCharcoal,
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () {
-            ref
-                .read(cartSelectionProvider.notifier)
-                .toggleAll(cartState.items.map((e) => e.id).toList());
-          },
-          child: Text(
-            selection.selectAll ? 'Bo chon het' : 'Chon tat ca',
-            style: GoogleFonts.montserrat(
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-              color: AppTheme.deepCharcoal,
+        if (cartState.items.isNotEmpty) ...[
+          IconButton(
+            icon: Icon(
+              selection.selectAll ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+              size: 20,
+              color: AppTheme.accentGold,
             ),
+            padding: EdgeInsets.zero,
+            onPressed: () {
+              ref
+                  .read(cartSelectionProvider.notifier)
+                  .toggleAll(cartState.items.map((e) => e.id).toList());
+            },
+            tooltip: 'Chọn tất cả',
           ),
-        ),
-        TextButton(
-          onPressed: selection.selectedIds.isEmpty
-              ? null
-              : () {
-                  if (selection.selectAll) {
-                    showClearCartModal(
-                      context,
-                      onClearConfirmed: () {
-                        ref.read(cartProvider.notifier).clearCart();
-                        ref.read(cartSelectionProvider.notifier).clear();
-                        Navigator.pop(context);
-                      },
-                    );
-                  } else {
-                    _removeSelectedItems(ref, selection.selectedIds);
-                  }
-                },
-          child: Text(
-            selection.selectAll ? 'Xoa tat ca' : 'Xoa',
-            style: GoogleFonts.montserrat(
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-              color: selection.selectedIds.isEmpty
-                  ? AppTheme.mutedSilver
-                  : AppTheme.accentGold,
+          IconButton(
+            icon: const Icon(
+              Icons.delete_outline_rounded,
+              size: 22,
+              color: AppTheme.mutedSilver,
             ),
+            onPressed: selection.selectedIds.isEmpty
+                ? null
+                : () {
+                    if (selection.selectAll) {
+                      showClearCartModal(
+                        context,
+                        onClearConfirmed: () {
+                          ref.read(cartProvider.notifier).clearCart();
+                          ref.read(cartSelectionProvider.notifier).clear();
+                          Navigator.pop(context);
+                        },
+                      );
+                    } else {
+                      _removeSelectedItems(ref, selection.selectedIds);
+                    }
+                  },
           ),
-        ),
-        const SizedBox(width: 8),
+          const SizedBox(width: 8),
+        ],
       ],
     );
   }
@@ -294,76 +283,3 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   }
 }
 
-class _AIUpsellBanner extends StatelessWidget {
-  final VoidCallback onDismiss;
-
-  const _AIUpsellBanner({required this.onDismiss});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppTheme.accentGold.withValues(alpha: 0.08),
-            AppTheme.champagneGold.withValues(alpha: 0.12),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: AppTheme.accentGold.withValues(alpha: 0.15),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.auto_awesome,
-              size: 18,
-              color: AppTheme.accentGold,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Goi y tu PerfumeGPT',
-                  style: GoogleFonts.montserrat(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.accentGold,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Them mau thu Golden Amber de trai nghiem tron ven hon.',
-                  style: GoogleFonts.montserrat(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: AppTheme.deepCharcoal,
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          GestureDetector(
-            onTap: onDismiss,
-            child: const Icon(
-              Icons.close,
-              size: 16,
-              color: AppTheme.mutedSilver,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}

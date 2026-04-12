@@ -30,50 +30,50 @@ class AccountActionsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.only(left: 4, bottom: 10),
+            padding: const EdgeInsets.only(left: 6, bottom: 12),
             child: Text(
-              'TÀI KHOẢN',
+              'QUẢN LÝ TÀI KHOẢN',
               style: GoogleFonts.montserrat(
                 fontSize: 10,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1.1,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.5,
                 color: AppTheme.mutedSilver,
               ),
             ),
           ),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Column(
-              children: [
-                ProfileActionTile(
-                  icon: Icons.shopping_bag_outlined,
-                  title: 'Đơn hàng của tôi',
-                  subtitle: activeShipmentsText,
-                  subtitleIsBadge: activeShipmentsText != null,
-                  onTap: onMyOrders,
-                ),
-                ProfileActionTile(
-                  icon: Icons.local_shipping_outlined,
-                  title: 'Địa chỉ giao hàng',
-                  onTap: onShippingAddresses,
-                ),
-                ProfileActionTile(
-                  icon: Icons.credit_card_outlined,
-                  title: 'Phương thức thanh toán',
-                  onTap: onPaymentMethods ?? () {},
-                ),
-                ProfileActionTile(
-                  icon: Icons.tune_outlined,
-                  title: 'Tùy chọn AI',
-                  onTap: onAiPreferences,
-                ),
-              ],
-            ),
+          Column(
+            children: [
+              ProfileActionTile(
+                icon: Icons.auto_stories_outlined,
+                title: 'Đơn hàng của tôi',
+                subtitle: activeShipmentsText,
+                subtitleIsBadge: activeShipmentsText != null,
+                onTap: onMyOrders,
+              ),
+              const SizedBox(height: 8),
+              ProfileActionTile(
+                icon: Icons.map_outlined,
+                title: 'Địa chỉ nhận hàng',
+                onTap: onShippingAddresses,
+              ),
+              const SizedBox(height: 8),
+              ProfileActionTile(
+                icon: Icons.payment_outlined,
+                title: 'Thanh toán & Thẻ',
+                onTap: onPaymentMethods ?? () {},
+              ),
+              const SizedBox(height: 8),
+              ProfileActionTile(
+                icon: Icons.gesture_outlined,
+                title: 'Tùy chọn mùi hương AI',
+                onTap: onAiPreferences,
+              ),
+            ],
           ),
         ],
       ),
@@ -90,37 +90,36 @@ class LogoutSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
-      child: Material(
-        color: Colors.transparent,
+      padding: const EdgeInsets.fromLTRB(20, 48, 20, 40),
+      child: Center(
         child: InkWell(
           onTap: onLogout,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(30),
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 32),
             decoration: BoxDecoration(
-              color: Colors.red.withValues(alpha: 0.06),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(30),
               border: Border.all(
-                color: Colors.red.withValues(alpha: 0.15),
-                width: 1,
+                color: Colors.red.withValues(alpha: 0.1),
+                width: 0.8,
               ),
             ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  Icons.logout_rounded,
-                  size: 15,
-                  color: Colors.red.shade400,
+                  Icons.power_settings_new_rounded,
+                  size: 14,
+                  color: Colors.red.withValues(alpha: 0.35),
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'Đăng xuất',
+                  'ĐĂNG XUẤT',
                   style: GoogleFonts.montserrat(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.red.shade400,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 2,
+                    color: Colors.red.withValues(alpha: 0.4),
                   ),
                 ),
               ],

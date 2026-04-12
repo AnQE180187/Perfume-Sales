@@ -21,57 +21,80 @@ class SearchHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
-      color: AppTheme.creamWhite,
+      padding: const EdgeInsets.fromLTRB(8, 4, 20, 10),
+      color: AppTheme.ivoryBackground,
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.arrow_back, color: AppTheme.deepCharcoal),
+            icon: const Icon(Icons.arrow_back_ios_new, color: AppTheme.deepCharcoal, size: 20),
             onPressed: onBack,
           ),
           Expanded(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              height: 40,
               decoration: BoxDecoration(
-                color: AppTheme.ivoryBackground,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: AppTheme.softTaupe, width: 1),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppTheme.softTaupe.withValues(alpha: 0.5), width: 0.8),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.02),
+                    blurRadius: 4,
+                    spreadRadius: 0,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: Row(
                 children: [
+                  const SizedBox(width: 14),
                   const Icon(
-                    Icons.search,
+                    Icons.search_rounded,
                     color: AppTheme.mutedSilver,
-                    size: 20,
+                    size: 18,
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
                       controller: controller,
                       autofocus: true,
+                      cursorColor: AppTheme.accentGold,
                       decoration: InputDecoration(
-                        hintText: 'gỗ ấm',
+                        hintText: 'Tìm kiếm hương thơm...',
                         border: InputBorder.none,
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(vertical: 12),
                         hintStyle: GoogleFonts.montserrat(
-                          fontSize: 16,
+                          fontSize: 14,
                           fontWeight: FontWeight.w400,
-                          color: AppTheme.mutedSilver,
+                          color: AppTheme.mutedSilver.withValues(alpha: 0.7),
                         ),
                       ),
                       style: GoogleFonts.montserrat(
-                        fontSize: 16,
+                        fontSize: 14,
                         color: AppTheme.deepCharcoal,
+                        fontWeight: FontWeight.w500,
                       ),
                       onChanged: onChanged,
                     ),
                   ),
                   if (showClearButton)
-                    GestureDetector(
-                      onTap: onClear,
-                      child: const Icon(
-                        Icons.close,
-                        color: AppTheme.mutedSilver,
-                        size: 20,
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: GestureDetector(
+                        onTap: onClear,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: AppTheme.ivoryBackground,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.close_rounded,
+                            color: AppTheme.mutedSilver,
+                            size: 14,
+                          ),
+                        ),
                       ),
                     ),
                 ],

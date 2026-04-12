@@ -183,6 +183,10 @@ export class OrdersService {
           },
         },
         promotions: true,
+        returnRequests: {
+          where: { status: { not: 'CANCELLED' } },
+          include: { items: true },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });

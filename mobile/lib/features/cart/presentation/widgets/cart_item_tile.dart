@@ -138,19 +138,23 @@ class _ProductImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        width: 76,
-        height: 76,
-        color: AppTheme.ivoryBackground,
+    return Container(
+      width: 86,
+      height: 86,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF9F9F9),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.softTaupe.withValues(alpha: 0.1)),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
         child: Image.network(
           imageUrl,
           fit: BoxFit.cover,
           errorBuilder: (_, __, ___) => const Center(
             child: Icon(
-              Icons.image_outlined,
-              color: AppTheme.mutedSilver,
+              Icons.spa_outlined,
+              color: AppTheme.softTaupe,
               size: 28,
             ),
           ),
@@ -180,10 +184,10 @@ class _ProductDetails extends StatelessWidget {
     final parts = <String>[];
     final v = item.variant ?? '';
     final s = item.size ?? '';
-    
+
     if (v.isNotEmpty) parts.add(v);
     if (s.isNotEmpty && s != v) parts.add(s);
-    
+
     return parts.join(' • ');
   }
 
@@ -201,40 +205,57 @@ class _ProductDetails extends StatelessWidget {
                 item.productName,
                 style: GoogleFonts.playfairDisplay(
                   fontSize: 15,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w700,
                   color: AppTheme.deepCharcoal,
-                  height: 1.3,
+                  height: 1.2,
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            if (isSample) ...[const SizedBox(width: 6), const _SampleBadge()],
+            if (isSample) ...[const SizedBox(width: 8), const _SampleBadge()],
           ],
         ),
         if (_hasVariantInfo) ...[
-          const SizedBox(height: 3),
+          const SizedBox(height: 4),
           Text(
-            _variantInfo,
+            _variantInfo.toUpperCase(),
             style: GoogleFonts.montserrat(
-              fontSize: 11,
-              color: AppTheme.mutedSilver,
+              fontSize: 9,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.5,
+              color: AppTheme.mutedSilver.withValues(alpha: 0.6),
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
         ],
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Text(
-              isSample ? 'Miễn phí' : formatVND(item.price),
-              style: GoogleFonts.montserrat(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: AppTheme.accentGold,
-              ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isSample ? 'FREE GIFT' : 'PRICE',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 8,
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.mutedSilver.withValues(alpha: 0.4),
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  isSample ? 'Miễn phí' : formatVND(item.price),
+                  style: GoogleFonts.montserrat(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.deepCharcoal,
+                  ),
+                ),
+              ],
             ),
             const Spacer(),
             _InlineQty(
@@ -295,32 +316,39 @@ class _InlineQty extends StatelessWidget {
     return Container(
       height: 32,
       decoration: BoxDecoration(
-        color: AppTheme.ivoryBackground,
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppTheme.softTaupe.withValues(alpha: 0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           _QtyBtn(
-            icon: Icons.remove,
+            icon: Icons.remove_rounded,
             active: canDecrease,
             onTap: canDecrease ? onDecrease : null,
           ),
-          SizedBox(
+          Container(
             width: 28,
-            child: Center(
-              child: Text(
-                '$quantity',
-                style: GoogleFonts.montserrat(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.deepCharcoal,
-                ),
+            alignment: Alignment.center,
+            child: Text(
+              '$quantity',
+              style: GoogleFonts.montserrat(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.deepCharcoal,
               ),
             ),
           ),
           _QtyBtn(
-            icon: Icons.add,
+            icon: Icons.add_rounded,
             active: canIncrease,
             onTap: canIncrease ? onIncrease : null,
           ),
@@ -343,16 +371,21 @@ class _QtyBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: SizedBox(
-        width: 30,
-        height: 32,
-        child: Icon(
-          icon,
-          size: 14,
-          color: active ? AppTheme.deepCharcoal : AppTheme.mutedSilver,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: SizedBox(
+          width: 32,
+          height: 32,
+          child: Icon(
+            icon,
+            size: 14,
+            color: active
+                ? AppTheme.deepCharcoal
+                : AppTheme.mutedSilver.withValues(alpha: 0.2),
+          ),
         ),
       ),
     );

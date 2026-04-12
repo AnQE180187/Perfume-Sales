@@ -164,7 +164,7 @@ class ScentStructureSection extends StatelessWidget {
                         icon: Icons.spa_outlined,
                         label: 'HƯƠNG ĐẦU',
                         note: topNote,
-                        descriptor: 'Tươi sáng và nhẹ nhàng',
+                        descriptor: 'Tươi sángและ nhẹ nhàng',
                         isActive: false,
                         iconSize: _iconSize,
                       ),
@@ -174,8 +174,8 @@ class ScentStructureSection extends StatelessWidget {
                             top: _iconSize / 2,
                             bottom: _lineBottomOffset,
                           ),
-                          height: 1.5,
-                          color: AppTheme.softTaupe.withValues(alpha: 0.6),
+                          height: 0.8,
+                          color: AppTheme.accentGold.withValues(alpha: 0.25),
                         ),
                       ),
                       _ScentLayer(
@@ -192,15 +192,15 @@ class ScentStructureSection extends StatelessWidget {
                             top: _iconSize / 2,
                             bottom: _lineBottomOffset,
                           ),
-                          height: 1.5,
-                          color: AppTheme.softTaupe.withValues(alpha: 0.6),
+                          height: 0.8,
+                          color: AppTheme.accentGold.withValues(alpha: 0.25),
                         ),
                       ),
                       _ScentLayer(
                         icon: Icons.water_drop_outlined,
                         label: 'HƯƠNG CUỐI',
                         note: baseNote,
-                        descriptor: 'Sâu lắng và bền lâu',
+                        descriptor: 'Sâu lắngและ bền lâu',
                         isActive: false,
                         iconSize: _iconSize,
                       ),
@@ -251,11 +251,11 @@ class _ScentLayer extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           AnimatedScale(
-            scale: isActive ? 1.0 : 0.95,
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.easeOutCubic,
+            scale: isActive ? 1.12 : 0.95,
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeOutBack,
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 250),
+              duration: const Duration(milliseconds: 400),
               curve: Curves.easeOutCubic,
               width: iconSize,
               height: iconSize,
@@ -264,28 +264,33 @@ class _ScentLayer extends StatelessWidget {
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: isActive ? AppTheme.accentGold : AppTheme.softTaupe,
-                  width: isActive ? 0 : 1.5,
+                  width: isActive ? 0 : 0.8,
                 ),
                 boxShadow: isActive
                     ? [
                         BoxShadow(
-                          color: AppTheme.accentGold.withValues(alpha: 0.35),
-                          blurRadius: 16,
-                          offset: const Offset(0, 6),
+                          color: AppTheme.accentGold.withValues(alpha: 0.3),
+                          blurRadius: 20,
+                          spreadRadius: 2,
+                        ),
+                        BoxShadow(
+                          color: AppTheme.accentGold.withValues(alpha: 0.15),
+                          blurRadius: 40,
+                          spreadRadius: 8,
                         ),
                       ]
                     : [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.04),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
+                          color: Colors.black.withValues(alpha: 0.03),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
                         ),
                       ],
               ),
               child: Icon(
                 icon,
                 color: isActive ? Colors.white : AppTheme.mutedSilver,
-                size: isActive ? 26 : 22,
+                size: isActive ? 24 : 20,
               ),
             ),
           ),

@@ -23,9 +23,10 @@ class ProfileHeaderSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(8, 12, 8, 12),
-      color: AppTheme.ivoryBackground,
+      padding: const EdgeInsets.fromLTRB(8, 12, 16, 12),
+      color: Colors.transparent,
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           IconButton(
             onPressed: onBack,
@@ -33,51 +34,20 @@ class ProfileHeaderSection extends StatelessWidget {
             color: AppTheme.deepCharcoal,
             padding: const EdgeInsets.all(8),
           ),
-          Expanded(
-            child: Center(
-              child: Text(
-                'Hồ sơ của tôi',
-                style: GoogleFonts.playfairDisplay(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.deepCharcoal,
-                ),
-              ),
+          Text(
+            'HỒ SƠ CỦA TÔI',
+            style: GoogleFonts.montserrat(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 2.5,
+              color: AppTheme.deepCharcoal,
             ),
           ),
-          // Edit button as a small pill
-          GestureDetector(
-            onTap: onEdit,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: AppTheme.accentGold.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: AppTheme.accentGold.withValues(alpha: 0.4),
-                  width: 1,
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.edit_outlined,
-                    size: 13,
-                    color: AppTheme.accentGold,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Sửa',
-                    style: GoogleFonts.montserrat(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.accentGold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          IconButton(
+            onPressed: onEdit,
+            icon: const Icon(Icons.settings_outlined, size: 22),
+            color: AppTheme.deepCharcoal,
+            padding: const EdgeInsets.all(8),
           ),
         ],
       ),

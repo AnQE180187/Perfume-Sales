@@ -10,6 +10,7 @@ import '../../../core/widgets/ai_scent_analysis_card.dart';
 import '../../../core/widgets/scent_structure_section.dart';
 import '../../../core/widgets/product_story_section.dart';
 import '../../../core/widgets/product_bottom_cta.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../cart/providers/cart_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
 import 'scent_structure_detail_screen.dart';
@@ -109,7 +110,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                 color: AppTheme.mutedSilver,
               ),
               const SizedBox(height: 16),
-              Text('Không thể tải sản phẩm', style: GoogleFonts.montserrat()),
+              Text(AppLocalizations.of(context)!.failedLoadOrder, style: GoogleFonts.montserrat()),
             ],
           ),
         ),
@@ -138,16 +139,19 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                     pinned: false,
                     elevation: 0,
                     backgroundColor: Colors.transparent,
-                    leading: FloatingIconButton(
-                      icon: Icons.arrow_back,
-                      onTap: () => context.pop(),
+                    leading: Padding(
+                      padding: const EdgeInsets.only(left: 8.0, top: 4.0),
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_back, color: Colors.white, size: 22),
+                        onPressed: () => context.pop(),
+                      ),
                     ),
                     actions: [
-                      FloatingIconButton(
-                        icon: Icons.share_outlined,
-                        onTap: () {},
+                      IconButton(
+                        icon: const Icon(Icons.share_outlined, color: Colors.white, size: 22),
+                        onPressed: () {},
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 4),
                       Consumer(
                         builder: (context, ref, _) {
                           final isFav =
@@ -156,18 +160,19 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                                   .valueOrNull
                                   ?.any((p) => p.id == product.id) ??
                               false;
-                          return FloatingIconButton(
-                            icon: isFav
-                                ? Icons.favorite
-                                : Icons.favorite_border,
-                            onTap: () => ref
+                          return IconButton(
+                            icon: Icon(
+                              isFav ? Icons.favorite : Icons.favorite_border,
+                              color: isFav ? Colors.red : Colors.white,
+                              size: 22,
+                            ),
+                            onPressed: () => ref
                                 .read(wishlistProvider.notifier)
                                 .toggle(product),
-                            isActive: isFav,
                           );
                         },
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 8),
                     ],
                     flexibleSpace: FlexibleSpaceBar(
                       background: FadeTransition(
@@ -213,10 +218,29 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                                     ),
                                   ),
                                 ),
+                                // dark gradient for icon visibility
+                                Positioned(
+                                  top: 0,
+                                  left: 0,
+                                  right: 0,
+                                  height: 120,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                        colors: [
+                                          Colors.black.withValues(alpha: 0.45),
+                                          Colors.transparent,
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
                                 // indicator dots
                                 if (images.length > 1)
                                   Positioned(
-                                    bottom: 28,
+                                    bottom: 32,
                                     left: 0,
                                     right: 0,
                                     child: Row(
@@ -232,14 +256,14 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                                             horizontal: 3,
                                           ),
                                           width: i == _currentImagePage
-                                              ? 18.0
+                                              ? 20.0
                                               : 6.0,
                                           height: 6,
                                           decoration: BoxDecoration(
                                             color: i == _currentImagePage
                                                 ? Colors.white
                                                 : Colors.white.withValues(
-                                                    alpha: 0.5,
+                                                    alpha: 0.4,
                                                   ),
                                             borderRadius: BorderRadius.circular(
                                               3,
@@ -303,18 +327,21 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                               Text(
                                 product.name,
                                 style: GoogleFonts.playfairDisplay(
-                                  fontSize: 24,
+                                  fontSize: 28,
                                   fontWeight: FontWeight.w600,
-                                  height: 1.15,
+                                  letterSpacing: -0.5,
+                                  height: 1.1,
                                   color: AppTheme.deepCharcoal,
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 8),
                               // SUBTITLE
                               Text(
-                                'Nước hoa Eau de Parfum',
+                                AppLocalizations.of(context)!.eauDeParfum,
                                 style: GoogleFonts.montserrat(
-                                  fontSize: 12,
+                                  fontSize: 10,
+                                  letterSpacing: 2.0,
+                                  fontWeight: FontWeight.w500,
                                   color: AppTheme.mutedSilver,
                                 ),
                               ),
@@ -341,7 +368,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                                     if (product.reviews != null) ...[
                                       const SizedBox(width: 4),
                                       Text(
-                                        '· ${product.reviews} đánh giá',
+                                        '· ${product.reviews} ${AppLocalizations.of(context)!.rating}',
                                         style: GoogleFonts.montserrat(
                                           fontSize: 11,
                                           color: AppTheme.mutedSilver,
@@ -350,7 +377,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                                     ],
                                   ] else
                                     Text(
-                                      'Chưa có đánh giá',
+                                      AppLocalizations.of(context)!.noReviews,
                                       style: GoogleFonts.montserrat(
                                         fontSize: 11,
                                         color: AppTheme.mutedSilver,
@@ -365,7 +392,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                                       ),
                                     ),
                                     child: Text(
-                                      'Xem review →',
+                                      '${AppLocalizations.of(context)!.viewReviews} →',
                                       style: GoogleFonts.montserrat(
                                         fontSize: 11,
                                         fontWeight: FontWeight.w600,
@@ -389,24 +416,30 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
 
                   // ================= SIZE SELECTOR =================
                   SliverToBoxAdapter(
-                    child: ProductSizeSelector(
-                      selectedSize: selectedSize,
-                      sizes: backendVariantSizes.isEmpty
-                          ? null
-                          : backendVariantSizes,
-                      onSizeChanged: (size) =>
-                          setState(() => _selectedSize = size),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24.0),
+                      child: ProductSizeSelector(
+                        selectedSize: selectedSize,
+                        sizes: backendVariantSizes.isEmpty
+                            ? null
+                            : backendVariantSizes,
+                        onSizeChanged: (size) =>
+                            setState(() => _selectedSize = size),
+                      ),
                     ),
                   ),
 
                   // ================= AI SCENT ANALYSIS =================
                   SliverToBoxAdapter(
-                    child: AIScentAnalysisCard(
-                      isExpanded: _isAIAnalysisExpanded,
-                      onToggle: () => setState(
-                        () => _isAIAnalysisExpanded = !_isAIAnalysisExpanded,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 32.0),
+                      child: AIScentAnalysisCard(
+                        isExpanded: _isAIAnalysisExpanded,
+                        onToggle: () => setState(
+                          () => _isAIAnalysisExpanded = !_isAIAnalysisExpanded,
+                        ),
+                        notes: product.notes,
                       ),
-                      notes: product.notes,
                     ),
                   ),
 
@@ -463,7 +496,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                   ),
 
                   // ================= THE STORY =================
-                  const SliverToBoxAdapter(child: SizedBox(height: 40)),
+                  const SliverToBoxAdapter(child: SizedBox(height: 64)),
                   SliverToBoxAdapter(
                     child: ProductStorySection(
                       description: product.description,
@@ -493,9 +526,9 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                     if (variant == null || variant.id.isEmpty) {
                       if (!mounted) return;
                       messenger.showSnackBar(
-                        const SnackBar(
+                        SnackBar(
                           content: Text(
-                            'Không tìm thấy phiên bản sản phẩm phù hợp.',
+                            AppLocalizations.of(context)!.variantNotFound,
                           ),
                           behavior: SnackBarBehavior.floating,
                         ),
@@ -522,7 +555,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                               const SizedBox(width: 10),
                               Expanded(
                                 child: Text(
-                                  'Đã thêm ${product.name} vào giỏ hàng',
+                                  '${AppLocalizations.of(context)!.addedToCart} ${product.name}',
                                   style: const TextStyle(fontSize: 13),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -535,9 +568,9 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                                     context.push('/cart');
                                   }
                                 },
-                                child: const Text(
-                                  'Xem giỏ',
-                                  style: TextStyle(
+                                child: Text(
+                                  AppLocalizations.of(context)!.viewCart,
+                                  style: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w700,
                                     fontSize: 13,
@@ -561,7 +594,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                       if (!mounted) return;
                       messenger.showSnackBar(
                         SnackBar(
-                          content: Text('Không thể thêm vào giỏ: $error'),
+                          content: Text('${AppLocalizations.of(context)!.failedAddToCart}: $error'),
                           behavior: SnackBarBehavior.floating,
                         ),
                       );

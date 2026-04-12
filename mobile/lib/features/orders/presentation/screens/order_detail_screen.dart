@@ -8,6 +8,8 @@ import '../../../../core/theme/app_text_style.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/currency_utils.dart';
 import '../../models/order.dart';
+import '../../../../l10n/app_localizations.dart';
+import '../../services/payment_service.dart';
 import '../../providers/order_provider.dart';
 import '../../providers/order_realtime_provider.dart';
 import '../widgets/order_status_badge.dart';
@@ -28,6 +30,7 @@ class OrderDetailScreen extends ConsumerWidget {
 
     final orderAsync = ref.watch(orderDetailProvider(orderId));
     final paymentAsync = ref.watch(orderPaymentProvider(orderId));
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: AppTheme.ivoryBackground,
@@ -114,7 +117,7 @@ class OrderDetailScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Đặt ngày ${_formatDateTime(order.createdAt)}',
+                              '${AppLocalizations.of(context)!.placedOn} ${_formatDateTime(order.createdAt)}',
                               style: GoogleFonts.montserrat(
                                 fontSize: 11.5,
                                 color: AppTheme.mutedSilver,
@@ -144,41 +147,42 @@ class OrderDetailScreen extends ConsumerWidget {
                         paymentLabel: _paymentLabel(
                           order,
                           payment?.status.name.toUpperCase(),
+                          l10n,
                         ),
                       ),
                       loading: () =>
-                          const _PaymentInfo(paymentLabel: 'Đang kiểm tra...'),
-                      error: (_, __) =>
-                          const _PaymentInfo(paymentLabel: 'Không khả dụng'),
+                          _PaymentInfo(paymentLabel: l10n.checkingPayment),
+                      error: (err, stack) {
+                        // If sync fails (e.g. 404 or network), fall back to order's own status
+                        debugPrint('Payment sync error: $err');
+                        return _PaymentInfo(
+                          paymentLabel: _paymentLabel(
+                            order,
+                            order.paymentStatus.name.toUpperCase(),
+                            l10n,
+                          ),
+                        );
+                      },
                     ),
                     const SizedBox(height: 24),
 
                     // ── Action buttons ──
                     if (order.canTrack) ...[
                       _GoldButton(
-                        icon: Icons.location_on_rounded,
-                        label: 'Theo dõi đơn hàng',
+                        icon: Icons.location_on_outlined,
+                        label: AppLocalizations.of(context)!.trackOrderUpper,
                         onPressed: () =>
                             context.push(AppRoutes.trackOrderWithId(order.id)),
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 12),
                     ],
-                    if (order.status.name.toLowerCase() == 'completed') ...[
-                      _OutlineButton(
-                        icon: Icons.assignment_return_rounded,
-                        label: 'Yêu cầu trả hàng',
-                        onPressed: () => context.push(AppRoutes.returnOrderWithId(order.id)),
-                      ),
-                      const SizedBox(height: 10),
-                    ],
-                    _OutlineButton(
-                      icon: Icons.headset_mic_rounded,
-                      label: 'Liên hệ hỗ trợ',
+                    
+                    _SupportButton(
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
-                              'Bộ phận hỗ trợ sẽ liên hệ bạn sớm nhất.',
+                              AppLocalizations.of(context)!.supportContactMessage,
                               style: GoogleFonts.montserrat(fontSize: 13),
                             ),
                             backgroundColor: AppTheme.deepCharcoal,
@@ -190,6 +194,13 @@ class OrderDetailScreen extends ConsumerWidget {
                         );
                       },
                     ),
+                    const SizedBox(height: 12),
+
+                    if (order.status == OrderStatus.completed && !order.hasActiveReturn) ...[
+                      _SubtleReturnButton(
+                        onPressed: () => context.push(AppRoutes.returnOrderWithId(order.id)),
+                      ),
+                    ],
                   ]),
                 ),
               ),
@@ -407,52 +418,52 @@ class _PriceBreakdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return _SectionCard(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _sectionHeader('Thanh toán', Icons.receipt_rounded),
-          _priceLine(context, 'Tạm tính', formatVND(order.totalAmount)),
-          const SizedBox(height: 8),
-          _priceLine(
-            context,
-            'Giảm giá',
-            '-${formatVND(order.discountAmount)}',
-            isDiscount: true,
-          ),
-          const SizedBox(height: 8),
-          _priceLine(context, 'Phí giao hàng', formatVND(order.shippingFee)),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            child: Container(
-              height: 1,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.transparent,
-                    AppTheme.softTaupe,
-                    Colors.transparent,
-                  ],
-                ),
-              ),
+          Text(
+            l10n.paymentSummary,
+            style: GoogleFonts.montserrat(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 2.0,
+              color: AppTheme.mutedSilver,
             ),
           ),
+          const SizedBox(height: 16),
+          _priceLine(l10n.subtotal, formatVND(order.totalAmount)),
+          const SizedBox(height: 10),
+          _priceLine(
+            l10n.discount,
+            '-${formatVND(order.discountAmount)}',
+            valueColor: const Color(0xFFC19E3F),
+          ),
+          const SizedBox(height: 10),
+          _priceLine(l10n.shippingFee, formatVND(order.shippingFee)),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Divider(height: 1, color: Color(0xFFF0EAE2)),
+          ),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Tổng cộng',
+                l10n.totalAmount,
                 style: GoogleFonts.montserrat(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.5,
                   color: AppTheme.deepCharcoal,
                 ),
               ),
-              const Spacer(),
               Text(
                 formatVND(order.finalAmount),
                 style: GoogleFonts.playfairDisplay(
-                  fontSize: 22,
+                  fontSize: 24,
                   fontWeight: FontWeight.w700,
-                  color: AppTheme.accentGold,
+                  color: AppTheme.deepCharcoal,
                 ),
               ),
             ],
@@ -462,28 +473,24 @@ class _PriceBreakdown extends StatelessWidget {
     );
   }
 
-  Widget _priceLine(
-    BuildContext context,
-    String label,
-    String value, {
-    bool isDiscount = false,
-  }) {
+  Widget _priceLine(String label, String value, {Color? valueColor}) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           label,
           style: GoogleFonts.montserrat(
             fontSize: 13,
-            color: AppTheme.mutedSilver,
+            fontWeight: FontWeight.w500,
+            color: AppTheme.deepCharcoal.withValues(alpha: 0.7),
           ),
         ),
-        const Spacer(),
         Text(
           value,
           style: GoogleFonts.montserrat(
             fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: isDiscount ? const Color(0xFF12B76A) : AppTheme.deepCharcoal,
+            fontWeight: FontWeight.w600,
+            color: valueColor ?? AppTheme.deepCharcoal,
           ),
         ),
       ],
@@ -500,19 +507,29 @@ class _ShippingAddress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return _SectionCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _sectionHeader('Địa chỉ giao hàng', Icons.location_on_rounded),
+          Text(
+            l10n.shippingAddressUpper,
+            style: GoogleFonts.montserrat(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 2.0,
+              color: AppTheme.mutedSilver,
+            ),
+          ),
+          const SizedBox(height: 16),
           Row(
             children: [
               const Icon(
                 Icons.person_outline_rounded,
                 size: 16,
-                color: AppTheme.mutedSilver,
+                color: AppTheme.accentGold,
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               Text(
                 order.recipientName,
                 style: GoogleFonts.montserrat(
@@ -523,25 +540,26 @@ class _ShippingAddress extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 12),
           Row(
             children: [
               const Icon(
                 Icons.phone_outlined,
                 size: 16,
-                color: AppTheme.mutedSilver,
+                color: AppTheme.accentGold,
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               Text(
                 order.phone,
                 style: GoogleFonts.montserrat(
                   fontSize: 13,
-                  color: AppTheme.mutedSilver,
+                  fontWeight: FontWeight.w500,
+                  color: AppTheme.deepCharcoal.withValues(alpha: 0.8),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -550,17 +568,17 @@ class _ShippingAddress extends StatelessWidget {
                 child: Icon(
                   Icons.place_outlined,
                   size: 16,
-                  color: AppTheme.mutedSilver,
+                  color: AppTheme.accentGold,
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   order.shippingAddress,
                   style: GoogleFonts.montserrat(
                     fontSize: 13,
-                    height: 1.5,
-                    color: const Color(0xFF6B6B6B),
+                    height: 1.6,
+                    color: AppTheme.deepCharcoal.withValues(alpha: 0.75),
                   ),
                 ),
               ),
@@ -581,6 +599,9 @@ class _PaymentInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isPending = paymentLabel.toUpperCase().contains('PENDING') || paymentLabel.toUpperCase().contains('CHỜ');
+    
     return _SectionCard(
       child: Row(
         children: [
@@ -596,28 +617,43 @@ class _PaymentInfo extends StatelessWidget {
               color: AppTheme.accentGold,
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 12),
           Text(
-            'Thanh toán',
-            style: GoogleFonts.playfairDisplay(
-              fontSize: 16,
+            l10n.payment.toUpperCase(),
+            style: GoogleFonts.montserrat(
+              fontSize: 9,
               fontWeight: FontWeight.w700,
-              color: AppTheme.deepCharcoal,
+              letterSpacing: 1.0,
+              color: AppTheme.mutedSilver,
             ),
           ),
-          const Spacer(),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF0F6EC),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              paymentLabel,
-              style: GoogleFonts.montserrat(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF067647),
+          const SizedBox(width: 4),
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: isPending 
+                      ? const Color(0xFFFFF7E6) 
+                      : const Color(0xFFF6FBF4),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: isPending 
+                        ? const Color(0xFFFFD666).withValues(alpha: 0.5)
+                        : const Color(0xFFB7EB8F).withValues(alpha: 0.5),
+                  ),
+                ),
+                child: Text(
+                  paymentLabel.toUpperCase(),
+                  textAlign: TextAlign.right,
+                  maxLines: 2,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w700,
+                    color: isPending ? const Color(0xFFD48806) : const Color(0xFF389E0D),
+                  ),
+                ),
               ),
             ),
           ),
@@ -687,50 +723,102 @@ class _GoldButton extends StatelessWidget {
   }
 }
 
-class _OutlineButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
+class _SupportButton extends StatelessWidget {
   final VoidCallback onPressed;
-
-  const _OutlineButton({
-    required this.icon,
-    required this.label,
-    required this.onPressed,
-  });
+  const _SupportButton({required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
-    return OutlinedButton(
+    return LuxuryButton(
+      text: AppLocalizations.of(context)!.contactSupport,
       onPressed: onPressed,
-      style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 15),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        side: const BorderSide(color: AppTheme.softTaupe, width: 1.5),
+      height: 54,
+    );
+  }
+}
+
+class _SubtleReturnButton extends StatelessWidget {
+  final VoidCallback onPressed;
+  const _SubtleReturnButton({required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      onPressed: onPressed,
+      style: TextButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 12),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 18, color: AppTheme.deepCharcoal),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: GoogleFonts.montserrat(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: AppTheme.deepCharcoal,
-            ),
-          ),
-        ],
+      child: Text(
+        AppLocalizations.of(context)!.returnRequest,
+        style: GoogleFonts.montserrat(
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+          color: AppTheme.mutedSilver,
+          decoration: TextDecoration.underline,
+        ),
       ),
     );
   }
 }
 
-String _paymentLabel(Order order, String? paymentStatus) {
-  if (paymentStatus != null && paymentStatus.isNotEmpty) {
-    return paymentStatus;
+class LuxuryButton extends StatelessWidget {
+  final String text;
+  final VoidCallback onPressed;
+  final double height;
+
+  const LuxuryButton({
+    super.key,
+    required this.text,
+    required this.onPressed,
+    this.height = 56,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: height,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppTheme.deepCharcoal,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child: Text(
+          text,
+          style: GoogleFonts.montserrat(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.2,
+          ),
+        ),
+      ),
+    );
   }
-  return order.paymentStatus.name.toUpperCase();
+}
+
+String _paymentLabel(
+  Order order,
+  String? paymentSyncStatus,
+  AppLocalizations l10n,
+) {
+  final status = paymentSyncStatus?.toLowerCase() ??
+      order.paymentStatus.name.toLowerCase();
+
+  switch (status) {
+    case 'paid':
+      return l10n.paymentStatusPaid;
+    case 'failed':
+      return l10n.paymentStatusFailed;
+    case 'refunded':
+      return l10n.paymentStatusRefunded;
+    default:
+      return l10n.paymentStatusPending;
+  }
 }
 
 String _formatDateTime(DateTime date) {

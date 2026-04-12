@@ -13,6 +13,11 @@ enum ShipmentStatus {
   returned,
 }
 
+enum ReturnStatus { 
+  requested, awaitingCustomer, reviewing, approved, returning, received, 
+  refunding, refundFailed, completed, rejected, rejectedAfterReturn, cancelled 
+}
+
 extension OrderStatusX on OrderStatus {
   String get label {
     switch (this) {
@@ -82,6 +87,32 @@ class ShipmentInfo {
   }
 }
 
+class ReturnRequest {
+  final String id;
+  final ReturnStatus status;
+  final String? reason;
+  final double totalAmount;
+  final DateTime createdAt;
+
+  const ReturnRequest({
+    required this.id,
+    required this.status,
+    this.reason,
+    required this.totalAmount,
+    required this.createdAt,
+  });
+
+  factory ReturnRequest.fromJson(Map<String, dynamic> json) {
+    return ReturnRequest(
+      id: (json['id'] ?? '').toString(),
+      status: _parseReturnStatus(json['status']),
+      reason: json['reason']?.toString(),
+      totalAmount: _readDouble(json['totalAmount']),
+      createdAt: _parseDate(json['createdAt']),
+    );
+  }
+}
+
 class Order {
   final String id;
   final String code;
@@ -98,6 +129,7 @@ class Order {
   final String phone;
   final List<OrderItem> items;
   final List<ShipmentInfo> shipments;
+  final List<ReturnRequest> returnRequests;
 
   const Order({
     required this.id,
@@ -115,6 +147,7 @@ class Order {
     required this.phone,
     required this.items,
     required this.shipments,
+    required this.returnRequests,
   });
 
   int get itemCount => items.fold<int>(0, (sum, item) => sum + item.quantity);
@@ -133,9 +166,16 @@ class Order {
     return status == OrderStatus.completed || status == OrderStatus.cancelled;
   }
 
+  bool get hasActiveReturn {
+    return returnRequests.any((r) => r.status != ReturnStatus.cancelled);
+  }
+
   factory Order.fromJson(Map<String, dynamic> json, {List<ShipmentInfo>? shipments}) {
     final itemsRaw = json['items'];
     final itemList = itemsRaw is List ? itemsRaw : const <dynamic>[];
+    final returnsRaw = json['returnRequests'];
+    final returnList = returnsRaw is List ? returnsRaw : const <dynamic>[];
+
     return Order(
       id: (json['id'] ?? '').toString(),
       code: (json['code'] ?? json['orderCode'] ?? '').toString(),
@@ -155,6 +195,10 @@ class Order {
           .map((item) => OrderItem.fromJson(item.map((k, v) => MapEntry(k.toString(), v))))
           .toList(),
       shipments: shipments ?? const <ShipmentInfo>[],
+      returnRequests: returnList
+          .whereType<Map>()
+          .map((item) => ReturnRequest.fromJson(item.map((k, v) => MapEntry(k.toString(), v))))
+          .toList(),
     );
   }
 }
@@ -209,6 +253,37 @@ ShipmentStatus _parseShipmentStatus(dynamic raw) {
     case 'PENDING':
     default:
       return ShipmentStatus.pending;
+  }
+}
+
+ReturnStatus _parseReturnStatus(dynamic raw) {
+  final value = (raw ?? '').toString().trim().toUpperCase();
+  switch (value) {
+    case 'AWAITING_CUSTOMER':
+      return ReturnStatus.awaitingCustomer;
+    case 'REVIEWING':
+      return ReturnStatus.reviewing;
+    case 'APPROVED':
+      return ReturnStatus.approved;
+    case 'RETURNING':
+      return ReturnStatus.returning;
+    case 'RECEIVED':
+      return ReturnStatus.received;
+    case 'REFUNDING':
+      return ReturnStatus.refunding;
+    case 'REFUND_FAILED':
+      return ReturnStatus.refundFailed;
+    case 'COMPLETED':
+      return ReturnStatus.completed;
+    case 'REJECTED':
+      return ReturnStatus.rejected;
+    case 'REJECTED_AFTER_RETURN':
+      return ReturnStatus.rejectedAfterReturn;
+    case 'CANCELLED':
+      return ReturnStatus.cancelled;
+    case 'REQUESTED':
+    default:
+      return ReturnStatus.requested;
   }
 }
 

@@ -185,19 +185,20 @@ class _ProfileEditFormState extends ConsumerState<_ProfileEditForm> {
     return Scaffold(
       backgroundColor: AppTheme.ivoryBackground,
       appBar: AppBar(
-        backgroundColor: AppTheme.ivoryBackground,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
           onPressed: isLoading ? null : () => Navigator.pop(context),
           color: AppTheme.deepCharcoal,
         ),
         title: Text(
-          'Chỉnh sửa hồ sơ',
-          style: GoogleFonts.playfairDisplay(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
+          'CHỈNH SỬA HỒ SƠ',
+          style: GoogleFonts.montserrat(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 2,
             color: AppTheme.deepCharcoal,
           ),
         ),
@@ -205,79 +206,83 @@ class _ProfileEditFormState extends ConsumerState<_ProfileEditForm> {
       ),
       body: Form(
         key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-          children: [
-            _AvatarSection(avatarUrl: widget.profile.avatarUrl),
-            const SizedBox(height: 32),
-            _SectionLabel('Thông tin cá nhân'),
-            const SizedBox(height: 16),
-            AppInput(
-              label: 'Họ và tên',
-              hint: 'Nhập họ và tên của bạn',
-              controller: _nameController,
-              prefixIcon: const Icon(Icons.person_outline_rounded, size: 20),
-              validator: (v) {
-                if (v == null || v.trim().isEmpty) {
-                  return 'Vui lòng nhập họ và tên';
-                }
-                return null;
-              },
-              textInputAction: TextInputAction.next,
-            ),
-            const SizedBox(height: 16),
-            AppInput(
-              label: 'Email',
-              hint: widget.profile.email,
-              initialValue: widget.profile.email,
-              readOnly: true,
-              enabled: false,
-              prefixIcon: const Icon(Icons.email_outlined, size: 20),
-              keyboardType: TextInputType.emailAddress,
-            ),
-            const SizedBox(height: 16),
-            AppInput(
-              label: 'Số điện thoại',
-              hint: 'Ví dụ: 0912345678',
-              controller: _phoneController,
-              prefixIcon: const Icon(Icons.phone_outlined, size: 20),
-              keyboardType: TextInputType.phone,
-              textInputAction: TextInputAction.next,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              validator: (v) {
-                if (v != null && v.isNotEmpty && v.length < 9) {
-                  return 'Số điện thoại không hợp lệ';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 24),
-            _SectionLabel('Thông tin bổ sung'),
-            const SizedBox(height: 16),
-            _GenderSelector(
-              selected: _selectedGender,
-              options: _genderOptions,
-              onChanged: (v) => setState(() => _selectedGender = v),
-            ),
-            const SizedBox(height: 16),
-            AppInput(
-              label: 'Ngày sinh',
-              hint: 'DD/MM/YYYY',
-              controller: _dobController,
-              readOnly: true,
-              prefixIcon: const Icon(Icons.cake_outlined, size: 20),
-              onTap: _pickDate,
-            ),
-            const SizedBox(height: 40),
-            AppButton(
-              text: 'Lưu thay đổi',
-              isLoading: isLoading,
-              onPressed: isLoading ? null : _save,
-            ),
-            const SizedBox(height: 24),
-          ],
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _AvatarSection(avatarUrl: widget.profile.avatarUrl),
+              const SizedBox(height: 48),
+              
+              _SectionLabel('THÔNG TIN CƠ BẢN'),
+              const SizedBox(height: 24),
+              AppInput(
+                label: 'Tên hiển thị',
+                hint: 'Họ và tên của bạn',
+                controller: _nameController,
+                prefixIcon: _GoldIcon(Icons.person_outline_rounded),
+                validator: (v) => (v == null || v.trim().isEmpty) ? 'Vui lòng nhập tên' : null,
+              ),
+              const SizedBox(height: 20),
+              AppInput(
+                label: 'Địa chỉ Email',
+                hint: widget.profile.email,
+                readOnly: true,
+                enabled: false,
+                prefixIcon: _GoldIcon(Icons.alternate_email_rounded),
+              ),
+              const SizedBox(height: 20),
+              AppInput(
+                label: 'Số điện thoại',
+                hint: 'Nhập số điện thoại mới',
+                controller: _phoneController,
+                prefixIcon: _GoldIcon(Icons.phone_iphone_rounded),
+                keyboardType: TextInputType.phone,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              ),
+              
+              const SizedBox(height: 40),
+              _SectionLabel('CHI TIẾT THÊM'),
+              const SizedBox(height: 24),
+              _GenderSelector(
+                selected: _selectedGender,
+                options: _genderOptions,
+                onChanged: (v) => setState(() => _selectedGender = v),
+              ),
+              const SizedBox(height: 24),
+              AppInput(
+                label: 'Ngày sinh nhật',
+                hint: 'Chọn ngày sinh của bạn',
+                controller: _dobController,
+                readOnly: true,
+                prefixIcon: _GoldIcon(Icons.cake_outlined),
+                onTap: _pickDate,
+                suffixIcon: const Icon(Icons.calendar_today_outlined, size: 16, color: AppTheme.softTaupe),
+              ),
+              
+              const SizedBox(height: 56),
+              _PremiumSaveButton(
+                onPressed: isLoading ? null : _save,
+                isLoading: isLoading,
+              ),
+              const SizedBox(height: 24),
+            ],
+          ),
         ),
       ),
+    );
+  }
+}
+
+class _GoldIcon extends StatelessWidget {
+  final IconData icon;
+  const _GoldIcon(this.icon);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.only(left: 12, right: 8),
+      child: Icon(icon, size: 20, color: AppTheme.accentGold),
     );
   }
 }
@@ -296,30 +301,55 @@ class _AvatarSection extends StatelessWidget {
         alignment: Alignment.bottomRight,
         children: [
           Container(
-            width: 96,
-            height: 96,
+            width: 110,
+            height: 110,
+            padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: AppTheme.accentGold.withValues(alpha: 0.4),
-                width: 2.5,
+                color: AppTheme.accentGold.withValues(alpha: 0.3),
+                width: 1,
               ),
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.deepCharcoal.withValues(alpha: 0.1),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: ClipOval(
+                child: avatarUrl != null
+                    ? Image.network(
+                        avatarUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => _buildPlaceholder(),
+                      )
+                    : _buildPlaceholder(),
+              ),
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppTheme.deepCharcoal,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 2),
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.deepCharcoal.withValues(alpha: 0.08),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
+                  color: Colors.black.withValues(alpha: 0.2),
+                  blurRadius: 8,
                 ),
               ],
             ),
-            child: ClipOval(
-              child: avatarUrl != null
-                  ? Image.network(
-                      avatarUrl!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _buildPlaceholder(),
-                    )
-                  : _buildPlaceholder(),
+            child: const Icon(
+              Icons.camera_alt_outlined,
+              size: 16,
+              color: AppTheme.accentGold,
             ),
           ),
         ],
@@ -329,8 +359,14 @@ class _AvatarSection extends StatelessWidget {
 
   Widget _buildPlaceholder() {
     return Container(
-      color: AppTheme.ivoryBackground,
-      child: Icon(Icons.person_outline, size: 40, color: AppTheme.mutedSilver),
+      color: Colors.white,
+      child: const Center(
+        child: Icon(
+          Icons.person_2_outlined,
+          size: 44,
+          color: AppTheme.softTaupe,
+        ),
+      ),
     );
   }
 }
@@ -343,12 +379,12 @@ class _SectionLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(
-      text,
+      text.toUpperCase(),
       style: GoogleFonts.montserrat(
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 0.8,
-        color: AppTheme.mutedSilver,
+        fontSize: 10,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 2,
+        color: AppTheme.accentGold,
       ),
     );
   }
@@ -371,20 +407,21 @@ class _GenderSelector extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Giới tính',
+          'GIỚI TÍNH',
           style: GoogleFonts.montserrat(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: AppTheme.deepCharcoal,
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.2,
+            color: AppTheme.mutedSilver,
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 14),
         Row(
           children: options
               .map(
                 (opt) => Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.only(right: 8),
+                    padding: const EdgeInsets.only(right: 12),
                     child: _GenderChip(
                       label: opt.$2,
                       value: opt.$1,
@@ -420,28 +457,90 @@ class _GenderChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(vertical: 10),
+        duration: const Duration(milliseconds: 250),
+        padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: isSelected
-              ? AppTheme.accentGold.withValues(alpha: 0.12)
-              : Colors.white,
-          borderRadius: AppRadius.inputBorder,
+          color: isSelected ? AppTheme.deepCharcoal : Colors.white,
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected
-                ? AppTheme.accentGold
-                : AppTheme.mutedSilver.withValues(alpha: 0.4),
-            width: isSelected ? 1.5 : 1.0,
+            color: isSelected ? AppTheme.accentGold.withValues(alpha: 0.5) : AppTheme.softTaupe.withValues(alpha: 0.3),
+            width: isSelected ? 1 : 0.5,
           ),
+          boxShadow: isSelected ? [
+            BoxShadow(
+              color: AppTheme.accentGold.withValues(alpha: 0.15),
+              blurRadius: 12,
+              spreadRadius: 2,
+            )
+          ] : [],
         ),
         child: Center(
           child: Text(
             label,
             style: GoogleFonts.montserrat(
-              fontSize: 13,
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-              color: isSelected ? AppTheme.accentGold : AppTheme.deepCharcoal,
+              fontSize: 12,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              color: isSelected ? Colors.white : AppTheme.deepCharcoal,
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PremiumSaveButton extends StatelessWidget {
+  final VoidCallback? onPressed;
+  final bool isLoading;
+
+  const _PremiumSaveButton({this.onPressed, required this.isLoading});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 56,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        gradient: LinearGradient(
+          colors: onPressed == null ? [
+            AppTheme.softTaupe.withValues(alpha: 0.5),
+            AppTheme.softTaupe.withValues(alpha: 0.3),
+          ] : [
+            const Color(0xFFD4AF37),
+            AppTheme.accentGold,
+            const Color(0xFFFFDF00),
+          ],
+        ),
+        boxShadow: onPressed == null ? [] : [
+          BoxShadow(
+            color: AppTheme.accentGold.withValues(alpha: 0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(12),
+          child: Center(
+            child: isLoading
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.deepCharcoal),
+                  )
+                : Text(
+                    'LƯU THAY ĐỔI',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: AppTheme.deepCharcoal,
+                      letterSpacing: 2,
+                    ),
+                  ),
           ),
         ),
       ),

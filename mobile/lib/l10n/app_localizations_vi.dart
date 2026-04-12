@@ -210,7 +210,7 @@ class AppLocalizationsVi extends AppLocalizations {
       'Mã định danh phân tử của bạn đã được mã hóa. Mùi hương của bạn đang được chuẩn bị.';
 
   @override
-  String get traceOrder => 'THEO DÕI ĐƠN HÀNG';
+  String get traceOrder => 'THEO DÕI';
 
   @override
   String get returnToAtelier => 'QUAY LẠI XƯỞNG';
@@ -415,4 +415,292 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get paymentCancelled => 'Đã hủy thanh toán';
+
+  @override
+  String get searchFragrance => 'TÌM KIẾM MÙI HƯƠNG...';
+
+  @override
+  String get personalizedSelection => 'LỰA CHỌN DÀNH RIÊNG CHO BẠN';
+
+  @override
+  String get tailoredRecommendations => 'GỢI Ý PHÙ HỢP VỚI BẠN';
+
+  @override
+  String get viewCollection => 'XEM BỘ SƯU TẬP';
+
+  @override
+  String get eauDeParfum => 'NƯỚC HOA EAU DE PARFUM';
+
+  @override
+  String get rating => 'đánh giá';
+
+  @override
+  String get noReviews => 'Chưa có đánh giá';
+
+  @override
+  String get viewReviews => 'Xem review';
+
+  @override
+  String get addToCart => 'THÊM VÀO GIỎ HÀNG';
+
+  @override
+  String get variantNotFound => 'Không tìm thấy phiên bản sản phẩm phù hợp.';
+
+  @override
+  String get addedToCart => 'Đã thêm vào giỏ hàng';
+
+  @override
+  String get viewCart => 'Xem giỏ';
+
+  @override
+  String get failedAddToCart => 'Không thể thêm vào giỏ';
+
+  @override
+  String get notifications => 'Thông báo';
+
+  @override
+  String get notificationSettings => 'Cài đặt thông báo';
+
+  @override
+  String get notificationSubtitle =>
+      'Theo dõi đơn hàng, ưu đãi riêng và hoạt động tài khoản.';
+
+  @override
+  String get noNotifications => 'Không có thông báo nào';
+
+  @override
+  String get markAllRead => 'Đánh dấu đã đọc';
+
+  @override
+  String get readAll => 'Đọc hết';
+
+  @override
+  String get allNotificationsRead => 'Bạn đã đọc hết thông báo';
+
+  @override
+  String unreadNotifications(Object count) {
+    return 'Bạn có $count thông báo chưa đọc';
+  }
+
+  @override
+  String get updateNotifications => 'Hãy cập nhật ngay những ưu đãi mới nhất';
+
+  @override
+  String get orderUpdates => 'Cập nhật đơn hàng';
+
+  @override
+  String get orderUpdatesSub => 'Giao hàng, chuẩn bị đơn và thanh toán';
+
+  @override
+  String get offersAndGifts => 'Ưu đãi và quà tặng';
+
+  @override
+  String get offersAndGiftsSub =>
+      'Ưu đãi thành viên, gói giới hạn và mã giảm giá';
+
+  @override
+  String get accountActivity => 'Hoạt động tài khoản';
+
+  @override
+  String get accountActivitySub => 'Thông báo hàng về và bảo mật tài khoản';
+
+  @override
+  String get filterAll => 'Tất cả';
+
+  @override
+  String get filterUnread => 'Chưa đọc';
+
+  @override
+  String get filterOrders => 'Đơn hàng';
+
+  @override
+  String get filterOffers => 'Ưu đãi';
+
+  @override
+  String get filterAccount => 'Tài khoản';
+
+  @override
+  String get latest => 'MỚI NHẤT';
+
+  @override
+  String get older => 'TRƯỚC ĐÓ';
+
+  @override
+  String get paymentSummary => 'TÓM TẮT THANH TOÁN';
+
+  @override
+  String get totalAmount => 'TỔNG CỘNG';
+
+  @override
+  String get shippingAddressUpper => 'ĐỊA CHỈ GIAO HÀNG';
+
+  @override
+  String get contactSupport => 'LIÊN HỆ HỖ TRỢ';
+
+  @override
+  String get returnRequest => 'Yêu cầu trả hàng / Hoàn tiền';
+
+  @override
+  String get supportContactMessage => 'Bộ phận hỗ trợ sẽ liên hệ bạn sớm nhất.';
+
+  @override
+  String get trackOrderUpper => 'THEO DÕI ĐƠN HÀNG';
+
+  @override
+  String get buyNow => 'MUA NGAY';
+
+  @override
+  String get freeReturns => 'Miễn phí đổi trả trong 7 ngày';
+
+  @override
+  String get checkingPayment => 'Đang kiểm tra...';
+
+  @override
+  String get unavailable => 'Không khả dụng';
+
+  @override
+  String get placedOn => 'Đặt ngày';
+
+  @override
+  String get ordersActive => 'Đang xử lý';
+
+  @override
+  String get ordersCompleted => 'Hoàn thành';
+
+  @override
+  String get ordersReturns => 'Hoàn trả';
+
+  @override
+  String get paymentStatusPaid => 'Hoàn tất thanh toán';
+
+  @override
+  String get paymentStatusPending => 'Chưa thanh toán (Chờ xử lý)';
+
+  @override
+  String get paymentStatusFailed => 'Thanh toán thất bại';
+
+  @override
+  String get paymentStatusRefunded => 'Đã hoàn tiền';
+
+  @override
+  String get paymentMethodPayos => 'Cổng PayOS';
+
+  @override
+  String get paymentMethodCod => 'Thanh toán khi nhận hàng (COD)';
+
+  @override
+  String get paymentMethodVnpay => 'Ví VNPay';
+
+  @override
+  String get paymentMethodMomo => 'Ví MoMo';
+
+  @override
+  String get returnRequestTitle => 'Yêu cầu trả hàng';
+
+  @override
+  String get selectReturnItems => 'Chọn sản phẩm cần trả';
+
+  @override
+  String get returnReason => 'Lý do trả hàng';
+
+  @override
+  String get returnReasonHint => 'Mô tả chi tiết tình trạng sản phẩm...';
+
+  @override
+  String get refundInfo => 'Thông tin nhận hoàn tiền';
+
+  @override
+  String get bankName => 'Ngân hàng / Ví điện tử';
+
+  @override
+  String get bankNameHint => 'VD: MB Bank, Momo...';
+
+  @override
+  String get accountNumber => 'Số tài khoản / Số điện thoại';
+
+  @override
+  String get accountName => 'Chủ tài khoản';
+
+  @override
+  String get accountNameHint => 'NGUYEN VAN A';
+
+  @override
+  String get evidenceTitle => 'Chứng cứ thực tế';
+
+  @override
+  String get photoEvidence => 'Hình ảnh (Ít nhất 3 ảnh)';
+
+  @override
+  String get videoEvidence => 'Video (3s - 60s)';
+
+  @override
+  String get addPhoto => 'Thêm ảnh';
+
+  @override
+  String get addVideo => 'Thêm video';
+
+  @override
+  String get submitReturn => 'Gửi yêu cầu trả hàng';
+
+  @override
+  String get returnSuccess => 'Yêu cầu trả hàng đã được gửi thành công';
+
+  @override
+  String get errorSelectItems => 'Vui lòng chọn sản phẩm cần trả';
+
+  @override
+  String get errorReason => 'Vui lòng nhập lý do trả hàng';
+
+  @override
+  String get errorBankInfo => 'Vui lòng nhập đầy đủ thông tin thanh toán';
+
+  @override
+  String get errorPhotoCount => 'Vui lòng cung cấp ít nhất 3 hình ảnh';
+
+  @override
+  String get errorVideoMissing => 'Vui lòng cung cấp 1 video minh chứng';
+
+  @override
+  String get returnPolicyNote =>
+      'Lưu ý: Sản phẩm phải còn nguyên tem mác và chưa qua sử dụng.';
+
+  @override
+  String get reasonDamaged => 'Sản phẩm bị hư hỏng';
+
+  @override
+  String get reasonWrongItem => 'Giao sai sản phẩm';
+
+  @override
+  String get reasonScentNotExpected => 'Mùi không như mong đợi';
+
+  @override
+  String get returnProcessNotice =>
+      'Yêu cầu của bạn sẽ được xử lý trong vòng 24-48h';
+
+  @override
+  String get returnStatusRequested => 'Yêu cầu mới';
+
+  @override
+  String get returnStatusReviewing => 'Đang xem xét';
+
+  @override
+  String get returnStatusApproved => 'Đã chấp nhận';
+
+  @override
+  String get returnStatusReturning => 'Đang gửi hàng';
+
+  @override
+  String get returnStatusReceived => 'Đã nhận hàng';
+
+  @override
+  String get returnStatusRefunding => 'Đang hoàn tiền';
+
+  @override
+  String get returnStatusCompleted => 'Đã hoàn tất';
+
+  @override
+  String get returnStatusRejected => 'Bị từ chối';
+
+  @override
+  String get returnStatusCancelled => 'Đã hủy';
 }

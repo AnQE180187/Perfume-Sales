@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../product/providers/product_provider.dart';
 import 'widgets/home_header.dart';
@@ -25,7 +26,7 @@ class HomeScreen extends ConsumerWidget {
             // Personalized Selection
             SliverToBoxAdapter(
               child: ProductSection(
-                title: 'LỰA CHỌN DÀNH RIÊNG CHO BẠN',
+                title: AppLocalizations.of(context)!.personalizedSelection,
                 productsAsync: personalizedProducts,
               ),
             ),
@@ -35,8 +36,8 @@ class HomeScreen extends ConsumerWidget {
             // Tailored Recommendations
             SliverToBoxAdapter(
               child: ProductSection(
-                title: 'GỢI Ý PHÙ HỢP VỚI BẠN',
-                actionText: 'XEM BỘ SƯU TẬP',
+                title: AppLocalizations.of(context)!.tailoredRecommendations,
+                actionText: AppLocalizations.of(context)!.viewCollection,
                 productsAsync: recommendedProducts,
               ),
             ),

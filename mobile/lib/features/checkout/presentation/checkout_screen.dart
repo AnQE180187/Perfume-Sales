@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -68,15 +68,18 @@ class CheckoutScreen extends ConsumerWidget {
                   itemCount: itemCount,
                   totalAmount: checkoutState.totalAmount,
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
                 const _SectionLabel(label: 'ĐỊA CHỈ GIAO HÀNG'),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 CheckoutAddressSection(
                   address: checkoutState.selectedAddress,
                   onTap: () => _showAddressSheet(context, ref),
                   highlight: checkoutState.selectedAddress == null,
                 ),
-                const SizedBox(height: 16),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24),
+                  child: Divider(color: Color(0xFFE5D5C0), thickness: 0.5),
+                ),
                 Row(
                   children: [
                     const Expanded(
@@ -95,30 +98,40 @@ class CheckoutScreen extends ConsumerWidget {
                         style: GoogleFonts.montserrat(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
+                          letterSpacing: 0.5,
                           color: AppTheme.accentGold,
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 CheckoutPaymentSection(
                   method: checkoutState.selectedPaymentMethod,
                   onEdit: () => context.push(AppRoutes.profilePaymentMethods),
                 ),
-                const SizedBox(height: 16),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24),
+                  child: Divider(color: Color(0xFFE5D5C0), thickness: 0.5),
+                ),
                 const _SectionLabel(label: 'SẢN PHẨM'),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 CheckoutItemsSection(items: checkoutState.orderItems),
-                const SizedBox(height: 16),
-                const _SectionLabel(label: 'TỔNG CỘNG'),
-                const SizedBox(height: 8),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24),
+                  child: Divider(color: Color(0xFFE5D5C0), thickness: 0.5),
+                ),
+                const _SectionLabel(label: 'THANH TOÁN'),
+                const SizedBox(height: 12),
                 CheckoutPriceSection(
                   subtotal: checkoutState.subtotal,
                   shippingCost: checkoutState.shippingCost,
                   tax: checkoutState.tax,
+                  discount: checkoutState.discountAmount,
                   totalAmount: checkoutState.totalAmount,
                 ),
+                const SizedBox(height: 40),
+                const _TrustSignalsRow(),
               ],
             ),
       bottomNavigationBar: checkoutState.orderItems.isEmpty
@@ -136,6 +149,7 @@ class CheckoutScreen extends ConsumerWidget {
   Future<void> _showAddressSheet(BuildContext context, WidgetRef ref) async {
     await showModalBottomSheet<void>(
       context: context,
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (sheetContext) {
         return AddressPickerSheet(
@@ -259,59 +273,88 @@ class _CompactOrderHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       decoration: BoxDecoration(
-        color: AppTheme.champagneGold.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.35)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE5D5C0).withValues(alpha: 0.5)),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.deepCharcoal.withValues(alpha: 0.03),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Row(
         children: [
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              color: AppTheme.accentGold.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(
-              Icons.shopping_bag_outlined,
-              color: AppTheme.accentGold,
-              size: 20,
-            ),
-          ),
-          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '$itemCount sản phẩm',
+                  'TÓM TẮT ĐƠN HÀNG',
                   style: GoogleFonts.montserrat(
-                    fontSize: 13,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.2,
+                    color: AppTheme.accentGold,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  '$itemCount Sản phẩm',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: AppTheme.deepCharcoal,
                   ),
                 ),
-                const SizedBox(height: 3),
-                Text(
-                  'Dự kiến nhận hàng trong 24 ngày',
-                  style: GoogleFonts.montserrat(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: AppTheme.mutedSilver,
-                  ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.auto_awesome,
+                      size: 11,
+                      color: AppTheme.accentGold,
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        'Dự kiến nhận hàng: 20 - 22 Tháng 4',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          fontStyle: FontStyle.italic,
+                          color: AppTheme.mutedSilver,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-          Text(
-            formatVND(totalAmount),
-            style: GoogleFonts.playfairDisplay(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: AppTheme.deepCharcoal,
-            ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                'TỔNG',
+                style: GoogleFonts.montserrat(
+                  fontSize: 8,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.mutedSilver,
+                ),
+              ),
+              Text(
+                formatVND(totalAmount),
+                style: GoogleFonts.playfairDisplay(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.deepCharcoal,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -378,63 +421,52 @@ class _CheckoutBottomBar extends StatelessWidget {
             ),
           ],
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            LuxuryButton(
-              text: buttonText,
-              trailingIcon: buttonIcon,
-              height: 56,
-              isLoading: isSubmitting,
-              onPressed: canConfirm && !isSubmitting ? onConfirm : null,
-            ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                _TrustItem(icon: Icons.lock_outline_rounded, label: 'Bảo mật'),
-                _TrustDivider(),
-                _TrustItem(
-                  icon: Icons.local_shipping_outlined,
-                  label: '24 ngày',
-                ),
-                _TrustDivider(),
-                _TrustItem(
-                  icon: Icons.replay_rounded,
-                  label: 'Đổi trả 14 ngày',
-                ),
-              ],
-            ),
-          ],
+        child: LuxuryButton(
+          text: buttonText,
+          trailingIcon: buttonIcon,
+          height: 56,
+          isLoading: isSubmitting,
+          onPressed: canConfirm && !isSubmitting ? onConfirm : null,
         ),
       ),
     );
   }
 }
 
-class _TrustItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-
-  const _TrustItem({required this.icon, required this.label});
+class _TrustSignalsRow extends StatelessWidget {
+  const _TrustSignalsRow();
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
+    return Column(
       children: [
-        Icon(
-          icon,
-          size: 12,
-          color: AppTheme.mutedSilver.withValues(alpha: 0.7),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _TrustIconItem(
+              icon: Icons.verified_user_outlined,
+              label: 'Thanh toán bảo mật',
+            ),
+            _TrustIconDivider(),
+            _TrustIconItem(
+              icon: Icons.local_shipping_outlined,
+              label: 'Giao hàng hỏa tốc',
+            ),
+            _TrustIconDivider(),
+            _TrustIconItem(
+              icon: Icons.history_edu_outlined,
+              label: '7 ngày hoàn trả',
+            ),
+          ],
         ),
-        const SizedBox(width: 4),
+        const SizedBox(height: 24),
         Text(
-          label,
+          'AURA LUXURY PERFUME SIGNATURE',
           style: GoogleFonts.montserrat(
-            fontSize: 10,
-            fontWeight: FontWeight.w500,
-            color: AppTheme.mutedSilver.withValues(alpha: 0.8),
+            fontSize: 8,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 2.0,
+            color: AppTheme.mutedSilver.withValues(alpha: 0.4),
           ),
         ),
       ],
@@ -442,20 +474,48 @@ class _TrustItem extends StatelessWidget {
   }
 }
 
-class _TrustDivider extends StatelessWidget {
-  const _TrustDivider();
+class _TrustIconItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _TrustIconItem({required this.icon, required this.label});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Text(
-        '',
-        style: TextStyle(fontSize: 12, color: AppTheme.softTaupe),
-      ),
+    return Column(
+      children: [
+        Icon(
+          icon,
+          size: 20,
+          color: AppTheme.accentGold.withValues(alpha: 0.6),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          label.toUpperCase(),
+          style: GoogleFonts.montserrat(
+            fontSize: 7,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.5,
+            color: AppTheme.mutedSilver,
+          ),
+        ),
+      ],
     );
   }
 }
+
+class _TrustIconDivider extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 20,
+      width: 0.5,
+      margin: const EdgeInsets.symmetric(horizontal: 14),
+      color: const Color(0xFFE5D5C0),
+    );
+  }
+}
+
 
 class _EmptyCheckoutState extends StatelessWidget {
   final VoidCallback onReturnToCart;

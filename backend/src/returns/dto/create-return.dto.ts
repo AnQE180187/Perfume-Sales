@@ -34,7 +34,7 @@ export class CreateReturnDto {
 
   @IsArray()
   @ArrayMinSize(1)
-  @ValidateNested({ each: true })
+  @ValidateNested({ each: true})
   @Type(() => ReturnItemDto)
   items: ReturnItemDto[];
 
@@ -50,4 +50,8 @@ export class CreateReturnDto {
   @IsOptional()
   @IsString()
   origin?: 'ONLINE' | 'POS';
+
+  @IsOptional()
+  @IsString()
+  videoUrl?: string;
 }

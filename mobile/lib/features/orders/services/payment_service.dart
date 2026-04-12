@@ -8,7 +8,9 @@ class OrderPaymentService {
   OrderPaymentService({required ApiClient client}) : _client = client;
 
   Future<OrderPayment?> getPaymentByOrderId(String orderId) async {
-    final response = await _client.get(ApiEndpoints.paymentByOrderId(orderId));
+    // Calling verify-sync instead of just order status ensures the backend 
+    // checks with PayOS API for the latest truth.
+    final response = await _client.get(ApiEndpoints.verifySyncPayment(orderId));
     final body = response.data;
     if (body == null) return null;
     if (body is! Map) return null;

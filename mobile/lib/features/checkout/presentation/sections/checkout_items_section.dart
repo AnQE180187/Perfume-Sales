@@ -13,23 +13,27 @@ class CheckoutItemsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.softTaupe.withValues(alpha: 0.6)),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE5D5C0).withValues(alpha: 0.5)),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.deepCharcoal.withValues(alpha: 0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         children: [
           for (var index = 0; index < items.length; index++) ...[
             _OrderItemRow(item: items[index]),
             if (index != items.length - 1)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                child: Divider(
-                  color: AppTheme.softTaupe.withValues(alpha: 0.8),
-                  height: 1,
-                ),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 20),
+                child: Divider(color: Color(0xFFE5D5C0), thickness: 0.5),
               ),
           ],
         ],

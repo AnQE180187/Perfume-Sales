@@ -49,6 +49,10 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
       tax: 0,
       isCartLoading: cartState.isLoading,
       cartError: cartState.error,
+      promoCode: cartState.promoCode,
+      promoDiscount: cartState.promoDiscount,
+      promoDiscountType: cartState.promoDiscountType,
+      promoDiscountRaw: cartState.promoDiscountRaw,
     );
   }
 
@@ -169,6 +173,7 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
         shippingServiceId: address.serviceId,
         paymentMethod: isOnline ? 'ONLINE' : 'COD',
         shippingFee: state.shippingCost,
+        promotionCode: state.promoCode,
       );
 
       final orderId = orderData['id'] as String? ?? '';

@@ -127,7 +127,7 @@ export class ReturnsService {
     action: 'create' | 'refund',
   ): Promise<{ existing: boolean; result?: any }> {
     if (!idempotencyKey) {
-      throw new BadRequestException('Idempotency-Key header required');
+      return { existing: false };
     }
     const scope = `${action}_${returnId}_${idempotencyKey}`;
     const existing = await this.prisma.returnAudit.findFirst({
@@ -315,6 +315,7 @@ export class ReturnsService {
           origin,
           createdBy: isStaff ? staffId : undefined,
           reason: dto.reason,
+          videoUrl: dto.videoUrl,
           paymentInfo: dto.paymentInfo ? dto.paymentInfo : undefined,
           totalAmount,
           items: {
@@ -344,10 +345,12 @@ export class ReturnsService {
       );
 
       // Record idempotency
-      await this.recordIdempotency(tx, ret.id, idempotencyKey!, 'create', {
-        dto,
-        totalAmount,
-      });
+      if (idempotencyKey) {
+        await this.recordIdempotency(tx, ret.id, idempotencyKey, 'create', {
+          dto,
+          totalAmount,
+        });
+      }
 
       return ret;
     });
@@ -970,11 +973,13 @@ export class ReturnsService {
       });
 
       // Record idempotency
-      await this.recordIdempotency(tx, id, idempotencyKey!, 'refund', {
-        dto,
-        refundAmount,
-        refundStatus,
-      });
+      if (idempotencyKey) {
+        await this.recordIdempotency(tx, id, idempotencyKey, 'refund', {
+          dto,
+          refundAmount,
+          refundStatus,
+        });
+      }
 
       // Loyalty points reversal
       if (ret.userId && refundStatus === RefundStatus.SUCCESS) {

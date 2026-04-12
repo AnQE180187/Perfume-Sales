@@ -19,89 +19,87 @@ class UserIdentitySection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 28, 20, 24),
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
       child: Column(
         children: [
-          // Avatar with gold ring
+          // Avatar with premium gold stroke
           Container(
-            width: 100,
-            height: 100,
+            width: 110,
+            height: 110,
+            padding: const EdgeInsets.all(3),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(
-                color: AppTheme.accentGold.withValues(alpha: 0.55),
-                width: 2.5,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppTheme.accentGold.withValues(alpha: 0.15),
-                  blurRadius: 18,
-                  spreadRadius: 2,
-                ),
-                BoxShadow(
-                  color: AppTheme.deepCharcoal.withValues(alpha: 0.08),
-                  offset: const Offset(0, 4),
-                  blurRadius: 12,
-                ),
-              ],
-            ),
-            child: ClipOval(
-              child: profile.avatarUrl != null
-                  ? Image.network(
-                      profile.avatarUrl!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _buildPlaceholder(),
-                    )
-                  : _buildPlaceholder(),
-            ),
-          ),
-          const SizedBox(height: 16),
-          // Name
-          Text(
-            profile.name,
-            style: GoogleFonts.playfairDisplay(
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-              color: AppTheme.deepCharcoal,
-              height: 1.2,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 6),
-          // Email (masked)
-          if (profile.email.isNotEmpty)
-            Text(
-              profile.email,
-              style: GoogleFonts.montserrat(
-                fontSize: 12,
-                fontWeight: FontWeight.w400,
-                color: AppTheme.mutedSilver,
-              ),
-            ),
-          const SizedBox(height: 12),
-          // Membership badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-            decoration: BoxDecoration(
-              color: AppTheme.accentGold.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: AppTheme.accentGold.withValues(alpha: 0.3),
                 width: 1,
               ),
             ),
+            child: Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.accentGold.withValues(alpha: 0.1),
+                    blurRadius: 20,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              child: ClipOval(
+                child: profile.avatarUrl != null
+                    ? Image.network(
+                        profile.avatarUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => _buildPlaceholder(),
+                      )
+                    : _buildPlaceholder(),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          // Name with editorial serif
+          Text(
+            profile.name.toUpperCase(),
+            style: GoogleFonts.playfairDisplay(
+              fontSize: 24,
+              fontWeight: FontWeight.w800,
+              color: AppTheme.deepCharcoal,
+              letterSpacing: 1.5,
+              height: 1.1,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          // Membership badge with minimalist star
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(30),
+              border: Border.all(
+                color: AppTheme.softTaupe.withValues(alpha: 0.3),
+                width: 0.8,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.star_rounded, size: 12, color: AppTheme.accentGold),
-                const SizedBox(width: 5),
+                const Icon(Icons.auto_awesome_rounded, size: 10, color: AppTheme.accentGold),
+                const SizedBox(width: 6),
                 Text(
-                  profile.memberSinceText,
+                  profile.memberSinceText.toUpperCase(),
                   style: GoogleFonts.montserrat(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.accentGold,
-                    letterSpacing: 0.2,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.deepCharcoal.withValues(alpha: 0.7),
+                    letterSpacing: 1.5,
                   ),
                 ),
               ],
