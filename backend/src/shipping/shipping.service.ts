@@ -1,6 +1,8 @@
 import {
   BadRequestException,
   Injectable,
+  OnModuleDestroy,
+  OnModuleInit,
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -30,13 +32,35 @@ const SHIPMENT_STATUS_LABELS: Record<string, string> = {
 };
 
 @Injectable()
-export class ShippingService {
+export class ShippingService implements OnModuleInit, OnModuleDestroy {
+  private syncTimer: NodeJS.Timeout | null = null;
+  private isSyncing = false;
+  private readonly syncIntervalMs: number;
+  private readonly syncBatchSize: number;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly ghn: GHNService,
     private readonly notificationsService: NotificationsService,
     private readonly config: ConfigService,
-  ) {}
+  ) {
+    this.syncIntervalMs = Number(
+      this.config.get<string>('GHN_SYNC_INTERVAL_MS') || 30000,
+    );
+    this.syncBatchSize = Number(
+      this.config.get<string>('GHN_SYNC_BATCH_SIZE') || 20,
+    );
+  }
+
+  onModuleInit() {
+    this.syncTimer = setInterval(() => {
+      void this.syncActiveShipmentsFallback();
+    }, this.syncIntervalMs);
+  }
+
+  onModuleDestroy() {
+    if (this.syncTimer) clearInterval(this.syncTimer);
+  }
 
   async createGhnShipmentForUser(userId: string, orderId: string) {
     const order = await this.prisma.order.findFirst({
@@ -333,6 +357,15 @@ export class ShippingService {
           where: { id: shipment.orderId },
           data: { status: 'COMPLETED' },
         });
+      } else if (
+        (newStatus === ShipmentStatus.FAILED ||
+          newStatus === ShipmentStatus.RETURNED) &&
+        shipment.order.status !== 'COMPLETED'
+      ) {
+        await this.prisma.order.update({
+          where: { id: shipment.orderId },
+          data: { status: 'CANCELLED' },
+        });
       }
       return;
     }
@@ -462,6 +495,15 @@ export class ShippingService {
         where: { id: shipment.orderId },
         data: { status: 'COMPLETED' },
       });
+    } else if (
+      (newStatus === ShipmentStatus.FAILED ||
+        newStatus === ShipmentStatus.RETURNED) &&
+      shipment.order.status !== 'COMPLETED'
+    ) {
+      await this.prisma.order.update({
+        where: { id: shipment.orderId },
+        data: { status: 'CANCELLED' },
+      });
     }
 
     return updated;
@@ -507,5 +549,37 @@ export class ShippingService {
       result.push({ ...s, ghnDetail });
     }
     return result;
+  }
+
+  private async syncActiveShipmentsFallback() {
+    if (this.isSyncing || !this.ghn.isConfigured()) return;
+    this.isSyncing = true;
+    try {
+      const active = await this.prisma.shipment.findMany({
+        where: {
+          provider: ShippingProvider.GHN,
+          ghnOrderCode: { not: null },
+          status: {
+            in: [
+              ShipmentStatus.PENDING,
+              ShipmentStatus.PICKED_UP,
+              ShipmentStatus.IN_TRANSIT,
+            ],
+          },
+        },
+        orderBy: { updatedAt: 'asc' },
+        take: this.syncBatchSize,
+      });
+
+      for (const s of active) {
+        try {
+          await this.syncShipmentStatus(s.id);
+        } catch (e: any) {
+          console.warn(`GHN fallback sync failed for ${s.id}: ${e?.message}`);
+        }
+      }
+    } finally {
+      this.isSyncing = false;
+    }
   }
 }
