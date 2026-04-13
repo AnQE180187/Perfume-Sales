@@ -19,4 +19,14 @@ export class PublicCatalogController {
   listScentNotes() {
     return this.catalogService.listScentNotes();
   }
+  
+  @Get('categories')
+  listCategories() {
+    return this.catalogService.listCategories();
+  }
+
+  @Get('scent-families')
+  listScentFamilies() {
+    return this.catalogService.listScentFamilies();
+  }
 }

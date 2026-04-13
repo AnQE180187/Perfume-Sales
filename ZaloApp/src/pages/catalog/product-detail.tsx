@@ -14,6 +14,7 @@ import VariantPicker from "./variant-picker";
 import { useEffect, useRef, useState } from "react";
 import Collapse from "@/components/collapse";
 import RelatedProducts from "./related-products";
+import AiReviewSummary from "./ai-review-summary";
 import { useAddToCart } from "@/hooks";
 import toast from "react-hot-toast";
 import { Color, Size } from "@/types";
@@ -111,6 +112,9 @@ export default function ProductDetailPage() {
             <Collapse items={product.details} />
           </>
         )}
+        
+        <AiReviewSummary productId={product.id} />
+
         <div className="bg-section h-2 w-full"></div>
         <div className="font-medium py-2 px-4">
           <div className="pt-2 pb-2.5">Sản phẩm khác</div>

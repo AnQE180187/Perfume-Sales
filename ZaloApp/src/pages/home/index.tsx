@@ -5,6 +5,7 @@ import Category from "./category";
 import FlashSales from "./flash-sales";
 import HorizontalDivider from "@/components/horizontal-divider";
 import CategoryTabs from "@/components/category-tabs";
+import AiCta from "./ai-cta";
 
 const HomePage: React.FunctionComponent = () => {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ const HomePage: React.FunctionComponent = () => {
       <div className="bg-background pt-2">
         <SearchBar onClick={() => navigate("/search")} />
         <Banners />
+        <AiCta />
       </div>
       <div className="bg-background space-y-2 mt-2">
         <CategoryTabs />

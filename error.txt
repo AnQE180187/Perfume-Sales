@@ -1,0 +1,287 @@
+chunk-PJEEZAML.js?v=d3c5261e:521 Warning: React does not recognize the `unstable_viewTransition` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `unstable_viewtransition` instead. If you accidentally passed it from a parent component, remove it from the DOM element.
+    at a
+    at LinkWithRef (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5395:5)
+    at NavLinkWithRef (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5459:21)
+    at TransitionLink
+    at div
+    at AiCta
+    at div
+    at div
+    at HomePage (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/pages/home/index.tsx:28:20)
+    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4131:5)
+    at Outlet (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4537:26)
+    at Suspense
+    at div
+    at div
+    at Layout
+    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4131:5)
+    at RenderErrorBoundary (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4091:5)
+    at DataRoutes (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5282:5)
+    at Router (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4544:15)
+    at RouterProvider (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5096:5)
+printWarning	@	chunk-PJEEZAML.js?v=d3c5261e:521
+error	@	chunk-PJEEZAML.js?v=d3c5261e:505
+validateProperty$1	@	chunk-PJEEZAML.js?v=d3c5261e:3427
+warnUnknownProperties	@	chunk-PJEEZAML.js?v=d3c5261e:3459
+validateProperties$2	@	chunk-PJEEZAML.js?v=d3c5261e:3478
+validatePropertiesInDevelopment	@	chunk-PJEEZAML.js?v=d3c5261e:7346
+setInitialProperties	@	chunk-PJEEZAML.js?v=d3c5261e:7535
+finalizeInitialChildren	@	chunk-PJEEZAML.js?v=d3c5261e:8345
+completeWork	@	chunk-PJEEZAML.js?v=d3c5261e:16293
+completeUnitOfWork	@	chunk-PJEEZAML.js?v=d3c5261e:19224
+performUnitOfWork	@	chunk-PJEEZAML.js?v=d3c5261e:19206
+workLoopSync	@	chunk-PJEEZAML.js?v=d3c5261e:19137
+renderRootSync	@	chunk-PJEEZAML.js?v=d3c5261e:19116
+performConcurrentWorkOnRoot	@	chunk-PJEEZAML.js?v=d3c5261e:18678
+workLoop	@	chunk-PJEEZAML.js?v=d3c5261e:197
+flushWork	@	chunk-PJEEZAML.js?v=d3c5261e:176
+performWorkUntilDeadline	@	chunk-PJEEZAML.js?v=d3c5261e:384
+
+chunk-QZZ6HUMZ.js?v=d3c5261e:4436 ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+favicon.ico:1 
+ GET http://localhost:3000/favicon.ico 404 (Not Found)
+request.ts:33 An error occurred while fetching data. Falling back to default value!
+request.ts:36 
+{path: '/catalog/categories', error: SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON, fallbackValue: Array(0)}
+8
+product-item.tsx:40 Uncaught TypeError: Cannot read properties of undefined (reading 'name')
+    at children (product-item.tsx:40:39)
+chunk-QZZ6HUMZ.js?v=d3c5261e:4073 Error handled by React Router default ErrorBoundary: TypeError: Cannot read properties of undefined (reading 'name')
+    at children (product-item.tsx:40:39)
+8
+product-item.tsx:40 Uncaught TypeError: Cannot read properties of undefined (reading 'name')
+    at children (product-item.tsx:40:39)
+chunk-QZZ6HUMZ.js?v=d3c5261e:4073 Error handled by React Router default ErrorBoundary: TypeError: Cannot read properties of undefined (reading 'name')
+    at children (product-item.tsx:40:39)
+chunk-PJEEZAML.js?v=d3c5261e:14032 The above error occurred in the <NavLink> component:
+
+    at NavLinkWithRef (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5459:21)
+    at TransitionLink
+    at ProductItem (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/components/product-item.tsx:23:35)
+    at div
+    at ProductGrid (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/components/product-grid.tsx:19:3)
+    at div
+    at Section (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/components/section.tsx:22:102)
+    at FlashSales (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/pages/home/flash-sales.tsx:24:20)
+    at div
+    at HomePage (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/pages/home/index.tsx:28:20)
+    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4131:5)
+    at Outlet (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4537:26)
+    at Suspense
+    at div
+    at div
+    at Layout
+    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4131:5)
+    at RenderErrorBoundary (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4091:5)
+    at DataRoutes (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5282:5)
+    at Router (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4544:15)
+    at RouterProvider (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5096:5)
+
+React will try to recreate this component tree from scratch using the error boundary you provided, RenderErrorBoundary.
+chunk-QZZ6HUMZ.js?v=d3c5261e:4118 React Router caught the following error during render TypeError: Cannot read properties of undefined (reading 'name')
+    at children (product-item.tsx:40:39)
+ 
+{componentStack: '\n    at NavLinkWithRef (http://localhost:3000/node…s/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5096:5)'}
+chunk-PJEEZAML.js?v=d3c5261e:14032 The above error occurred in the <NavLink> component:
+
+    at NavLinkWithRef (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5459:21)
+    at TransitionLink
+    at ProductItem (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/components/product-item.tsx:23:35)
+    at div
+    at ProductGrid (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/components/product-grid.tsx:19:3)
+    at div
+    at Section (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/components/section.tsx:22:102)
+    at FlashSales (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/pages/home/flash-sales.tsx:24:20)
+    at div
+    at HomePage (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/pages/home/index.tsx:28:20)
+    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4131:5)
+    at Outlet (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4537:26)
+    at Suspense
+    at div
+    at div
+    at Layout
+    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4131:5)
+    at RenderErrorBoundary (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4091:5)
+    at DataRoutes (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5282:5)
+    at Router (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4544:15)
+    at RouterProvider (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5096:5)
+
+React will try to recreate this component tree from scratch using the error boundary you provided, RenderErrorBoundary.
+chunk-QZZ6HUMZ.js?v=d3c5261e:4118 React Router caught the following error during render TypeError: Cannot read properties of undefined (reading 'name')
+    at children (product-item.tsx:40:39)
+ 
+{componentStack: '\n    at NavLinkWithRef (http://localhost:3000/node…s/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5096:5)'}
+chunk-PJEEZAML.js?v=d3c5261e:14032 The above error occurred in the <NavLink> component:
+
+    at NavLinkWithRef (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5459:21)
+    at TransitionLink
+    at ProductItem (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/components/product-item.tsx:23:35)
+    at div
+    at ProductGrid (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/components/product-grid.tsx:19:3)
+    at div
+    at Section (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/components/section.tsx:22:102)
+    at FlashSales (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/pages/home/flash-sales.tsx:24:20)
+    at div
+    at HomePage (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/pages/home/index.tsx:28:20)
+    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4131:5)
+    at Outlet (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4537:26)
+    at Suspense
+    at div
+    at div
+    at Layout
+    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4131:5)
+    at RenderErrorBoundary (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4091:5)
+    at DataRoutes (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5282:5)
+    at Router (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4544:15)
+    at RouterProvider (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5096:5)
+
+React will try to recreate this component tree from scratch using the error boundary you provided, RenderErrorBoundary.
+chunk-QZZ6HUMZ.js?v=d3c5261e:4118 React Router caught the following error during render TypeError: Cannot read properties of undefined (reading 'name')
+    at children (product-item.tsx:40:39)
+ 
+{componentStack: '\n    at NavLinkWithRef (http://localhost:3000/node…s/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5096:5)'}
+chunk-PJEEZAML.js?v=d3c5261e:14032 The above error occurred in the <NavLink> component:
+
+    at NavLinkWithRef (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5459:21)
+    at TransitionLink
+    at ProductItem (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/components/product-item.tsx:23:35)
+    at div
+    at ProductGrid (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/components/product-grid.tsx:19:3)
+    at div
+    at Section (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/components/section.tsx:22:102)
+    at FlashSales (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/pages/home/flash-sales.tsx:24:20)
+    at div
+    at HomePage (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/pages/home/index.tsx:28:20)
+    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4131:5)
+    at Outlet (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4537:26)
+    at Suspense
+    at div
+    at div
+    at Layout
+    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4131:5)
+    at RenderErrorBoundary (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4091:5)
+    at DataRoutes (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5282:5)
+    at Router (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4544:15)
+    at RouterProvider (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5096:5)
+
+React will try to recreate this component tree from scratch using the error boundary you provided, RenderErrorBoundary.
+chunk-QZZ6HUMZ.js?v=d3c5261e:4118 React Router caught the following error during render TypeError: Cannot read properties of undefined (reading 'name')
+    at children (product-item.tsx:40:39)
+ 
+{componentStack: '\n    at NavLinkWithRef (http://localhost:3000/node…s/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5096:5)'}
+chunk-PJEEZAML.js?v=d3c5261e:14032 The above error occurred in the <NavLink> component:
+
+    at NavLinkWithRef (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5459:21)
+    at TransitionLink
+    at ProductItem (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/components/product-item.tsx:23:35)
+    at div
+    at ProductGrid (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/components/product-grid.tsx:19:3)
+    at div
+    at Section (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/components/section.tsx:22:102)
+    at FlashSales (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/pages/home/flash-sales.tsx:24:20)
+    at div
+    at HomePage (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/pages/home/index.tsx:28:20)
+    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4131:5)
+    at Outlet (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4537:26)
+    at Suspense
+    at div
+    at div
+    at Layout
+    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4131:5)
+    at RenderErrorBoundary (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4091:5)
+    at DataRoutes (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5282:5)
+    at Router (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4544:15)
+    at RouterProvider (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5096:5)
+
+React will try to recreate this component tree from scratch using the error boundary you provided, RenderErrorBoundary.
+chunk-QZZ6HUMZ.js?v=d3c5261e:4118 React Router caught the following error during render TypeError: Cannot read properties of undefined (reading 'name')
+    at children (product-item.tsx:40:39)
+ 
+{componentStack: '\n    at NavLinkWithRef (http://localhost:3000/node…s/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5096:5)'}
+chunk-PJEEZAML.js?v=d3c5261e:14032 The above error occurred in the <NavLink> component:
+
+    at NavLinkWithRef (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5459:21)
+    at TransitionLink
+    at ProductItem (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/components/product-item.tsx:23:35)
+    at div
+    at ProductGrid (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/components/product-grid.tsx:19:3)
+    at div
+    at Section (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/components/section.tsx:22:102)
+    at FlashSales (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/pages/home/flash-sales.tsx:24:20)
+    at div
+    at HomePage (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/pages/home/index.tsx:28:20)
+    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4131:5)
+    at Outlet (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4537:26)
+    at Suspense
+    at div
+    at div
+    at Layout
+    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4131:5)
+    at RenderErrorBoundary (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4091:5)
+    at DataRoutes (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5282:5)
+    at Router (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4544:15)
+    at RouterProvider (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5096:5)
+
+React will try to recreate this component tree from scratch using the error boundary you provided, RenderErrorBoundary.
+chunk-QZZ6HUMZ.js?v=d3c5261e:4118 React Router caught the following error during render TypeError: Cannot read properties of undefined (reading 'name')
+    at children (product-item.tsx:40:39)
+ 
+{componentStack: '\n    at NavLinkWithRef (http://localhost:3000/node…s/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5096:5)'}
+chunk-PJEEZAML.js?v=d3c5261e:14032 The above error occurred in the <NavLink> component:
+
+    at NavLinkWithRef (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5459:21)
+    at TransitionLink
+    at ProductItem (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/components/product-item.tsx:23:35)
+    at div
+    at ProductGrid (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/components/product-grid.tsx:19:3)
+    at div
+    at Section (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/components/section.tsx:22:102)
+    at FlashSales (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/pages/home/flash-sales.tsx:24:20)
+    at div
+    at HomePage (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/pages/home/index.tsx:28:20)
+    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4131:5)
+    at Outlet (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4537:26)
+    at Suspense
+    at div
+    at div
+    at Layout
+    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4131:5)
+    at RenderErrorBoundary (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4091:5)
+    at DataRoutes (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5282:5)
+    at Router (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4544:15)
+    at RouterProvider (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5096:5)
+
+React will try to recreate this component tree from scratch using the error boundary you provided, RenderErrorBoundary.
+chunk-QZZ6HUMZ.js?v=d3c5261e:4118 React Router caught the following error during render TypeError: Cannot read properties of undefined (reading 'name')
+    at children (product-item.tsx:40:39)
+ 
+{componentStack: '\n    at NavLinkWithRef (http://localhost:3000/node…s/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5096:5)'}
+chunk-PJEEZAML.js?v=d3c5261e:14032 The above error occurred in the <NavLink> component:
+
+    at NavLinkWithRef (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5459:21)
+    at TransitionLink
+    at ProductItem (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/components/product-item.tsx:23:35)
+    at div
+    at ProductGrid (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/components/product-grid.tsx:19:3)
+    at div
+    at Section (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/components/section.tsx:22:102)
+    at FlashSales (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/pages/home/flash-sales.tsx:24:20)
+    at div
+    at HomePage (http://localhost:3000/@fs/D:/CVScode%20source/FPT-Capstonee/ZaloApp/src/pages/home/index.tsx:28:20)
+    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4131:5)
+    at Outlet (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4537:26)
+    at Suspense
+    at div
+    at div
+    at Layout
+    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4131:5)
+    at RenderErrorBoundary (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4091:5)
+    at DataRoutes (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5282:5)
+    at Router (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:4544:15)
+    at RouterProvider (http://localhost:3000/node_modules/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5096:5)
+
+React will try to recreate this component tree from scratch using the error boundary you provided, RenderErrorBoundary.
+chunk-QZZ6HUMZ.js?v=d3c5261e:4118 React Router caught the following error during render TypeError: Cannot read properties of undefined (reading 'name')
+    at children (product-item.tsx:40:39)
+ 
+{componentStack: '\n    at NavLinkWithRef (http://localhost:3000/node…s/.vite/deps/chunk-QZZ6HUMZ.js?v=d3c5261e:5096:5)'}
