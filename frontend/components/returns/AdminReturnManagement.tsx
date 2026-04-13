@@ -31,6 +31,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Check, X, Box, CreditCard, RotateCcw, Search, Store, Globe, RefreshCcw, Loader2, Banknote, Truck } from "lucide-react";
 import api from "@/lib/axios";
+import { useTranslations, useFormatter } from "next-intl";
 import {
   staffOrdersService,
   StaffPosOrder,
@@ -70,22 +71,8 @@ const formatVND = (amount: number) => {
   }).format(amount);
 };
 
-const getStatusLabel = (status: ReturnStatus) => {
-  const map: Record<string, string> = {
-    REQUESTED: "Yêu cầu mới",
-    AWAITING_CUSTOMER: "Chờ phản hồi khách",
-    REVIEWING: "Đang xem xét",
-    APPROVED: "Đã duyệt, đợi trả hàng",
-    RETURNING: "Đang gửi hàng về",
-    RECEIVED: "Đã nhận hàng",
-    REFUNDING: "Đang hoàn tiền",
-    REFUND_FAILED: "Hoàn tiền thất bại",
-    COMPLETED: "Hoàn tất",
-    REJECTED: "Đã từ chối",
-    REJECTED_AFTER_RETURN: "Từ chối sau khi nhận",
-    CANCELLED: "Đã huỷ",
-  };
-  return map[status] || status;
+const getStatusLabel = (status: ReturnStatus, t: any) => {
+  return t(`status.${status}`) || status;
 };
 
 export const AdminReturnManagement = ({
@@ -93,6 +80,8 @@ export const AdminReturnManagement = ({
 }: {
   isAdmin?: boolean;
 }) => {
+  const t = useTranslations("dashboard.admin.returns");
+  const format = useFormatter();
   const [data, setData] = useState<{ data: ReturnRequest[]; total: number }>({
     data: [],
     total: 0,
@@ -201,7 +190,7 @@ export const AdminReturnManagement = ({
       const resp = await returnsService.listAll(0, 50);
       setData(resp as any);
     } catch (err: any) {
-      toast.error("Lỗi tải danh sách trả hàng", { description: err.message });
+      toast.error(t('toasts.error_fetch'), { description: err.message });
     } finally {
       setLoading(false);
     }
@@ -229,12 +218,12 @@ export const AdminReturnManagement = ({
     try {
       await returnsService.reviewReturn(selectedReturn.id, { action, note });
       toast.success(
-        action === "approve" ? "Đã duyệt yêu cầu" : "Đã từ chối yêu cầu",
+        action === "approve" ? t('toasts.approved') : t('toasts.rejected'),
       );
       setIsReviewOpen(false);
       loadData();
     } catch (err: any) {
-      toast.error("Lỗi duyệt yêu cầu", {
+      toast.error(t('toasts.error_review'), {
         description: err?.response?.data?.message || err.message,
       });
     }
@@ -253,11 +242,11 @@ export const AdminReturnManagement = ({
         note,
         receivedLocation: selectedReturn.origin === "POS" ? "POS" : "WAREHOUSE",
       });
-      toast.success("Đã xác nhận thao tác nhận hàng");
+      toast.success(t('toasts.receive_success'));
       setIsReceiveOpen(false);
       loadData();
     } catch (err: any) {
-      toast.error("Lỗi nhận hàng", {
+      toast.error(t('toasts.receive_error'), {
         description: err?.response?.data?.message || err.message,
       });
     }
@@ -269,9 +258,9 @@ export const AdminReturnManagement = ({
     try {
       const res = await returnsService.getSuggestedRefund(selectedReturn.id);
       setSelectedReturn(prev => prev ? { ...prev, refundAmount: res.suggestedAmount } : null);
-      toast.success("Đã tính toán số tiền hoàn dựa trên thực nhận");
+      toast.success(t('toasts.auto_calc_success'));
     } catch (err: any) {
-      toast.error("Lỗi tính toán số tiền", { description: err.message });
+      toast.error(t('toasts.auto_calc_error'), { description: err.message });
     } finally {
       setCalculatingRefund(false);
     }
@@ -286,12 +275,12 @@ export const AdminReturnManagement = ({
         { method: refundMethod, transactionId: undefined, note, receiptImage: receiptImageUrl },
         idempotencyKey,
       );
-      toast.success(`Đã xác nhận hoàn tiền và gửi thông báo cho khách hàng`);
+      toast.success(t('toasts.refund_success'));
       setIsRefundOpen(false);
       setReceiptImageUrl("");
       loadData();
     } catch (err: any) {
-      toast.error("Lỗi hoàn tiền", {
+      toast.error(t('toasts.refund_error'), {
         description: err?.response?.data?.message || err.message,
       });
     }
@@ -310,16 +299,16 @@ export const AdminReturnManagement = ({
       const today = new Date().setHours(0, 0, 0, 0);
 
       if (orderDate !== today) {
-        toast.error("Ràng buộc: Chỉ có thể đổi trả đơn hàng trong ngày.", {
-          description: `Đơn hàng này được tạo vào ngày ${new Date(order.createdAt).toLocaleDateString("vi-VN")}.`,
+        toast.error(t('toasts.pos_search_error_today'), {
+          description: t('pos.order_created_at', { date: new Date(order.createdAt).toLocaleDateString("vi-VN") }),
         });
         return;
       }
 
       setPosOrder(order);
     } catch (err: any) {
-      toast.error("Không tìm thấy đơn hàng", {
-        description: err?.response?.data?.message || "Kiểm tra lại mã đơn POS.",
+      toast.error(t('toasts.pos_search_error_not_found'), {
+        description: err?.response?.data?.message || t('pos.error_not_found'),
       });
     } finally {
       setPosLoading(false);
@@ -333,7 +322,7 @@ export const AdminReturnManagement = ({
       .map(([variantId, quantity]) => ({ variantId, quantity }));
 
     if (itemsPayload.length === 0) {
-      toast.error("Vui lòng chọn ít nhất một sản phẩm để trả");
+      toast.error(t('toasts.pos_items_required'));
       return;
     }
 
@@ -349,11 +338,11 @@ export const AdminReturnManagement = ({
         },
         idempotencyKey,
       );
-      toast.success("Tạo yêu cầu hoàn trả POS thành công!");
+      toast.success(t('toasts.pos_success'));
       setIsPosCreateOpen(false);
       loadData();
     } catch (err: any) {
-      toast.error("Lỗi tạo hoàn trả", {
+      toast.error(t('toasts.pos_error'), {
         description: err?.response?.data?.message || err.message,
       });
     } finally {
@@ -363,11 +352,11 @@ export const AdminReturnManagement = ({
 
   const handleCancel = async (id: string) => {
     try {
-      await returnsService.adminCancelReturn(id, "Hủy yêu cầu bởi nhân viên/cửa hàng");
-      toast.success("Hủy yêu cầu thành công");
+      await returnsService.adminCancelReturn(id, t('toasts.cancel_reason_default'));
+      toast.success(t('toasts.cancel_success'));
       loadData();
     } catch (err: any) {
-      toast.error("Lỗi hủy yêu cầu", {
+      toast.error(t('toasts.cancel_error'), {
         description: err?.response?.data?.message || err.message,
       });
     }
@@ -384,15 +373,15 @@ export const AdminReturnManagement = ({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-heading font-semibold text-foreground bg-gradient-to-r from-gold to-gold/50 bg-clip-text text-transparent inline-block">
-            Quản lý Đổi trả
+            {t('title')}
           </h2>
           <p className="text-muted-foreground mt-1 text-sm">
-            Hệ thống CRM theo dõi và xử lý các yêu cầu đổi trả hàng hóa, quy trình hoàn tiền tinh gọn.
+            {t('subtitle')}
           </p>
         </div>
         <div className="flex items-center space-x-3">
           <Button variant="outline" className="glass border-gold/20" onClick={loadData}>
-            <RefreshCcw className="w-4 h-4 mr-2 text-gold" /> Làm mới
+            <RefreshCcw className="w-4 h-4 mr-2 text-gold" /> {t('buttons.refresh')}
           </Button>
           {!isAdmin && (
             <Button
@@ -405,7 +394,7 @@ export const AdminReturnManagement = ({
                 setPosSelectedItems({});
               }}
             >
-              <RotateCcw className="w-4 h-4 mr-2" /> Tạo hoàn trả POS
+              <RotateCcw className="w-4 h-4 mr-2" /> {t('buttons.create_pos')}
             </Button>
           )}
         </div>
@@ -416,17 +405,17 @@ export const AdminReturnManagement = ({
           <TabsList className="bg-background/40 glass border border-gold/10 p-1 w-full max-w-[450px] mx-auto sm:mx-0 grid grid-cols-3">
             <TabsTrigger value="all" className="data-[state=active]:bg-gold/20 data-[state=active]:text-gold">
               <Box className="w-4 h-4 mr-2" /> 
-              Tất cả
+              {t('tabs.all')}
               <Badge variant="secondary" className="ml-2 bg-background/50 text-[10px] py-0">{counts.all}</Badge>
             </TabsTrigger>
             <TabsTrigger value="online" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400">
               <Globe className="w-4 h-4 mr-2" /> 
-              Trực tuyến
+              {t('tabs.online')}
               <Badge variant="secondary" className="ml-2 bg-background/50 text-[10px] py-0">{counts.online}</Badge>
             </TabsTrigger>
             <TabsTrigger value="pos" className="data-[state=active]:bg-rose-500/20 data-[state=active]:text-rose-400">
               <Store className="w-4 h-4 mr-2" /> 
-              Tại Quầy
+              {t('tabs.pos')}
               <Badge variant="secondary" className="ml-2 bg-background/50 text-[10px] py-0">{counts.pos}</Badge>
             </TabsTrigger>
           </TabsList>
@@ -436,14 +425,14 @@ export const AdminReturnManagement = ({
           <Table>
             <TableHeader>
               <TableRow className="border-gold/10 hover:bg-transparent bg-background/20 font-medium">
-                <TableHead className="w-[120px]">Nguồn</TableHead>
-                <TableHead className="w-[140px]">Mã Yêu Cầu</TableHead>
-                <TableHead className="w-[140px]">Mã Đơn</TableHead>
-                <TableHead className="w-[120px]">Ngày tạo</TableHead>
-                <TableHead>Lý do</TableHead>
-                <TableHead className="w-[180px]">Vận chuyển</TableHead>
-                <TableHead className="w-[180px]">Trạng thái</TableHead>
-                <TableHead className="text-right w-[160px]">Hành động</TableHead>
+                <TableHead className="w-[120px]">{t('table.source')}</TableHead>
+                <TableHead className="w-[140px]">{t('table.id')}</TableHead>
+                <TableHead className="w-[140px]">{t('table.order_id')}</TableHead>
+                <TableHead className="w-[120px]">{t('table.date')}</TableHead>
+                <TableHead>{t('table.reason')}</TableHead>
+                <TableHead className="w-[180px]">{t('table.shipping')}</TableHead>
+                <TableHead className="w-[180px]">{t('table.status')}</TableHead>
+                <TableHead className="text-right w-[160px]">{t('table.actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -452,7 +441,7 @@ export const AdminReturnManagement = ({
                   <TableCell colSpan={8} className="text-center py-12">
                     <div className="flex flex-col items-center justify-center space-y-3">
                       <RefreshCcw className="w-8 h-8 animate-spin text-gold/50" />
-                      <p className="text-muted-foreground text-sm">Đang đồng bộ dữ liệu...</p>
+                      <p className="text-muted-foreground text-sm">{t('table.syncing')}</p>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -461,7 +450,7 @@ export const AdminReturnManagement = ({
                   <TableCell colSpan={8} className="text-center py-16">
                     <div className="flex flex-col items-center justify-center space-y-3">
                       <Box className="w-12 h-12 text-muted-foreground/30" />
-                      <p className="text-muted-foreground">Không tìm thấy yêu cầu trả hàng nào trong mục này</p>
+                      <p className="text-muted-foreground">{t('table.no_returns')}</p>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -492,7 +481,7 @@ export const AdminReturnManagement = ({
                       {new Date((req as any).createdAt).toLocaleDateString("vi-VN")}
                     </TableCell>
                     <TableCell className="max-w-[200px] truncate text-sm">
-                      {req.reason || <span className="text-muted-foreground/50 italic">Không có lý do</span>}
+                      {req.reason || <span className="text-muted-foreground/50 italic">{t('table.no_reason')}</span>}
                     </TableCell>
                     <TableCell>
                       {req.shipments && req.shipments.length > 0 ? (
@@ -527,12 +516,12 @@ export const AdminReturnManagement = ({
                           })}
                         </div>
                       ) : (
-                        <span className="text-[10px] text-muted-foreground/40 italic">Chưa có vận đơn</span>
+                        <span className="text-[10px] text-muted-foreground/40 italic">{t('table.no_shipment')}</span>
                       )}
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className={`${getStatusColor(req.status)} text-[10px] px-2 py-0.5 tracking-wide`}>
-                        {getStatusLabel(req.status)}
+                        {getStatusLabel(req.status, t)}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right space-x-2">
@@ -552,7 +541,7 @@ export const AdminReturnManagement = ({
                               setIsReviewOpen(true);
                             }}
                           >
-                            <Check className="w-3.5 h-3.5 mr-1" /> Duyệt
+                            <Check className="w-3.5 h-3.5 mr-1" /> {t('buttons.approve')}
                           </Button>
                         )}
 
@@ -564,12 +553,12 @@ export const AdminReturnManagement = ({
                           className="h-8 text-red-500/80 hover:text-red-500 hover:bg-red-500/10"
                           onClick={(e) => {
                             e.stopPropagation();
-                            if (window.confirm("Bạn có chắc chắn muốn hủy yêu cầu trả hàng này?")) {
+                            if (window.confirm(t('toasts.confirm_cancel'))) {
                                handleCancel(req.id);
                             }
                           }}
                         >
-                          <X className="w-3.5 h-3.5 mr-1" /> Hủy
+                          <X className="w-3.5 h-3.5 mr-1" /> {t('buttons.cancel')}
                         </Button>
                       )}
 
@@ -585,7 +574,7 @@ export const AdminReturnManagement = ({
                           }}
                           className="h-8 bg-teal-600/90 hover:bg-teal-500 text-white shadow-md shadow-teal-900/20"
                         >
-                          <Box className="w-3.5 h-3.5 mr-1" /> {req.origin === "POS" ? "Nhận Quầy" : "Nhận Kho"}
+                          <Box className="w-3.5 h-3.5 mr-1" /> {req.origin === "POS" ? t('buttons.receive_pos') : t('buttons.receive_wh')}
                         </Button>
                       )}
                       
@@ -601,7 +590,7 @@ export const AdminReturnManagement = ({
                           }}
                           className="h-8 bg-indigo-600/90 hover:bg-indigo-500 text-white shadow-md shadow-indigo-900/20"
                         >
-                          <CreditCard className="w-3.5 h-3.5 mr-1" /> Hoàn tiền
+                          <CreditCard className="w-3.5 h-3.5 mr-1" /> {t('buttons.refund')}
                         </Button>
                       )}
                     </TableCell>
@@ -617,20 +606,20 @@ export const AdminReturnManagement = ({
       <Dialog open={isReviewOpen} onOpenChange={setIsReviewOpen}>
         <DialogContent className="glass border-gold/30 sm:max-w-3xl max-h-[90vh] flex flex-col shadow-2xl rounded-2xl overflow-hidden p-0">
           <DialogHeader className="border-b border-border/50 px-6 pt-6 pb-4 bg-background/80 backdrop-blur-md">
-            <DialogTitle className="text-xl text-gold pb-1 border-b border-gold/10 inline-block">Xét duyệt Yêu cầu Đổi Trả</DialogTitle>
+            <DialogTitle className="text-xl text-gold pb-1 border-b border-gold/10 inline-block">{t('dialogs.review_title')}</DialogTitle>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar space-y-6">
             <div className="bg-background/40 p-4 rounded-xl border border-border/50 flex flex-col sm:flex-row justify-between gap-4">
                <div>
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Mã Yêu Cầu</p>
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">{t('dialogs.request_id')}</p>
                   <strong className="font-mono text-foreground text-lg">{selectedReturn?.id.substring(0,8)}</strong>
                </div>
                <div>
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Mã Đơn Hàng</p>
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">{t('dialogs.order_id')}</p>
                   <strong className="font-mono text-foreground text-lg">{selectedReturn?.orderId.substring(0,8)}</strong>
                </div>
                <div>
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Nguồn</p>
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">{t('dialogs.source')}</p>
                   <Badge variant="outline" className={selectedReturn?.origin === "POS" ? "border-rose-500/30 text-rose-400 bg-rose-500/10" : "border-cyan-500/30 text-cyan-400 bg-cyan-500/10"}>
                      {selectedReturn?.origin === "POS" ? "POS" : "Online"}
                   </Badge>
@@ -639,12 +628,12 @@ export const AdminReturnManagement = ({
 
             {/* Refund Total Info */}
             <div className="flex items-center space-x-2 text-sm text-muted-foreground bg-gold/5 p-3 rounded-lg border border-gold/10">
-              <span className="text-gold font-medium">Lý do chung:</span> 
-              <span>{selectedReturn?.reason || "Không có lý do chung"}</span>
+              <span className="text-gold font-medium">{t('dialogs.reason_general')}</span> 
+              <span>{selectedReturn?.reason || t('dialogs.no_reason_general')}</span>
             </div>
 
             <div>
-               <h3 className="text-sm font-semibold text-foreground mb-3 uppercase tracking-wider border-b border-border/50 pb-2">Chi tiết sản phẩm cần trả</h3>
+               <h3 className="text-sm font-semibold text-foreground mb-3 uppercase tracking-wider border-b border-border/50 pb-2">{t('dialogs.product_details')}</h3>
                <div className="space-y-4">
                   {selectedReturn?.items.map((item, idx) => (
                     <div key={item.id} className="bg-background/30 border border-border/50 rounded-xl p-4 transition-all hover:border-gold/20">
@@ -659,7 +648,7 @@ export const AdminReturnManagement = ({
                                      {item.variant?.product?.name || "Sản phẩm không xác định"}
                                   </p>
                                   <p className="text-xs text-muted-foreground mt-0.5">
-                                    Variant: <span className="font-mono text-gold/80">{item.variantId.substring(0,8).toUpperCase()}</span> 
+                                    {t('dialogs.variant')} <span className="font-mono text-gold/80">{item.variantId.substring(0,8).toUpperCase()}</span> 
                                     {item.variant?.volume && ` • ${item.variant.volume}`}
                                   </p>
                                 </div>
@@ -670,7 +659,7 @@ export const AdminReturnManagement = ({
                        {/* Evidence display */}
                        {item.images && item.images.length > 0 && (
                           <div className="mt-4">
-                             <p className="text-xs text-muted-foreground mb-2">Bằng chứng đổi trả ({item.images.length} tệp):</p>
+                             <p className="text-xs text-muted-foreground mb-2">{t('dialogs.evidence', { count: item.images.length })}</p>
                              <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-2">
                                 {item.images.map((url, iIndex) => {
                                    const isVideo = url.match(/\.(mp4|webm|mov)$/i) || url.includes("res.cloudinary.com/perfume-gpt/video") || url.includes("returns/videos");
@@ -695,13 +684,13 @@ export const AdminReturnManagement = ({
 
             <div className="space-y-3 pt-4 border-t border-border/50">
                <h3 className="text-xs font-semibold text-foreground flex items-center gap-2 uppercase tracking-wider">
-                  <RotateCcw className="w-3 h-3 text-gold" /> Nhật ký xử lý
+                  <RotateCcw className="w-3 h-3 text-gold" /> {t('dialogs.audit_log')}
                </h3>
                <div className="bg-black/20 rounded-xl border border-border/50 overflow-hidden">
                   {auditsLoading ? (
                     <div className="p-4 flex justify-center"><Loader2 className="w-4 h-4 animate-spin text-gold/50" /></div>
                   ) : audits.length === 0 ? (
-                    <div className="p-4 text-center text-[10px] text-muted-foreground italic">Chưa có nhật ký hoạt động</div>
+                    <div className="p-4 text-center text-[10px] text-muted-foreground italic">{t('dialogs.no_audit')}</div>
                   ) : (
                     <div className="max-h-40 overflow-y-auto custom-scrollbar">
                        {audits.map((a, idx) => (
@@ -715,7 +704,7 @@ export const AdminReturnManagement = ({
                                </p>
                                {a.payload?.message && <p className="text-[9px] text-muted-foreground italic">{a.payload.message}</p>}
                                {a.payload?.orderCode && (
-                                 <p className="text-[9px] text-cyan-400 font-mono mt-0.5">Vận đơn: {a.payload.orderCode}</p>
+                                 <p className="text-[9px] text-cyan-400 font-mono mt-0.5">{t('dialogs.tracking_label')} {a.payload.orderCode}</p>
                                )}
                             </div>
                             <span className="text-[9px] text-muted-foreground font-mono">{new Date(a.createdAt).toLocaleString('vi-VN')}</span>
@@ -728,14 +717,14 @@ export const AdminReturnManagement = ({
 
             <div className="space-y-2 pt-4 border-t border-border/50">
               <label className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
-                Ghi chú hoặc Phản hồi cho {selectedReturn?.origin === "POS" ? "Staff" : "khách"} (nếu từ chối)
+                {t('dialogs.note_label', { target: selectedReturn?.origin === "POS" ? "Staff" : "khách" })}
               </label>
               <Input
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 placeholder={selectedReturn?.origin === "POS" 
-                  ? "Nhập ghi chú hoặc lý do chi tiết để phản hồi lại cho nhân viên tại quầy..." 
-                  : "Nhập ghi chú hoặc lý do chi tiết để thông báo lại khách hàng..."
+                  ? t('dialogs.note_placeholder_staff') 
+                  : t('dialogs.note_placeholder_customer')
                 }
                 className="bg-background/50 border-gold/20 h-11 focus-visible:ring-gold/30"
               />
@@ -747,13 +736,13 @@ export const AdminReturnManagement = ({
               onClick={() => handleReview("reject")}
               className="gap-2 border-red-500/30 text-red-500 hover:bg-red-500 hover:text-white transition-colors"
             >
-              <X className="w-4 h-4" /> Bác bỏ Yêu cầu
+              <X className="w-4 h-4" /> {t('dialogs.btn_reject')}
             </Button>
             <Button
               onClick={() => handleReview("approve")}
               className="gap-2 bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/20"
             >
-              <Check className="w-4 h-4" /> Chấp nhận & Cho phép Gửi Hàng
+              <Check className="w-4 h-4" /> {t('dialogs.btn_approve')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -763,17 +752,17 @@ export const AdminReturnManagement = ({
       <Dialog open={isReceiveOpen} onOpenChange={setIsReceiveOpen}>
         <DialogContent className="glass border-gold/30 sm:max-w-md shadow-2xl rounded-2xl">
           <DialogHeader className="border-b border-border/50 pb-4">
-            <DialogTitle className="text-xl text-teal-400 font-semibold">Xác nhận Nhận Hàng</DialogTitle>
+            <DialogTitle className="text-xl text-teal-400 font-semibold">{t('dialogs.receive_title')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-5 py-4">
             <div className="bg-teal-500/10 p-4 rounded-xl border border-teal-500/20">
               <p className="text-sm text-teal-200/80 leading-relaxed">
-                 Hệ thống sẽ cập nhật kho {selectedReturn?.origin === "POS" ? "tại quầy (POS)" : "cho cửa hàng chính"} và đánh dấu quy trình hoàn trả hàng bước vào giai đoạn hoàn tiền. Nếu hàng bị bóc seal, yêu cầu sẽ tự động bị TỪ CHỐI (Không hoàn tiền).
+                 {t('dialogs.receive_desc', { target: selectedReturn?.origin === "POS" ? t('tabs.pos') : t('tabs.online') })}
               </p>
             </div>
 
             <div className="space-y-3">
-               <label className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Tình trạng Sản phẩm Nhận về</label>
+               <label className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">{t('dialogs.receive_condition')}</label>
                {selectedReturn?.items.map((item) => (
                   <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between bg-black/20 p-3 rounded-xl border border-border/50 gap-3">
                      <div className="flex items-center gap-3">
@@ -797,7 +786,7 @@ export const AdminReturnManagement = ({
                      
                      <div className="flex items-center space-x-4">
                        <div className="flex items-center gap-2 bg-background/50 px-2 py-1.5 rounded-lg border border-border">
-                         <label className="text-[10px] text-muted-foreground uppercase font-bold">Thực nhận:</label>
+                         <label className="text-[10px] text-muted-foreground uppercase font-bold">{t('dialogs.actual_receive')}</label>
                          <input 
                            type="number"
                            min="0"
@@ -842,7 +831,7 @@ export const AdminReturnManagement = ({
                              }}
                           />
                           <span className={`text-sm font-semibold ${receiveItemsState[item.variantId]?.sealIntact !== false ? 'text-teal-400' : 'text-red-400'}`}>
-                             {receiveItemsState[item.variantId]?.sealIntact !== false ? 'Nguyên seal' : 'Lỗi/Hư'}
+                             {receiveItemsState[item.variantId]?.sealIntact !== false ? t('dialogs.seal_intact') : t('dialogs.seal_broken')}
                           </span>
                        </div>
                      </div>
@@ -852,25 +841,25 @@ export const AdminReturnManagement = ({
 
             <div className="space-y-2">
               <label className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
-                Ghi chú tình trạng hàng nhập kho
+                {t('dialogs.note_label_receive')}
               </label>
               <Input
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                placeholder="Ví dụ: Đã kiểm tra nguyên seal..."
+                placeholder={t('dialogs.note_placeholder_receive')}
                 className="bg-background/50 border-gold/20 h-11"
               />
             </div>
           </div>
           <DialogFooter className="pt-2">
             <Button variant="ghost" onClick={() => setIsReceiveOpen(false)}>
-              Hủy
+              {t('dialogs.btn_cancel')}
             </Button>
             <Button
               onClick={handleReceive}
               className="bg-teal-600 hover:bg-teal-500 shadow-lg shadow-teal-900/30"
             >
-              <Box className="w-4 h-4 mr-2" /> Nhập Kho Thành Công
+              <Box className="w-4 h-4 mr-2" /> {t('dialogs.btn_receive_success')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -880,7 +869,7 @@ export const AdminReturnManagement = ({
       <Dialog open={isRefundOpen} onOpenChange={setIsRefundOpen}>
         <DialogContent className="glass border-indigo-500/30 sm:max-w-md shadow-2xl rounded-2xl">
           <DialogHeader className="border-b border-border/50 pb-4">
-            <DialogTitle className="text-xl text-indigo-400">Xác Nhận Hoàn Đơn Hàng</DialogTitle>
+            <DialogTitle className="text-xl text-indigo-400">{t('dialogs.refund_title')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4 px-1 max-h-[70vh] overflow-y-auto custom-scrollbar">
             <div className="bg-indigo-500/10 border border-indigo-500/20 p-3 rounded-xl flex items-baseline justify-between">
@@ -888,13 +877,13 @@ export const AdminReturnManagement = ({
                   Đơn hàng: <strong className="font-mono text-white">{selectedReturn?.orderId.substring(0, 8)}</strong>
                </p>
                {selectedReturn?.origin === "ONLINE" && (
-                 <Badge className="bg-cyan-500/20 text-cyan-400 border-none text-[8px] h-4">Trực Tuyến</Badge>
+                 <Badge className="bg-cyan-500/20 text-cyan-400 border-none text-[8px] h-4">{t('tabs.online')}</Badge>
                )}
             </div>
 
              <div className="space-y-3">
               <label className="text-xs uppercase tracking-wider font-semibold text-muted-foreground block">
-                Phương thức hoàn tiền thực tế
+                {t('dialogs.refund_method')}
               </label>
                <div className={cn("grid gap-3", selectedReturn?.origin === "ONLINE" ? "grid-cols-1" : "grid-cols-2")}>
                 {selectedReturn?.origin !== "ONLINE" && (
@@ -907,7 +896,7 @@ export const AdminReturnManagement = ({
                     }`}
                   >
                     <Banknote className="w-4 h-4" />
-                    <span className="text-sm font-medium">Tiền mặt</span>
+                    <span className="text-sm font-medium">{t('dialogs.cash')}</span>
                   </button>
                 )}
                 <button
@@ -919,7 +908,7 @@ export const AdminReturnManagement = ({
                   }`}
                 >
                   <CreditCard className="w-4 h-4" />
-                  <span className="text-sm font-medium">Chuyển khoản</span>
+                  <span className="text-sm font-medium">{t('dialogs.bank_transfer')}</span>
                 </button>
               </div>
             </div>
@@ -927,7 +916,7 @@ export const AdminReturnManagement = ({
             {/* Refund Amount Info */}
             <div className="bg-indigo-500/10 border border-indigo-500/30 p-3 rounded-xl flex justify-between items-center group">
                <div>
-                  <p className="text-[9px] uppercase tracking-widest text-indigo-300/70 font-bold mb-0.5">Tiền hoàn trả</p>
+                  <p className="text-[9px] uppercase tracking-widest text-indigo-300/70 font-bold mb-0.5">{t('dialogs.refund_amount')}</p>
                   <p className="text-xl font-heading font-bold text-indigo-400 group-hover:text-indigo-300 transition-colors leading-none">
                     {formatVND(selectedReturn?.refundAmount || 0)}
                   </p>
@@ -947,7 +936,7 @@ export const AdminReturnManagement = ({
             {refundMethod === "bank_transfer" && selectedReturn?.paymentInfo && (
               <div className="bg-black/20 border border-white/5 rounded-xl p-3 space-y-2 animate-in fade-in slide-in-from-top-2">
                  <div className="flex justify-between items-center border-b border-white/5 pb-1.5">
-                    <h4 className="text-[10px] font-bold text-indigo-300 uppercase tracking-widest">Thông tin thụ hưởng</h4>
+                    <h4 className="text-[10px] font-bold text-indigo-300 uppercase tracking-widest">{t('dialogs.bank_info')}</h4>
                     <Button 
                       variant="ghost" 
                       size="sm" 
@@ -956,23 +945,23 @@ export const AdminReturnManagement = ({
                         const info = selectedReturn.paymentInfo as any;
                         const text = `STK: ${info.accountNumber}\nNH: ${info.bankName}\nTen: ${info.accountName}`;
                         navigator.clipboard.writeText(text);
-                        toast.success("Đã sao chép thông tin tài khoản");
+                        toast.success(t('toasts.copied'));
                       }}
                     >
-                      <RefreshCcw className="w-3 h-3 mr-1" /> Sao chép
+                      <RefreshCcw className="w-3 h-3 mr-1" /> {t('buttons.copy')}
                     </Button>
                  </div>
                  <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-[11px]">
                     <div>
-                       <p className="text-[8px] text-muted-foreground uppercase font-semibold">Ngân hàng</p>
+                       <p className="text-[8px] text-muted-foreground uppercase font-semibold">{t('dialogs.bank_name')}</p>
                        <p className="font-semibold text-foreground italic">{(selectedReturn.paymentInfo as any).bankName}</p>
                     </div>
                     <div>
-                       <p className="text-[8px] text-muted-foreground uppercase font-semibold">Số tài khoản</p>
+                       <p className="text-[8px] text-muted-foreground uppercase font-semibold">{t('dialogs.account_number')}</p>
                        <p className="font-mono font-bold text-indigo-400">{(selectedReturn.paymentInfo as any).accountNumber}</p>
                     </div>
                     <div className="col-span-2">
-                       <p className="text-[8px] text-muted-foreground uppercase font-semibold">Chủ tài khoản</p>
+                       <p className="text-[8px] text-muted-foreground uppercase font-semibold">{t('dialogs.account_holder')}</p>
                        <p className="font-semibold text-foreground uppercase">{(selectedReturn.paymentInfo as any).accountName}</p>
                     </div>
                  </div>
@@ -983,7 +972,7 @@ export const AdminReturnManagement = ({
               {refundMethod === "bank_transfer" && (
                 <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
                   <label className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground block mb-1">
-                    Ảnh Hóa Đơn (Nếu có)
+                    {t('dialogs.refund_receipt')}
                   </label>
                   <Input
                     type="file"
@@ -994,7 +983,7 @@ export const AdminReturnManagement = ({
                   />
                   {isUploadingReceipt && (
                     <div className="flex items-center text-xs text-indigo-400 mt-2 font-medium">
-                      <Loader2 className="w-3 h-3 mr-2 animate-spin" /> Đang tải ảnh lên...
+                      <Loader2 className="w-3 h-3 mr-2 animate-spin" /> {t('dialogs.uploading')}
                     </div>
                   )}
                   {receiptImageUrl && !isUploadingReceipt && (
@@ -1016,20 +1005,18 @@ export const AdminReturnManagement = ({
                   <div className="bg-emerald-500/20 p-2 rounded-lg self-start">
                      <Banknote className="w-4 h-4 text-emerald-400" />
                   </div>
-                  <p className="text-xs text-emerald-200/80 leading-relaxed">
-                    Xác nhận hoàn tiền bằng <strong>tiền mặt</strong> trực tiếp tại quầy. Nhân viên vui lòng kiểm tra kỹ số tiền trả cho khách hàng.
-                  </p>
+                    {t('dialogs.cash_refund_desc')}
                 </div>
               )}
 
               <div className="space-y-2 pt-2">
                 <label className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
-                  Ghi chú (Tùy chọn)
+                  {t('dialogs.refund_note')}
                 </label>
                 <Input
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
-                  placeholder={refundMethod === "cash" ? "Ví dụ: Đã trả tiền mặt cho khách..." : "Ví dụ: Mã giao dịch hoặc ghi chú hoàn tiền..."}
+                  placeholder={refundMethod === "cash" ? t('dialogs.refund_note_placeholder_cash') : t('dialogs.refund_note_placeholder_bank')}
                   className="bg-background/50 border-indigo-500/20 h-11 focus-visible:ring-indigo-500"
                 />
               </div>
@@ -1037,13 +1024,13 @@ export const AdminReturnManagement = ({
           </div>
           <DialogFooter className="pt-2">
             <Button variant="ghost" onClick={() => setIsRefundOpen(false)}>
-              Hủy
+              {t('dialogs.btn_cancel')}
             </Button>
             <Button
               onClick={handleRefund}
               className="bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-900/30"
             >
-              <CreditCard className="w-4 h-4 mr-2" /> Xác Nhận Hoàn Tiền
+              <CreditCard className="w-4 h-4 mr-2" /> {t('dialogs.btn_refund')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1055,7 +1042,7 @@ export const AdminReturnManagement = ({
           <DialogHeader className="px-6 pt-6 pb-2 border-b border-border/50">
             <DialogTitle className="text-2xl text-gold pb-2 flex items-center">
                <Store className="w-6 h-6 mr-3 text-gold/70" />
-               Khởi tạo Yêu cầu Đổi Trả Quầy (POS)
+               {t('pos.title')}
             </DialogTitle>
           </DialogHeader>
           
@@ -1063,7 +1050,7 @@ export const AdminReturnManagement = ({
             <div className="relative group">
                <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-gold transition-colors" />
                <Input
-                 placeholder="Nhập mã đơn khách mua (VD: ORD-...) hoặc Quét Barcode..."
+                 placeholder={t('pos.search_placeholder')}
                  value={posSearchKey}
                  onChange={(e) => setPosSearchKey(e.target.value)}
                  onKeyDown={(e) => e.key === "Enter" && handlePosOrderSearch()}
@@ -1075,7 +1062,7 @@ export const AdminReturnManagement = ({
                   disabled={posLoading}
                   className="absolute right-2 top-1/2 -translate-y-1/2 h-10 w-24 bg-gold/10 text-gold hover:bg-gold hover:text-black border border-gold/20"
                >
-                 {posLoading ? "Đang tìm..." : "Kiểm tra"}
+                 {posLoading ? t('pos.searching') : t('pos.verify_btn')}
                </Button>
             </div>
           </div>
@@ -1084,7 +1071,7 @@ export const AdminReturnManagement = ({
             {posLoading && (
               <div className="flex flex-col justify-center items-center h-40 space-y-4">
                  <div className="w-8 h-8 rounded-full border-2 border-gold/30 border-t-gold animate-spin" />
-                 <p className="text-muted-foreground animate-pulse">Đang truy xuất hệ thống...</p>
+                 <p className="text-muted-foreground animate-pulse">{t('pos.loading')}</p>
               </div>
             )}
 
@@ -1094,7 +1081,7 @@ export const AdminReturnManagement = ({
                   <div className="flex justify-between items-start mb-2">
                      <div>
                         <p className="text-xs uppercase tracking-[0.2em] text-gold font-semibold mb-1">
-                          Thông tin giao dịch
+                          {t('pos.order_info')}
                         </p>
                         <p className="font-mono text-xl text-foreground">
                           {posOrder.code || posOrder.id.substring(0, 8)}
@@ -1106,13 +1093,13 @@ export const AdminReturnManagement = ({
                   </div>
                   <div className="flex items-center text-sm mt-3 text-muted-foreground bg-background/40 inline-flex px-3 py-1.5 rounded-lg border border-border/50">
                     <span className="w-2 h-2 rounded-full bg-gold mr-2" />
-                    Khách: <strong className="text-foreground ml-1">{posOrder.user?.fullName || posOrder.user?.email || "Khách mua lẻ"}</strong>
+                    {t('pos.customer_label')} <strong className="text-foreground ml-1">{posOrder.user?.fullName || posOrder.user?.email || t('pos.guest')}</strong>
                   </div>
                 </div>
 
                 <div>
                   <label className="text-sm font-semibold mb-3 block text-foreground flex items-center">
-                    <Box className="w-4 h-4 mr-2 text-gold" /> Chọn sản phẩm đổi trả
+                    <Box className="w-4 h-4 mr-2 text-gold" /> {t('pos.select_items')}
                   </label>
                   <div className="space-y-3">
                     {posOrder.items.map((item) => {
@@ -1128,11 +1115,11 @@ export const AdminReturnManagement = ({
                             </p>
                             {item.variant && (
                               <p className="text-xs text-muted-foreground mt-0.5">
-                                Loại: <span className="text-foreground/80">{item.variant.name}</span>
+                                {t('pos.variant')}: <span className="text-foreground/80">{item.variant.name}</span>
                               </p>
                             )}
                             <Badge variant="outline" className="mt-2 text-[10px] bg-background">
-                              SL Đã mua: {item.quantity}
+                              {t('pos.qty_bought')}: {item.quantity}
                             </Badge>
                           </div>
                           
@@ -1175,12 +1162,12 @@ export const AdminReturnManagement = ({
 
                 <div>
                   <label className="text-sm font-semibold mb-3 block text-foreground">
-                    Lý do nhận lại (Bắt buộc)
+                    {t('pos.reason_label')}
                   </label>
                   <Input
                     value={posReason}
                     onChange={(e) => setPosReason(e.target.value)}
-                    placeholder="Ghi nhận tình trạng: Hàng bể vỡ, Bao bì móp, Khách đổi ý..."
+                    placeholder={t('pos.reason_placeholder')}
                     className="bg-black/40 border-gold/20 h-12 rounded-xl focus-visible:ring-gold/30"
                   />
                 </div>
@@ -1190,14 +1177,14 @@ export const AdminReturnManagement = ({
 
           <DialogFooter className="p-6 bg-background/80 border-t border-border/50 backdrop-blur-md">
             <Button variant="ghost" onClick={() => setIsPosCreateOpen(false)} className="rounded-xl h-11">
-              Hủy
+              {t('pos.btn_cancel')}
             </Button>
             <Button
               onClick={handlePosSubmit}
               disabled={!posOrder || posSubmitting}
               className="bg-gold hover:bg-gold/90 text-primary-foreground shadow-lg shadow-gold/20 rounded-xl px-8 h-11 text-base font-medium"
             >
-              {posSubmitting ? "Đang đẩy yêu cầu..." : "Khởi tạo Yêu cầu"}
+              {posSubmitting ? t('pos.submitting') : t('pos.btn_submit')}
             </Button>
           </DialogFooter>
         </DialogContent>
