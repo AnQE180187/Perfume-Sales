@@ -3,7 +3,9 @@ import { MutableRefObject, useLayoutEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { UIMatch, useMatches } from "react-router-dom";
 import { cartState, cartTotalState } from "@/state";
+import { paymentMethodState } from "@/pages/cart/payment-method";
 import { Cart, CartItem, Product, SelectedOptions } from "@/types";
+import axiosClient from "@/services/axiosClient";
 import { getDefaultOptions, isIdentical } from "@/utils/cart";
 import { getConfig } from "@/utils/template";
 import { openChat, purchase } from "zmp-sdk";
@@ -121,23 +123,59 @@ export function useToBeImplemented() {
 
 export function useCheckout() {
   const { totalAmount } = useAtomValue(cartTotalState);
-  const setCart = useSetAtom(cartState);
+  const paymentMethod = useAtomValue(paymentMethodState);
+  const [cart, setCart] = useAtom(cartState);
+  const [isLoading, setIsLoading] = useState(false);
+
   return async () => {
     try {
-      await purchase({
-        amount: totalAmount,
-        desc: "Thanh toán đơn hàng",
-        method: "",
+      setIsLoading(true);
+      
+      // 1. Sync cart up to Backend
+      for (const item of cart) {
+        let variantId = item.product.variants?.[0]?.id;
+        if (item.options?.size && item.product.variants) {
+           const match = item.product.variants.find((v: any) => v.label === item.options.size || `${v.volume}ml` === item.options.size);
+           if (match) variantId = match.id;
+        }
+
+        if (!variantId) {
+           // fallback if missing variant
+           variantId = item.product.variants?.[0]?.id;
+        }
+        
+        if (variantId) {
+          await axiosClient.post("/cart/items", {
+            variantId,
+            quantity: item.quantity
+          });
+        }
+      }
+
+      // 2. Place Order
+      const res = await axiosClient.post("/orders", {
+         paymentMethod: paymentMethod === "PAYOS" ? "ONLINE" : "COD",
+         shippingAddress: "Zalo Mini App Address"
       });
-      toast.success("Thanh toán thành công. Cảm ơn bạn đã mua hàng!", {
-        icon: "🎉",
-      });
-      setCart([]);
+
+      if (paymentMethod === "PAYOS") {
+        toast.success("Đang chuyển hướng sang trang thanh toán QR...");
+        // Thực tế backend sẽ trả về payosUrl
+        if (res.data?.paymentUrl) {
+           window.location.href = res.data.paymentUrl;
+        }
+      } else {
+        toast.success("Đặt hàng thành công bằng COD. Cảm ơn bạn!", {
+          icon: "🎉",
+        });
+        setCart([]);
+      }
     } catch (error) {
       toast.error(
-        "Thanh toán thất bại. Vui lòng kiểm tra nội dung lỗi bên trong Console."
+        "Đặt hàng thất bại. Vui lòng kiểm tra nội dung lỗi."
       );
-      console.warn(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 }

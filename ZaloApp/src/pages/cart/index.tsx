@@ -6,6 +6,7 @@ import { useAtomValue } from "jotai";
 import { cartState } from "@/state";
 import { EmptyBoxIcon } from "@/components/vectors";
 import SelectAll from "./select-all";
+import PaymentMethod from "./payment-method";
 
 export default function CartPage() {
   const cart = useAtomValue(cartState);
@@ -27,6 +28,8 @@ export default function CartPage() {
       <CartList />
       <HorizontalDivider />
       <ApplyVoucher />
+      <HorizontalDivider />
+      <PaymentMethod />
       <HorizontalDivider />
       <CartSummary />
     </div>
