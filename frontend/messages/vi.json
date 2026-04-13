@@ -50,7 +50,7 @@
     "register": "Đăng Ký",
     "logout": "Đăng Xuất",
     "home": "Trang Chủ",
-    "collection": "Sổ Định Danh",
+    "collection": "Bộ Sưu Tập",
     "about": "Về Chúng Tôi",
     "contact": "Liên Hệ",
     "cta_discover": "Bắt Đầu Hành Trình",
@@ -68,7 +68,7 @@
     "settings": "Cài Đặt",
     "dashboard": "Bảng Điều Khiển",
     "and": "và",
-    "boutiques": "Cửa Hàng",
+    "boutiques": "Thương Hiệu",
     "journal": "Tạp Chí",
     "view_profile": "Xem Hồ Sơ Của Bạn",
     "my_profile": "Hồ Sơ Của Tôi",
@@ -124,7 +124,7 @@
   "navigation": {
     "customer": {
       "ai_chat": "Tư vấn AI",
-      "quiz": "Kết quả Trắc nghiệm",
+      "quiz": "Trắc nghiệm nước hoa",
       "recommendations": "Gợi Ý Từ AI",
       "history": "Lịch sử giao dịch",
       "loyalty": "Điểm thưởng",
@@ -162,8 +162,8 @@
     }
   },
   "hero": {
-    "badge": "Dịch Vụ Quản Gia",
-    "title": "Quản Lý Đơn Hàng",
+    "badge": "Haute Parfumerie",
+    "title": "Linh Hồn Nước Hoa",
     "subtitle": "Bạn càng khám phá nhiều, mối liên hệ của bạn với House càng sâu sắc.",
     "cta": "Khởi Tạo Tư Cách Thành Viên",
     "explore": "Khám phá module →",
@@ -321,7 +321,7 @@
   "quiz": {
     "intro": {
       "label": "Khám phá Khứu giác",
-      "title": "Quản Lý Đơn Hàng",
+      "title": "Khám Phá Mùi Hương Của Bạn",
       "description": "Sự phù hợp thần kinh được xác minh chính xác 98,4% trên tất cả các chiều không gian khứu giác.",
       "start_btn": "Bắt đầu Khám phá",
       "login_btn": "Đăng nhập để Bắt đầu",
