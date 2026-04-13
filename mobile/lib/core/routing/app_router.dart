@@ -15,17 +15,22 @@ import '../../features/orders/presentation/orders_screen.dart';
 import '../../features/orders/presentation/order_detail_screen.dart';
 import '../../features/orders/presentation/screens/track_order_screen.dart';
 import '../../features/orders/presentation/screens/return_order_screen.dart';
+import '../../features/orders/presentation/screens/return_detail_screen.dart';
 import '../../features/payment/presentation/payment_method_screen.dart';
 import '../../features/payment/presentation/payment_result_screen.dart';
 import '../../features/payment/presentation/screens/payment_method_screen.dart';
 import '../../features/address/presentation/screens/address_management_screen.dart';
 import '../../features/profile/presentation/screens/profile_edit_screen.dart';
+import '../../features/profile/presentation/screens/ai_preferences_screen.dart';
 import '../../features/search/presentation/search_screen.dart';
 import '../../features/wishlist/presentation/wishlist_screen.dart';
 import '../../features/product/presentation/explore_screen.dart';
 import '../../features/product/presentation/product_detail_screen.dart';
 import '../../features/product/presentation/reviews_screen.dart';
+import '../../features/product/presentation/product_story_screen.dart';
 import '../../features/loyalty/presentation/loyalty_screen.dart';
+import '../../features/home/presentation/screens/brand_story_screen.dart';
+import '../../features/quiz/presentation/quiz_screen.dart';
 import '../../features/staff/staff_shell.dart';
 import '../widgets/main_shell.dart';
 
@@ -147,6 +152,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
+        path: '/returns/:id',
+        builder: (context, state) {
+          final returnId = state.pathParameters['id']!;
+          return ReturnDetailScreen(returnId: returnId);
+        },
+      ),
+      GoRoute(
         path: '/shipping-addresses',
         builder: (context, state) => const AddressManagementScreen(),
       ),
@@ -209,6 +221,19 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
+        path: '/product/:id/story',
+        builder: (context, state) {
+          final productId = state.pathParameters['id']!;
+          final productName = state.uri.queryParameters['name'] ?? 'Product';
+          final imageUrl = state.uri.queryParameters['imageUrl'] ?? '';
+          return ProductStoryScreen(
+            productId: productId,
+            productName: productName,
+            imageUrl: imageUrl,
+          );
+        },
+      ),
+      GoRoute(
         path: '/reviews',
         builder: (context, state) {
           final productId = state.uri.queryParameters['productId'] ?? '';
@@ -219,6 +244,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/rewards',
         builder: (context, state) => const LoyaltyScreen(),
+      ),
+      GoRoute(
+        path: '/brand-story',
+        builder: (context, state) => const BrandStoryScreen(),
+      ),
+      GoRoute(
+        path: '/quiz',
+        builder: (context, state) => const QuizScreen(),
+      ),
+      GoRoute(
+        path: '/ai-preferences',
+        builder: (context, state) => const AiPreferencesScreen(),
       ),
 
       // ── Staff Routes ────────────────────────────────────────────────

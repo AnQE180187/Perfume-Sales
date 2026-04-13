@@ -7,10 +7,11 @@ import {
   Post,
   Req,
   UploadedFile,
+  UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { ReturnsService } from './returns.service';
@@ -94,5 +95,25 @@ export class ReturnsController {
       'perfume-gpt/returns/videos',
     );
     return { url: result.url };
+  }
+
+  /** Customer: upload hình ảnh minh chứng (lên đến 5 ảnh) */
+  @Post('upload-images')
+  @UseInterceptors(FilesInterceptor('images', 5))
+  async uploadImages(
+    @Req() _req: any,
+    @UploadedFiles() files: Express.Multer.File[],
+  ) {
+    if (!files || files.length === 0) {
+      return { urls: [] };
+    }
+    const uploadPromises = files.map((file) =>
+      this.cloudinaryService.uploadImage(
+        file.buffer,
+        'perfume-gpt/returns/images',
+      ),
+    );
+    const results = await Promise.all(uploadPromises);
+    return { urls: results.map((r) => r.url) };
   }
 }

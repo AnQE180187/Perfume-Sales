@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../theme/app_theme.dart';
+import '../routing/app_routes.dart';
 import '../../features/auth/providers/auth_provider.dart';
 
 // ─── Menu item config ────────────────────────────────────────────────────────
@@ -22,17 +23,38 @@ class _MenuItem {
 }
 
 const _primaryItems = [
-  _MenuItem(icon: Icons.spa_outlined, label: 'Hồ sơ mùi hương'),
+  _MenuItem(
+    icon: Icons.workspace_premium_outlined,
+    label: 'Câu lạc bộ Mùi hương',
+    route: '/loyalty',
+  ),
   _MenuItem(
     icon: Icons.local_florist_outlined,
     label: 'Thư viện nước hoa',
     route: '/explore',
   ),
+  _MenuItem(
+    icon: Icons.location_on_outlined,
+    label: 'Hệ thống cửa hàng',
+    route: '/boutiques',
+  ),
+  _MenuItem(
+    icon: Icons.auto_awesome_outlined,
+    label: 'Trắc nghiệm Mùi hương',
+    route: '/quiz',
+  ),
   _MenuItem(icon: Icons.diamond_outlined, label: 'Bộ sưu tập độc quyền'),
 ];
 
 const _secondaryItems = [
-  _MenuItem(icon: Icons.book_outlined, label: 'Nhật ký mùi hương'),
+  _MenuItem(icon: Icons.auto_stories_outlined, label: 'Tạp chí Journal'),
+  _MenuItem(icon: Icons.science_outlined, label: 'Từ điển thành phần'),
+  _MenuItem(icon: Icons.card_giftcard_outlined, label: 'Dịch vụ quà tặng'),
+  _MenuItem(
+    icon: Icons.history_edu_outlined,
+    label: 'Câu chuyện thương hiệu',
+    route: AppRoutes.brandStory,
+  ),
   _MenuItem(icon: Icons.support_agent_outlined, label: 'Hỗ trợ tư vấn'),
 ];
 

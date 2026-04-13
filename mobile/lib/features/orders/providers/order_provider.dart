@@ -5,6 +5,7 @@ import '../models/order.dart';
 import '../models/payment.dart';
 import '../services/order_service.dart';
 import '../services/payment_service.dart';
+import '../services/return_service.dart';
 
 class OrderListState {
   final List<Order> all;
@@ -62,6 +63,11 @@ final orderServiceProvider = Provider<OrderService>((ref) {
 final orderPaymentServiceProvider = Provider<OrderPaymentService>((ref) {
   final client = ref.watch(apiClientProvider);
   return OrderPaymentService(client: client);
+});
+
+final returnServiceProvider = Provider<ReturnService>((ref) {
+  final client = ref.watch(apiClientProvider);
+  return ReturnService(client: client);
 });
 
 class OrderNotifier extends AsyncNotifier<OrderListState> {

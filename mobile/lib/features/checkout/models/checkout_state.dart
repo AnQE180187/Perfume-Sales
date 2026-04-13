@@ -15,6 +15,10 @@ class CheckoutState {
   final String? errorMessage;
   final String? createdOrderId;
   final String? payosCheckoutUrl;
+  final String? promoCode;
+  final double promoDiscount;
+  final String? promoDiscountType;
+  final double promoDiscountRaw;
 
   const CheckoutState({
     this.selectedAddress,
@@ -29,9 +33,16 @@ class CheckoutState {
     this.errorMessage,
     this.createdOrderId,
     this.payosCheckoutUrl,
+    this.promoCode,
+    this.promoDiscount = 0,
+    this.promoDiscountType,
+    this.promoDiscountRaw = 0,
   });
 
-  double get totalAmount => subtotal + shippingCost + tax;
+  double get discountAmount => promoDiscountType == 'FIXED_AMOUNT'
+      ? promoDiscountRaw
+      : subtotal * promoDiscount;
+  double get totalAmount => (subtotal - discountAmount) + shippingCost + tax;
 
   /// True when the order has been created and is awaiting online payment.
   bool get pendingOnlinePayment =>
@@ -62,6 +73,10 @@ class CheckoutState {
     String? errorMessage,
     String? createdOrderId,
     String? payosCheckoutUrl,
+    String? promoCode,
+    double? promoDiscount,
+    String? promoDiscountType,
+    double? promoDiscountRaw,
     bool clearSelectedAddress = false,
   }) {
     return CheckoutState(
@@ -80,6 +95,10 @@ class CheckoutState {
       errorMessage: errorMessage,
       createdOrderId: createdOrderId ?? this.createdOrderId,
       payosCheckoutUrl: payosCheckoutUrl,
+      promoCode: promoCode ?? this.promoCode,
+      promoDiscount: promoDiscount ?? this.promoDiscount,
+      promoDiscountType: promoDiscountType ?? this.promoDiscountType,
+      promoDiscountRaw: promoDiscountRaw ?? this.promoDiscountRaw,
     );
   }
 }

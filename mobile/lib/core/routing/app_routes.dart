@@ -49,6 +49,7 @@ class AppRoutes {
   static const String orderDetail = '/orders/:id';
   static const String trackOrder = '/orders/:id/track';
   static const String returnOrder = '/orders/:id/return';
+  static const String returnDetail = '/returns/:id';
 
   // ============================================
   // SEARCH & DISCOVERY
@@ -69,6 +70,8 @@ class AppRoutes {
   static const String profileEdit = '/profile-edit';
   static const String rewards = '/rewards';
   static const String quiz = '/quiz';
+  static const String brandStory = '/brand-story';
+  static const String aiPreferences = '/ai-preferences';
 
   // ============================================
   // STAFF ROUTES
@@ -102,9 +105,26 @@ class AppRoutes {
     return '/orders/$orderId/return';
   }
 
+  /// Build return detail route with ID
+  static String returnDetailWithId(String returnId) {
+    return '/returns/$returnId';
+  }
+
   /// Build product story route with ID
-  static String productStoryWithId(String productId) {
-    return '/product/story?id=$productId';
+  static String productStoryWithId(
+    String productId, {
+    String? productName,
+    String? imageUrl,
+  }) {
+    final params = <String>[];
+    if (productName != null) {
+      params.add('name=${Uri.encodeComponent(productName)}');
+    }
+    if (imageUrl != null) {
+      params.add('imageUrl=${Uri.encodeComponent(imageUrl)}');
+    }
+    final query = params.isEmpty ? '' : '?${params.join('&')}';
+    return '/product/$productId/story$query';
   }
 
   /// Build reviews route with product ID

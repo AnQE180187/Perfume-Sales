@@ -323,58 +323,134 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
   }
 
   Widget _buildPromoItem(String code, String desc) {
-    return InkWell(
+    final bool isSelected = widget.promoCode == code;
+
+    return GestureDetector(
       onTap: () {
         widget.controller.text = code;
         ref.read(cartProvider.notifier).applyPromoCode(code);
       },
-      borderRadius: BorderRadius.circular(10),
-      child: Container(
-        padding: const EdgeInsets.all(12),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
-          border: Border.all(color: AppTheme.softTaupe.withValues(alpha: 0.5)),
-          borderRadius: BorderRadius.circular(10),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppTheme.accentGold.withValues(alpha: 0.2),
+                    blurRadius: 15,
+                    spreadRadius: 2,
+                  )
+                ]
+              : [],
         ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppTheme.accentGold.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(4),
-                border: Border.all(
-                  color: AppTheme.accentGold.withValues(alpha: 0.3),
-                  width: 1,
-                ),
-              ),
-              child: Text(
-                code,
-                style: GoogleFonts.montserrat(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.accentGold,
-                ),
+        child: ClipPath(
+          clipper: _VoucherTicketClipper(),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(
+                color: isSelected
+                    ? AppTheme.accentGold
+                    : AppTheme.softTaupe.withValues(alpha: 0.2),
+                width: isSelected ? 1.5 : 1,
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                desc,
-                style: GoogleFonts.montserrat(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                  color: AppTheme.deepCharcoal,
+            child: Row(
+              children: [
+                // Icon/Logo Placeholder
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppTheme.ivoryBackground,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    isSelected ? Icons.verified_rounded : Icons.local_offer_outlined,
+                    color: AppTheme.accentGold,
+                    size: 20,
+                  ),
                 ),
-              ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        code.toUpperCase(),
+                        style: GoogleFonts.montserrat(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.5,
+                          color: AppTheme.deepCharcoal,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        desc,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                          color: AppTheme.mutedSilver,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (isSelected)
+                  const Icon(
+                    Icons.check_circle_rounded,
+                    color: AppTheme.accentGold,
+                    size: 22,
+                  )
+                else
+                  Text(
+                    'DÙNG',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: AppTheme.accentGold,
+                      letterSpacing: 1,
+                    ),
+                  ),
+              ],
             ),
-            const Icon(
-              Icons.chevron_right,
-              size: 20,
-              color: AppTheme.mutedSilver,
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
+}
+
+class _VoucherTicketClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    const double radius = 8.0;
+    final path = Path();
+    
+    path.lineTo(0.0, size.height / 2 - radius);
+    path.arcToPoint(
+      Offset(0.0, size.height / 2 + radius),
+      radius: const Radius.circular(radius),
+      clockwise: true,
+    );
+    path.lineTo(0.0, size.height);
+    path.lineTo(size.width, size.height);
+    path.lineTo(size.width, size.height / 2 + radius);
+    path.arcToPoint(
+      Offset(size.width, size.height / 2 - radius),
+      radius: const Radius.circular(radius),
+      clockwise: true,
+    );
+    path.lineTo(size.width, 0.0);
+    path.lineTo(0.0, 0.0);
+    path.close();
+    
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }

@@ -4,6 +4,7 @@ import '../../models/order.dart';
 import '../widgets/empty_orders_widget.dart';
 import '../widgets/order_card.dart';
 import '../widgets/write_review_bottom_sheet.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class CompletedOrdersSection extends StatefulWidget {
   final List<Order> orders;
@@ -34,9 +35,9 @@ class _CompletedOrdersSectionState extends State<CompletedOrdersSection> {
   @override
   Widget build(BuildContext context) {
     if (widget.orders.isEmpty) {
-      return const EmptyOrdersWidget(
-        title: 'No completed orders',
-        subtitle: 'Completed and cancelled orders will be listed here.',
+      return EmptyOrdersWidget(
+        title: AppLocalizations.of(context)!.noOrdersYet,
+        subtitle: AppLocalizations.of(context)!.orderHistoryAppear,
       );
     }
 

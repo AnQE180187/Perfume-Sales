@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 
 class ProductBottomCTA extends StatelessWidget {
@@ -46,15 +47,16 @@ class ProductBottomCTA extends StatelessWidget {
                     () async {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Đã thêm $productName vào giỏ hàng'),
+                          content: Text('${AppLocalizations.of(context)!.addedToCart} $productName'),
                           behavior: SnackBarBehavior.floating,
                         ),
                       );
                     },
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 16),
               // Primary: Buy Now
               Expanded(
+                flex: 4,
                 child: _AnimatedButton(
                   onPressed: () async {
                     if (onBuyNow != null) {
@@ -62,8 +64,8 @@ class ProductBottomCTA extends StatelessWidget {
                       return;
                     }
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Đang chuyển sang thanh toán'),
+                      SnackBar(
+                        content: Text(AppLocalizations.of(context)!.processingPayment),
                         behavior: SnackBarBehavior.floating,
                       ),
                     );
@@ -72,10 +74,11 @@ class ProductBottomCTA extends StatelessWidget {
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
                     child: Text(
-                      'Mua ngay',
+                      AppLocalizations.of(context)!.buyNow,
                       style: GoogleFonts.montserrat(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
+                        letterSpacing: 1.2,
                       ),
                     ),
                   ),
@@ -91,7 +94,7 @@ class ProductBottomCTA extends StatelessWidget {
               const Icon(Icons.loop, size: 11, color: AppTheme.mutedSilver),
               const SizedBox(width: 4),
               Text(
-                'Miễn phí đổi trả trong 14 ngày',
+                AppLocalizations.of(context)!.freeReturns,
                 style: GoogleFonts.montserrat(
                   fontSize: 10,
                   color: AppTheme.mutedSilver,
@@ -159,11 +162,11 @@ class _AnimatedButtonState extends State<_AnimatedButton>
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.accentGold,
-                  foregroundColor: Colors.white,
+                  foregroundColor: AppTheme.deepCharcoal,
                   elevation: 0,
                   padding: const EdgeInsets.symmetric(horizontal: 14),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(14),
                   ),
                 ),
                 child: widget.child,
@@ -238,14 +241,17 @@ class _CartIconButtonState extends State<_CartIconButton>
             await widget.onPressed();
           },
           style: OutlinedButton.styleFrom(
-            foregroundColor: AppTheme.accentGold,
+            foregroundColor: AppTheme.deepCharcoal,
             padding: EdgeInsets.zero,
-            side: const BorderSide(color: AppTheme.accentGold, width: 1.5),
+            side: BorderSide(
+              color: AppTheme.deepCharcoal.withValues(alpha: 0.15),
+              width: 0.8,
+            ),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(14),
             ),
           ),
-          child: const Icon(Icons.shopping_bag_outlined, size: 22),
+          child: const Icon(Icons.shopping_bag_outlined, size: 20),
         ),
       ),
     );

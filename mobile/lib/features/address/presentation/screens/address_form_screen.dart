@@ -106,159 +106,145 @@ class AddressFormScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppTheme.ivoryBackground,
       appBar: AppBar(
-        backgroundColor: AppTheme.ivoryBackground,
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        centerTitle: false,
-        titleSpacing: 0,
+        centerTitle: true,
         leading: IconButton(
           onPressed: () => Navigator.of(context).pop(),
           icon: const Icon(
-            Icons.arrow_back,
+            Icons.close_rounded,
             color: AppTheme.deepCharcoal,
-            size: 24,
+            size: 20,
           ),
         ),
         title: Text(
-          state.isEditing ? 'Chỉnh sửa địa chỉ' : 'Thêm địa chỉ mới',
+          (state.isEditing ? 'Chỉnh sửa địa chỉ' : 'Thêm địa chỉ mới').toUpperCase(),
           style: GoogleFonts.montserrat(
-            fontSize: 18,
+            fontSize: 13,
             fontWeight: FontWeight.w700,
+            letterSpacing: 1.5,
             color: AppTheme.deepCharcoal,
           ),
         ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 10, 16, 120),
-        children: [
-          _SectionTitle(title: 'Thông tin người nhận'),
-          const SizedBox(height: 10),
-          _LabelSelector(selected: state.label, onChanged: notifier.setLabel),
-          const SizedBox(height: 12),
-          AppInput(
-            label: 'Họ và tên',
-            initialValue: state.recipientName,
-            errorText: state.errorOf('recipientName'),
-            onChanged: notifier.setRecipientName,
-          ),
-          const SizedBox(height: 12),
-          AppInput(
-            label: 'Số điện thoại',
-            initialValue: state.phone,
-            errorText: state.errorOf('phone'),
-            keyboardType: TextInputType.phone,
-            onChanged: notifier.setPhone,
-          ),
-
-          const SizedBox(height: 20),
-          _SectionTitle(title: 'Địa chỉ giao hàng'),
-          const SizedBox(height: 10),
-          AppInput(
-            label: 'Tỉnh / Thành phố',
-            initialValue: provinceName,
-            errorText: state.errorOf('provinceId'),
-            readOnly: true,
-            onTap: pickProvince,
-            onChanged: (_) {},
-            suffixIcon: state.loadingProvinces
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: Padding(
-                      padding: EdgeInsets.all(12),
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  )
-                : const Icon(Icons.expand_more_rounded),
-          ),
-          const SizedBox(height: 12),
-          AppInput(
-            label: 'Quận / Huyện',
-            initialValue: districtName,
-            errorText: state.errorOf('districtId'),
-            readOnly: true,
-            enabled: state.provinceId != null,
-            onTap: pickDistrict,
-            onChanged: (_) {},
-            suffixIcon: state.loadingDistricts
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: Padding(
-                      padding: EdgeInsets.all(12),
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  )
-                : const Icon(Icons.expand_more_rounded),
-          ),
-          const SizedBox(height: 12),
-          AppInput(
-            label: 'Phường / Xã',
-            initialValue: wardName,
-            errorText: state.errorOf('wardCode'),
-            readOnly: true,
-            enabled: state.districtId != null,
-            onTap: pickWard,
-            onChanged: (_) {},
-            suffixIcon: state.loadingWards
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: Padding(
-                      padding: EdgeInsets.all(12),
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  )
-                : const Icon(Icons.expand_more_rounded),
-          ),
-          const SizedBox(height: 12),
-          AppInput(
-            label: 'Số nhà, tên đường',
-            initialValue: state.detailAddress,
-            errorText: state.errorOf('detailAddress'),
-            maxLines: 2,
-            onChanged: notifier.setDetailAddress,
-          ),
-
-          const SizedBox(height: 20),
-          _SectionTitle(title: 'Thông tin bổ sung'),
-          const SizedBox(height: 10),
-          AppInput(
-            label: 'Dịch vụ vận chuyển (tùy chọn)',
-            initialValue: serviceName,
-            readOnly: true,
-            enabled: state.districtId != null,
-            onTap: pickService,
-            onChanged: (_) {},
-            suffixIcon: state.loadingServices
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: Padding(
-                      padding: EdgeInsets.all(12),
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  )
-                : const Icon(Icons.expand_more_rounded),
-          ),
-          const SizedBox(height: 12),
-          AppInput(
-            label: 'Ghi chú (tùy chọn)',
-            initialValue: state.note,
-            maxLines: 2,
-            textInputAction: TextInputAction.done,
-            onChanged: notifier.setNote,
-          ),
-          const SizedBox(height: 8),
-          SwitchListTile.adaptive(
-            contentPadding: EdgeInsets.zero,
-            title: Text(
-              'Đặt làm địa chỉ mặc định',
-              style: GoogleFonts.montserrat(fontWeight: FontWeight.w600),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 140),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _SectionTitle(title: 'Phân loại'),
+            _LabelSelector(selected: state.label, onChanged: notifier.setLabel),
+            const SizedBox(height: 32),
+            
+            _SectionTitle(title: 'Người nhận'),
+            AppInput(
+              label: 'Thanh toán',
+              hint: 'Tên người nhận',
+              initialValue: state.recipientName,
+              errorText: state.errorOf('recipientName'),
+              onChanged: notifier.setRecipientName,
             ),
-            value: state.isDefault,
-            onChanged: notifier.setDefaultAddress,
-          ),
-        ],
+            const SizedBox(height: 20),
+            AppInput(
+              label: 'Liên hệ',
+              hint: 'Số điện thoại',
+              initialValue: state.phone,
+              errorText: state.errorOf('phone'),
+              keyboardType: TextInputType.phone,
+              onChanged: notifier.setPhone,
+            ),
+            const SizedBox(height: 32),
+
+            _SectionTitle(title: 'Vị trí'),
+            AppInput(
+              label: 'Tỉnh / Thành phố',
+              initialValue: provinceName,
+              errorText: state.errorOf('provinceId'),
+              readOnly: true,
+              onTap: pickProvince,
+              onChanged: (_) {},
+              suffixIcon: state.loadingProvinces
+                  ? const _LoadingSmall()
+                  : const Icon(Icons.expand_more_rounded, size: 18),
+            ),
+            const SizedBox(height: 20),
+            AppInput(
+              label: 'Quận / Huyện',
+              initialValue: districtName,
+              errorText: state.errorOf('districtId'),
+              readOnly: true,
+              enabled: state.provinceId != null,
+              onTap: pickDistrict,
+              onChanged: (_) {},
+              suffixIcon: state.loadingDistricts
+                  ? const _LoadingSmall()
+                  : const Icon(Icons.expand_more_rounded, size: 18),
+            ),
+            const SizedBox(height: 20),
+            AppInput(
+              label: 'Phường / Xã',
+              initialValue: wardName,
+              errorText: state.errorOf('wardCode'),
+              readOnly: true,
+              enabled: state.districtId != null,
+              onTap: pickWard,
+              onChanged: (_) {},
+              suffixIcon: state.loadingWards
+                  ? const _LoadingSmall()
+                  : const Icon(Icons.expand_more_rounded, size: 18),
+            ),
+            const SizedBox(height: 20),
+            AppInput(
+              label: 'Địa chỉ cụ thể',
+              hint: 'Số nhà, tên đường...',
+              initialValue: state.detailAddress,
+              errorText: state.errorOf('detailAddress'),
+              maxLines: 2,
+              onChanged: notifier.setDetailAddress,
+            ),
+            const SizedBox(height: 32),
+
+            _SectionTitle(title: 'Tùy chọn khác'),
+            AppInput(
+              label: 'Dịch vụ GHN',
+              initialValue: serviceName,
+              readOnly: true,
+              enabled: state.districtId != null,
+              onTap: pickService,
+              onChanged: (_) {},
+              suffixIcon: state.loadingServices
+                  ? const _LoadingSmall()
+                  : const Icon(Icons.expand_more_rounded, size: 18),
+            ),
+            const SizedBox(height: 20),
+            AppInput(
+              label: 'Ghi chú',
+              hint: 'Chỉ dẫn giao hàng...',
+              initialValue: state.note,
+              maxLines: 2,
+              textInputAction: TextInputAction.done,
+              onChanged: notifier.setNote,
+            ),
+            const SizedBox(height: 16),
+            Theme(
+              data: ThemeData(dividerColor: Colors.transparent),
+              child: SwitchListTile.adaptive(
+                contentPadding: EdgeInsets.zero,
+                activeColor: AppTheme.accentGold,
+                title: Text(
+                  'Đặt làm địa chỉ mặc định',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.deepCharcoal,
+                  ),
+                ),
+                value: state.isDefault,
+                onChanged: notifier.setDefaultAddress,
+              ),
+            ),
+          ],
+        ),
       ),
       bottomNavigationBar: SafeArea(
         top: false,
@@ -333,18 +319,24 @@ class AddressFormScreen extends ConsumerWidget {
 
 class _SectionTitle extends StatelessWidget {
   final String title;
-
   const _SectionTitle({required this.title});
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      title,
-      style: GoogleFonts.montserrat(
-        fontSize: 15,
-        fontWeight: FontWeight.w700,
-        color: AppTheme.deepCharcoal,
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title.toUpperCase(),
+          style: GoogleFonts.montserrat(
+            fontSize: 10,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1.5,
+            color: AppTheme.accentGold,
+          ),
+        ),
+        const SizedBox(height: 12),
+      ],
     );
   }
 }
@@ -357,49 +349,77 @@ class _LabelSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: AddressLabel.values.map((label) {
-          final active = selected == label;
-          return Padding(
-            padding: const EdgeInsets.only(right: 12),
+    return Row(
+      children: AddressLabel.values.map((label) {
+        final active = selected == label;
+        IconData icon;
+        switch (label) {
+          case AddressLabel.home: icon = Icons.home_outlined; break;
+          case AddressLabel.office: icon = Icons.work_outline_rounded; break;
+          case AddressLabel.gift: icon = Icons.card_giftcard_rounded; break;
+        }
+        
+        return Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(right: label == AddressLabel.gift ? 0 : 12),
             child: InkWell(
               onTap: () => onChanged(label),
-              borderRadius: BorderRadius.circular(8),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              borderRadius: BorderRadius.circular(12),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(vertical: 14),
                 decoration: BoxDecoration(
-                  color: active
-                      ? AppTheme.accentGold.withValues(alpha: 0.1)
-                      : Colors.white,
+                  color: active ? AppTheme.deepCharcoal : Colors.white,
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: active ? AppTheme.accentGold : AppTheme.softTaupe,
+                    color: active ? AppTheme.deepCharcoal : AppTheme.softTaupe.withValues(alpha: 0.3),
                     width: 1,
                   ),
-                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: active ? [
+                    BoxShadow(
+                      color: AppTheme.deepCharcoal.withValues(alpha: 0.2),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    )
+                  ] : [],
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+                child: Column(
                   children: [
-                    if (active) ...[
-                      const Icon(Icons.check, size: 16, color: AppTheme.accentGold),
-                      const SizedBox(width: 4),
-                    ],
+                    Icon(
+                      icon, 
+                      size: 20, 
+                      color: active ? Colors.white : AppTheme.mutedSilver
+                    ),
+                    const SizedBox(height: 6),
                     Text(
                       label.displayName,
                       style: GoogleFonts.montserrat(
-                        fontSize: 13,
+                        fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: active ? AppTheme.deepCharcoal : AppTheme.mutedSilver,
+                        color: active ? Colors.white : AppTheme.mutedSilver,
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-          );
-        }).toList(),
+          ),
+        );
+      }).toList(),
+    );
+  }
+}
+
+class _LoadingSmall extends StatelessWidget {
+  const _LoadingSmall();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox(
+      width: 14,
+      height: 14,
+      child: Center(
+        child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.accentGold),
       ),
     );
   }

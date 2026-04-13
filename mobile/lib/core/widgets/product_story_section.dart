@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
+import '../../core/routing/app_routes.dart';
 import '../theme/app_theme.dart';
 import '../../features/product/presentation/product_story_screen.dart';
 
@@ -54,35 +56,41 @@ class _ProductStorySectionState extends State<ProductStorySection> {
                     ),
                   ),
                 ),
-                GestureDetector(
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => ProductStoryScreen(
-                        productId: widget.productId,
-                        productName: widget.productName,
-                        imageUrl: widget.imageUrl,
-                      ),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Toàn bộ câu chuyện',
-                        style: GoogleFonts.montserrat(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.accentGold,
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(8),
+                    onTap: () => Navigator.of(context, rootNavigator: true).push(
+                      MaterialPageRoute(
+                        builder: (_) => ProductStoryScreen(
+                          productId: widget.productId,
+                          productName: widget.productName,
+                          imageUrl: widget.imageUrl,
                         ),
                       ),
-                      const SizedBox(width: 2),
-                      const Icon(
-                        Icons.arrow_forward,
-                        size: 12,
-                        color: AppTheme.accentGold,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Toàn bộ câu chuyện',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.accentGold,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(
+                            Icons.arrow_forward,
+                            size: 13,
+                            color: AppTheme.accentGold,
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ],

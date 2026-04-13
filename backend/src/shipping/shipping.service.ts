@@ -62,12 +62,22 @@ export class ShippingService {
     if (!order) throw new NotFoundException('Order not found');
     if (order.channel !== 'ONLINE')
       throw new BadRequestException('Chỉ đơn ONLINE mới tạo GHN');
-    if (
-      !order.shippingDistrictId ||
-      !order.shippingWardCode ||
-      !order.shippingServiceId
-    ) {
+    if (!order.shippingDistrictId || !order.shippingWardCode) {
       throw new BadRequestException('Đơn chưa có đủ thông tin giao hàng');
+    }
+
+    let serviceId = order.shippingServiceId;
+    if (!serviceId || serviceId === 0) {
+      const availableServices = await this.ghn.getAvailableServices(
+        order.shippingDistrictId,
+      );
+      if (availableServices.length > 0) {
+        serviceId = availableServices[0].service_id;
+      } else {
+        throw new BadRequestException(
+          'Không có dịch vụ vận chuyển khả dụng cho khu vực này',
+        );
+      }
     }
 
     const existing = await this.prisma.shipment.findFirst({
@@ -99,7 +109,7 @@ export class ShippingService {
       length: 20,
       width: 15,
       height: 10,
-      serviceId: order.shippingServiceId,
+      serviceId: serviceId,
       serviceTypeId: 2,
       paymentTypeId: 1,
       codAmount: order.finalAmount,

@@ -101,7 +101,7 @@ class _FeaturedCard extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(20),
+                top: Radius.circular(24),
               ),
               child: AspectRatio(
                 aspectRatio: 1,
@@ -120,15 +120,34 @@ class _FeaturedCard extends StatelessWidget {
                         ),
                       ),
                     ),
+                    // Gradient overlay for better icon visibility
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topRight,
+                            end: Alignment.bottomLeft,
+                            colors: [
+                              Colors.black.withValues(alpha: 0.15),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                     if (badge != null)
                       Positioned(
                         left: 10,
                         bottom: 10,
-                        child: _Badge(text: badge!),
+                        child: _LuxuryBadge(text: badge!),
                       ),
                     Positioned(
-                      top: 10,
-                      right: 10,
+                      top: 8,
+                      right: 8,
                       child: _FavoriteButton(
                         isFavorite: isFavorite,
                         onTap: onFavoriteToggle,
@@ -146,24 +165,25 @@ class _FeaturedCard extends StatelessWidget {
                 children: [
                   Text(
                     product.brand.toUpperCase(),
-                    style: GoogleFonts.montserrat(
-                      fontSize: 8,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 1.2,
-                      color: AppTheme.mutedSilver,
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.5,
+                      color: AppTheme.deepCharcoal,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 4),
                   Text(
                     product.name,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.playfairDisplay(
+                    style: GoogleFonts.montserrat(
                       fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      height: 1.15,
+                      fontWeight: FontWeight.w400,
+                      height: 1.25,
+                      color: AppTheme.deepCharcoal.withValues(alpha: 0.8),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -173,9 +193,9 @@ class _FeaturedCard extends StatelessWidget {
                         child: Text(
                           formatVND(product.price),
                           style: GoogleFonts.montserrat(
-                            fontSize: 12,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: AppTheme.accentGold,
+                            color: AppTheme.deepCharcoal,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -238,12 +258,12 @@ class _GridCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: AppTheme.creamWhite,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
@@ -251,10 +271,10 @@ class _GridCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AspectRatio(
-              aspectRatio: 1.1,
+              aspectRatio: 1.0,
               child: ClipRRect(
                 borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(20),
+                  top: Radius.circular(24),
                 ),
                 child: Stack(
                   fit: StackFit.expand,
@@ -271,11 +291,30 @@ class _GridCard extends StatelessWidget {
                         ),
                       ),
                     ),
+                    // Gradient overlay for better icon visibility
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topRight,
+                            end: Alignment.bottomLeft,
+                            colors: [
+                              Colors.black.withValues(alpha: 0.15),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                     if (badge != null)
                       Positioned(
                         left: 10,
                         bottom: 10,
-                        child: _Badge(text: badge!),
+                        child: _LuxuryBadge(text: badge!),
                       ),
                     if (matchPercent != null)
                       Positioned(
@@ -287,7 +326,7 @@ class _GridCard extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: AppTheme.accentGold,
+                            color: AppTheme.accentGold.withValues(alpha: 0.9),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(
@@ -301,8 +340,8 @@ class _GridCard extends StatelessWidget {
                         ),
                       ),
                     Positioned(
-                      top: 10,
-                      right: 10,
+                      top: 8,
+                      right: 8,
                       child: _FavoriteButton(
                         isFavorite: isFavorite,
                         onTap: onFavoriteToggle,
@@ -320,24 +359,25 @@ class _GridCard extends StatelessWidget {
                   children: [
                     Text(
                       product.brand.toUpperCase(),
-                      style: GoogleFonts.montserrat(
-                        fontSize: 8,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 1.2,
-                        color: AppTheme.mutedSilver,
+                      style: GoogleFonts.playfairDisplay(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.4,
+                        color: AppTheme.deepCharcoal,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 3),
+                    const SizedBox(height: 4),
                     Text(
                       product.name,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.playfairDisplay(
+                      style: GoogleFonts.montserrat(
                         fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        height: 1.15,
+                        fontWeight: FontWeight.w400,
+                        height: 1.2,
+                        color: AppTheme.deepCharcoal.withValues(alpha: 0.7),
                       ),
                     ),
                     if (product.notes.isNotEmpty) ...[
@@ -362,9 +402,9 @@ class _GridCard extends StatelessWidget {
                           child: Text(
                             formatVND(product.price),
                             style: GoogleFonts.montserrat(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              color: AppTheme.accentGold,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.deepCharcoal,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -466,24 +506,25 @@ class _ListCard extends StatelessWidget {
                   children: [
                     Text(
                       product.brand.toUpperCase(),
-                      style: GoogleFonts.montserrat(
-                        fontSize: 9,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 1.2,
-                        color: AppTheme.mutedSilver,
+                      style: GoogleFonts.playfairDisplay(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.4,
+                        color: AppTheme.deepCharcoal,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 3),
+                    const SizedBox(height: 4),
                     Text(
                       product.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.playfairDisplay(
+                      style: GoogleFonts.montserrat(
                         fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w400,
                         height: 1.2,
+                        color: AppTheme.deepCharcoal,
                       ),
                     ),
                     if (product.description != null) ...[
@@ -506,9 +547,9 @@ class _ListCard extends StatelessWidget {
                         Text(
                           formatVND(product.price),
                           style: GoogleFonts.montserrat(
-                            fontSize: 15,
+                            fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: AppTheme.accentGold,
+                            color: AppTheme.deepCharcoal,
                           ),
                         ),
                         if (matchPercent != null)
@@ -558,27 +599,89 @@ class _ScentTag extends StatelessWidget {
   final String text;
   const _ScentTag({required this.text});
 
+  Color _getTagColor(String scent) {
+    final s = scent.toLowerCase();
+    if (s.contains('bergamot') || s.contains('lemon') || s.contains('citrus')) {
+      return const Color(0xFFFDF7E7); // Citrus Pastel
+    }
+    if (s.contains('jasmine') || s.contains('rose') || s.contains('floral') || s.contains('lavender')) {
+      return const Color(0xFFF5EEFD); // Floral Pastel
+    }
+    if (s.contains('wood') || s.contains('cedar') || s.contains('sandalwood')) {
+      return const Color(0xFFEFEBE9); // Woody Pastel
+    }
+    if (s.contains('vanilla') || s.contains('amber') || s.contains('musk')) {
+      return const Color(0xFFFDF2F0); // Warm Pastel
+    }
+    return const Color(0xFFE8F5E9); // Green/Fresh Pastel
+  }
+
+  Color _getTextColor(String scent) {
+    final s = scent.toLowerCase();
+    if (s.contains('bergamot') || s.contains('lemon') || s.contains('citrus')) {
+      return const Color(0xFF8B7310);
+    }
+    if (s.contains('jasmine') || s.contains('rose') || s.contains('floral') || s.contains('lavender')) {
+      return const Color(0xFF6A1B9A);
+    }
+    if (s.contains('wood') || s.contains('cedar') || s.contains('sandalwood')) {
+      return const Color(0xFF5D4037);
+    }
+    if (s.contains('vanilla') || s.contains('amber') || s.contains('musk')) {
+      return const Color(0xFFC62828);
+    }
+    return const Color(0xFF2E7D32);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 70),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-        decoration: BoxDecoration(
-          color: AppTheme.softTaupe,
-          borderRadius: BorderRadius.circular(10),
+    final bgColor = _getTagColor(text);
+    final textColor = _getTextColor(text);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        text,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: GoogleFonts.montserrat(
+          fontSize: 9,
+          fontWeight: FontWeight.w600,
+          color: textColor,
+          letterSpacing: 0.1,
         ),
-        child: Text(
-          text,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: GoogleFonts.montserrat(
-            fontSize: 9,
-            fontWeight: FontWeight.w500,
-            color: AppTheme.deepCharcoal,
-            letterSpacing: 0.2,
+      ),
+    );
+  }
+}
+
+class _LuxuryBadge extends StatelessWidget {
+  final String text;
+  const _LuxuryBadge({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.9),
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.accentGold.withValues(alpha: 0.3),
+            blurRadius: 8,
+            spreadRadius: 1,
           ),
-        ),
+        ],
+      ),
+      child: const Icon(
+        Icons.auto_awesome,
+        size: 14,
+        color: AppTheme.accentGold,
       ),
     );
   }
@@ -626,17 +729,12 @@ class _FavoriteButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        width: 32,
-        height: 32,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
-        ),
+      child: Padding(
+        padding: const EdgeInsets.all(4.0),
         child: Icon(
           isFavorite ? Icons.favorite : Icons.favorite_border,
-          size: 15,
-          color: isFavorite ? Colors.red : AppTheme.mutedSilver,
+          size: 22,
+          color: isFavorite ? Colors.red : Colors.white,
         ),
       ),
     );

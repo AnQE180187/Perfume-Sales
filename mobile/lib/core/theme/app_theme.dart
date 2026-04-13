@@ -11,10 +11,9 @@ class AppTheme {
   static const Color mutedSilver = Color(0xFF8E8E93); // Muted luxury text
 
   // --- LUXURY PERFUME PALETTE ---
-  static const Color ivoryBackground = Color(
-    0xFFF5F1ED,
-  ); // Soft cream background
+  static const Color ivoryBackground = Color(0xFFF5F1ED); // Soft cream background
   static const Color creamWhite = Color(0xFFFAF8F5); // Warm white
+  static const Color parchment = Color(0xFFFCF5E5); // Sophisticated parchment for AI
   static const Color softTaupe = Color(0xFFE8E0D5); // Subtle border color
   static const Color deepCharcoal = Color(0xFF1A1A1A); // Rich text color
 

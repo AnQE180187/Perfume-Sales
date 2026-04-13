@@ -31,8 +31,8 @@ class EnvConfig {
   static String get fullBaseUrl => '$apiBaseUrl$apiPrefix';
 
   /// Connection timeout in milliseconds.
-  static const int connectTimeout = 15000;
+  static const int connectTimeout = 60000;
 
   /// Receive timeout in milliseconds.
-  static const int receiveTimeout = 15000;
+  static const int receiveTimeout = 60000;
 }

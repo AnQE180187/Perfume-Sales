@@ -416,4 +416,291 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get paymentCancelled => 'Payment cancelled';
+
+  @override
+  String get searchFragrance => 'SEARCH FRAGRANCE...';
+
+  @override
+  String get personalizedSelection => 'PERSONALIZED SELECTION';
+
+  @override
+  String get tailoredRecommendations => 'TAILORED RECOMMENDATIONS';
+
+  @override
+  String get viewCollection => 'VIEW COLLECTION';
+
+  @override
+  String get eauDeParfum => 'EAU DE PARFUM';
+
+  @override
+  String get rating => 'rating';
+
+  @override
+  String get noReviews => 'No reviews yet';
+
+  @override
+  String get viewReviews => 'View reviews';
+
+  @override
+  String get addToCart => 'ADD TO CART';
+
+  @override
+  String get variantNotFound => 'Suitable product variant not found.';
+
+  @override
+  String get addedToCart => 'Added to cart';
+
+  @override
+  String get viewCart => 'View cart';
+
+  @override
+  String get failedAddToCart => 'Failed to add to cart';
+
+  @override
+  String get notifications => 'Notifications';
+
+  @override
+  String get notificationSettings => 'Notification Settings';
+
+  @override
+  String get notificationSubtitle =>
+      'Track orders, custom offers, and account activity.';
+
+  @override
+  String get noNotifications => 'No notifications yet';
+
+  @override
+  String get markAllRead => 'Mark all as read';
+
+  @override
+  String get readAll => 'Read all';
+
+  @override
+  String get allNotificationsRead => 'All notifications read';
+
+  @override
+  String unreadNotifications(Object count) {
+    return 'You have $count unread notifications';
+  }
+
+  @override
+  String get updateNotifications => 'Stay updated with our latest offers';
+
+  @override
+  String get orderUpdates => 'Order Updates';
+
+  @override
+  String get orderUpdatesSub => 'Shipping, preparing, and payment';
+
+  @override
+  String get offersAndGifts => 'Offers and Gifts';
+
+  @override
+  String get offersAndGiftsSub => 'Member offers, limited drops, and codes';
+
+  @override
+  String get accountActivity => 'Account Activity';
+
+  @override
+  String get accountActivitySub => 'Back in stock and account security';
+
+  @override
+  String get filterAll => 'All';
+
+  @override
+  String get filterUnread => 'Unread';
+
+  @override
+  String get filterOrders => 'Orders';
+
+  @override
+  String get filterOffers => 'Offers';
+
+  @override
+  String get filterAccount => 'Account';
+
+  @override
+  String get latest => 'LATEST';
+
+  @override
+  String get older => 'OLDER';
+
+  @override
+  String get paymentSummary => 'PAYMENT SUMMARY';
+
+  @override
+  String get totalAmount => 'TOTAL AMOUNT';
+
+  @override
+  String get shippingAddressUpper => 'SHIPPING ADDRESS';
+
+  @override
+  String get contactSupport => 'CONTACT SUPPORT';
+
+  @override
+  String get returnRequest => 'Return Request / Refund';
+
+  @override
+  String get supportContactMessage => 'Support team will contact you soon.';
+
+  @override
+  String get trackOrderUpper => 'TRACK ORDER';
+
+  @override
+  String get buyNow => 'BUY NOW';
+
+  @override
+  String get freeReturns => 'Free returns within 7 days';
+
+  @override
+  String get checkingPayment => 'Checking payment...';
+
+  @override
+  String get unavailable => 'Unavailable';
+
+  @override
+  String get placedOn => 'Placed on';
+
+  @override
+  String get ordersActive => 'Active';
+
+  @override
+  String get ordersCompleted => 'Completed';
+
+  @override
+  String get ordersReturns => 'Returns';
+
+  @override
+  String get paymentStatusPaid => 'Payment completed';
+
+  @override
+  String get paymentStatusPending => 'Pending payment';
+
+  @override
+  String get paymentStatusFailed => 'Payment failed';
+
+  @override
+  String get paymentStatusRefunded => 'Payment refunded';
+
+  @override
+  String get paymentMethodPayos => 'PayOS Gateway';
+
+  @override
+  String get paymentMethodCod => 'Cash on Delivery (COD)';
+
+  @override
+  String get paymentMethodVnpay => 'VNPay Wallet';
+
+  @override
+  String get paymentMethodMomo => 'MoMo Wallet';
+
+  @override
+  String get returnRequestTitle => 'Return Request';
+
+  @override
+  String get selectReturnItems => 'Select items to return';
+
+  @override
+  String get returnReason => 'Reason for return';
+
+  @override
+  String get returnReasonHint => 'Detailed description of the issue...';
+
+  @override
+  String get refundInfo => 'Refund Payment Info';
+
+  @override
+  String get bankName => 'Bank / E-Wallet';
+
+  @override
+  String get bankNameHint => 'e.g. Chase, PayPal...';
+
+  @override
+  String get accountNumber => 'Account Number / Phone';
+
+  @override
+  String get accountName => 'Account Holder Name';
+
+  @override
+  String get accountNameHint => 'JOHN DOE';
+
+  @override
+  String get evidenceTitle => 'Evidence Required';
+
+  @override
+  String get photoEvidence => 'Photos (At least 3)';
+
+  @override
+  String get videoEvidence => 'Video (3s - 60s)';
+
+  @override
+  String get addPhoto => 'Add Photo';
+
+  @override
+  String get addVideo => 'Add Video';
+
+  @override
+  String get submitReturn => 'Submit Return Request';
+
+  @override
+  String get returnSuccess => 'Return request submitted successfully';
+
+  @override
+  String get errorSelectItems => 'Please select at least one item';
+
+  @override
+  String get errorReason => 'Please enter a reason for return';
+
+  @override
+  String get errorBankInfo => 'Please provide full refund payment info';
+
+  @override
+  String get errorPhotoCount => 'Please provide at least 3 photos';
+
+  @override
+  String get errorVideoMissing => 'Please providing 1 video evidence';
+
+  @override
+  String get returnPolicyNote =>
+      'Note: Product must be in original condition with tags.';
+
+  @override
+  String get reasonDamaged => 'Item is damaged';
+
+  @override
+  String get reasonWrongItem => 'Wrong item delivered';
+
+  @override
+  String get reasonScentNotExpected => 'Scent not as expected';
+
+  @override
+  String get returnProcessNotice =>
+      'Your request will be processed within 24-48h';
+
+  @override
+  String get returnStatusRequested => 'New Request';
+
+  @override
+  String get returnStatusReviewing => 'Reviewing';
+
+  @override
+  String get returnStatusApproved => 'Approved';
+
+  @override
+  String get returnStatusReturning => 'Returning';
+
+  @override
+  String get returnStatusReceived => 'Received';
+
+  @override
+  String get returnStatusRefunding => 'Refunding';
+
+  @override
+  String get returnStatusCompleted => 'Completed';
+
+  @override
+  String get returnStatusRejected => 'Rejected';
+
+  @override
+  String get returnStatusCancelled => 'Cancelled';
 }

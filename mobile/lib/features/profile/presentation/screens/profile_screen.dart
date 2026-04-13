@@ -71,7 +71,7 @@ class ProfileScreen extends ConsumerWidget {
                   onShippingAddresses: () => _handleShippingAddresses(context),
                   onPaymentMethods: () => _handlePaymentMethods(context),
                   onAiPreferences: () => _handleAiPreferences(context),
-                  activeShipmentsText: '2 đang giao',
+                  activeShipmentsText: null,
                 ),
 
                 // Logout
@@ -141,10 +141,7 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   void _handleAiPreferences(BuildContext context) {
-    // TODO: Navigate to AI preferences screen
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Tùy chọn AI sẽ sớm có mặt')));
+    context.push(AppRoutes.aiPreferences);
   }
 
   Future<void> _handleLogout(BuildContext context, WidgetRef ref) async {

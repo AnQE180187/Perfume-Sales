@@ -84,6 +84,17 @@ class LoyaltyService {
     );
     return LoyaltyStatus.fromJson(response.data!);
   }
+
+  Future<List<dynamic>> getRedeemablePromotions() async {
+    final response = await _apiClient.get<List<dynamic>>(
+      '/promotions/redeemable',
+    );
+    return response.data!;
+  }
+
+  Future<void> redeemPromotion(String promoId) async {
+    await _apiClient.post('/promotions/redeem/$promoId');
+  }
 }
 
 int _readInt(dynamic v) {
@@ -104,4 +115,9 @@ final loyaltyServiceProvider = Provider<LoyaltyService>((ref) {
 
 final loyaltyStatusProvider = FutureProvider.autoDispose<LoyaltyStatus>((ref) {
   return ref.read(loyaltyServiceProvider).getStatus();
+});
+
+final redeemablePromotionsProvider =
+    FutureProvider.autoDispose<List<dynamic>>((ref) {
+  return ref.read(loyaltyServiceProvider).getRedeemablePromotions();
 });

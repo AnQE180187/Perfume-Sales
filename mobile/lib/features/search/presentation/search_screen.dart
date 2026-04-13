@@ -1,8 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/product_card.dart';
+import 'package:go_router/go_router.dart';
 import '../../product/models/product.dart';
 import '../providers/search_provider.dart';
 import 'widgets/search_header.dart';
@@ -185,217 +186,218 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     return Scaffold(
       backgroundColor: AppTheme.ivoryBackground,
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Search Header
-            SearchHeader(
-              controller: _searchController,
-              onChanged: (value) {
-                if (value.isNotEmpty) {
-                  ref.read(searchProvider.notifier).search(value);
-                } else {
-                  ref.read(searchProvider.notifier).loadInitial();
-                }
-              },
-              onClear: () {
-                _searchController.clear();
-                ref.read(searchProvider.notifier).loadInitial();
-              },
-              onBack: () => Navigator.pop(context),
-              showClearButton: _searchController.text.isNotEmpty,
+        child: CustomScrollView(
+          slivers: [
+            // Collapsing Header with Search Bar
+            SliverAppBar(
+              floating: true,
+              pinned: false,
+              snap: true,
+              automaticallyImplyLeading: false,
+              backgroundColor: AppTheme.ivoryBackground,
+              elevation: 0,
+              expandedHeight: 64,
+              toolbarHeight: 64,
+              flexibleSpace: FlexibleSpaceBar(
+                background: SearchHeader(
+                  controller: _searchController,
+                  onChanged: (value) {
+                    if (value.isNotEmpty) {
+                      ref.read(searchProvider.notifier).search(value);
+                    } else {
+                      ref.read(searchProvider.notifier).loadInitial();
+                    }
+                  },
+                  onClear: () {
+                    _searchController.clear();
+                    ref.read(searchProvider.notifier).loadInitial();
+                  },
+                  onBack: () => Navigator.pop(context),
+                  showClearButton: _searchController.text.isNotEmpty,
+                ),
+              ),
             ),
 
-            // Results title
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-              child: Row(
+            // Compact Filter Sections
+            SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Text(
-                      _searchController.text.isEmpty
-                          ? 'Huong thom noi bat'
-                          : 'Ket qua cho "${_searchController.text}"',
-                      style: GoogleFonts.playfairDisplay(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.deepCharcoal,
-                      ),
+                  _FilterSection(
+                    title: 'Dòng hương',
+                    options: _scentOptions,
+                    selected: _selectedScent,
+                    onSelect: (v) => setState(
+                      () => _selectedScent = _selectedScent == v ? null : v,
                     ),
                   ),
-                  if (!searchState.isLoading)
-                    Text(
-                      '${filteredResults.length} san pham',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 11,
-                        color: AppTheme.mutedSilver,
-                      ),
+                  _buildDivider(),
+                  _FilterSection(
+                    title: 'Dịp sử dụng',
+                    options: _occasionOptions,
+                    selected: _selectedOccasion,
+                    onSelect: (v) => setState(
+                      () => _selectedOccasion = _selectedOccasion == v ? null : v,
                     ),
+                  ),
+                  _buildDivider(),
+                  _FilterSection(
+                    title: 'Khoảng giá',
+                    options: _priceOptions,
+                    selected: _selectedPrice,
+                    onSelect: (v) => setState(
+                      () => _selectedPrice = _selectedPrice == v ? null : v,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  // Results Title & Summary
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          _searchController.text.isEmpty
+                              ? 'Hương thơm nổi bật'
+                              : 'Kết quả tìm kiếm',
+                          style: GoogleFonts.playfairDisplay(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.deepCharcoal,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        if (!searchState.isLoading)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 3),
+                            child: Text(
+                              '(${filteredResults.length} sản phẩm)',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: AppTheme.mutedSilver,
+                              ),
+                            ),
+                          ),
+                        const Spacer(),
+                        if (_hasActiveFilters)
+                          GestureDetector(
+                            onTap: _clearFilters,
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 2),
+                              child: Text(
+                                'Xóa lọc',
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppTheme.accentGold,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 10),
-
-            // Filter row - Scent
-            _FilterChipRow(
-              options: _scentOptions,
-              selected: _selectedScent,
-              onSelect: (v) => setState(
-                () => _selectedScent = _selectedScent == v ? null : v,
-              ),
-            ),
-            const SizedBox(height: 6),
-
-            // Filter row - Occasion
-            _FilterChipRow(
-              options: _occasionOptions,
-              selected: _selectedOccasion,
-              onSelect: (v) => setState(
-                () => _selectedOccasion = _selectedOccasion == v ? null : v,
-              ),
-            ),
-            const SizedBox(height: 6),
-
-            // Filter row - Price
-            _FilterChipRow(
-              options: _priceOptions,
-              selected: _selectedPrice,
-              onSelect: (v) => setState(
-                () => _selectedPrice = _selectedPrice == v ? null : v,
-              ),
-            ),
-
-            // Active filter summary
-            if (_hasActiveFilters)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        '${filteredResults.length} ket qua phu hop',
-                        style: GoogleFonts.montserrat(
-                          fontSize: 12,
-                          color: AppTheme.mutedSilver,
-                        ),
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: _clearFilters,
-                      child: Text(
-                        'Xoa bo loc',
-                        style: GoogleFonts.montserrat(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.accentGold,
-                        ),
-                      ),
-                    ),
-                  ],
+            // Results Grid
+            if (searchState.isLoading)
+              const SliverFillRemaining(
+                child: Center(
+                  child: CircularProgressIndicator(color: AppTheme.accentGold),
+                ),
+              )
+            else if (searchState.error != null)
+              SliverFillRemaining(
+                child: _buildErrorState(searchState.error!),
+              )
+            else if (filteredResults.isEmpty)
+              SliverFillRemaining(
+                child: _buildEmptyState(),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
+                sliver: SliverGrid(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 0.52,
+                    crossAxisSpacing: 18,
+                    mainAxisSpacing: 20,
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final product = filteredResults[index];
+                      return ProductCard(
+                        product: product,
+                        onTap: () => context.push('/product/${product.id}'),
+                      );
+                    },
+                    childCount: filteredResults.length,
+                  ),
                 ),
               ),
-
-            const SizedBox(height: 12),
-
-            // Results
-            Expanded(
-              child: searchState.isLoading
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                        color: AppTheme.accentGold,
-                      ),
-                    )
-                  : searchState.error != null
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.error_outline,
-                            size: 48,
-                            color: AppTheme.mutedSilver,
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            searchState.error!,
-                            style: GoogleFonts.montserrat(
-                              fontSize: 13,
-                              color: AppTheme.mutedSilver,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          TextButton(
-                            onPressed: () =>
-                                ref.read(searchProvider.notifier).loadInitial(),
-                            child: const Text('Thu lai'),
-                          ),
-                        ],
-                      ),
-                    )
-                  : filteredResults.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.search_off_rounded,
-                            size: 64,
-                            color: AppTheme.mutedSilver.withValues(alpha: 0.4),
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Khong tim thay san pham phu hop',
-                            style: GoogleFonts.montserrat(
-                              fontSize: 14,
-                              color: AppTheme.mutedSilver,
-                            ),
-                          ),
-                          if (_hasActiveFilters) ...[
-                            const SizedBox(height: 8),
-                            TextButton(
-                              onPressed: _clearFilters,
-                              child: Text(
-                                'Xoa bo loc',
-                                style: GoogleFonts.montserrat(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppTheme.accentGold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    )
-                  : GridView.builder(
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            childAspectRatio: 0.54,
-                            crossAxisSpacing: 16,
-                            mainAxisSpacing: 16,
-                          ),
-                      itemCount: filteredResults.length,
-                      itemBuilder: (_, index) {
-                        return ProductCard(product: filteredResults[index]);
-                      },
-                    ),
-            ),
           ],
         ),
       ),
     );
   }
+
+  Widget _buildDivider() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Divider(
+        color: AppTheme.softTaupe.withValues(alpha: 0.2),
+        thickness: 0.8,
+        height: 1,
+      ),
+    );
+  }
+
+  Widget _buildErrorState(String error) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, size: 48, color: AppTheme.mutedSilver),
+          const SizedBox(height: 12),
+          Text(error, style: GoogleFonts.montserrat(fontSize: 13, color: AppTheme.mutedSilver)),
+          const SizedBox(height: 16),
+          TextButton(
+            onPressed: () => ref.read(searchProvider.notifier).loadInitial(),
+            child: const Text('Thu lại'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.search_off_rounded, size: 64, color: AppTheme.mutedSilver.withValues(alpha: 0.4)),
+          const SizedBox(height: 16),
+          Text('Không tìm thấy sản phẩm phù hợp', style: GoogleFonts.montserrat(fontSize: 14, color: AppTheme.mutedSilver)),
+        ],
+      ),
+    );
+  }
 }
 
-class _FilterChipRow extends StatelessWidget {
+class _FilterSection extends StatelessWidget {
+  final String title;
   final List<String> options;
   final String? selected;
   final ValueChanged<String> onSelect;
 
-  const _FilterChipRow({
+  const _FilterSection({
+    required this.title,
     required this.options,
     required this.selected,
     required this.onSelect,
@@ -403,44 +405,71 @@ class _FilterChipRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 36,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        itemCount: options.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
-        itemBuilder: (_, index) {
-          final option = options[index];
-          final isSelected = option == selected;
-          return GestureDetector(
-            onTap: () => onSelect(option),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? AppTheme.accentGold.withValues(alpha: 0.15)
-                    : Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: isSelected ? AppTheme.accentGold : AppTheme.softTaupe,
-                ),
-              ),
-              child: Text(
-                option,
-                style: GoogleFonts.montserrat(
-                  fontSize: 12,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  color: isSelected
-                      ? AppTheme.accentGold
-                      : AppTheme.deepCharcoal,
-                ),
-              ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 10),
+          child: Text(
+            title.toUpperCase(),
+            style: GoogleFonts.montserrat(
+              fontSize: 8,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.2,
+              color: AppTheme.deepCharcoal.withValues(alpha: 0.4),
             ),
-          );
-        },
-      ),
+          ),
+        ),
+        SizedBox(
+          height: 32,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            itemCount: options.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 10),
+            itemBuilder: (_, index) {
+              final option = options[index];
+              final isSelected = option == selected;
+              return GestureDetector(
+                onTap: () => onSelect(option),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeOutCubic,
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: isSelected ? AppTheme.accentGold : Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isSelected
+                          ? AppTheme.accentGold
+                          : AppTheme.softTaupe.withValues(alpha: 0.3),
+                      width: 0.6,
+                    ),
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: AppTheme.accentGold.withValues(alpha: 0.25),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ]
+                        : [],
+                  ),
+                  child: Text(
+                    option,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 12,
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                      color: isSelected ? Colors.white : AppTheme.deepCharcoal,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }

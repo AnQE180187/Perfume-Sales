@@ -44,7 +44,7 @@ class _MainShellState extends State<MainShell> {
 
       // ================= BODY =================
       body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 250),
+        duration: const Duration(milliseconds: 300),
         switchInCurve: Curves.easeOut,
         switchOutCurve: Curves.easeIn,
         child: IndexedStack(
@@ -54,24 +54,47 @@ class _MainShellState extends State<MainShell> {
         ),
       ),
 
-      // ================= FAB (AI) =================
-      floatingActionButton: Transform.translate(
-        offset: const Offset(0, 10), // ↓ hạ nút AI
-        child: TweenAnimationBuilder<double>(
-          tween: Tween(begin: 1.0, end: 1.05),
-          duration: const Duration(seconds: 2),
-          curve: Curves.easeInOut,
-          builder: (context, scale, child) {
-            return Transform.scale(scale: scale, child: child);
-          },
-          child: FloatingActionButton(
-            backgroundColor: AppTheme.accentGold,
-            elevation: 6,
-            onPressed: _openConsultation,
-            child: const Icon(
-              Icons.auto_awesome_rounded,
-              size: 26,
-              color: AppTheme.primaryDb,
+      // ================= FLOATING AI BUTTON =================
+      floatingActionButton: Container(
+        height: 68,
+        width: 68,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: AppTheme.accentGold.withValues(alpha: 0.4),
+              blurRadius: 20,
+              spreadRadius: 2,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: FloatingActionButton(
+          onPressed: _openConsultation,
+          elevation: 0,
+          highlightElevation: 0,
+          backgroundColor: Colors.transparent,
+          shape: const CircleBorder(),
+          child: Container(
+            width: 68,
+            height: 68,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  AppTheme.champagneGold,
+                  AppTheme.accentGold,
+                ],
+              ),
+            ),
+            child: const Center(
+              child: Icon(
+                Icons.auto_awesome_rounded,
+                size: 30,
+                color: Colors.white,
+              ),
             ),
           ),
         ),
@@ -79,20 +102,29 @@ class _MainShellState extends State<MainShell> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
 
       // ================= BOTTOM NAV =================
-      bottomNavigationBar: _LuxuryBottomNavBar(
-        currentIndex: _selectedIndex,
-        onChanged: (index) {
-          if (index == 2) return; // FAB handles AI
-          setState(() => _selectedIndex = index);
-        },
+      bottomNavigationBar: BottomAppBar(
+        height: 75,
+        color: AppTheme.creamWhite.withValues(alpha: 0.95),
+        padding: EdgeInsets.zero,
+        notchMargin: 10,
+        shape: const CircularNotchedRectangle(),
+        clipBehavior: Clip.antiAlias,
+        elevation: 20,
+        child: _LuxuryBottomNavBar(
+          currentIndex: _selectedIndex,
+          onChanged: (index) {
+            if (index == 2) return;
+            setState(() => _selectedIndex = index);
+          },
+        ),
       ),
     );
   }
 }
 
-// ============================================================================
-// BOTTOM NAV BAR
-// ============================================================================
+// ---------------------------------------------------------------------------
+// BOTTOM NAV BAR (Custom Row for Notched Bar)
+// ---------------------------------------------------------------------------
 
 class _LuxuryBottomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -105,74 +137,38 @@ class _LuxuryBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.creamWhite,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 10,
-            offset: const Offset(0, -3),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        top: false,
-        child: SizedBox(
-          height: 64,
-          child: Row(
-            children: [
-              Expanded(
-                child: _NavBarItem(
-                  icon: Icons.home_outlined,
-                  activeIcon: Icons.home_rounded,
-                  label: 'Trang chủ',
-                  isSelected: currentIndex == 0,
-                  onTap: () => onChanged(0),
-                ),
-              ),
-              Expanded(
-                child: _NavBarItem(
-                  icon: Icons.explore_outlined,
-                  activeIcon: Icons.explore_rounded,
-                  label: 'Khám phá',
-                  isSelected: currentIndex == 1,
-                  onTap: () => onChanged(1),
-                ),
-              ),
+    return Row(
+      children: [
+        // Left side
+        _buildItem(0, Icons.home_outlined, Icons.home_rounded, 'MAISON'),
+        _buildItem(1, Icons.explore_outlined, Icons.explore_rounded, 'EXPLORE'),
 
-              // Space for FAB
-              const SizedBox(width: 72),
+        // Middle gap for FAB
+        const SizedBox(width: 80),
 
-              Expanded(
-                child: _NavBarItem(
-                  icon: Icons.notifications_outlined,
-                  activeIcon: Icons.notifications_rounded,
-                  label: 'Thông báo',
-                  isSelected: currentIndex == 3,
-                  onTap: () => onChanged(3),
-                ),
-              ),
-              Expanded(
-                child: _NavBarItem(
-                  icon: Icons.person_outline_rounded,
-                  activeIcon: Icons.person_rounded,
-                  label: 'Hồ sơ',
-                  isSelected: currentIndex == 4,
-                  onTap: () => onChanged(4),
-                ),
-              ),
-            ],
-          ),
-        ),
+        // Right side
+        _buildItem(3, Icons.notifications_outlined, Icons.notifications_rounded, 'ALERTS'),
+        _buildItem(4, Icons.person_outline_rounded, Icons.person_rounded, 'PROFILE'),
+      ],
+    );
+  }
+
+  Widget _buildItem(int index, IconData icon, IconData activeIcon, String label) {
+    return Expanded(
+      child: _NavBarItem(
+        icon: icon,
+        activeIcon: activeIcon,
+        label: label,
+        isSelected: currentIndex == index,
+        onTap: () => onChanged(index),
       ),
     );
   }
 }
 
-// ============================================================================
-// NAV BAR ITEM (ANIMATED)
-// ============================================================================
+// ---------------------------------------------------------------------------
+// NAV BAR ITEM
+// ---------------------------------------------------------------------------
 
 class _NavBarItem extends StatelessWidget {
   final IconData icon;
@@ -191,49 +187,48 @@ class _NavBarItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final inactiveColor = const Color(0xFF666666); // Higher contrast medium grey
+
     return InkWell(
       onTap: onTap,
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          AnimatedScale(
-            scale: isSelected ? 1.15 : 1.0,
-            duration: const Duration(milliseconds: 220),
-            curve: Curves.easeOut,
-            child: Icon(
-              isSelected ? activeIcon : icon,
-              size: 22,
-              color: isSelected ? AppTheme.accentGold : AppTheme.mutedSilver,
-            ),
+          Icon(
+            isSelected ? activeIcon : icon,
+            size: 20,
+            color: isSelected ? AppTheme.accentGold : inactiveColor,
           ),
-          const SizedBox(height: 4),
-
-          AnimatedOpacity(
-            opacity: isSelected ? 1 : 0.6,
-            duration: const Duration(milliseconds: 200),
-            child: Text(
-              label,
-              style: GoogleFonts.montserrat(
-                fontSize: 10,
-                letterSpacing: 0.8,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                color: isSelected ? AppTheme.accentGold : AppTheme.mutedSilver,
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: isSelected
+                ? GoogleFonts.playfairDisplay(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.2,
+                    color: AppTheme.accentGold,
+                  )
+                : GoogleFonts.montserrat(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 1,
+                    color: inactiveColor,
+                  ),
+          ),
+          if (isSelected)
+            Container(
+              margin: const EdgeInsets.only(top: 4),
+              width: 4,
+              height: 4,
+              decoration: const BoxDecoration(
+                color: AppTheme.accentGold,
+                shape: BoxShape.circle,
               ),
             ),
-          ),
-
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            margin: const EdgeInsets.only(top: 4),
-            width: isSelected ? 6 : 0,
-            height: isSelected ? 6 : 0,
-            decoration: const BoxDecoration(
-              color: AppTheme.accentGold,
-              shape: BoxShape.circle,
-            ),
-          ),
         ],
       ),
     );

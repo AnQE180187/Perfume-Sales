@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-
 import '../../../../core/theme/app_theme.dart';
 import '../../models/order.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class OrderStatusBadge extends StatelessWidget {
   final OrderStatus status;
@@ -11,6 +11,29 @@ class OrderStatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final style = _resolveStyle(status);
+    final l10n = AppLocalizations.of(context)!;
+
+    String label = '';
+    switch (status) {
+      case OrderStatus.pending:
+        label = l10n.orderStatusPending;
+        break;
+      case OrderStatus.confirmed:
+        label = l10n.orderStatusConfirmed;
+        break;
+      case OrderStatus.processing:
+        label = l10n.orderStatusProcessing;
+        break;
+      case OrderStatus.shipped:
+        label = l10n.orderStatusShipped;
+        break;
+      case OrderStatus.completed:
+        label = l10n.orderStatusDelivered;
+        break;
+      case OrderStatus.cancelled:
+        label = l10n.orderStatusCancelled;
+        break;
+    }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -20,12 +43,13 @@ class OrderStatusBadge extends StatelessWidget {
         border: Border.all(color: style.border),
       ),
       child: Text(
-        status.label.toUpperCase(),
+        label.toUpperCase(),
         style: Theme.of(context).textTheme.labelLarge?.copyWith(
-          color: style.text,
-          fontSize: 10,
-          letterSpacing: 0.8,
-        ),
+              color: style.text,
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.8,
+            ),
       ),
     );
   }

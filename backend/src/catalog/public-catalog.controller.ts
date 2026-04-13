@@ -15,6 +15,11 @@ export class PublicCatalogController {
     return this.catalogService.getBrand(Number(id));
   }
 
+  @Get('scent-notes')
+  listScentNotes() {
+    return this.catalogService.listScentNotes();
+  }
+  
   @Get('categories')
   listCategories() {
     return this.catalogService.listCategories();

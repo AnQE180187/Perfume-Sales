@@ -52,7 +52,8 @@ class ApiEndpoints {
   // ── Payments ──────────────────────────────────────────────────────
   static const String payments = '/payments';
   static const String createPayosPayment = '/payments/create-payment';
-  static String paymentByOrderId(String orderId) => '/payments/order/$orderId';
+  static String paymentByOrderId(String id) => '/payments/order/$id';
+  static String verifySyncPayment(String orderId) => '/payments/verify-sync/$orderId';
   static const String paymentMethods = '/payment-methods';
   static String paymentMethodDefaultById(String id) =>
       '/payment-methods/$id/default';
@@ -110,4 +111,17 @@ class ApiEndpoints {
 
   // ── Staff: Reports ────────────────────────────────────────────────
   static const String staffReportsDaily = '/staff/reports/daily';
+
+  // ── Returns ───────────────────────────────────────────────────────
+  static const String returns = '/returns';
+  static String returnById(String id) => '/returns/$id';
+  static const String uploadReturnVideo = '/returns/upload-video';
+  static const String uploadReturnImages = '/returns/upload-images';
+  static String addReturnShipment(String id) => '/returns/$id/shipment';
+  static String cancelReturn(String id) => '/returns/$id/cancel';
+  static String handoverReturn(String id) => '/returns/$id/handover';
+
+  // ── Quiz ──────────────────────────────────────────────────────────
+  static const String quizSubmit = '/quiz/submit';
+  static String quizResult(String id) => '/quiz/$id';
 }

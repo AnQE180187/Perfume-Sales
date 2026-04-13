@@ -41,26 +41,19 @@ class AIScentAnalysisCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: AppTheme.accentGold.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(
-                        Icons.auto_awesome,
-                        size: 16,
-                        color: AppTheme.accentGold,
-                      ),
+                    const Icon(
+                      Icons.auto_awesome_outlined,
+                      size: 20,
+                      color: AppTheme.accentGold,
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'AI Scent Analysis',
+                        'Phân tích mùi hương AI',
                         style: GoogleFonts.montserrat(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.5,
                           color: AppTheme.deepCharcoal,
                         ),
                       ),
@@ -80,18 +73,18 @@ class AIScentAnalysisCard extends StatelessWidget {
                 AnimatedCrossFade(
                   firstChild: const SizedBox.shrink(),
                   secondChild: Padding(
-                    padding: const EdgeInsets.only(top: 12),
+                    padding: const EdgeInsets.only(top: 16),
                     child: RichText(
                       text: TextSpan(
                         style: GoogleFonts.montserrat(
-                          fontSize: 12,
-                          height: 1.5,
+                          fontSize: 13,
+                          height: 1.6,
                           color: AppTheme.deepCharcoal.withValues(alpha: 0.8),
                         ),
                         children: [
                           const TextSpan(
                             text:
-                                'We chose this for you based on your recent love for ',
+                                'Chúng tôi đề xuất sản phẩm này dựa trên sự yêu thích của bạn với nốt hương ',
                           ),
                           TextSpan(
                             text: highlightNote.toLowerCase(),
@@ -102,7 +95,7 @@ class AIScentAnalysisCard extends StatelessWidget {
                           ),
                           const TextSpan(
                             text:
-                                ' notes. The intensified heart note perfectly matches your preference for creamy, long-lasting trails.',
+                                '. Sự kết hợp hoàn hảo giữa các tầng hương này sẽ mang lại trải nghiệm tinh tế, thanh tao và lưu hương bền lâu trên làn da bạn.',
                           ),
                         ],
                       ),

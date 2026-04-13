@@ -148,6 +148,17 @@ export class GHNService {
         insuranceValue?: number;
     }): Promise<GHNFeeResponse> {
         this.ensureConfigured();
+
+        let serviceId = params.serviceId;
+        if (!serviceId || serviceId === 0) {
+            const availableServices = await this.getAvailableServices(params.toDistrictId);
+            if (availableServices.length > 0) {
+                serviceId = availableServices[0].service_id;
+            } else {
+                throw new Error('Không có dịch vụ vận chuyển khả dụng cho khu vực này');
+            }
+        }
+
         const fromDistrict = this.fromDistrictId || params.toDistrictId;
         const fromWard = this.fromWardCode || '';
         const res = await this.client.post<{ code: number; data: GHNFeeResponse }>(
@@ -157,7 +168,7 @@ export class GHNService {
                 from_ward_code: fromWard || undefined,
                 to_district_id: params.toDistrictId,
                 to_ward_code: params.toWardCode,
-                service_id: params.serviceId,
+                service_id: serviceId,
                 weight: params.weight,
                 length: params.length ?? 20,
                 width: params.width ?? 15,

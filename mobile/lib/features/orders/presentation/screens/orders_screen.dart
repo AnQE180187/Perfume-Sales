@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/routing/app_routes.dart';
-import '../../../../core/theme/app_text_style.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../core/widgets/app_async_widget.dart';
 import '../../../../core/widgets/shimmer_loading.dart';
 import '../../models/order.dart';
@@ -12,6 +13,7 @@ import '../../providers/order_provider.dart';
 import '../../providers/order_realtime_provider.dart';
 import '../sections/active_orders_section.dart';
 import '../sections/completed_orders_section.dart';
+import '../sections/returns_section.dart';
 
 class OrdersScreen extends ConsumerStatefulWidget {
   const OrdersScreen({super.key});
@@ -27,7 +29,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -50,16 +52,47 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
     return Scaffold(
       backgroundColor: AppTheme.ivoryBackground,
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            size: 20,
+            color: AppTheme.deepCharcoal,
+          ),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/');
+            }
+          },
+        ),
         title: Text(
-          'Đơn hàng của tôi',
-          style: AppTextStyle.displaySm(color: AppTheme.deepCharcoal),
+          AppLocalizations.of(context)!.orderHistory,
+          style: GoogleFonts.playfairDisplay(
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+            color: AppTheme.deepCharcoal,
+          ),
         ),
         centerTitle: true,
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [
-            Tab(text: 'Đang xử lý'),
-            Tab(text: 'Hoàn thành'),
+          labelStyle: GoogleFonts.montserrat(
+            fontWeight: FontWeight.w700,
+            fontSize: 13,
+            letterSpacing: 0.5,
+          ),
+          unselectedLabelStyle: GoogleFonts.montserrat(
+            fontWeight: FontWeight.w500,
+            fontSize: 13,
+          ),
+          indicatorColor: AppTheme.accentGold,
+          labelColor: AppTheme.deepCharcoal,
+          unselectedLabelColor: AppTheme.mutedSilver,
+          tabs: [
+            Tab(text: AppLocalizations.of(context)!.ordersActive),
+            Tab(text: AppLocalizations.of(context)!.ordersCompleted),
+            Tab(text: AppLocalizations.of(context)!.ordersReturns),
           ],
         ),
       ),
@@ -71,25 +104,37 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
           itemCount: 5,
           itemBuilder: (_, __) => const Padding(
             padding: EdgeInsets.only(bottom: 14),
-            child: ShimmerCard(height: 148),
+            child: ShimmerCard(height: 160),
           ),
         ),
-        dataBuilder: (state) => TabBarView(
-          controller: _tabController,
-          children: [
-            ActiveOrdersSection(
-              orders: state.active,
-              onRefresh: _refresh,
-              onTapOrder: _openOrderDetail,
-              onTrackOrder: _openTracking,
-            ),
-            CompletedOrdersSection(
-              orders: state.completed,
-              onRefresh: _refresh,
-              onTapOrder: _openOrderDetail,
-            ),
-          ],
-        ),
+        dataBuilder: (state) {
+          final returnedOrders = [...state.active, ...state.completed]
+              .where((o) => o.returnRequests.isNotEmpty)
+              .toList()
+            ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+          return TabBarView(
+            controller: _tabController,
+            children: [
+              ActiveOrdersSection(
+                orders: state.active,
+                onRefresh: _refresh,
+                onTapOrder: _openOrderDetail,
+                onTrackOrder: _openTracking,
+              ),
+              CompletedOrdersSection(
+                orders: state.completed,
+                onRefresh: _refresh,
+                onTapOrder: _openOrderDetail,
+              ),
+              ReturnsSection(
+                orders: returnedOrders,
+                onRefresh: _refresh,
+                onTapReturn: _openReturnDetail,
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -98,6 +143,10 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
 
   void _openOrderDetail(Order order) {
     context.push(AppRoutes.orderDetailWithId(order.id));
+  }
+
+  void _openReturnDetail(String returnId) {
+    context.push(AppRoutes.returnDetailWithId(returnId));
   }
 
   void _openTracking(Order order) {

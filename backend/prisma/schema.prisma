@@ -54,6 +54,7 @@ model User {
   returnRequests      ReturnRequest[]     @relation("CustomerReturns")
   staffReturnRequests ReturnRequest[]     @relation("StaffReturns")
   userPromotions            UserPromotion[]
+  aiPreference              UserAiPreference?
 }
 
 model UserAddress {
@@ -147,6 +148,18 @@ model QuizResult {
   createdAt       DateTime @default(now())
   recommendation  String?
   user            User     @relation(fields: [userId], references: [id])
+}
+
+model UserAiPreference {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  riskLevel       Float    @default(0.3)
+  preferredNotes  String[]
+  avoidedNotes    String[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 /// Product & catalog models
@@ -840,6 +853,7 @@ model ReturnRequest {
   refundAmount     Int?             // actual refunded amount
   receivedAt       DateTime?
   receivedLocation ReceivedLocation?
+  videoUrl         String?
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 
