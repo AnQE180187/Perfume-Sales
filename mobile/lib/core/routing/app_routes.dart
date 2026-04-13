@@ -72,6 +72,11 @@ class AppRoutes {
   static const String quiz = '/quiz';
   static const String brandStory = '/brand-story';
   static const String aiPreferences = '/ai-preferences';
+  static const String settings = '/settings';
+  static const String privacyPolicy = '/privacy-policy';
+  static const String termsOfService = '/terms-of-service';
+  static const String helpCenter = '/help-center';
+  static const String contactUs = '/contact-us';
 
   // ============================================
   // STAFF ROUTES

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/currency_utils.dart';
-import '../../../../core/widgets/app_async_widget.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../models/order.dart';
 import '../../services/return_service.dart';
@@ -22,6 +22,7 @@ class ReturnDetailScreen extends ConsumerStatefulWidget {
 
 class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
   late Future<Map<String, dynamic>> _returnFuture;
+  bool _submittingHandover = false;
 
   @override
   void initState() {
@@ -34,22 +35,23 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
   }
 
   Future<void> _cancelReturn() async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(
-          'Hủy yêu cầu',
+          l10n.cancelRequest,
           style: GoogleFonts.playfairDisplay(fontWeight: FontWeight.bold),
         ),
-        content: const Text('Bạn có chắc chắn muốn hủy yêu cầu trả hàng này?'),
+        content: Text(l10n.cancelRequestConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('KHÔNG'),
+            child: Text(l10n.no.toUpperCase()),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('CÓ, HỦY', style: TextStyle(color: Colors.red)),
+            child: Text(l10n.yesCancel, style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -57,10 +59,10 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
 
     if (confirmed == true) {
       try {
-        await ref.read(returnServiceProvider).cancelReturn(widget.returnId, 'User cancelled');
+        await ref.read(returnServiceProvider).cancelReturn(widget.returnId, l10n.userCancelled);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Đã hủy yêu cầu thành công')),
+            SnackBar(content: Text(l10n.cancelSuccess)),
           );
           setState(() {
             _loadData();
@@ -69,10 +71,34 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Lỗi khi hủy: $e'), backgroundColor: Colors.red),
+            SnackBar(content: Text('${l10n.cancelError}: $e'), backgroundColor: Colors.red),
           );
         }
       }
+    }
+  }
+
+  Future<void> _handleHandover() async {
+    final l10n = AppLocalizations.of(context)!;
+    setState(() => _submittingHandover = true);
+    try {
+      await ref.read(returnServiceProvider).confirmHandover(widget.returnId);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.confirmHandoverSuccess)),
+        );
+        setState(() {
+          _loadData();
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${l10n.error}: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _submittingHandover = false);
     }
   }
 
@@ -84,9 +110,9 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
       backgroundColor: AppTheme.ivoryBackground,
       appBar: AppBar(
         title: Text(
-          'CHI TIẾT TRẢ HÀNG',
+          l10n.returnDetail.toUpperCase(),
           style: GoogleFonts.montserrat(
-            fontSize: 16,
+            fontSize: 14,
             fontWeight: FontWeight.w700,
             letterSpacing: 1.2,
           ),
@@ -100,7 +126,7 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
             return const Center(child: CircularProgressIndicator(color: AppTheme.accentGold));
           }
           if (snapshot.hasError) {
-            return Center(child: Text('Lỗi: ${snapshot.error}'));
+            return Center(child: Text('${l10n.error}: ${snapshot.error}'));
           }
           final ret = snapshot.data!;
           final statusStr = ret['status'] as String;
@@ -117,13 +143,11 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header section
                 _buildHeader(ret['id'], status, l10n),
                 const SizedBox(height: 24),
 
-                // Items section
                 Text(
-                  'SẢN PHẨM TRẢ',
+                  l10n.returnedProducts.toUpperCase(),
                   style: GoogleFonts.montserrat(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
@@ -132,12 +156,11 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                ...items.map((item) => _buildItemTile(item)),
+                ...items.map((item) => _buildItemTile(item, l10n)),
                 const SizedBox(height: 24),
 
-                // Evidence section
                 Text(
-                  'HÌNH ẢNH MINH CHỨNG',
+                  l10n.evidenceImages.toUpperCase(),
                   style: GoogleFonts.montserrat(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
@@ -149,19 +172,28 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
                 _buildEvidenceGrid(images, videoUrl),
                 const SizedBox(height: 24),
 
-                // Info section
+                if (status == ReturnStatus.approved || status == ReturnStatus.returning)
+                  _buildShipmentSection(ret, status, l10n),
+
+                if (status == ReturnStatus.received || status == ReturnStatus.refunding)
+                  _buildRefundNoticeSection(l10n),
+
+                if (status == ReturnStatus.completed)
+                  _buildRefundCompletionSection(ret, l10n),
+
+                const SizedBox(height: 48),
+
                 _buildInfoSection(ret, refundInfo, orderCode, totalAmount, l10n),
                 const SizedBox(height: 32),
 
-                // Cancel button
                 if (status == ReturnStatus.requested || status == ReturnStatus.reviewing)
                   Center(
                     child: TextButton.icon(
                       onPressed: _cancelReturn,
                       icon: const Icon(Icons.cancel_outlined, color: Colors.red, size: 18),
-                      label: const Text(
-                        'Hủy yêu cầu',
-                        style: TextStyle(color: Colors.red, fontWeight: FontWeight.w600),
+                      label: Text(
+                        l10n.cancelRequest,
+                        style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),
@@ -188,7 +220,7 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Mã trả hàng',
+                  l10n.returnIdLabel,
                   style: GoogleFonts.montserrat(fontSize: 11, color: AppTheme.mutedSilver),
                 ),
                 Text(
@@ -204,7 +236,7 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
     );
   }
 
-  Widget _buildItemTile(Map<String, dynamic> item) {
+  Widget _buildItemTile(Map<String, dynamic> item, AppLocalizations l10n) {
     final variant = item['variant'];
     final product = variant?['product'];
     final productName = product?['name'] ?? 'Product';
@@ -236,7 +268,7 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
                   style: GoogleFonts.playfairDisplay(fontWeight: FontWeight.bold, fontSize: 15),
                 ),
                 Text(
-                  'Số lượng: ${item['quantity']}',
+                  '${l10n.quantity}: ${item['quantity']}',
                   style: GoogleFonts.montserrat(fontSize: 13, color: AppTheme.mutedSilver),
                 ),
               ],
@@ -301,9 +333,9 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _infoRow('Đơn hàng liên quan', '#$orderCode'),
+        _infoRow(l10n.relatedOrder, '#$orderCode'),
         const Divider(height: 24),
-        _infoRow('Lý do', ret['reason'] ?? 'Không có'),
+        _infoRow(l10n.reasonLabel, ret['reason'] ?? l10n.noReason),
         const SizedBox(height: 24),
         if (refundInfo != null) ...[
           Container(
@@ -316,7 +348,7 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'THÔNG TIN NHẬN HOÀN TIỀN',
+                  l10n.refundInfo.toUpperCase(),
                   style: GoogleFonts.montserrat(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
@@ -325,9 +357,9 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                _refundLine('Ngân hàng', refundInfo['bankName'] ?? ''),
-                _refundLine('Chủ tài khoản', refundInfo['accountName'] ?? ''),
-                _refundLine('Số tài khoản', refundInfo['accountNumber'] ?? ''),
+                _refundLine(l10n.refundBankLabel, refundInfo['bankName'] ?? ''),
+                _refundLine(l10n.refundAccountNameLabel, refundInfo['accountName'] ?? ''),
+                _refundLine(l10n.refundAccountNumberLabel, refundInfo['accountNumber'] ?? ''),
               ],
             ),
           ),
@@ -337,7 +369,7 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'TỔNG GIÁ TRỊ TRẢ',
+              l10n.totalAmount.toUpperCase(),
               style: GoogleFonts.montserrat(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
@@ -346,8 +378,8 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
             ),
             Text(
               formatVND(totalAmount),
-              style: GoogleFonts.playfairDisplay(
-                fontSize: 20,
+              style: GoogleFonts.montserrat(
+                fontSize: 18,
                 fontWeight: FontWeight.w800,
                 color: AppTheme.accentGold,
               ),
@@ -388,22 +420,309 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
     );
   }
 
-  ReturnStatus _parseReturnStatus(String value) {
-    final val = value.toUpperCase();
-    switch (val) {
-      case 'AWAITING_CUSTOMER': return ReturnStatus.awaitingCustomer;
-      case 'REVIEWING': return ReturnStatus.reviewing;
-      case 'APPROVED': return ReturnStatus.approved;
-      case 'RETURNING': return ReturnStatus.returning;
-      case 'RECEIVED': return ReturnStatus.received;
-      case 'REFUNDING': return ReturnStatus.refunding;
-      case 'REFUND_FAILED': return ReturnStatus.refundFailed;
-      case 'COMPLETED': return ReturnStatus.completed;
-      case 'REJECTED': return ReturnStatus.rejected;
-      case 'REJECTED_AFTER_RETURN': return ReturnStatus.rejectedAfterReturn;
-      case 'CANCELLED': return ReturnStatus.cancelled;
-      case 'REQUESTED':
-      default: return ReturnStatus.requested;
-    }
+  Widget _buildShipmentSection(Map<String, dynamic> ret, ReturnStatus status, AppLocalizations l10n) {
+    final shipments = (ret['shipments'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    final isOnline = ret['origin'] == 'ONLINE';
+    final ghnShipment = shipments.firstWhere((s) => s['courier'] == 'GHN', orElse: () => {});
+    final hasGhnPickup = isOnline && ghnShipment.isNotEmpty;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              l10n.shipmentTitle,
+              style: GoogleFonts.montserrat(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.mutedSilver,
+                letterSpacing: 1.0,
+              ),
+            ),
+            const Spacer(),
+            if (hasGhnPickup)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2B67F6).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFF2B67F6).withValues(alpha: 0.3)),
+                ),
+                child: Text(
+                  l10n.supportPickup,
+                  style: const TextStyle(color: Color(0xFF2B67F6), fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 0.5),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        if (hasGhnPickup)
+          _buildGhnPickupView(ghnShipment, status, l10n)
+        else if (shipments.isNotEmpty)
+          ...shipments.map((s) => _buildManualShipmentTile(s, l10n))
+        else
+          _buildManualShipmentPrompt(l10n),
+      ],
+    );
+  }
+
+  Widget _buildGhnPickupView(Map<String, dynamic> shipment, ReturnStatus status, AppLocalizations l10n) {
+    final trackingNumber = shipment['trackingNumber'] ?? '';
+    final trackingUrl = 'https://ghn.vn/blogs/trang-thai-don-hang?order_code=$trackingNumber';
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2B67F6).withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFF2B67F6).withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.check_circle, color: Color(0xFF2B67F6), size: 20),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  l10n.ghnPickupNotice,
+                  style: GoogleFonts.montserrat(
+                    color: const Color(0xFF1A45A0),
+                    fontWeight: FontWeight.w800,
+                    fontSize: 14,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            l10n.ghnPickupDesc,
+            style: GoogleFonts.montserrat(
+              color: const Color(0xFF1A45A0).withValues(alpha: 0.8),
+              fontSize: 12,
+              height: 1.5,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF2B67F6).withValues(alpha: 0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'GHN TRACKING',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 8,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.grey.shade400,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        trackingNumber,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                          color: const Color(0xFF2B67F6),
+                          letterSpacing: 0.0,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                TextButton.icon(
+                  onPressed: () => launchUrl(Uri.parse(trackingUrl)),
+                  icon: const Icon(Icons.open_in_new, size: 12, color: AppTheme.accentGold),
+                  label: Text(
+                    l10n.trackMovement,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: AppTheme.accentGold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (status == ReturnStatus.approved) ...[
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _submittingHandover ? null : _handleHandover,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2B67F6),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  elevation: 4,
+                  shadowColor: const Color(0xFF2B67F6).withValues(alpha: 0.4),
+                ),
+                icon: _submittingHandover
+                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                    : const Icon(Icons.handshake_rounded, size: 18),
+                label: Text(
+                  l10n.confirmHandover,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildManualShipmentTile(Map<String, dynamic> shipment, AppLocalizations l10n) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.softTaupe.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.local_shipping, color: AppTheme.accentGold, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(shipment['courier'] ?? l10n.shipmentTitle, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                Text(shipment['trackingNumber'] ?? '', style: GoogleFonts.montserrat(fontSize: 13, color: AppTheme.mutedSilver)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildManualShipmentPrompt(AppLocalizations l10n) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.softTaupe.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.softTaupe.withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        children: [
+          Text(
+            l10n.supportShowroomReturn,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 12, color: AppTheme.mutedSilver),
+          ),
+          const SizedBox(height: 12),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRefundNoticeSection(AppLocalizations l10n) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF7E6),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFFFD666)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.info_outline, color: Color(0xFFD48806)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              l10n.adminRefundNotice,
+              style: GoogleFonts.montserrat(fontSize: 13, color: const Color(0xFFD48806), fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRefundCompletionSection(Map<String, dynamic> ret, AppLocalizations l10n) {
+    final refunds = (ret['refunds'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    if (refunds.isEmpty) return const SizedBox.shrink();
+    
+    final refund = refunds.first;
+    final amount = refund['amount'] ?? 0;
+    final createdAt = refund['createdAt'] != null ? DateTime.parse(refund['createdAt']) : DateTime.now();
+    final timeStr = DateFormat('HH:mm dd/MM/yyyy').format(createdAt);
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE8F5E9),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFB9F6CA)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.check_circle, color: Color(0xFF2E7D32)),
+              const SizedBox(width: 10),
+              Text(
+                l10n.refundConfirmed,
+                style: GoogleFonts.montserrat(color: const Color(0xFF1B5E20), fontWeight: FontWeight.w800, fontSize: 13),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2E7D32),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  l10n.statusSuccess,
+                  style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w900),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _infoRow(l10n.refundedAmount, formatVND((amount as num).toDouble())),
+          const SizedBox(height: 8),
+          _infoRow(l10n.timeUpper, timeStr),
+        ],
+      ),
+    );
+  }
+
+  ReturnStatus _parseReturnStatus(String status) {
+    return ReturnStatus.values.firstWhere(
+      (e) => e.name == status.toLowerCase() || e.name == status,
+      orElse: () => ReturnStatus.requested,
+    );
   }
 }

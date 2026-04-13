@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 
 void showClearCartModal(
   BuildContext context, {
@@ -21,6 +22,7 @@ class ClearCartModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -31,7 +33,6 @@ class ClearCartModal extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Handle Bar
             Container(
               width: 40,
               height: 4,
@@ -41,8 +42,6 @@ class ClearCartModal extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-
-            // Icon
             Container(
               width: 64,
               height: 64,
@@ -57,10 +56,8 @@ class ClearCartModal extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-
-            // Title
             Text(
-              'Xóa toàn bộ giỏ hàng?',
+              l10n.clearCartConfirm,
               style: GoogleFonts.playfairDisplay(
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
@@ -68,10 +65,8 @@ class ClearCartModal extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-
-            // Subtitle
             Text(
-              'Thao tác này sẽ xóa tất cả sản phẩm bạn đã chọn.',
+              l10n.clearCartSubtitle,
               textAlign: TextAlign.center,
               style: GoogleFonts.montserrat(
                 fontSize: 14,
@@ -80,8 +75,6 @@ class ClearCartModal extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 32),
-
-            // Keep Items Button
             SizedBox(
               width: double.infinity,
               height: 52,
@@ -97,7 +90,7 @@ class ClearCartModal extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  'Giữ lại sản phẩm',
+                  l10n.keepItems,
                   style: GoogleFonts.montserrat(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -107,8 +100,6 @@ class ClearCartModal extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-
-            // Clear All Button
             SizedBox(
               width: double.infinity,
               height: 52,
@@ -120,7 +111,7 @@ class ClearCartModal extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  'Xóa tất cả',
+                  l10n.clearAll,
                   style: GoogleFonts.montserrat(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,

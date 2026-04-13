@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/promotions_provider.dart';
 
@@ -64,6 +65,7 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
   }
 
   Widget _buildApplied() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -100,7 +102,7 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
                   ),
                 ),
                 Text(
-                  'Giảm ${(widget.promoDiscount * 100).toInt()}% đã được áp dụng',
+                  l10n.discountAppliedWithPercent((widget.promoDiscount * 100).toInt()),
                   style: GoogleFonts.montserrat(
                     fontSize: 11,
                     color: AppTheme.mutedSilver,
@@ -116,7 +118,7 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
               color: AppTheme.mutedSilver,
             ),
             onPressed: () => ref.read(cartProvider.notifier).removePromoCode(),
-            tooltip: 'Xóa mã',
+            tooltip: l10n.removeCode,
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
           ),
@@ -126,6 +128,7 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
   }
 
   Widget _buildExpandable() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -148,7 +151,7 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               child: Row(
                 children: [
-                  const Icon(
+                   const Icon(
                     Icons.local_offer_outlined,
                     color: AppTheme.accentGold,
                     size: 20,
@@ -156,7 +159,7 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      'Bạn có mã khuyến mãi?',
+                      l10n.havePromoCode,
                       style: GoogleFonts.montserrat(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
@@ -191,7 +194,7 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
                           controller: widget.controller,
                           textCapitalization: TextCapitalization.characters,
                           decoration: InputDecoration(
-                            hintText: 'Nhập mã giảm giá',
+                            hintText: l10n.enterPromoCode,
                             hintStyle: GoogleFonts.montserrat(
                               fontSize: 13,
                               color: AppTheme.mutedSilver,
@@ -260,7 +263,7 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
                                   ),
                                 )
                               : Text(
-                                  'Áp dụng',
+                                  l10n.apply,
                                   style: GoogleFonts.montserrat(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w600,
@@ -271,7 +274,7 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
                     ],
                   ),
                   const SizedBox(height: 16),
-                  _buildPublicPromos(),
+                  _buildPublicPromos(l10n),
                 ],
               ),
             ),
@@ -281,7 +284,7 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
     );
   }
 
-  Widget _buildPublicPromos() {
+  Widget _buildPublicPromos(AppLocalizations l10n) {
     final promosAsync = ref.watch(activePromotionsProvider);
     return promosAsync.when(
       loading: () => const Center(
@@ -301,7 +304,7 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'MÃ KHUYẾN MÃI CÓ SẴN',
+              l10n.availablePromoCodes,
               style: GoogleFonts.montserrat(
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
@@ -313,7 +316,7 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
             ...promos.map(
               (promo) => Padding(
                 padding: const EdgeInsets.only(bottom: 8),
-                child: _buildPromoItem(promo.code, promo.displayDescription),
+                child: _buildPromoItem(promo.code, promo.displayDescription, l10n),
               ),
             ),
           ],
@@ -322,7 +325,7 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
     );
   }
 
-  Widget _buildPromoItem(String code, String desc) {
+  Widget _buildPromoItem(String code, String desc, AppLocalizations l10n) {
     final bool isSelected = widget.promoCode == code;
 
     return GestureDetector(
@@ -359,7 +362,6 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
             ),
             child: Row(
               children: [
-                // Icon/Logo Placeholder
                 Container(
                   width: 40,
                   height: 40,
@@ -407,7 +409,7 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
                   )
                 else
                   Text(
-                    'DÙNG',
+                    l10n.useCode,
                     style: GoogleFonts.montserrat(
                       fontSize: 10,
                       fontWeight: FontWeight.w800,
@@ -429,7 +431,6 @@ class _VoucherTicketClipper extends CustomClipper<Path> {
   Path getClip(Size size) {
     const double radius = 8.0;
     final path = Path();
-    
     path.lineTo(0.0, size.height / 2 - radius);
     path.arcToPoint(
       Offset(0.0, size.height / 2 + radius),
@@ -447,10 +448,8 @@ class _VoucherTicketClipper extends CustomClipper<Path> {
     path.lineTo(size.width, 0.0);
     path.lineTo(0.0, 0.0);
     path.close();
-    
     return path;
   }
-
   @override
   bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }

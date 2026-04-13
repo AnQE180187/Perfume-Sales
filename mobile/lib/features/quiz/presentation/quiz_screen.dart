@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/glass_container.dart';
 import '../providers/quiz_provider.dart';
+import '../../../l10n/app_localizations.dart';
 
 class QuizScreen extends ConsumerStatefulWidget {
   const QuizScreen({super.key});
@@ -27,18 +28,15 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
     'calendar_month': Icons.calendar_month_outlined,
     'celebration': Icons.celebration_outlined,
     'auto_awesome': Icons.auto_awesome_outlined,
-    // Budget icons (Gold stacks logic)
     'savings': Icons.savings_outlined,
     'paid': Icons.paid_outlined,
     'currency_exchange': Icons.currency_exchange_outlined,
     'payments': Icons.payments_outlined,
     'workspace_premium': Icons.workspace_premium_outlined,
-    // Longevity icons
     'hourglass': Icons.hourglass_empty_rounded,
     'schedule': Icons.schedule_outlined,
     'timer': Icons.timer_outlined,
     'bolt': Icons.bolt_outlined,
-    // Families
     'air': Icons.air_rounded,
     'local_florist': Icons.local_florist_outlined,
     'park': Icons.park_outlined,
@@ -64,6 +62,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
   @override
   Widget build(BuildContext context) {
     final quizState = ref.watch(quizProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     if (quizState.isAnalyzing && !_analysisController.isAnimating) {
       _analysisController.repeat();
@@ -75,7 +74,6 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
       backgroundColor: AppTheme.ivoryBackground,
       body: Stack(
         children: [
-          // Background Decorative elements
           Positioned(
             top: -100,
             right: -100,
@@ -93,11 +91,11 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
             child: Column(
               children: [
                 if (quizState.errorMessage != null)
-                  _buildErrorHeader(quizState.errorMessage!),
+                  _buildErrorHeader(quizState.errorMessage!, l10n),
                 Expanded(
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 500),
-                    child: _buildCurrentStage(quizState),
+                    child: _buildCurrentStage(quizState, l10n),
                   ),
                 ),
               ],
@@ -108,14 +106,14 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
     );
   }
 
-  Widget _buildCurrentStage(QuizState state) {
-    if (_showIntro) return _buildIntro(key: const ValueKey('intro'));
-    if (state.isAnalyzing) return _buildAnalyzing(key: const ValueKey('analyzing'));
-    if (state.isComplete) return _buildResults(state, key: const ValueKey('results'));
-    return _buildQuizFlow(state, key: ValueKey('step_${state.currentStep}'));
+  Widget _buildCurrentStage(QuizState state, AppLocalizations l10n) {
+    if (_showIntro) return _buildIntro(l10n, key: const ValueKey('intro'));
+    if (state.isAnalyzing) return _buildAnalyzing(l10n, key: const ValueKey('analyzing'));
+    if (state.isComplete) return _buildResults(state, l10n, key: const ValueKey('results'));
+    return _buildQuizFlow(state, l10n, key: ValueKey('step_${state.currentStep}'));
   }
 
-  Widget _buildErrorHeader(String message) {
+  Widget _buildErrorHeader(String message, AppLocalizations l10n) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -132,8 +130,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
     );
   }
 
-  // 1. Intro Stage
-  Widget _buildIntro({Key? key}) {
+  Widget _buildIntro(AppLocalizations l10n, {Key? key}) {
     return Padding(
       key: key,
       padding: const EdgeInsets.all(32),
@@ -151,7 +148,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
           ),
           const SizedBox(height: 40),
           Text(
-            'Khám phá Chữ ký\nMùi hương của Bạn',
+            l10n.discoverYourScentSignature,
             style: GoogleFonts.playfairDisplay(
               fontSize: 32,
               fontWeight: FontWeight.w700,
@@ -162,7 +159,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
           ),
           const SizedBox(height: 20),
           Text(
-            'Hãy trả lời 5 câu hỏi nhanh để AI của chúng tôi tìm ra mùi hương lý tưởng nhất dành riêng cho cá tính của bạn.',
+            l10n.quizIntroDescription,
             style: GoogleFonts.montserrat(
               fontSize: 14,
               fontWeight: FontWeight.w400,
@@ -186,7 +183,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'BẮT ĐẦU NGAY',
+                  l10n.startNow.toUpperCase(),
                   style: GoogleFonts.montserrat(
                     fontWeight: FontWeight.w800,
                     letterSpacing: 2,
@@ -200,7 +197,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
           ),
           const SizedBox(height: 24),
           Text(
-            'Ước tính: 2 phút',
+            l10n.estimatedTime,
             style: GoogleFonts.montserrat(
               fontSize: 10,
               fontWeight: FontWeight.w600,
@@ -213,16 +210,41 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
     );
   }
 
-  // 2. Quiz Flow Stage
-  Widget _buildQuizFlow(QuizState state, {Key? key}) {
-    final question = QuizState.questions[state.currentStep];
+  Widget _buildQuizFlow(QuizState state, AppLocalizations l10n, {Key? key}) {
+    final questionRaw = QuizState.questions[state.currentStep];
     final selectedIndex = state.answers[state.currentStep];
+
+    // Localize question and options
+    String questionText = '';
+    List<String> optionTitles = [];
+
+    switch (state.currentStep) {
+      case 0:
+        questionText = l10n.q1Text;
+        optionTitles = [l10n.q1Opt1, l10n.q1Opt2, l10n.q1Opt3];
+        break;
+      case 1:
+        questionText = l10n.q2Text;
+        optionTitles = [l10n.q2Opt1, l10n.q2Opt2, l10n.q2Opt3, l10n.q2Opt4, l10n.q2Opt5];
+        break;
+      case 2:
+        questionText = l10n.q3Text;
+        optionTitles = questionRaw.options.map((o) => o.title).toList(); // Budget values are fine as is
+        break;
+      case 3:
+        questionText = l10n.q4Text;
+        optionTitles = [l10n.q4Opt1, l10n.q4Opt2, l10n.q4Opt3, l10n.q4Opt4, l10n.q4Opt5];
+        break;
+      case 4:
+        questionText = l10n.q5Text;
+        optionTitles = [l10n.q5Opt1, l10n.q5Opt2, l10n.q5Opt3, l10n.q5Opt4];
+        break;
+    }
 
     return Column(
       key: key,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Progress bar
         Padding(
           padding: const EdgeInsets.fromLTRB(24, 20, 24, 40),
           child: Row(
@@ -245,7 +267,6 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
           ),
         ),
 
-        // Header
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
@@ -259,7 +280,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
                       onPressed: () => ref.read(quizProvider.notifier).goBack(),
                     ),
                   Text(
-                    'BƯỚC ${state.currentStep + 1} / ${state.totalSteps}',
+                    l10n.stepProgress(state.currentStep + 1, state.totalSteps),
                     style: GoogleFonts.montserrat(
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
@@ -271,41 +292,27 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
               ),
               const SizedBox(height: 12),
               Text(
-                question.text,
+                questionText,
                 style: GoogleFonts.playfairDisplay(
                   fontSize: 28,
                   fontWeight: FontWeight.w700,
                   color: AppTheme.deepCharcoal,
                 ),
               ),
-              if (state.errorMessage != null && state.currentStep == state.totalSteps - 1)
-                Padding(
-                  padding: const EdgeInsets.only(top: 16),
-                  child: ElevatedButton.icon(
-                    onPressed: () => ref.read(quizProvider.notifier).selectOption(selectedIndex!),
-                    icon: const Icon(Icons.refresh_rounded, size: 16),
-                    label: const Text('THỬ LẠI'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.accentGold,
-                      foregroundColor: Colors.white,
-                      textStyle: GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                ),
             ],
           ),
         ),
 
         const SizedBox(height: 48),
 
-        // Options
         Expanded(
           child: ListView.separated(
             padding: const EdgeInsets.fromLTRB(24, 0, 24, 40),
-            itemCount: question.options.length,
+            itemCount: optionTitles.length,
             separatorBuilder: (_, __) => const SizedBox(height: 16),
             itemBuilder: (context, index) {
-              final option = question.options[index];
+              final option = questionRaw.options[index];
+              final title = optionTitles[index];
               final isSelected = selectedIndex == index;
 
               return GestureDetector(
@@ -355,7 +362,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
                       const SizedBox(width: 24),
                       Expanded(
                         child: Text(
-                          option.title,
+                          title,
                           style: GoogleFonts.montserrat(
                             fontSize: 17,
                             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
@@ -376,14 +383,12 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
     );
   }
 
-  // 3. Analyzing Stage
-  Widget _buildAnalyzing({Key? key}) {
+  Widget _buildAnalyzing(AppLocalizations l10n, {Key? key}) {
     return Center(
       key: key,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Aura Analysis Frame
           SizedBox(
             width: 200,
             height: 200,
@@ -401,7 +406,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
           ),
           const SizedBox(height: 50),
           Text(
-            'PHÂN TÍCH AURA...',
+            l10n.auraAnalysis,
             style: GoogleFonts.playfairDisplay(
               fontSize: 24,
               fontWeight: FontWeight.w700,
@@ -411,7 +416,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
           ),
           const SizedBox(height: 12),
           Text(
-            'Đang cá nhân hóa trải nghiệm khứu giác của bạn',
+            l10n.personalizingScentExperience,
             style: GoogleFonts.montserrat(
               fontSize: 12,
               fontWeight: FontWeight.w400,
@@ -420,7 +425,6 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
           ),
           const SizedBox(height: 40),
           
-          // Terminal status
           Container(
             width: 280,
             padding: const EdgeInsets.all(24),
@@ -432,10 +436,10 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildStatusRow('Đang xử lý dữ liệu khứu giác...', 0.5),
-                _buildStatusRow('Đối chiếu nốt hương cộng hưởng...', 1.5),
-                _buildStatusRow('Xác định chữ ký cá nhân...', 2.5),
-                _buildStatusRow('Hoàn tất thuật toán Aura...', 3.5),
+                _buildStatusRow(l10n.processingOlfactoryData, 0.5),
+                _buildStatusRow(l10n.matchingResonantNotes, 1.5),
+                _buildStatusRow(l10n.identifyingPersonalSignature, 2.5),
+                _buildStatusRow(l10n.completingAuraAlgorithm, 3.5),
               ],
             ),
           ),
@@ -473,8 +477,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
     );
   }
 
-  // 4. Results Stage
-  Widget _buildResults(QuizState state, {Key? key}) {
+  Widget _buildResults(QuizState state, AppLocalizations l10n, {Key? key}) {
     return SingleChildScrollView(
       key: key,
       padding: const EdgeInsets.symmetric(vertical: 40),
@@ -483,7 +486,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
           const Icon(Icons.check_circle_outline_rounded, color: AppTheme.accentGold, size: 80),
           const SizedBox(height: 24),
           Text(
-            'Chữ ký Mùi hương của Bạn',
+            l10n.yourScentSignature,
             style: GoogleFonts.playfairDisplay(
               fontSize: 28,
               fontWeight: FontWeight.w700,
@@ -495,7 +498,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 40),
             child: Text(
-              'Dựa trên sở thích của bạn, thuật toán Aura đã tinh tuyển những mùi hương phù hợp nhất.',
+              l10n.resultsDescription,
               style: GoogleFonts.montserrat(
                 fontSize: 13,
                 fontWeight: FontWeight.w400,
@@ -507,7 +510,6 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
           ),
           const SizedBox(height: 40),
           
-          // Recommendations List
           if (state.recommendations.isNotEmpty)
             SizedBox(
               height: 550,
@@ -518,14 +520,14 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
                 separatorBuilder: (_, __) => const SizedBox(width: 20),
                 itemBuilder: (context, index) {
                   final rec = state.recommendations[index];
-                  return _buildRecommendationCard(rec);
+                  return _buildRecommendationCard(rec, l10n);
                 },
               ),
             )
           else
-            const Center(child: Text('Không tìm thấy đề xuất phù hợp.')),
+            Center(child: Text(l10n.noRecommendations)),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 40),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32),
             child: Row(
@@ -542,7 +544,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
                     child: Text(
-                      'LÀM LẠI',
+                      l10n.retakeQuiz,
                       style: GoogleFonts.montserrat(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
@@ -567,7 +569,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
                     child: Text(
-                      'KHÁM PHÁ CỬA HÀNG',
+                      l10n.exploreStore,
                       style: GoogleFonts.montserrat(
                         fontWeight: FontWeight.w800,
                         letterSpacing: 1,
@@ -584,7 +586,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
     );
   }
 
-  Widget _buildRecommendationCard(dynamic rec) {
+  Widget _buildRecommendationCard(dynamic rec, AppLocalizations l10n) {
     final imageUrl = rec['imageUrl'] as String?;
     final name = rec['name'] as String? ?? 'Scent';
     final brand = rec['brand'] as String? ?? 'Luxury Brand';
@@ -607,7 +609,6 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Image Section
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
             child: AspectRatio(
@@ -638,7 +639,6 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
             ),
           ),
           
-          // Content Section
           Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -684,7 +684,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
                     child: Row(
                       children: [
                         Text(
-                          'CHI TIẾT MÙI HƯƠNG',
+                          l10n.scentDetails.toUpperCase(),
                           style: GoogleFonts.montserrat(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
@@ -707,9 +707,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
   TextSpan _buildHighlightedReason(String reason) {
     final List<TextSpan> spans = [];
     final words = reason.split(' ');
-    
-    // Simple logic to highlight perfume keywords
-    final keywords = ['hương', 'nốt', 'tinh', 'phù', 'hợp', 'sang', 'trọng', 'cuốn', 'hút', 'quyến', 'rũ'];
+    final keywords = ['hương', 'nốt', 'tinh', 'phù', 'hợp', 'sang', 'trọng', 'cuốn', 'hút', 'quyến', 'rũ', 'scent', 'note', 'matching', 'luxury', 'elegant'];
 
     for (var word in words) {
       final isKeyword = keywords.any((k) => word.toLowerCase().contains(k));
@@ -748,7 +746,6 @@ class AuraAnalysisPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
 
-    // Draw three silk-like rotating paths
     for (int i = 0; i < 3; i++) {
       paint.color = AppTheme.accentGold.withValues(alpha: 0.2 + (i * 0.2));
       final radius = (size.width / 2) - (i * 15);
@@ -759,7 +756,6 @@ class AuraAnalysisPainter extends CustomPainter {
       canvas.drawArc(rect, rotation + 3.14159, 1.0, false, paint);
     }
 
-    // Draw fluid particles (dots)
     final dotPaint = Paint()..color = AppTheme.accentGold;
     for (int i = 0; i < 8; i++) {
         final angle = (progress * 2 * math.pi) + (i * math.pi / 4);

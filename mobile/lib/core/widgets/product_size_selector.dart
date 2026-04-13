@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 
 class ProductSizeSelector extends StatefulWidget {
@@ -27,16 +28,17 @@ class _ProductSizeSelectorState extends State<ProductSizeSelector> {
     return const ['10ml', '20ml', '50ml', '100ml'];
   }
 
-  String? _labelFor(String size) {
+  String? _labelFor(String size, AppLocalizations l10n) {
     if (widget.sizes != null && widget.sizes!.isNotEmpty) return null;
-    if (size == '10ml') return 'DÙNG THỬ';
-    if (size == '100ml') return 'TIẾT KIỆM NHẤT';
+    if (size == '10ml') return l10n.trialSize;
+    if (size == '100ml') return l10n.bestValue;
     return null;
   }
 
   @override
   Widget build(BuildContext context) {
     final sizes = _sizes;
+    final l10n = AppLocalizations.of(context)!;
 
     return Transform.translate(
       offset: const Offset(0, -30),
@@ -46,7 +48,7 @@ class _ProductSizeSelectorState extends State<ProductSizeSelector> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Chọn dung tích',
+              l10n.selectSize,
               style: GoogleFonts.montserrat(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -60,7 +62,7 @@ class _ProductSizeSelectorState extends State<ProductSizeSelector> {
                   Expanded(
                     child: _SizeOption(
                       size: sizes[i],
-                      label: _labelFor(sizes[i]),
+                      label: _labelFor(sizes[i], l10n),
                       isSelected: widget.selectedSize == sizes[i],
                       onTap: () => widget.onSizeChanged(sizes[i]),
                     ),

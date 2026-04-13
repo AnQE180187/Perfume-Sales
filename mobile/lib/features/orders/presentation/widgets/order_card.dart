@@ -100,7 +100,7 @@ class OrderCard extends StatelessWidget {
                           children: [
                             Text(
                               variant == OrderCardVariant.returns && order.returnRequests.isNotEmpty
-                                  ? 'Mã trả hàng #${order.returnRequests.first.id.substring(order.returnRequests.first.id.length - 8).toUpperCase()}'
+                                  ? '${l10n.returnCode} #${order.returnRequests.first.id.substring(order.returnRequests.first.id.length - 8).toUpperCase()}'
                                   : order.code,
                               style: GoogleFonts.montserrat(
                                 fontSize: 11,
@@ -123,7 +123,7 @@ class OrderCard extends StatelessWidget {
                             const SizedBox(height: 6),
                             if (variant == OrderCardVariant.returns && order.returnRequests.isNotEmpty) ...[
                               Text(
-                                'Đơn hàng liên quan: ${order.code}',
+                                '${l10n.relatedOrder}: ${order.code}',
                                 style: GoogleFonts.montserrat(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
@@ -192,12 +192,12 @@ class OrderCard extends StatelessWidget {
     final ctaLabel = showTrack
         ? l10n.trackShipment
         : isReturn
-            ? 'Chi tiết trả hàng'
+            ? l10n.returnDetails
             : isCancelled
-                ? 'Xem chi tiết'
+                ? l10n.viewDetails
                 : isReviewed
-                    ? 'Đã đánh giá'
-                    : 'Đánh giá';
+                    ? l10n.reviewed
+                    : l10n.review;
 
     return Row(
       children: [
@@ -209,7 +209,7 @@ class OrderCard extends StatelessWidget {
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
           child: Text(
-            'Xem chi tiết',
+            l10n.viewDetails,
             style: GoogleFonts.montserrat(
               fontSize: 12,
               fontWeight: FontWeight.w600,
@@ -250,8 +250,8 @@ class OrderCard extends StatelessWidget {
                       showTrack 
                           ? l10n.traceOrder 
                           : isReturn 
-                              ? 'Chi tiết' 
-                              : (isCancelled ? 'Xem chi tiết' : (isReviewed ? 'Đã đánh giá' : 'Đánh giá')),
+                              ? l10n.viewDetails 
+                              : (isCancelled ? l10n.viewDetails : (isReviewed ? l10n.reviewed : l10n.review)),
                       style: GoogleFonts.montserrat(
                         fontWeight: FontWeight.w700,
                         fontSize: 11,

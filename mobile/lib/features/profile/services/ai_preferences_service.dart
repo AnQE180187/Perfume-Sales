@@ -20,6 +20,11 @@ class AiPreferencesService {
     return AiPreferences.fromJson(response.data!);
   }
 
+  Future<AiPreferences> resetPreferences() async {
+    final response = await _apiClient.patch<Map<String, dynamic>>('/ai-preferences/reset');
+    return AiPreferences.fromJson(response.data!);
+  }
+
   Future<List<String>> listScentNotes() async {
     final response = await _apiClient.get<List<dynamic>>('/catalog/scent-notes');
     return response.data!.map((e) => e.toString()).toList();

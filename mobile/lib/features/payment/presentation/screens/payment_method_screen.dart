@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../../l10n/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../models/payment_method.dart';
 import '../../providers/payment_method_provider.dart';
@@ -14,6 +15,7 @@ class PreferredPaymentMethodScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final methods = ref.watch(paymentMethodsProvider);
     final selectedMethod = ref.watch(selectedPaymentMethodProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: AppTheme.ivoryBackground,
@@ -37,7 +39,7 @@ class PreferredPaymentMethodScreen extends ConsumerWidget {
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(
-                      'Phương thức thanh toán',
+                      l10n.paymentMethodTitle,
                       style: GoogleFonts.playfairDisplay(
                         fontSize: 22,
                         fontWeight: FontWeight.w600,
@@ -54,7 +56,7 @@ class PreferredPaymentMethodScreen extends ConsumerWidget {
               child: methods.isEmpty
                   ? Center(
                       child: Text(
-                        'Chưa có phương thức thanh toán khả dụng.',
+                        l10n.noPaymentMethods,
                         style: GoogleFonts.montserrat(
                           fontSize: 14,
                           color: AppTheme.mutedSilver,
@@ -68,7 +70,7 @@ class PreferredPaymentMethodScreen extends ConsumerWidget {
                         Padding(
                           padding: const EdgeInsets.only(bottom: 18),
                           child: Text(
-                            'Chọn phương thức mặc định cho đơn hàng tiếp theo',
+                            l10n.paymentMethodSubtitle,
                             style: GoogleFonts.montserrat(
                               fontSize: 13,
                               fontWeight: FontWeight.w400,
@@ -85,7 +87,7 @@ class PreferredPaymentMethodScreen extends ConsumerWidget {
                             description: method.description,
                             type: method.type,
                             isSelected: selectedMethod?.id == method.id,
-                            badgeLabel: _badgeFor(method.type),
+                            badgeLabel: _badgeFor(method.type, l10n),
                             onTap: () => _onSelectMethod(context, ref, method),
                           ),
 
@@ -101,12 +103,12 @@ class PreferredPaymentMethodScreen extends ConsumerWidget {
     );
   }
 
-  String? _badgeFor(PaymentMethodType type) {
+  String? _badgeFor(PaymentMethodType type, AppLocalizations l10n) {
     switch (type) {
       case PaymentMethodType.payos:
-        return 'Đề xuất';
+        return l10n.recommended;
       case PaymentMethodType.cod:
-        return 'Dự phòng';
+        return l10n.standby;
       default:
         return null;
     }
@@ -128,6 +130,7 @@ class PreferredPaymentMethodScreen extends ConsumerWidget {
 class _InfoNote extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -145,8 +148,7 @@ class _InfoNote extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'PayOS cho phép quét QR hoặc chuyển khoản tức thì. '
-              'COD phù hợp khi bạn muốn kiểm tra hàng trước khi thanh toán.',
+              l10n.payosNoteLong,
               style: GoogleFonts.montserrat(
                 fontSize: 11,
                 height: 1.55,

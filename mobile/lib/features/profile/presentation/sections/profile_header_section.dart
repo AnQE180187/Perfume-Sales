@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 
 /// Profile Header Section
 ///
 /// Top bar with back button, title, and edit action.
-///
-/// Why this is a section:
-/// - Separates header logic from profile content
-/// - Makes it easy to customize header behavior per screen
-/// - Reusable across other profile-related screens
 class ProfileHeaderSection extends StatelessWidget {
   final VoidCallback onBack;
   final VoidCallback onEdit;
@@ -22,6 +18,7 @@ class ProfileHeaderSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.fromLTRB(8, 12, 16, 12),
       color: Colors.transparent,
@@ -35,7 +32,7 @@ class ProfileHeaderSection extends StatelessWidget {
             padding: const EdgeInsets.all(8),
           ),
           Text(
-            'HỒ SƠ CỦA TÔI',
+            l10n.myProfile,
             style: GoogleFonts.montserrat(
               fontSize: 14,
               fontWeight: FontWeight.w700,

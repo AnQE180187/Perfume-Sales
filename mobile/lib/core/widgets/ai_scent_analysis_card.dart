@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 
 class AIScentAnalysisCard extends StatelessWidget {
@@ -16,6 +17,7 @@ class AIScentAnalysisCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final highlightNote = notes.isNotEmpty ? notes.first : 'floral';
 
     return Transform.translate(
@@ -49,7 +51,7 @@ class AIScentAnalysisCard extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Phân tích mùi hương AI',
+                        l10n.aiScentAnalysis,
                         style: GoogleFonts.montserrat(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -82,9 +84,8 @@ class AIScentAnalysisCard extends StatelessWidget {
                           color: AppTheme.deepCharcoal.withValues(alpha: 0.8),
                         ),
                         children: [
-                          const TextSpan(
-                            text:
-                                'Chúng tôi đề xuất sản phẩm này dựa trên sự yêu thích của bạn với nốt hương ',
+                          TextSpan(
+                            text: l10n.aiScentAnalysisDesc1,
                           ),
                           TextSpan(
                             text: highlightNote.toLowerCase(),
@@ -93,9 +94,8 @@ class AIScentAnalysisCard extends StatelessWidget {
                               color: AppTheme.accentGold,
                             ),
                           ),
-                          const TextSpan(
-                            text:
-                                '. Sự kết hợp hoàn hảo giữa các tầng hương này sẽ mang lại trải nghiệm tinh tế, thanh tao và lưu hương bền lâu trên làn da bạn.',
+                          TextSpan(
+                            text: l10n.aiScentAnalysisDesc2,
                           ),
                         ],
                       ),

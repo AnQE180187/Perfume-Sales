@@ -11,17 +11,27 @@ class OrderListState {
   final List<Order> all;
   final List<Order> active;
   final List<Order> completed;
+  final List<Order> cancelled;
 
   const OrderListState({
     required this.all,
     required this.active,
     required this.completed,
+    required this.cancelled,
   });
 
   factory OrderListState.fromOrders(List<Order> orders) {
     final active = orders.where((order) => order.status.isActive).toList();
-    final completed = orders.where((order) => order.isCompletedBucket).toList();
-    return OrderListState(all: orders, active: active, completed: completed);
+    final completed =
+        orders.where((order) => order.status == OrderStatus.completed).toList();
+    final cancelled =
+        orders.where((order) => order.status == OrderStatus.cancelled).toList();
+    return OrderListState(
+      all: orders,
+      active: active,
+      completed: completed,
+      cancelled: cancelled,
+    );
   }
 }
 

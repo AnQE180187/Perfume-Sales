@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 
 class HomeHeader extends StatelessWidget {
@@ -8,6 +9,7 @@ class HomeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -62,7 +64,7 @@ class HomeHeader extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Tìm thương hiệu, nốt hương hoặc cảm xúc...',
+                      l10n.searchExploreHintHome,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.montserrat(
@@ -88,9 +90,9 @@ class HomeHeader extends StatelessWidget {
                 color: AppTheme.deepCharcoal,
               ),
               children: [
-                const TextSpan(text: 'Nâng tầm '),
+                TextSpan(text: l10n.headlineElevate),
                 TextSpan(
-                  text: 'dấu ấn',
+                  text: l10n.headlineSignature,
                   style: GoogleFonts.playfairDisplay(
                     fontSize: 32,
                     fontWeight: FontWeight.w400,
@@ -98,7 +100,7 @@ class HomeHeader extends StatelessWidget {
                     color: AppTheme.accentGold,
                   ),
                 ),
-                const TextSpan(text: '\nhương riêng của bạn'),
+                TextSpan(text: l10n.headlineUniqueScent),
               ],
             ),
           ),

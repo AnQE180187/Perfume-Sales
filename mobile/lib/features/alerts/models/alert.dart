@@ -1,17 +1,16 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import '../services/notification_service.dart';
+import '../../../../l10n/app_localizations.dart';
 
 enum AlertCategory { order, offer, account }
-
 enum AlertFilter { all, unread, orders, offers, account }
 
 class Alert {
   final String id;
   final String title;
   final String message;
-  final String timeLabel;
+  final DateTime createdAt;
   final AlertCategory category;
   final bool isUnread;
   final String? actionLabel;
@@ -22,7 +21,7 @@ class Alert {
     required this.id,
     required this.title,
     required this.message,
-    required this.timeLabel,
+    required this.createdAt,
     required this.category,
     required this.isUnread,
     this.actionLabel,
@@ -30,7 +29,40 @@ class Alert {
     this.orderId,
   });
 
-  /// Create from backend NotificationItem
+  /// Format time with l10n
+  static String formatTime(DateTime dt, AppLocalizations l10n) {
+    final now = DateTime.now();
+    final diff = now.difference(dt);
+    if (diff.inMinutes < 1) return l10n.justNow;
+    if (diff.inMinutes < 60) return l10n.minutesAgo(diff.inMinutes);
+    if (diff.inHours < 24) return l10n.hoursAgo(diff.inHours);
+    if (diff.inDays == 1) return l10n.yesterday;
+    if (diff.inDays < 7) return l10n.daysAgo(diff.inDays);
+    return '${dt.day}/${dt.month}/${dt.year}';
+  }
+
+  static String? actionLabelFor(AlertCategory cat, AppLocalizations l10n) {
+    switch (cat) {
+      case AlertCategory.order:
+        return l10n.trackOrderCta;
+      case AlertCategory.offer:
+        return l10n.viewOffers;
+      case AlertCategory.account:
+        return l10n.viewDetails;
+    }
+  }
+
+  static String getCategoryLabel(AlertCategory cat, AppLocalizations l10n) {
+    switch (cat) {
+      case AlertCategory.order:
+        return l10n.categoryOrders;
+      case AlertCategory.offer:
+        return l10n.categoryOffers;
+      case AlertCategory.account:
+        return l10n.categoryAccount;
+    }
+  }
+
   factory Alert.fromNotification(NotificationItem item) {
     final category = _mapTypeToCategory(item.type);
     String? orderId;
@@ -44,12 +76,11 @@ class Alert {
       id: item.id,
       title: item.title,
       message: item.content,
-      timeLabel: _formatTime(item.createdAt),
+      createdAt: item.createdAt,
       category: category,
       isUnread: !item.isRead,
-      actionLabel: _actionLabelFor(category),
-      accentColor: _colorFor(category),
       orderId: orderId,
+      accentColor: _colorFor(category),
     );
   }
 
@@ -64,28 +95,6 @@ class Alert {
       case 'SYSTEM':
       default:
         return AlertCategory.account;
-    }
-  }
-
-  static String _formatTime(DateTime dt) {
-    final now = DateTime.now();
-    final diff = now.difference(dt);
-    if (diff.inMinutes < 1) return 'Vừa xong';
-    if (diff.inMinutes < 60) return '${diff.inMinutes} phút trước';
-    if (diff.inHours < 24) return '${diff.inHours} giờ trước';
-    if (diff.inDays == 1) return 'Hôm qua';
-    if (diff.inDays < 7) return '${diff.inDays} ngày trước';
-    return '${dt.day}/${dt.month}/${dt.year}';
-  }
-
-  static String? _actionLabelFor(AlertCategory cat) {
-    switch (cat) {
-      case AlertCategory.order:
-        return 'Theo dõi đơn';
-      case AlertCategory.offer:
-        return 'Xem ưu đãi';
-      case AlertCategory.account:
-        return 'Xem chi tiết';
     }
   }
 
@@ -105,7 +114,7 @@ class Alert {
       id: id,
       title: title,
       message: message,
-      timeLabel: timeLabel,
+      createdAt: createdAt,
       category: category,
       isUnread: isUnread ?? this.isUnread,
       actionLabel: actionLabel,
@@ -125,19 +134,10 @@ class Alert {
     }
   }
 
-  String get categoryLabel {
-    switch (category) {
-      case AlertCategory.order:
-        return 'ĐƠN HÀNG';
-      case AlertCategory.offer:
-        return 'ƯU ĐÃI';
-      case AlertCategory.account:
-        return 'TÀI KHOẢN';
-    }
+  bool isToday(AppLocalizations l10n) {
+    final now = DateTime.now();
+    return createdAt.year == now.year &&
+        createdAt.month == now.month &&
+        createdAt.day == now.day;
   }
-
-  bool get isToday =>
-      timeLabel != 'Hôm qua' &&
-      timeLabel != 'Thứ Ba' &&
-      !timeLabel.contains('ngày trước');
 }

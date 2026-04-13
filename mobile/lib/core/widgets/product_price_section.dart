@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_utils.dart';
 
@@ -20,7 +21,7 @@ class ProductPriceSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'GIÁ NIÊM YẾT',
+              AppLocalizations.of(context)!.listedPrice,
               style: GoogleFonts.montserrat(
                 fontSize: 9,
                 letterSpacing: 1.5,

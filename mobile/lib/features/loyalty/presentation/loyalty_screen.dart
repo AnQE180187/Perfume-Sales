@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:perfume_gpt_app/l10n/app_localizations.dart';
 import '../../../core/theme/app_text_style.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_utils.dart';
@@ -8,10 +9,10 @@ import '../services/loyalty_service.dart';
 
 class LoyaltyScreen extends ConsumerWidget {
   const LoyaltyScreen({super.key});
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final statusAsync = ref.watch(loyaltyStatusProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: AppTheme.ivoryBackground,
@@ -24,7 +25,7 @@ class LoyaltyScreen extends ConsumerWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Khách hàng thân thiết',
+          l10n.loyaltyProgramTitle,
           style: AppTextStyle.displaySm(color: AppTheme.deepCharcoal),
         ),
         centerTitle: true,
@@ -37,11 +38,11 @@ class LoyaltyScreen extends ConsumerWidget {
             children: [
               const Icon(Icons.error_outline, size: 40, color: Colors.red),
               const SizedBox(height: 12),
-              Text('Không thể tải dữ liệu', style: AppTextStyle.bodyMd()),
+              Text(l10n.unableLoadData, style: AppTextStyle.bodyMd()),
               const SizedBox(height: 12),
               TextButton(
                 onPressed: () => ref.refresh(loyaltyStatusProvider),
-                child: const Text('Thử lại'),
+                child: Text(l10n.retry),
               ),
             ],
           ),
@@ -94,6 +95,7 @@ class _PointsHeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       decoration: BoxDecoration(
         color: AppTheme.deepCharcoal,
@@ -149,7 +151,7 @@ class _PointsHeroCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'THÀNH VIÊN',
+                            l10n.memberLabel,
                             style: GoogleFonts.montserrat(
                               fontSize: 10,
                               fontWeight: FontWeight.w800,
@@ -185,7 +187,7 @@ class _PointsHeroCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'ĐIỂM TỬU TÍCH',
+                    l10n.accumulatedPoints,
                     style: GoogleFonts.montserrat(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
@@ -209,7 +211,7 @@ class _PointsHeroCard extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          '${status.nextTierPoints - status.points} điểm để lên hạng',
+                          l10n.pointsToNextTier(status.nextTierPoints - status.points),
                           style: GoogleFonts.montserrat(
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
@@ -318,9 +320,9 @@ class _TiersCard extends StatelessWidget {
   final LoyaltyStatus status;
 
   const _TiersCard({required this.status});
-
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final tiers = [
       _TierInfo('Bronze', 0, Icons.shield_rounded, const Color(0xFFCD7F32)),
       _TierInfo('Silver', 500, Icons.shield_rounded, const Color(0xFFA8A9AD)),
@@ -341,7 +343,7 @@ class _TiersCard extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(left: 4, bottom: 20),
             child: Text(
-              'CẤP HẠNG THÀNH VIÊN',
+              l10n.membershipTiersTitle,
               style: GoogleFonts.montserrat(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
@@ -413,7 +415,7 @@ class _TiersCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      tier.minPoints == 0 ? 'Mặc định' : '${tier.minPoints} pts',
+                      tier.minPoints == 0 ? l10n.defaultTier : '${tier.minPoints} pts',
                       style: GoogleFonts.montserrat(
                         fontSize: 8,
                         fontWeight: FontWeight.w400,
@@ -472,6 +474,7 @@ class _HowItWorksCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -483,7 +486,7 @@ class _HowItWorksCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'LÀM SAO ĐỂ TÍCH ĐIỂM?',
+            l10n.howToEarnTitle,
             style: GoogleFonts.montserrat(
               fontSize: 11,
               fontWeight: FontWeight.w700,
@@ -494,20 +497,20 @@ class _HowItWorksCard extends StatelessWidget {
           const SizedBox(height: 24),
           _infoRow(
             Icons.shopping_bag_outlined,
-            'MUA SẮM LÀM ĐẸP',
-            'Cứ 10.000đ chi tiêu = 1 điểm tích lũy tinh chất',
+            l10n.shoppingEarnTitle,
+            l10n.shoppingEarnDesc,
           ),
           const SizedBox(height: 20),
           _infoRow(
             Icons.account_balance_wallet_outlined,
-            'VIVU ƯU ĐÃI',
-            'Sử dụng điểm (1 điểm = 500đ) để khấu trừ trực tiếp',
+            l10n.redeemEarnTitle,
+            l10n.redeemEarnDesc,
           ),
           const SizedBox(height: 20),
           _infoRow(
             Icons.auto_awesome_rounded,
-            'NÂNG TẦM ĐẲNG CẤP',
-            'Tích lũy đủ điểm để mở khóa các đặc quyền thượng lưu',
+            l10n.upgradeEarnTitle,
+            l10n.upgradeEarnDesc,
           ),
         ],
       ),
@@ -562,6 +565,7 @@ class _TransactionHistory extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -574,7 +578,7 @@ class _TransactionHistory extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
             child: Text(
-              'LỊCH SỬ GIAO DỊCH',
+              l10n.transactionHistoryTitle,
               style: GoogleFonts.montserrat(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
@@ -596,7 +600,7 @@ class _TransactionHistory extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'Hành trình của bạn chưa bắt đầu',
+                      l10n.noTransactionsYet,
                       style: GoogleFonts.montserrat(
                         fontSize: 12,
                         color: AppTheme.mutedSilver,
@@ -632,13 +636,14 @@ class _TransactionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isEarn = tx.points > 0;
     
     final readableReason = tx.reason
         .replaceAll('_', ' ')
-        .replaceAll('EARNED FROM ORDER', 'Tích điểm từ đơn hàng')
-        .replaceAll('REDEEMED FOR DISCOUNT', 'Khấu trừ khi thanh toán')
-        .replaceAll('Tru points do hoan tra', 'Hoàn trả điểm (Từ chối đơn)');
+        .replaceAll('EARNED FROM ORDER', l10n.orderEarnedPoints)
+        .replaceAll('REDEEMED FOR DISCOUNT', l10n.redeemedDiscount)
+        .replaceAll('Tru points do hoan tra', l10n.returnedRefundPoints);
 
     final dateStr = '${tx.createdAt.day.toString().padLeft(2, '0')}/${tx.createdAt.month.toString().padLeft(2, '0')}/${tx.createdAt.year}';
 
@@ -740,6 +745,7 @@ class _RedeemRewardsSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final redeemableAsync = ref.watch(redeemablePromotionsProvider);
 
     return Column(
@@ -751,7 +757,7 @@ class _RedeemRewardsSection extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'ĐỔI ƯU ĐÃI',
+                l10n.redeemRewardsTitle,
                 style: GoogleFonts.montserrat(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
@@ -778,7 +784,7 @@ class _RedeemRewardsSection extends ConsumerWidget {
                       color: AppTheme.softTaupe.withValues(alpha: 0.3)),
                 ),
                 child: Text(
-                  'Hiện chưa có ưu đãi đổi điểm nào dành cho bạn.',
+                  l10n.noRewardsAvailable,
                   style: GoogleFonts.montserrat(
                     fontSize: 12,
                     color: AppTheme.mutedSilver,
@@ -816,6 +822,7 @@ class _RedeemPromoCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final int pointsCost = promo['pointsCost'] ?? 0;
     final String discountType = promo['discountType'] ?? '';
     final int discountValue = promo['discountValue'] ?? 0;
@@ -857,7 +864,7 @@ class _RedeemPromoCard extends ConsumerWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              'VOUCHER GIẢM',
+                              l10n.voucherDiscount,
                               style: GoogleFonts.montserrat(
                                 fontSize: 8,
                                 fontWeight: FontWeight.w800,
@@ -957,7 +964,7 @@ class _RedeemPromoCard extends ConsumerWidget {
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              'ĐỔI NGAY',
+                              l10n.redeemNow,
                               style: GoogleFonts.montserrat(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w900,
@@ -991,6 +998,7 @@ class _RedeemPromoCard extends ConsumerWidget {
   }
 
   void _handleRedeem(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showModalBottomSheet<bool>(
       context: context,
       backgroundColor: Colors.transparent,
@@ -1013,7 +1021,7 @@ class _RedeemPromoCard extends ConsumerWidget {
             ),
             const SizedBox(height: 32),
             Text(
-              'XÁC NHẬN ĐỔI QUÀ',
+              l10n.confirm.toUpperCase(),
               style: GoogleFonts.montserrat(
                 fontSize: 12,
                 fontWeight: FontWeight.w800,
@@ -1023,7 +1031,7 @@ class _RedeemPromoCard extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Sử dụng ${promo['pointsCost']} điểm để đổi voucher này?',
+              l10n.redeemVoucherConfirm(promo['pointsCost'] ?? 0),
               textAlign: TextAlign.center,
               style: GoogleFonts.montserrat(
                 fontSize: 15,
@@ -1042,7 +1050,7 @@ class _RedeemPromoCard extends ConsumerWidget {
                       side: const BorderSide(color: AppTheme.softTaupe),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
-                    child: Text('HỦY', style: GoogleFonts.montserrat(fontWeight: FontWeight.w700, color: AppTheme.mutedSilver)),
+                    child: Text(l10n.cancel.toUpperCase(), style: GoogleFonts.montserrat(fontWeight: FontWeight.w700, color: AppTheme.mutedSilver)),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -1055,7 +1063,7 @@ class _RedeemPromoCard extends ConsumerWidget {
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
-                    child: Text('XÁC NHẬN', style: GoogleFonts.montserrat(fontWeight: FontWeight.w700)),
+                    child: Text(l10n.confirm.toUpperCase(), style: GoogleFonts.montserrat(fontWeight: FontWeight.w700)),
                   ),
                 ),
               ],
@@ -1071,7 +1079,7 @@ class _RedeemPromoCard extends ConsumerWidget {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Đổi thành công! Mã ${promo['code']} đã có trong ví của bạn.'),
+              content: Text(l10n.redeemSuccess(promo['code'] ?? '')),
               backgroundColor: AppTheme.deepCharcoal,
             ),
           );
@@ -1081,7 +1089,7 @@ class _RedeemPromoCard extends ConsumerWidget {
       } catch (e) {
         if (context.mounted) {
           ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text('Lỗi: $e')));
+              .showSnackBar(SnackBar(content: Text('${l10n.error}: $e')));
         }
       }
     }

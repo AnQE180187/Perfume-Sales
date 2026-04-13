@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../l10n/app_localizations.dart';
 import 'dashboard/presentation/staff_dashboard_screen.dart';
 import 'pos/presentation/staff_pos_screen.dart';
 import 'inventory/presentation/staff_inventory_screen.dart';
@@ -55,6 +56,7 @@ class _StaffBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF1A1A1A),
@@ -80,35 +82,35 @@ class _StaffBottomNavBar extends StatelessWidget {
                 _StaffNavItem(
                   icon: Icons.dashboard_outlined,
                   activeIcon: Icons.dashboard_rounded,
-                  label: 'Home',
+                  label: l10n.staffHome,
                   isSelected: currentIndex == 0,
                   onTap: () => onChanged(0),
                 ),
                 _StaffNavItem(
                   icon: Icons.point_of_sale_outlined,
                   activeIcon: Icons.point_of_sale_rounded,
-                  label: 'POS',
+                  label: l10n.pos,
                   isSelected: currentIndex == 1,
                   onTap: () => onChanged(1),
                 ),
                 _StaffNavItem(
                   icon: Icons.inventory_2_outlined,
                   activeIcon: Icons.inventory_2_rounded,
-                  label: 'Kho',
+                  label: l10n.inventory,
                   isSelected: currentIndex == 2,
                   onTap: () => onChanged(2),
                 ),
                 _StaffNavItem(
                   icon: Icons.receipt_long_outlined,
                   activeIcon: Icons.receipt_long_rounded,
-                  label: 'Đơn hàng',
+                  label: l10n.ordersHistoryLabel,
                   isSelected: currentIndex == 3,
                   onTap: () => onChanged(3),
                 ),
                 _StaffNavItem(
                   icon: Icons.person_outline_rounded,
                   activeIcon: Icons.person_rounded,
-                  label: 'Cá nhân',
+                  label: l10n.profileLabel,
                   isSelected: currentIndex == 4,
                   onTap: () => onChanged(4),
                 ),

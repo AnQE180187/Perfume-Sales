@@ -2,9 +2,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-
-import 'package:perfume_gpt_app/core/theme/app_theme.dart';
-import 'package:perfume_gpt_app/l10n/app_localizations.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../l10n/app_localizations.dart';
 
 class OrderSuccessScreen extends StatefulWidget {
   const OrderSuccessScreen({super.key});
@@ -84,7 +83,6 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
       backgroundColor: AppTheme.ivoryBackground,
       body: Stack(
         children: [
-          // ── Golden Dust Background ──
           Positioned.fill(
             child: AnimatedBuilder(
               animation: _particleController,
@@ -95,15 +93,12 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
               },
             ),
           ),
-
           SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
               child: Column(
                 children: [
                   const SizedBox(height: 20),
-
-                  // ── Visual Center: Metallic Golden Seal ──
                   ScaleTransition(
                     scale: _sealScale,
                     child: RotationTransition(
@@ -113,10 +108,7 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 48),
-
-                  // ── Content ──
                   FadeTransition(
                     opacity: _contentFade,
                     child: SlideTransition(
@@ -124,7 +116,7 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                       child: Column(
                         children: [
                           Text(
-                            'SUCCESSFULLY OWNED',
+                            l10n.successfullyOwned,
                             textAlign: TextAlign.center,
                             style: GoogleFonts.playfairDisplay(
                               fontSize: 26,
@@ -144,18 +136,12 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                               color: AppTheme.mutedSilver,
                             ),
                           ),
-
                           const SizedBox(height: 32),
-
-                          // ── Molecular ID Card ──
                           const _MolecularIDCard(
                             signature: 'AURA-X92-GOLDEN-AMBER-2024',
                             points: 150,
                           ),
-
                           const SizedBox(height: 48),
-
-                          // ── Action Buttons ──
                           _TrackOrderButton(
                             label: l10n.traceOrder,
                             onPressed: () => context.go('/orders'),
@@ -189,9 +175,9 @@ class _MetallicGoldSeal extends StatelessWidget {
         shape: BoxShape.circle,
         gradient: const RadialGradient(
           colors: [
-            Color(0xFFF1E5AC), // Light Gold
-            Color(0xFFD4AF37), // Metallic Gold
-            Color(0xFFB8860B), // Darker Goldenrod
+            Color(0xFFF1E5AC),
+            Color(0xFFD4AF37),
+            Color(0xFFB8860B),
           ],
           stops: [0.2, 0.7, 1.0],
         ),
@@ -206,7 +192,6 @@ class _MetallicGoldSeal extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Embossed Rings
           Container(
             margin: const EdgeInsets.all(10),
             decoration: BoxDecoration(
@@ -236,6 +221,7 @@ class _MolecularIDCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -254,7 +240,6 @@ class _MolecularIDCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         child: Stack(
           children: [
-            // Background Grid Design
             Positioned.fill(
               child: CustomPaint(
                 painter: _GridPainter(),
@@ -268,7 +253,7 @@ class _MolecularIDCard extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _Badge(label: 'AUTHENTIC SCENT'),
+                      _Badge(label: l10n.authenticScent),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
@@ -295,7 +280,7 @@ class _MolecularIDCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    'MOLECULAR SIGNATURE',
+                    l10n.molecularSignature,
                     style: GoogleFonts.montserrat(
                       fontSize: 8,
                       fontWeight: FontWeight.w700,
@@ -321,7 +306,7 @@ class _MolecularIDCard extends StatelessWidget {
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'Mã định danh kỹ thuật số duy nhất cho hồ sơ mùi hương của bạn.',
+                          l10n.molecularSignatureDesc,
                           style: GoogleFonts.montserrat(
                             fontSize: 10,
                             fontWeight: FontWeight.w500,

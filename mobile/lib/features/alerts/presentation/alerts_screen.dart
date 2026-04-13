@@ -93,7 +93,7 @@ class AlertsScreen extends ConsumerWidget {
                   value: alertsAsync,
                   onRetry: () => ref.invalidate(alertsProvider),
                   loadingBuilder: () => Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
                     child: Column(
                       children: List.generate(
                         4,
@@ -204,11 +204,12 @@ class _AlertsListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final todayAlerts = alerts.where((a) => a.isToday).toList();
-    final olderAlerts = alerts.where((a) => !a.isToday).toList();
+    final l10n = AppLocalizations.of(context)!;
+    final todayAlerts = alerts.where((a) => a.isToday(l10n)).toList();
+    final olderAlerts = alerts.where((a) => !a.isToday(l10n)).toList();
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -635,6 +636,7 @@ class _AlertCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final categoryIcon = _getCategoryIcon(alert.category);
 
     return InkWell(
@@ -721,7 +723,7 @@ class _AlertCard extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        alert.timeLabel,
+                        Alert.formatTime(alert.createdAt, l10n),
                         style: GoogleFonts.montserrat(
                           fontSize: 10,
                           fontWeight: FontWeight.w500,
@@ -730,7 +732,7 @@ class _AlertCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        '· ${alert.categoryLabel}',
+                        '· ${Alert.getCategoryLabel(alert.category, l10n)}',
                         style: GoogleFonts.montserrat(
                           fontSize: 10,
                           fontWeight: FontWeight.w500,
@@ -773,6 +775,7 @@ class _AlertDetailSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
       decoration: const BoxDecoration(
@@ -816,7 +819,7 @@ class _AlertDetailSheet extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              alert.timeLabel,
+              Alert.formatTime(alert.createdAt, l10n),
               style: GoogleFonts.montserrat(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
@@ -849,7 +852,7 @@ class _AlertDetailSheet extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    alert.actionLabel!,
+                    Alert.actionLabelFor(alert.category, l10n) ?? '',
                     style: GoogleFonts.montserrat(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,

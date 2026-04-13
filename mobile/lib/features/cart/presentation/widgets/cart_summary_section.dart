@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/currency_utils.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../providers/cart_provider.dart';
 
 class CartSummarySection extends StatelessWidget {
@@ -27,6 +28,7 @@ class CartSummarySection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final hasSelection = selectedItems.isNotEmpty;
 
     return Container(
@@ -60,7 +62,7 @@ class CartSummarySection extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'TỔNG TIỀN TẠM TÍNH',
+                              l10n.estSubtotal,
                               style: GoogleFonts.montserrat(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w800,
@@ -70,7 +72,7 @@ class CartSummarySection extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Phí vận chuyển sẽ được tính tại bước sau',
+                              l10n.shippingFeeNotice,
                               style: GoogleFonts.montserrat(
                                 fontSize: 9,
                                 fontStyle: FontStyle.italic,
@@ -84,11 +86,11 @@ class CartSummarySection extends StatelessWidget {
                       const SizedBox(width: 16),
                       Text(
                         formatVND(total),
-                        style: GoogleFonts.playfairDisplay(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w900,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.5,
                           color: AppTheme.deepCharcoal,
-                          height: 1,
                         ),
                       ),
                     ],
@@ -118,7 +120,7 @@ class CartSummarySection extends StatelessWidget {
                   ),
                   child: Center(
                     child: Text(
-                      hasSelection ? 'ĐI ĐẾN THANH TOÁN' : 'HÃY CHỌN SẢN PHẨM',
+                      hasSelection ? l10n.goToCheckout : l10n.pleaseSelectItems,
                       style: GoogleFonts.montserrat(
                         fontSize: 13,
                         fontWeight: FontWeight.w800,

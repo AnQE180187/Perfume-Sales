@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:go_router/go_router.dart';
 import '../../core/routing/app_routes.dart';
+import '../../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 import '../../features/product/presentation/product_story_screen.dart';
 
@@ -33,6 +33,7 @@ class _ProductStorySectionState extends State<ProductStorySection> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final text = widget.description ?? _fallback;
 
     return Transform.translate(
@@ -48,7 +49,7 @@ class _ProductStorySectionState extends State<ProductStorySection> {
               children: [
                 Expanded(
                   child: Text(
-                    'The Story',
+                    l10n.theStory,
                     style: GoogleFonts.playfairDisplay(
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
@@ -75,7 +76,7 @@ class _ProductStorySectionState extends State<ProductStorySection> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            'Toàn bộ câu chuyện',
+                            l10n.fullStory,
                             style: GoogleFonts.montserrat(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
@@ -131,7 +132,7 @@ class _ProductStorySectionState extends State<ProductStorySection> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    _isExpanded ? 'Thu gọn' : 'Đọc thêm',
+                    _isExpanded ? l10n.readLess : l10n.readMore,
                     style: GoogleFonts.montserrat(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,

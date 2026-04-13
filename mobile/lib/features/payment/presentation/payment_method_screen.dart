@@ -386,13 +386,13 @@ class _PaymentMethodCard extends StatelessWidget {
   String _getPaymentDescription(AppLocalizations l10n, PaymentMethodType type) {
     switch (type) {
       case PaymentMethodType.vnpay:
-        return 'Thanh toán bằng ví điện tử VNPay';
+        return l10n.paymentVnpayDesc;
       case PaymentMethodType.momo:
-        return 'Thanh toán bằng ví điện tử MoMo';
+        return l10n.paymentMomoDesc;
       case PaymentMethodType.cod:
-        return 'Thanh toán khi nhận hàng';
+        return l10n.paymentCodDesc;
       case PaymentMethodType.payos:
-        return 'Quét mã QR hoặc chuyển khoản ngân hàng';
+        return l10n.paymentPayosDesc;
     }
   }
 }
