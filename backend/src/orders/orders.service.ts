@@ -277,6 +277,74 @@ export class OrdersService {
     };
   }
 
+  async submitRefundBankInfo(
+    userId: string,
+    orderId: string,
+    payload: {
+      bankName: string;
+      accountNumber: string;
+      accountHolder: string;
+      note?: string;
+    },
+  ) {
+    const order = await this.prisma.order.findFirst({
+      where: { id: orderId, userId },
+    });
+    if (!order) throw new NotFoundException('Order not found');
+    if (order.status !== 'CANCELLED') {
+      throw new BadRequestException('Only cancelled orders accept refund info');
+    }
+    if (order.paymentStatus !== 'PAID') {
+      throw new BadRequestException(
+        'Refund bank info is only needed for paid online orders',
+      );
+    }
+
+    await this.prisma.auditLog.create({
+      data: {
+        userId,
+        action: 'REFUND_BANK_INFO_SUBMITTED',
+        entity: 'ORDER',
+        entityId: orderId,
+        metadata: JSON.stringify({
+          bankName: payload.bankName.trim(),
+          accountNumber: payload.accountNumber.trim(),
+          accountHolder: payload.accountHolder.trim(),
+          note: payload.note?.trim() || null,
+          submittedAt: new Date().toISOString(),
+        }),
+      },
+    });
+
+    return { success: true };
+  }
+
+  async getRefundBankInfo(orderId: string, userId?: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      select: { userId: true },
+    });
+    if (!order) throw new NotFoundException('Order not found');
+    if (userId && order.userId !== userId) {
+      throw new NotFoundException('Order not found');
+    }
+
+    const log = await this.prisma.auditLog.findFirst({
+      where: {
+        action: 'REFUND_BANK_INFO_SUBMITTED',
+        entity: 'ORDER',
+        entityId: orderId,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (!log) return null;
+    return {
+      id: log.id,
+      createdAt: log.createdAt,
+      ...(log.metadata ? JSON.parse(log.metadata) : {}),
+    };
+  }
+
   async getOrderById(id: string) {
     const order = await this.prisma.order.findUnique({
       where: { id },
