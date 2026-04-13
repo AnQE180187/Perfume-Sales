@@ -62,9 +62,13 @@ export class ShippingService {
     if (!order) throw new NotFoundException('Order not found');
     if (order.channel !== 'ONLINE')
       throw new BadRequestException('Chỉ đơn ONLINE mới tạo GHN');
+    if (order.status === 'CANCELLED') {
+      throw new BadRequestException('Đơn đã bị hủy');
+    }
     if (!order.shippingDistrictId || !order.shippingWardCode) {
       throw new BadRequestException('Đơn chưa có đủ thông tin giao hàng');
     }
+    this.validateOrderAddressForGhn(order);
 
     let serviceId = order.shippingServiceId;
     if (!serviceId || serviceId === 0) {
@@ -91,6 +95,17 @@ export class ShippingService {
       };
     }
 
+    const payosPayment = await this.prisma.payment.findFirst({
+      where: { orderId, provider: 'PAYOS' },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (payosPayment && payosPayment.status !== 'PAID') {
+      throw new BadRequestException(
+        'Đơn online chưa thanh toán thành công, chưa thể tạo GHN',
+      );
+    }
+
+    const normalizedPhone = this.normalizeVietnamPhone(order.phone || '');
     const weight = 500;
     const items = order.items.map((item) => ({
       name: item.variant.product.name + ' ' + item.variant.name,
@@ -99,9 +114,11 @@ export class ShippingService {
       weight: Math.ceil(weight / order.items.length),
     }));
 
+    const codAmount = payosPayment ? 0 : order.finalAmount;
+
     const result = await this.ghn.createOrder({
       toName: order.recipientName ?? 'Khách hàng',
-      toPhone: order.phone ?? '',
+      toPhone: normalizedPhone || '',
       toAddress: order.shippingAddress ?? '',
       toWardCode: order.shippingWardCode,
       toDistrictId: order.shippingDistrictId,
@@ -112,7 +129,7 @@ export class ShippingService {
       serviceId: serviceId,
       serviceTypeId: 2,
       paymentTypeId: 1,
-      codAmount: order.finalAmount,
+      codAmount,
       content: `Đơn hàng ${order.code}`,
       clientOrderCode: order.code,
       items,
@@ -136,6 +153,46 @@ export class ShippingService {
       orderCode: result.order_code,
       fee: result.total_fee,
     };
+  }
+
+  private validateOrderAddressForGhn(order: {
+    recipientName: string | null;
+    phone: string | null;
+    shippingAddress: string | null;
+    shippingDistrictId: number | null;
+    shippingWardCode: string | null;
+  }) {
+    const recipientName = (order.recipientName || '').trim();
+    const shippingAddress = (order.shippingAddress || '').trim();
+    const wardCode = (order.shippingWardCode || '').trim();
+    const normalizedPhone = this.normalizeVietnamPhone(order.phone || '');
+
+    if (!recipientName || recipientName.length < 2) {
+      throw new BadRequestException('Tên người nhận không hợp lệ');
+    }
+    if (!normalizedPhone) {
+      throw new BadRequestException('Số điện thoại người nhận không hợp lệ');
+    }
+    if (!shippingAddress || shippingAddress.length < 6) {
+      throw new BadRequestException('Địa chỉ giao hàng không hợp lệ');
+    }
+    if (!order.shippingDistrictId || order.shippingDistrictId <= 0) {
+      throw new BadRequestException('Thiếu quận/huyện giao hàng hợp lệ');
+    }
+    if (!wardCode) {
+      throw new BadRequestException('Thiếu phường/xã giao hàng');
+    }
+  }
+
+  private normalizeVietnamPhone(raw: string): string | null {
+    const digits = raw.replace(/\D/g, '');
+    if (digits.startsWith('84') && digits.length === 11) {
+      return `0${digits.slice(2)}`;
+    }
+    if (/^0\d{9}$/.test(digits)) {
+      return digits;
+    }
+    return null;
   }
 
   async createGhnReturnPickup(
