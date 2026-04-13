@@ -1,11 +1,9 @@
 import { AdminReturnManagement } from "@/components/returns/AdminReturnManagement";
-
-export const metadata = {
-  title: "Quản lý Đổi trả - Admin",
-  description: "Quản lý đổi trả và hoàn tiền nâng cao cho cửa hàng",
-};
+import { useTranslations } from "next-intl";
 
 export default function AdminReturnsPage() {
+  const t = useTranslations("dashboard.admin.returns");
+
   return (
     <div className="p-6">
       <AdminReturnManagement isAdmin={true} />

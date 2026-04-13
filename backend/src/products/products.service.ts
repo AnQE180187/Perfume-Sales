@@ -232,12 +232,59 @@ export class ProductsService {
 
       const product = await tx.product.update({
         where: { id },
-        data: {
-          ...productData,
-          // Note: Full variant sync can be complex, for now we just update basic fields.
-          // Management of variants (add/remove) can be handled by a separate logic if needed.
-        },
+        data: productData,
       });
+
+      if (variants) {
+        const existingVariants = await tx.productVariant.findMany({
+          where: { productId: id },
+          select: { id: true },
+        });
+        const existingIds = new Set(existingVariants.map((v) => v.id));
+        const incomingIds = new Set(
+          variants.map((v) => v.id).filter((variantId): variantId is string => Boolean(variantId)),
+        );
+
+        // Variants removed from the form are soft-disabled to preserve relations.
+        const removedIds = [...existingIds].filter(
+          (variantId) => !incomingIds.has(variantId),
+        );
+        if (removedIds.length > 0) {
+          await tx.productVariant.updateMany({
+            where: { id: { in: removedIds } },
+            data: { isActive: false },
+          });
+        }
+
+        for (const variant of variants) {
+          if (variant.id) {
+            if (!existingIds.has(variant.id)) {
+              throw new NotFoundException('Variant not found');
+            }
+            await tx.productVariant.update({
+              where: { id: variant.id },
+              data: {
+                name: variant.name,
+                sku: variant.sku ?? null,
+                price: variant.price,
+                stock: variant.stock,
+                isActive: true,
+              },
+            });
+          } else {
+            await tx.productVariant.create({
+              data: {
+                productId: id,
+                name: variant.name,
+                sku: variant.sku ?? null,
+                price: variant.price,
+                stock: variant.stock,
+                isActive: true,
+              },
+            });
+          }
+        }
+      }
 
       return product;
     });
