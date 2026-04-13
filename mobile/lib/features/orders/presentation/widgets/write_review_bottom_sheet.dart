@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:perfume_gpt_app/l10n/app_localizations.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../models/order.dart';
@@ -92,8 +93,9 @@ class _WriteReviewBottomSheetState
   }
 
   Future<void> _submit() async {
+    final l10n = AppLocalizations.of(context)!;
     if (_ratings[_currentIndex] == 0) {
-      setState(() => _error = 'Vui lòng chọn số sao');
+      setState(() => _error = l10n.pleaseSelectStars);
       return;
     }
 
@@ -135,8 +137,8 @@ class _WriteReviewBottomSheetState
       } else {
         Navigator.of(context).pop(true);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Cảm ơn bạn đã đánh giá!'),
+          SnackBar(
+            content: Text(l10n.thankYouReview),
             backgroundColor: AppTheme.accentGold,
           ),
         );
@@ -147,8 +149,8 @@ class _WriteReviewBottomSheetState
       setState(() {
         _submitting = false;
         _error = msg.contains('already reviewed')
-            ? 'Bạn đã đánh giá sản phẩm này rồi'
-            : 'Có lỗi xảy ra, vui lòng thử lại';
+            ? l10n.alreadyReviewed
+            : l10n.reviewErrorOccurred;
       });
 
       // If already reviewed, auto-skip to next
@@ -170,6 +172,8 @@ class _WriteReviewBottomSheetState
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       constraints: BoxConstraints(
@@ -199,7 +203,7 @@ class _WriteReviewBottomSheetState
                 const SizedBox(height: 16),
                 // Title
                 Text(
-                  'Đánh giá sản phẩm',
+                  l10n.productReviewTitle,
                   style: GoogleFonts.playfairDisplay(
                     fontSize: 22,
                     fontWeight: FontWeight.w600,
@@ -209,7 +213,7 @@ class _WriteReviewBottomSheetState
                 if (_reviewableItems.length > 1) ...[
                   const SizedBox(height: 4),
                   Text(
-                    'Sản phẩm ${_currentIndex + 1}/${_reviewableItems.length}',
+                    l10n.productCountHeader(_currentIndex + 1, _reviewableItems.length),
                     style: GoogleFonts.montserrat(
                       fontSize: 13,
                       color: AppTheme.mutedSilver,
@@ -321,10 +325,11 @@ class _WriteReviewBottomSheetState
   }
 
   Widget _buildStarRating() {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
         Text(
-          _ratingLabel(_ratings[_currentIndex]),
+          _ratingLabel(l10n, _ratings[_currentIndex]),
           style: GoogleFonts.montserrat(
             fontSize: 14,
             fontWeight: FontWeight.w500,
@@ -363,13 +368,14 @@ class _WriteReviewBottomSheetState
   }
 
   Widget _buildTextInput() {
+    final l10n = AppLocalizations.of(context)!;
     return TextField(
       controller: _controllers[_currentIndex],
       maxLines: 4,
       maxLength: 1000,
       style: GoogleFonts.montserrat(fontSize: 14),
       decoration: InputDecoration(
-        hintText: 'Chia sẻ trải nghiệm của bạn về sản phẩm...',
+        hintText: l10n.reviewPlaceholder,
         hintStyle: GoogleFonts.montserrat(
           fontSize: 14,
           color: AppTheme.mutedSilver,
@@ -394,6 +400,7 @@ class _WriteReviewBottomSheetState
   }
 
   Widget _buildImageSection() {
+    final l10n = AppLocalizations.of(context)!;
     final images = _selectedImages[_currentIndex];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -407,7 +414,7 @@ class _WriteReviewBottomSheetState
             ),
             const SizedBox(width: 6),
             Text(
-              'Thêm hình ảnh (${images.length}/5)',
+              l10n.addPhotoCount(images.length),
               style: GoogleFonts.montserrat(
                 fontSize: 13,
                 color: AppTheme.mutedSilver,
@@ -492,6 +499,7 @@ class _WriteReviewBottomSheetState
   }
 
   Widget _buildSubmitButton() {
+    final l10n = AppLocalizations.of(context)!;
     final isLast = _currentIndex >= _reviewableItems.length - 1;
     return SizedBox(
       width: double.infinity,
@@ -516,7 +524,7 @@ class _WriteReviewBottomSheetState
                 ),
               )
             : Text(
-                isLast ? 'Gửi đánh giá' : 'Tiếp theo',
+                isLast ? l10n.submitReview : l10n.nextStep,
                 style: GoogleFonts.montserrat(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
@@ -526,20 +534,20 @@ class _WriteReviewBottomSheetState
     );
   }
 
-  String _ratingLabel(int rating) {
+  String _ratingLabel(AppLocalizations l10n, int rating) {
     switch (rating) {
       case 1:
-        return 'Rất tệ';
+        return l10n.ratingVeryBad;
       case 2:
-        return 'Tệ';
+        return l10n.ratingBad;
       case 3:
-        return 'Bình thường';
+        return l10n.ratingNormal;
       case 4:
-        return 'Tốt';
+        return l10n.ratingGood;
       case 5:
-        return 'Tuyệt vời';
+        return l10n.ratingExcellent;
       default:
-        return 'Chọn số sao';
+        return l10n.selectStars;
     }
   }
 }

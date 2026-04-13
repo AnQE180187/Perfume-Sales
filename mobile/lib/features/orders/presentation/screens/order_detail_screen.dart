@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_text_style.dart';
@@ -43,7 +44,6 @@ class OrderDetailScreen extends ConsumerWidget {
           },
           child: CustomScrollView(
             slivers: [
-              // ── Gradient AppBar with order info ──
               SliverAppBar(
                 expandedHeight: 140,
                 pinned: true,
@@ -86,7 +86,7 @@ class OrderDetailScreen extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Chi tiết đơn hàng',
+                              l10n.orderDetail,
                               style: GoogleFonts.playfairDisplay(
                                 fontSize: 22,
                                 fontWeight: FontWeight.w700,
@@ -117,7 +117,7 @@ class OrderDetailScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '${AppLocalizations.of(context)!.placedOn} ${_formatDateTime(order.createdAt)}',
+                              '${l10n.placedOn} ${_formatDateTime(order.createdAt)}',
                               style: GoogleFonts.montserrat(
                                 fontSize: 11.5,
                                 color: AppTheme.mutedSilver,
@@ -131,7 +131,6 @@ class OrderDetailScreen extends ConsumerWidget {
                 ),
               ),
 
-              // ── Body ──
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
                 sliver: SliverList(
@@ -153,8 +152,6 @@ class OrderDetailScreen extends ConsumerWidget {
                       loading: () =>
                           _PaymentInfo(paymentLabel: l10n.checkingPayment),
                       error: (err, stack) {
-                        // If sync fails (e.g. 404 or network), fall back to order's own status
-                        debugPrint('Payment sync error: $err');
                         return _PaymentInfo(
                           paymentLabel: _paymentLabel(
                             order,
@@ -166,11 +163,10 @@ class OrderDetailScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 24),
 
-                    // ── Action buttons ──
                     if (order.canTrack) ...[
                       _GoldButton(
                         icon: Icons.location_on_outlined,
-                        label: AppLocalizations.of(context)!.trackOrderUpper,
+                        label: l10n.trackOrderUpper,
                         onPressed: () =>
                             context.push(AppRoutes.trackOrderWithId(order.id)),
                       ),
@@ -182,7 +178,7 @@ class OrderDetailScreen extends ConsumerWidget {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
-                              AppLocalizations.of(context)!.supportContactMessage,
+                              l10n.supportContactMessage,
                               style: GoogleFonts.montserrat(fontSize: 13),
                             ),
                             backgroundColor: AppTheme.deepCharcoal,
@@ -237,11 +233,20 @@ class OrderDetailScreen extends ConsumerWidget {
       ),
     );
   }
+
+  String _formatDateTime(DateTime dt) {
+    return DateFormat('HH:mm dd/MM/yyyy').format(dt);
+  }
+
+  String _paymentLabel(Order order, String? status, AppLocalizations l10n) {
+    if (order.paymentMethod == 'COD') return l10n.cod;
+    if (status == 'PAID' || status == 'COMPLETED') return l10n.paid;
+    if (status == 'PENDING') return l10n.pending;
+    if (status == 'CANCELLED' || status == 'EXPIRED') return l10n.cancelled;
+    return l10n.pending;
+  }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// SECTION CARD WRAPPER
-// ═══════════════════════════════════════════════════════════════════════════
 class _SectionCard extends StatelessWidget {
   final Widget child;
   const _SectionCard({required this.child});
@@ -293,20 +298,18 @@ Widget _sectionHeader(String title, IconData icon) {
   );
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// PRODUCT LIST
-// ═══════════════════════════════════════════════════════════════════════════
 class _ProductList extends StatelessWidget {
   final Order order;
   const _ProductList({required this.order});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return _SectionCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _sectionHeader('Sản phẩm', Icons.shopping_bag_rounded),
+          _sectionHeader(l10n.allProducts, Icons.shopping_bag_rounded),
           ...order.items.asMap().entries.map((entry) {
             final item = entry.value;
             final isLast = entry.key == order.items.length - 1;
@@ -322,7 +325,6 @@ class _ProductList extends StatelessWidget {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // Product image
                       Container(
                         width: 68,
                         height: 68,
@@ -346,7 +348,6 @@ class _ProductList extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 14),
-                      // Info
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -409,9 +410,6 @@ class _ProductList extends StatelessWidget {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// PRICE BREAKDOWN
-// ═══════════════════════════════════════════════════════════════════════════
 class _PriceBreakdown extends StatelessWidget {
   final Order order;
   const _PriceBreakdown({required this.order});
@@ -460,9 +458,9 @@ class _PriceBreakdown extends StatelessWidget {
               ),
               Text(
                 formatVND(order.finalAmount),
-                style: GoogleFonts.playfairDisplay(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700,
+                style: GoogleFonts.montserrat(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
                   color: AppTheme.deepCharcoal,
                 ),
               ),
@@ -498,9 +496,6 @@ class _PriceBreakdown extends StatelessWidget {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// SHIPPING ADDRESS
-// ═══════════════════════════════════════════════════════════════════════════
 class _ShippingAddress extends StatelessWidget {
   final Order order;
   const _ShippingAddress({required this.order});
@@ -590,9 +585,6 @@ class _ShippingAddress extends StatelessWidget {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// PAYMENT INFO
-// ═══════════════════════════════════════════════════════════════════════════
 class _PaymentInfo extends StatelessWidget {
   final String paymentLabel;
   const _PaymentInfo({required this.paymentLabel});
@@ -663,9 +655,6 @@ class _PaymentInfo extends StatelessWidget {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// BUTTONS
-// ═══════════════════════════════════════════════════════════════════════════
 class _GoldButton extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -799,32 +788,4 @@ class LuxuryButton extends StatelessWidget {
       ),
     );
   }
-}
-
-String _paymentLabel(
-  Order order,
-  String? paymentSyncStatus,
-  AppLocalizations l10n,
-) {
-  final status = paymentSyncStatus?.toLowerCase() ??
-      order.paymentStatus.name.toLowerCase();
-
-  switch (status) {
-    case 'paid':
-      return l10n.paymentStatusPaid;
-    case 'failed':
-      return l10n.paymentStatusFailed;
-    case 'refunded':
-      return l10n.paymentStatusRefunded;
-    default:
-      return l10n.paymentStatusPending;
-  }
-}
-
-String _formatDateTime(DateTime date) {
-  final day = date.day.toString().padLeft(2, '0');
-  final month = date.month.toString().padLeft(2, '0');
-  final hour = date.hour.toString().padLeft(2, '0');
-  final minute = date.minute.toString().padLeft(2, '0');
-  return '$day/$month/${date.year} $hour:$minute';
 }

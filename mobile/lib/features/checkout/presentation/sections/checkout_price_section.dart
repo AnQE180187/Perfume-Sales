@@ -116,9 +116,9 @@ class CheckoutPriceSection extends StatelessWidget {
               ),
               Text(
                 formatVND(totalAmount).replaceAll('₫', ''),
-                style: GoogleFonts.playfairDisplay(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w900,
+                style: GoogleFonts.montserrat(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
                   height: 1,
                   color: AppTheme.deepCharcoal,
                 ),

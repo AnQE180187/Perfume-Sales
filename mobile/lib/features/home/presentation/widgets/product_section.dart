@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:perfume_gpt_app/l10n/app_localizations.dart';
 import '../../../../core/widgets/product_card.dart';
 import '../../../../core/widgets/section_header.dart';
 import '../../../../core/widgets/shimmer_loading.dart';
@@ -63,7 +64,7 @@ class ProductSection extends ConsumerWidget {
                 return ProductCard(
                   product: product,
                   variant: ProductCardVariant.grid,
-                  badge: 'AI TUYỂN CHỌN',
+                  badge: AppLocalizations.of(context)!.aiSelection,
                   isFavorite: isFav,
                   onTap: () => context.push('/product/${product.id}'),
                   onFavoriteToggle: () {

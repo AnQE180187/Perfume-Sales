@@ -13,6 +13,7 @@ import '../../providers/order_provider.dart';
 import '../../providers/order_realtime_provider.dart';
 import '../sections/active_orders_section.dart';
 import '../sections/completed_orders_section.dart';
+import '../sections/cancelled_orders_section.dart';
 import '../sections/returns_section.dart';
 
 class OrdersScreen extends ConsumerStatefulWidget {
@@ -29,7 +30,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -40,6 +41,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final orderState = ref.watch(orderProvider);
 
     // Auto-refresh order list when any order status changes in real-time
@@ -67,7 +69,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
           },
         ),
         title: Text(
-          AppLocalizations.of(context)!.orderHistory,
+          l10n.orderHistory,
           style: GoogleFonts.playfairDisplay(
             fontSize: 22,
             fontWeight: FontWeight.w700,
@@ -89,10 +91,13 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
           indicatorColor: AppTheme.accentGold,
           labelColor: AppTheme.deepCharcoal,
           unselectedLabelColor: AppTheme.mutedSilver,
+          isScrollable: true,
+          tabAlignment: TabAlignment.start,
           tabs: [
-            Tab(text: AppLocalizations.of(context)!.ordersActive),
-            Tab(text: AppLocalizations.of(context)!.ordersCompleted),
-            Tab(text: AppLocalizations.of(context)!.ordersReturns),
+            Tab(text: l10n.ordersActive),
+            Tab(text: l10n.ordersCompleted),
+            Tab(text: l10n.ordersReturns),
+            Tab(text: l10n.ordersCancelled),
           ],
         ),
       ),
@@ -131,6 +136,11 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
                 orders: returnedOrders,
                 onRefresh: _refresh,
                 onTapReturn: _openReturnDetail,
+              ),
+              CancelledOrdersSection(
+                orders: state.cancelled,
+                onRefresh: _refresh,
+                onTapOrder: _openOrderDetail,
               ),
             ],
           );

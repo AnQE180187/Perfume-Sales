@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../models/address.dart';
 
 class AddressCard extends StatelessWidget {
@@ -24,6 +25,7 @@ class AddressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isDefault = address.isDefault;
     
     return Container(
@@ -67,7 +69,7 @@ class AddressCard extends StatelessWidget {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildLabelIcon(address.label),
+                      _buildLabelIcon(context, address.label),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
@@ -84,7 +86,7 @@ class AddressCard extends StatelessWidget {
                                   ),
                                 ),
                                 const Spacer(),
-                                if (isDefault) _PremiumBadge(),
+                                if (isDefault) _PremiumBadge(label: l10n.defaultUpper),
                               ],
                             ),
                             const SizedBox(height: 4),
@@ -146,7 +148,7 @@ class AddressCard extends StatelessWidget {
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
                           child: Text(
-                            'Đặt làm mặc định',
+                            l10n.setDefault,
                             style: GoogleFonts.montserrat(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -178,7 +180,7 @@ class AddressCard extends StatelessWidget {
     );
   }
 
-  Widget _buildLabelIcon(AddressLabel label) {
+  Widget _buildLabelIcon(BuildContext context, AddressLabel label) {
     IconData icon;
     switch (label) {
       case AddressLabel.home:
@@ -204,6 +206,9 @@ class AddressCard extends StatelessWidget {
 }
 
 class _PremiumBadge extends StatelessWidget {
+  final String label;
+  const _PremiumBadge({required this.label});
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -222,7 +227,7 @@ class _PremiumBadge extends StatelessWidget {
         ],
       ),
       child: Text(
-        'MẶC ĐỊNH',
+        label,
         style: GoogleFonts.montserrat(
           fontSize: 9,
           fontWeight: FontWeight.w800,

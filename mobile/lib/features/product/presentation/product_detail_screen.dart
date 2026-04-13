@@ -10,7 +10,7 @@ import '../../../core/widgets/ai_scent_analysis_card.dart';
 import '../../../core/widgets/scent_structure_section.dart';
 import '../../../core/widgets/product_story_section.dart';
 import '../../../core/widgets/product_bottom_cta.dart';
-import '../../../l10n/app_localizations.dart';
+import 'package:perfume_gpt_app/l10n/app_localizations.dart';
 import '../../cart/providers/cart_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
 import 'scent_structure_detail_screen.dart';

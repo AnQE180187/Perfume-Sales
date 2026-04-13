@@ -6,47 +6,43 @@ import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/widgets/app_input.dart';
-import '../../../../core/widgets/app_button.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../models/user_profile.dart';
 import '../../providers/profile_provider.dart';
 import '../../providers/profile_edit_provider.dart';
 
-/// Profile Edit Screen
-///
-/// Allows the user to update their personal information:
-/// full name, phone number, gender, and date of birth.
-/// Calls PATCH /users/me directly — no mock data.
 class ProfileEditScreen extends ConsumerWidget {
   const ProfileEditScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final profileAsync = ref.watch(profileProvider);
 
     return profileAsync.when(
       data: (profile) {
         if (profile == null) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Chỉnh sửa hồ sơ')),
-            body: const Center(child: Text('Vui lòng đăng nhập.')),
+            appBar: AppBar(title: Text(l10n.editProfile)),
+            body: Center(child: Text(l10n.pleaseLogin)),
           );
         }
         return _ProfileEditForm(profile: profile);
       },
       loading: () => Scaffold(
         backgroundColor: AppTheme.ivoryBackground,
-        appBar: _buildAppBar(context),
+        appBar: _buildAppBar(context, l10n),
         body: const Center(child: CircularProgressIndicator()),
       ),
       error: (e, _) => Scaffold(
         backgroundColor: AppTheme.ivoryBackground,
-        appBar: _buildAppBar(context),
-        body: Center(child: Text('Lỗi: $e')),
+        appBar: _buildAppBar(context, l10n),
+        body: Center(child: Text('${l10n.error}: $e')),
       ),
     );
   }
 
-  AppBar _buildAppBar(BuildContext context) {
+  AppBar _buildAppBar(BuildContext context, AppLocalizations l10n) {
     return AppBar(
       backgroundColor: AppTheme.ivoryBackground,
       elevation: 0,
@@ -57,7 +53,7 @@ class ProfileEditScreen extends ConsumerWidget {
         color: AppTheme.deepCharcoal,
       ),
       title: Text(
-        'Chỉnh sửa hồ sơ',
+        l10n.editProfile,
         style: GoogleFonts.playfairDisplay(
           fontSize: 18,
           fontWeight: FontWeight.w600,
@@ -87,12 +83,6 @@ class _ProfileEditFormState extends ConsumerState<_ProfileEditForm> {
   String? _selectedGender;
   DateTime? _selectedDob;
 
-  static const _genderOptions = [
-    ('male', 'Nam'),
-    ('female', 'Nữ'),
-    ('other', 'Khác'),
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -116,16 +106,16 @@ class _ProfileEditFormState extends ConsumerState<_ProfileEditForm> {
   }
 
   Future<void> _pickDate() async {
+    final l10n = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
       initialDate: _selectedDob ?? DateTime(now.year - 18),
       firstDate: DateTime(1900),
       lastDate: now,
-      locale: const Locale('vi', 'VN'),
-      helpText: 'Chọn ngày sinh',
-      cancelText: 'Hủy',
-      confirmText: 'Xác nhận',
+      helpText: l10n.birthdayHint,
+      cancelText: l10n.cancel,
+      confirmText: l10n.confirm,
     );
     if (picked != null) {
       setState(() {
@@ -136,6 +126,7 @@ class _ProfileEditFormState extends ConsumerState<_ProfileEditForm> {
   }
 
   Future<void> _save() async {
+    final l10n = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) return;
 
     try {
@@ -151,7 +142,7 @@ class _ProfileEditFormState extends ConsumerState<_ProfileEditForm> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Hồ sơ đã được cập nhật',
+              l10n.profileUpdated,
               style: GoogleFonts.montserrat(color: Colors.white),
             ),
             backgroundColor: AppTheme.accentGold,
@@ -166,7 +157,7 @@ class _ProfileEditFormState extends ConsumerState<_ProfileEditForm> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Cập nhật thất bại: $e',
+              '${l10n.updateFailed}: $e',
               style: GoogleFonts.montserrat(color: Colors.white),
             ),
             backgroundColor: Colors.red.shade600,
@@ -179,8 +170,15 @@ class _ProfileEditFormState extends ConsumerState<_ProfileEditForm> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final saveState = ref.watch(profileEditProvider);
     final isLoading = saveState.isLoading;
+
+    final genderOptions = [
+      ('male', l10n.male),
+      ('female', l10n.female),
+      ('other', l10n.other),
+    ];
 
     return Scaffold(
       backgroundColor: AppTheme.ivoryBackground,
@@ -194,7 +192,7 @@ class _ProfileEditFormState extends ConsumerState<_ProfileEditForm> {
           color: AppTheme.deepCharcoal,
         ),
         title: Text(
-          'CHỈNH SỬA HỒ SƠ',
+          l10n.editProfile.toUpperCase(),
           style: GoogleFonts.montserrat(
             fontSize: 14,
             fontWeight: FontWeight.w700,
@@ -214,18 +212,18 @@ class _ProfileEditFormState extends ConsumerState<_ProfileEditForm> {
               _AvatarSection(avatarUrl: widget.profile.avatarUrl),
               const SizedBox(height: 48),
               
-              _SectionLabel('THÔNG TIN CƠ BẢN'),
+              _SectionLabel(l10n.basicInfo),
               const SizedBox(height: 24),
               AppInput(
-                label: 'Tên hiển thị',
-                hint: 'Họ và tên của bạn',
+                label: l10n.displayName,
+                hint: l10n.nameHint,
                 controller: _nameController,
                 prefixIcon: _GoldIcon(Icons.person_outline_rounded),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Vui lòng nhập tên' : null,
+                validator: (v) => (v == null || v.trim().isEmpty) ? l10n.enterName : null,
               ),
               const SizedBox(height: 20),
               AppInput(
-                label: 'Địa chỉ Email',
+                label: l10n.emailAddress,
                 hint: widget.profile.email,
                 readOnly: true,
                 enabled: false,
@@ -233,8 +231,8 @@ class _ProfileEditFormState extends ConsumerState<_ProfileEditForm> {
               ),
               const SizedBox(height: 20),
               AppInput(
-                label: 'Số điện thoại',
-                hint: 'Nhập số điện thoại mới',
+                label: l10n.phoneHint,
+                hint: l10n.phoneHint,
                 controller: _phoneController,
                 prefixIcon: _GoldIcon(Icons.phone_iphone_rounded),
                 keyboardType: TextInputType.phone,
@@ -242,17 +240,17 @@ class _ProfileEditFormState extends ConsumerState<_ProfileEditForm> {
               ),
               
               const SizedBox(height: 40),
-              _SectionLabel('CHI TIẾT THÊM'),
+              _SectionLabel(l10n.moreDetails),
               const SizedBox(height: 24),
               _GenderSelector(
                 selected: _selectedGender,
-                options: _genderOptions,
+                options: genderOptions,
                 onChanged: (v) => setState(() => _selectedGender = v),
               ),
               const SizedBox(height: 24),
               AppInput(
-                label: 'Ngày sinh nhật',
-                hint: 'Chọn ngày sinh của bạn',
+                label: l10n.birthday,
+                hint: l10n.birthdayHint,
                 controller: _dobController,
                 readOnly: true,
                 prefixIcon: _GoldIcon(Icons.cake_outlined),
@@ -264,6 +262,7 @@ class _ProfileEditFormState extends ConsumerState<_ProfileEditForm> {
               _PremiumSaveButton(
                 onPressed: isLoading ? null : _save,
                 isLoading: isLoading,
+                label: l10n.saveChanges,
               ),
               const SizedBox(height: 24),
             ],
@@ -286,8 +285,6 @@ class _GoldIcon extends StatelessWidget {
     );
   }
 }
-
-// ─── Sub-widgets ────────────────────────────────────────────────────────────
 
 class _AvatarSection extends StatelessWidget {
   final String? avatarUrl;
@@ -403,11 +400,12 @@ class _GenderSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'GIỚI TÍNH',
+          l10n.gender,
           style: GoogleFonts.montserrat(
             fontSize: 10,
             fontWeight: FontWeight.w700,
@@ -492,8 +490,9 @@ class _GenderChip extends StatelessWidget {
 class _PremiumSaveButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final bool isLoading;
+  final String label;
 
-  const _PremiumSaveButton({this.onPressed, required this.isLoading});
+  const _PremiumSaveButton({this.onPressed, required this.isLoading, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -533,7 +532,7 @@ class _PremiumSaveButton extends StatelessWidget {
                     child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.deepCharcoal),
                   )
                 : Text(
-                    'LƯU THAY ĐỔI',
+                    label,
                     style: GoogleFonts.montserrat(
                       fontSize: 13,
                       fontWeight: FontWeight.w800,

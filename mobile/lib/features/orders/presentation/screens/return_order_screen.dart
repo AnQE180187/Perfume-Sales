@@ -36,8 +36,35 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
   final Map<String, int> _selectedItems = {};
   String? _selectedQuickReason;
   bool _isSubmitting = false;
+  int _currentStep = 0;
 
   final _formKey = GlobalKey<FormState>();
+
+  void _nextStep() {
+    final l10n = AppLocalizations.of(context)!;
+    if (_currentStep == 0) {
+      if (_selectedItems.isEmpty) {
+        _showError(l10n.errorSelectItems);
+        return;
+      }
+      if (_selectedQuickReason == null) {
+        _showError(l10n.errorReason);
+        return;
+      }
+    } else if (_currentStep == 1) {
+      if (_bankNameController.text.trim().isEmpty ||
+          _accountNumberController.text.trim().isEmpty ||
+          _accountNameController.text.trim().isEmpty) {
+        _showError(l10n.errorBankInfo);
+        return;
+      }
+    }
+    setState(() => _currentStep++);
+  }
+
+  void _prevStep() {
+    setState(() => _currentStep--);
+  }
 
   Future<void> _pickImages() async {
     final List<XFile> picked = await _picker.pickMultiImage(
@@ -80,22 +107,7 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
 
   void _submitReturn() async {
     final l10n = AppLocalizations.of(context)!;
-    
-    if (_selectedItems.isEmpty) {
-      _showError(l10n.errorSelectItems);
-      return;
-    }
-    if (_selectedQuickReason == null && _reasonController.text.trim().isEmpty) {
-      _showError(l10n.errorReason);
-      return;
-    }
-    if (_bankNameController.text.trim().isEmpty || 
-        _accountNumberController.text.trim().isEmpty || 
-        _accountNameController.text.trim().isEmpty) {
-      _showError(l10n.errorBankInfo);
-      return;
-    }
-    
+
     if (_images.length < 3) {
       _showError(l10n.errorPhotoCount);
       return;
@@ -105,34 +117,35 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
       _showError(l10n.errorVideoMissing);
       return;
     }
-    
+
     setState(() => _isSubmitting = true);
-    
+
     try {
       final service = ref.read(returnServiceProvider);
-      
+
       // 1. Upload images
       final imageUrls = await service.uploadImages(_images);
-      
-      // 3. Prepare payload
-      final String finalReason = _selectedQuickReason != null 
-        ? '[$_selectedQuickReason] ${_reasonController.text.trim()}'
-        : _reasonController.text.trim();
 
-      final String? videoUrl = _video != null ? await service.uploadVideo(_video!) : null;
+      // 3. Prepare payload
+      final String finalReason = _selectedQuickReason != null
+          ? '[$_selectedQuickReason] ${_reasonController.text.trim()}'
+          : _reasonController.text.trim();
+
+      final String? videoUrl =
+          _video != null ? await service.uploadVideo(_video!) : null;
       final idempotencyKey = const Uuid().v4();
 
       final Map<String, dynamic> payload = {
         'orderId': widget.orderId,
         'origin': 'ONLINE',
         'items': _selectedItems.entries.map((e) => {
-          'variantId': e.key, 
-          'quantity': e.value,
-          'images': [
-            ...imageUrls,
-            if (videoUrl != null) videoUrl,
-          ],
-        }).toList(),
+              'variantId': e.key,
+              'quantity': e.value,
+              'images': [
+                ...imageUrls,
+                if (videoUrl != null) videoUrl,
+              ],
+            }).toList(),
         'reason': finalReason,
         'videoUrl': videoUrl,
         'paymentInfo': {
@@ -141,9 +154,9 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
           'accountName': _accountNameController.text.trim(),
         }
       };
-      
+
       await service.createReturn(payload, idempotencyKey: idempotencyKey);
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -153,6 +166,7 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
         );
         context.pop();
         ref.invalidate(orderProvider);
+        ref.invalidate(orderDetailProvider(widget.orderId));
       }
     } catch (e) {
       if (mounted) {
@@ -163,10 +177,10 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
             errorMessage = data['message'].toString();
           }
         }
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Lỗi: $errorMessage'),
+            content: Text('${l10n.error}: $errorMessage'),
             backgroundColor: Colors.red,
           ),
         );
@@ -214,38 +228,21 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (_currentStep > 0) {
+              _prevStep();
+            } else {
+              context.pop();
+            }
+          },
         ),
       ),
       body: orderAsync.when(
         data: (order) => Column(
           children: [
-            // 14-day policy notice
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 20),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppTheme.accentGold.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.1)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.info_outline_rounded, color: AppTheme.accentGold, size: 20),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      l10n.freeReturns,
-                      style: GoogleFonts.montserrat(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.deepCharcoal,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            _buildStepper(l10n),
+            const SizedBox(height: 12),
+            _buildGuidanceCard(l10n),
             const SizedBox(height: 16),
             Expanded(child: _buildContent(order, l10n)),
           ],
@@ -254,51 +251,170 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
           child: CircularProgressIndicator(color: AppTheme.accentGold),
         ),
         error: (err, _) => Center(
-          child: Text(l10n.failedLoadOrder, style: const TextStyle(color: Color(0xFFD92D20))),
+          child: Text(l10n.failedLoadOrder,
+              style: const TextStyle(color: Color(0xFFD92D20))),
         ),
       ),
       bottomNavigationBar: _buildBottomBar(l10n),
     );
   }
 
-  Widget _buildContent(Order order, AppLocalizations l10n) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+  Widget _buildStepper(AppLocalizations l10n) {
+    final steps = [l10n.returnStep1, l10n.returnStep2, l10n.returnStep3];
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: List.generate(steps.length * 2 - 1, (index) {
+          // Even indices are circles/labels, odd indices are lines
+          if (index.isEven) {
+            final stepIndex = index ~/ 2;
+            final isActive = stepIndex <= _currentStep;
+            final isCurrent = stepIndex == _currentStep;
+            
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isActive ? AppTheme.accentGold : Colors.white,
+                    border: Border.all(
+                      color: isActive ? AppTheme.accentGold : AppTheme.mutedSilver.withValues(alpha: 0.3),
+                      width: 2,
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      '${stepIndex + 1}',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: isActive ? Colors.white : AppTheme.mutedSilver,
+                      ),
+                    ),
+                  ),
+                ),
+                if (isCurrent) ...[
+                  const SizedBox(width: 8),
+                  Text(
+                    steps[stepIndex],
+                    style: GoogleFonts.montserrat(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.deepCharcoal,
+                    ),
+                  ),
+                ],
+              ],
+            );
+          } else {
+            // Line
+            final lineIndex = index ~/ 2;
+            return Expanded(
+              child: Container(
+                height: 2,
+                margin: const EdgeInsets.symmetric(horizontal: 8),
+                color: lineIndex < _currentStep
+                    ? AppTheme.accentGold
+                    : AppTheme.mutedSilver.withValues(alpha: 0.2),
+              ),
+            );
+          }
+        }),
+      ),
+    );
+  }
+
+  Widget _buildGuidanceCard(AppLocalizations l10n) {
+    final guidance = switch (_currentStep) {
+      0 => l10n.returnGuidanceStep1,
+      1 => l10n.returnGuidanceStep2,
+      2 => l10n.returnGuidanceStep3,
+      _ => '',
+    };
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.accentGold.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.1)),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 1. Items Selection
-          _buildSectionHeader(l10n.selectReturnItems),
-          const SizedBox(height: 16),
-          ...order.items.map((item) => _buildProductCard(item)),
-          
-          const SizedBox(height: 32),
-          
-          // 2. Return Reason
-          _buildSectionHeader(l10n.returnReason),
-          const SizedBox(height: 16),
-          _buildReasonChips(l10n),
-          const SizedBox(height: 12),
-          _buildElegantTextField(
-            controller: _reasonController,
-            hint: l10n.returnReasonHint,
-            maxLines: 3,
+          Row(
+            children: [
+              const Icon(Icons.tips_and_updates_outlined,
+                  color: AppTheme.accentGold, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  l10n.returnGuidanceTitle,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.accentGold,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+            ],
           ),
-          
-          const SizedBox(height: 32),
-          
-          // 3. Refund Info
-          _buildSectionHeader(l10n.refundInfo),
-          const SizedBox(height: 16),
-          _buildRefundForm(l10n),
-          
-          const SizedBox(height: 32),
-          
-          // 4. Evidence
-          _buildEvidenceSection(l10n),
-          
-          const SizedBox(height: 40),
+          const SizedBox(height: 8),
+          Text(
+            guidance,
+            style: GoogleFonts.montserrat(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: AppTheme.deepCharcoal.withValues(alpha: 0.8),
+              height: 1.4,
+            ),
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildContent(Order order, AppLocalizations l10n) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      child: SingleChildScrollView(
+        key: ValueKey(_currentStep),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (_currentStep == 0) ...[
+              _buildSectionHeader(l10n.selectReturnItems),
+              const SizedBox(height: 16),
+              ...order.items.map((item) => _buildProductCard(item)),
+              const SizedBox(height: 24),
+              _buildSectionHeader(l10n.returnReason),
+              const SizedBox(height: 12),
+              _buildReasonChips(l10n),
+            ] else if (_currentStep == 1) ...[
+              _buildSectionHeader(l10n.returnReasonHint),
+              const SizedBox(height: 12),
+              _buildElegantTextField(
+                controller: _reasonController,
+                hint: l10n.returnReasonExample,
+                maxLines: 4,
+              ),
+              const SizedBox(height: 24),
+              _buildSectionHeader(l10n.refundInfo),
+              const SizedBox(height: 12),
+              _buildRefundForm(l10n),
+            ] else if (_currentStep == 2) ...[
+              _buildEvidenceSection(l10n),
+            ],
+            const SizedBox(height: 40),
+          ],
+        ),
       ),
     );
   }
@@ -337,20 +453,23 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? AppTheme.accentGold : AppTheme.mutedSilver.withValues(alpha: 0.2),
+            color: isSelected
+                ? AppTheme.accentGold
+                : AppTheme.mutedSilver.withValues(alpha: 0.2),
             width: isSelected ? 1.5 : 1,
           ),
-          boxShadow: isSelected ? [
-            BoxShadow(
-              color: AppTheme.accentGold.withValues(alpha: 0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            )
-          ] : [],
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppTheme.accentGold.withValues(alpha: 0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  )
+                ]
+              : [],
         ),
         child: Row(
           children: [
-            // Checkmark Overlay
             Container(
               width: 24,
               height: 24,
@@ -358,18 +477,22 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
                 shape: BoxShape.circle,
                 color: isSelected ? AppTheme.accentGold : Colors.transparent,
                 border: Border.all(
-                  color: isSelected ? AppTheme.accentGold : AppTheme.mutedSilver.withValues(alpha: 0.4),
+                  color: isSelected
+                      ? AppTheme.accentGold
+                      : AppTheme.mutedSilver.withValues(alpha: 0.4),
                 ),
               ),
-              child: isSelected ? const Icon(Icons.check, size: 14, color: Colors.white) : null,
+              child: isSelected
+                  ? const Icon(Icons.check, size: 14, color: Colors.white)
+                  : null,
             ),
             const SizedBox(width: 12),
-            // Image
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: item.productImage.isNotEmpty
-                ? Image.network(item.productImage, width: 60, height: 60, fit: BoxFit.cover)
-                : Container(width: 60, height: 60, color: Colors.grey[100]),
+                  ? Image.network(item.productImage,
+                      width: 60, height: 60, fit: BoxFit.cover)
+                  : Container(width: 60, height: 60, color: Colors.grey[100]),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -388,13 +511,13 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
                   ),
                   Text(
                     item.variantLabel,
-                    style: GoogleFonts.montserrat(color: AppTheme.mutedSilver, fontSize: 12),
+                    style: GoogleFonts.montserrat(
+                        color: AppTheme.mutedSilver, fontSize: 12),
                   ),
                 ],
               ),
             ),
-            if (isSelected) 
-              _buildQtyPicker(item, qty),
+            if (isSelected) _buildQtyPicker(item, qty),
           ],
         ),
       ),
@@ -412,7 +535,8 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
               setState(() => _selectedItems[item.variantId] = currentQty - 1);
             }
           },
-          icon: const Icon(Icons.remove_circle_outline, size: 20, color: AppTheme.mutedSilver),
+          icon: const Icon(Icons.remove_circle_outline,
+              size: 20, color: AppTheme.mutedSilver),
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(),
         ),
@@ -420,7 +544,8 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: Text(
             '$currentQty',
-            style: GoogleFonts.montserrat(fontWeight: FontWeight.w700, fontSize: 14),
+            style: GoogleFonts.montserrat(
+                fontWeight: FontWeight.w700, fontSize: 14),
           ),
         ),
         IconButton(
@@ -429,7 +554,8 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
               setState(() => _selectedItems[item.variantId] = currentQty + 1);
             }
           },
-          icon: const Icon(Icons.add_circle_outline, size: 20, color: AppTheme.accentGold),
+          icon: const Icon(Icons.add_circle_outline,
+              size: 20, color: AppTheme.accentGold),
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(),
         ),
@@ -446,6 +572,7 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
 
     return Wrap(
       spacing: 8,
+      runSpacing: 8,
       children: reasons.map((r) {
         final isSelected = _selectedQuickReason == r['val'];
         return ChoiceChip(
@@ -466,7 +593,9 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
             side: BorderSide(
-              color: isSelected ? AppTheme.accentGold : AppTheme.mutedSilver.withValues(alpha: 0.3),
+              color: isSelected
+                  ? AppTheme.accentGold
+                  : AppTheme.mutedSilver.withValues(alpha: 0.3),
             ),
           ),
           showCheckmark: false,
@@ -492,11 +621,15 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
         controller: controller,
         maxLines: maxLines,
         keyboardType: keyboardType,
-        style: GoogleFonts.montserrat(fontSize: 14, color: AppTheme.deepCharcoal),
+        style:
+            GoogleFonts.montserrat(fontSize: 14, color: AppTheme.deepCharcoal),
         decoration: InputDecoration(
           hintText: hint,
-          prefixIcon: icon != null ? Icon(icon, size: 20, color: AppTheme.mutedSilver) : null,
-          hintStyle: GoogleFonts.montserrat(color: AppTheme.mutedSilver, fontSize: 13),
+          prefixIcon: icon != null
+              ? Icon(icon, size: 20, color: AppTheme.mutedSilver)
+              : null,
+          hintStyle:
+              GoogleFonts.montserrat(color: AppTheme.mutedSilver, fontSize: 13),
           contentPadding: const EdgeInsets.all(16),
           border: InputBorder.none,
         ),
@@ -545,27 +678,32 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
           children: [
             _buildSectionHeader(l10n.evidenceTitle),
             Text(
-              '${_images.length}/5 images',
-              style: GoogleFonts.montserrat(fontSize: 11, color: AppTheme.mutedSilver),
+              '${_images.length}/5',
+              style: GoogleFonts.montserrat(
+                  fontSize: 11, color: AppTheme.mutedSilver),
             ),
           ],
         ),
+        const SizedBox(height: 8),
+        Text(
+          l10n.returnEvidenceTip1,
+          style: GoogleFonts.montserrat(
+              fontSize: 11,
+              color: AppTheme.accentGold,
+              fontWeight: FontWeight.w600),
+        ),
         const SizedBox(height: 16),
-        
-        // Image Horizontal List
         SizedBox(
           height: 90,
           child: ListView(
             scrollDirection: Axis.horizontal,
             children: [
-              // Add button
               if (_images.length < 5)
                 _buildDashedPicker(
                   onTap: _pickImages,
                   icon: Icons.add_a_photo_outlined,
                   label: l10n.addPhoto,
                 ),
-              
               ..._images.asMap().entries.map((e) => _buildThumbnail(
                     File(e.value.path),
                     onRemove: () => _removeImage(e.key),
@@ -573,14 +711,19 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
             ],
           ),
         ),
-        
-        const SizedBox(height: 24),
-        
-        // Video Section
+        const SizedBox(height: 32),
         _buildSectionHeader(l10n.videoEvidence),
+        const SizedBox(height: 8),
+        Text(
+          l10n.returnEvidenceTip2,
+          style: GoogleFonts.montserrat(
+              fontSize: 11,
+              color: AppTheme.accentGold,
+              fontWeight: FontWeight.w600),
+        ),
         const SizedBox(height: 12),
         if (_video == null)
-           _buildDashedPicker(
+          _buildDashedPicker(
             onTap: _pickVideo,
             icon: Icons.videocam_outlined,
             label: l10n.addVideo,
@@ -605,13 +748,16 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
         height: 90,
         margin: const EdgeInsets.only(right: 12),
         child: CustomPaint(
-          painter: _DashedBorderPainter(color: AppTheme.mutedSilver.withValues(alpha: 0.4)),
+          painter: _DashedBorderPainter(
+              color: AppTheme.mutedSilver.withValues(alpha: 0.4)),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(icon, color: AppTheme.accentGold, size: 28),
               const SizedBox(height: 4),
-              Text(label, style: GoogleFonts.montserrat(fontSize: 10, color: AppTheme.mutedSilver)),
+              Text(label,
+                  style: GoogleFonts.montserrat(
+                      fontSize: 10, color: AppTheme.mutedSilver)),
             ],
           ),
         ),
@@ -637,7 +783,8 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
               onTap: onRemove,
               child: Container(
                 padding: const EdgeInsets.all(4),
-                decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                decoration: const BoxDecoration(
+                    color: Colors.black54, shape: BoxShape.circle),
                 child: const Icon(Icons.close, color: Colors.white, size: 14),
               ),
             ),
@@ -662,7 +809,8 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
           Expanded(
             child: Text(
               _video!.path.split('/').last,
-              style: GoogleFonts.montserrat(fontSize: 12, color: AppTheme.deepCharcoal),
+              style: GoogleFonts.montserrat(
+                  fontSize: 12, color: AppTheme.deepCharcoal),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -677,6 +825,7 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
   }
 
   Widget _buildBottomBar(AppLocalizations l10n) {
+    final isLastStep = _currentStep == 2;
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
       decoration: BoxDecoration(
@@ -692,24 +841,63 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          SizedBox(
-            width: double.infinity,
-            height: 56,
-            child: ElevatedButton(
-              onPressed: _isSubmitting ? null : _submitReturn,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.deepCharcoal,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                elevation: 0,
-              ),
-              child: _isSubmitting
-                ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                : Text(
-                    l10n.submitReturn.toUpperCase(),
-                    style: GoogleFonts.montserrat(fontWeight: FontWeight.w700, fontSize: 13, letterSpacing: 1.1),
+          Row(
+            children: [
+              if (_currentStep > 0) ...[
+                Expanded(
+                  flex: 1,
+                  child: OutlinedButton(
+                    onPressed: _prevStep,
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)),
+                      side: BorderSide(
+                          color: AppTheme.deepCharcoal.withValues(alpha: 0.3)),
+                    ),
+                    child: Text(
+                      l10n.returnBack,
+                      style: GoogleFonts.montserrat(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                        color: AppTheme.deepCharcoal,
+                      ),
+                    ),
                   ),
-            ),
+                ),
+                const SizedBox(width: 12),
+              ],
+              Expanded(
+                flex: 2,
+                child: ElevatedButton(
+                  onPressed: _isSubmitting
+                      ? null
+                      : (isLastStep ? _submitReturn : _nextStep),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.deepCharcoal,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
+                    elevation: 0,
+                  ),
+                  child: _isSubmitting
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2))
+                      : Text(
+                          (isLastStep ? l10n.submitReturn : l10n.returnNext)
+                              .toUpperCase(),
+                          style: GoogleFonts.montserrat(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                              letterSpacing: 1.1),
+                        ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
           Row(
@@ -719,7 +907,8 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
               const SizedBox(width: 6),
               Text(
                 l10n.returnProcessNotice,
-                style: GoogleFonts.montserrat(fontSize: 10, color: AppTheme.mutedSilver),
+                style: GoogleFonts.montserrat(
+                    fontSize: 10, color: AppTheme.mutedSilver),
               ),
             ],
           ),

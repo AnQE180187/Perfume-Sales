@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/currency_utils.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class PriceSummary extends StatelessWidget {
   final double subtotal;
@@ -19,6 +20,7 @@ class PriceSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -36,7 +38,7 @@ class PriceSummary extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'CHI TIẾT ĐƠN HÀNG',
+            l10n.orderDetails,
             style: GoogleFonts.montserrat(
               fontSize: 10,
               fontWeight: FontWeight.w800,
@@ -45,19 +47,19 @@ class PriceSummary extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 18),
-          _PriceRow(label: 'Tạm tính', value: formatVND(subtotal)),
+          _PriceRow(label: l10n.subtotal, value: formatVND(subtotal)),
           if (discount > 0) ...[
             const SizedBox(height: 10),
             _PriceRow(
-              label: 'Giảm giá hội viên',
+              label: l10n.memberDiscount,
               value: '-${formatVND(discount)}',
               valueColor: const Color(0xffb8860b),
             ),
           ],
           const SizedBox(height: 10),
           _PriceRow(
-            label: 'Phí vận chuyển',
-            value: shipping == 0 ? 'Chưa tính' : formatVND(shipping),
+            label: l10n.shippingFee,
+            value: shipping == 0 ? l10n.notCalculated : formatVND(shipping),
             valueColor: shipping == 0 ? AppTheme.mutedSilver.withValues(alpha: 0.5) : null,
           ),
           const SizedBox(height: 20),
@@ -84,7 +86,7 @@ class PriceSummary extends StatelessWidget {
             textBaseline: TextBaseline.alphabetic,
             children: [
               Text(
-                'TỔNG CỘNG'.toUpperCase(),
+                l10n.total.toUpperCase(),
                 style: GoogleFonts.montserrat(
                   fontSize: 11,
                   fontWeight: FontWeight.w800,

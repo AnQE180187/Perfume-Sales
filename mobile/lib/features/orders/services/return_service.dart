@@ -13,17 +13,16 @@ class ReturnService {
 
     final formData = FormData();
     for (var image in images) {
-      formData.files.add(MapEntry(
-        'images',
-        await MultipartFile.fromFile(image.path),
-      ));
+      formData.files.add(
+        MapEntry('images', await MultipartFile.fromFile(image.path)),
+      );
     }
 
     final response = await _client.post(
       ApiEndpoints.uploadReturnImages,
       data: formData,
     );
-    
+
     final body = response.data;
     if (body is Map && body['urls'] is List) {
       return (body['urls'] as List).map((e) => e.toString()).toList();
@@ -48,7 +47,10 @@ class ReturnService {
     return null;
   }
 
-  Future<void> createReturn(Map<String, dynamic> payload, {String? idempotencyKey}) async {
+  Future<void> createReturn(
+    Map<String, dynamic> payload, {
+    String? idempotencyKey,
+  }) async {
     await _client.post(
       ApiEndpoints.returns,
       data: payload,
@@ -79,5 +81,19 @@ class ReturnService {
 
   Future<void> confirmHandover(String id) async {
     await _client.patch(ApiEndpoints.handoverReturn(id));
+  }
+
+  Future<void> addShipment(
+    String id, {
+    String? courier,
+    required String trackingNumber,
+  }) async {
+    await _client.post(
+      ApiEndpoints.addReturnShipment(id),
+      data: {
+        if (courier != null) 'courier': courier,
+        'trackingNumber': trackingNumber,
+      },
+    );
   }
 }

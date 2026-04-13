@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../providers/ai_preferences_provider.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class AiPreferencesScreen extends ConsumerStatefulWidget {
   const AiPreferencesScreen({super.key});
@@ -38,6 +39,7 @@ class _AiPreferencesScreenState extends ConsumerState<AiPreferencesScreen>
   @override
   Widget build(BuildContext context) {
     final prefsAsync = ref.watch(aiPreferencesProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAF8F6),
@@ -50,7 +52,7 @@ class _AiPreferencesScreenState extends ConsumerState<AiPreferencesScreen>
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'AI SCENT DNA',
+          l10n.aiScentDna.toUpperCase(),
           style: GoogleFonts.playfairDisplay(
             fontSize: 18,
             fontWeight: FontWeight.w700,
@@ -60,6 +62,17 @@ class _AiPreferencesScreenState extends ConsumerState<AiPreferencesScreen>
         ),
         centerTitle: true,
         actions: [
+          TextButton(
+            onPressed: _handleReset,
+            child: Text(
+              l10n.reset.toUpperCase(),
+              style: GoogleFonts.montserrat(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.accentGold,
+              ),
+            ),
+          ),
           IconButton(
             icon: const Icon(Icons.info_outline_rounded,
                 color: AppTheme.mutedSilver, size: 22),
@@ -80,36 +93,36 @@ class _AiPreferencesScreenState extends ConsumerState<AiPreferencesScreen>
           return ListView(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             children: [
-              _buildRadarChartHeader(),
+              _buildRadarChartHeader(l10n),
               const SizedBox(height: 32),
-              _buildSectionHeader('CHẾ ĐỘ GỢI Ý', 'Khám phá những tầng hương mới'),
+              _buildSectionHeader(l10n.suggestionMode.toUpperCase(), l10n.exploreNewScents),
               const SizedBox(height: 24),
-              _buildLuxurySlider(),
+              _buildLuxurySlider(l10n),
               const SizedBox(height: 32),
-              _buildSectionHeader('NỐT HƯƠNG ƯU TIÊN', 'DNA đặc trưng của bạn'),
+              _buildSectionHeader(l10n.preferredNotesLabel.toUpperCase(), l10n.yourUniqueDna),
               const SizedBox(height: 16),
               _buildGlassNoteChips(_preferredNotes ?? [], AppTheme.accentGold, (note) {
                 setState(() => _preferredNotes?.remove(note));
-              }),
+              }, l10n),
               const SizedBox(height: 32),
-              _buildSectionHeader('DANH SÁCH LOẠI TRỪ', 'Những thành phần bạn muốn tránh'),
+              _buildSectionHeader(l10n.avoidedNotesLabel.toUpperCase(), l10n.ingredientsToAvoid),
               const SizedBox(height: 16),
               _buildGlassNoteChips(_avoidedNotes ?? [], const Color(0xFFD44638), (note) {
                 setState(() => _avoidedNotes?.remove(note));
-              }),
+              }, l10n),
               const SizedBox(height: 48),
-              _buildSaveButton(),
+              _buildSaveButton(l10n),
               const SizedBox(height: 40),
             ],
           );
         },
         loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.accentGold)),
-        error: (err, stack) => const Center(child: Text('Lỗi tải dữ liệu')),
+        error: (err, stack) => Center(child: Text('${l10n.error}: $err')),
       ),
     );
   }
 
-  Widget _buildRadarChartHeader() {
+  Widget _buildRadarChartHeader(AppLocalizations l10n) {
     return Container(
       height: 320,
       decoration: BoxDecoration(
@@ -131,6 +144,7 @@ class _AiPreferencesScreenState extends ConsumerState<AiPreferencesScreen>
                   painter: RadarChartPainter(
                     preferredNotes: _preferredNotes ?? [],
                     animationValue: _animationController.value,
+                    l10n: l10n,
                   ),
                 ),
                 Positioned(
@@ -152,7 +166,7 @@ class _AiPreferencesScreenState extends ConsumerState<AiPreferencesScreen>
                         ],
                       ).createShader(bounds),
                       child: Text(
-                        'MOLECULAR ANALYSIS',
+                        l10n.molecularAnalysis.toUpperCase(),
                         style: GoogleFonts.montserrat(
                           fontSize: 10,
                           fontWeight: FontWeight.w800,
@@ -182,7 +196,7 @@ class _AiPreferencesScreenState extends ConsumerState<AiPreferencesScreen>
     );
   }
 
-  Widget _buildLuxurySlider() {
+  Widget _buildLuxurySlider(AppLocalizations l10n) {
     double value = _riskLevel ?? 0.3;
     final Color trackColor = Color.lerp(AppTheme.accentGold, const Color(0xFFFF8C42), value)!;
     
@@ -190,13 +204,13 @@ class _AiPreferencesScreenState extends ConsumerState<AiPreferencesScreen>
     Color statusColor = AppTheme.mutedSilver;
 
     if (value < 0.35) {
-      description = 'AI chỉ gợi ý chính xác những gì bạn yêu thích.';
+      description = l10n.aiSafeSuggestion;
       statusColor = Colors.green[600]!;
     } else if (value < 0.7) {
-      description = 'AI sẽ ưu tiên gu của bạn nhưng có thêm các nốt hương mới lạ.';
+      description = l10n.aiBalancedSuggestion;
       statusColor = AppTheme.accentGold;
     } else {
-      description = 'AI sẽ thử thách khứu giác bạn với các sáng tạo đột phá.';
+      description = l10n.aiDaringSuggestion;
       statusColor = const Color(0xFFFF8C42);
     }
     
@@ -235,15 +249,15 @@ class _AiPreferencesScreenState extends ConsumerState<AiPreferencesScreen>
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Cổ điển', style: GoogleFonts.montserrat(fontSize: 10, color: AppTheme.mutedSilver)),
-            Text('Phá cách', style: GoogleFonts.montserrat(fontSize: 10, color: trackColor, fontWeight: FontWeight.bold)),
+            Text(l10n.classic, style: GoogleFonts.montserrat(fontSize: 10, color: AppTheme.mutedSilver)),
+            Text(l10n.daring, style: GoogleFonts.montserrat(fontSize: 10, color: trackColor, fontWeight: FontWeight.bold)),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildGlassNoteChips(List<String> notes, Color color, Function(String) onRemove) {
+  Widget _buildGlassNoteChips(List<String> notes, Color color, Function(String) onRemove, AppLocalizations l10n) {
     return Wrap(
       spacing: 10,
       runSpacing: 10,
@@ -265,7 +279,7 @@ class _AiPreferencesScreenState extends ConsumerState<AiPreferencesScreen>
           ),
         )),
         GestureDetector(
-          onTap: () => _showAddNoteDialog(color == AppTheme.accentGold),
+          onTap: () => _showAddNoteDialog(color == AppTheme.accentGold, l10n),
           child: Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(color: AppTheme.softTaupe.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
@@ -276,7 +290,7 @@ class _AiPreferencesScreenState extends ConsumerState<AiPreferencesScreen>
     );
   }
 
-  Widget _buildSaveButton() {
+  Widget _buildSaveButton(AppLocalizations l10n) {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -290,12 +304,13 @@ class _AiPreferencesScreenState extends ConsumerState<AiPreferencesScreen>
           padding: const EdgeInsets.symmetric(vertical: 20),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         ),
-        child: Text('LƯU CẤU HÌNH DNA', style: GoogleFonts.playfairDisplay(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 2)),
+        child: Text(l10n.saveDnaConfig.toUpperCase(), style: GoogleFonts.playfairDisplay(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 2)),
       ),
     );
   }
 
   void _showInfoSheet() {
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -312,7 +327,6 @@ class _AiPreferencesScreenState extends ConsumerState<AiPreferencesScreen>
             ),
             child: Stack(
               children: [
-                // Background Helix Watermark
                 Positioned.fill(
                   child: CustomPaint(
                     painter: HelixWatermarkPainter(
@@ -349,7 +363,7 @@ class _AiPreferencesScreenState extends ConsumerState<AiPreferencesScreen>
                                 ],
                               ).createShader(bounds),
                               child: Text(
-                                'THẤU HIỂU\nDNA CỦA BẠN',
+                                l10n.understandingYourDna,
                                 style: GoogleFonts.playfairDisplay(
                                   fontSize: 32,
                                   fontWeight: FontWeight.w900,
@@ -360,7 +374,7 @@ class _AiPreferencesScreenState extends ConsumerState<AiPreferencesScreen>
                             ),
                             const SizedBox(height: 24),
                             Text(
-                              'AI Scent DNA là chìa khóa mở ra cánh cổng cá nhân hóa khứu giác, kết nối sở thích bản năng với nghệ thuật chế tác hương thơm.',
+                              l10n.dnaDescription,
                               style: GoogleFonts.montserrat(
                                 fontSize: 14,
                                 color: AppTheme.mutedSilver,
@@ -371,18 +385,18 @@ class _AiPreferencesScreenState extends ConsumerState<AiPreferencesScreen>
                             const SizedBox(height: 48),
                             _buildEditorialItem(
                               Icons.bubble_chart_outlined,
-                              'Molecular Radar',
-                              'Hệ thống phân tích 5 chiều, trực quan hóa từng phân tử mùi hương cấu thành nên bản sắc của bạn.',
+                              l10n.molecularRadar,
+                              l10n.molecularRadarDesc,
                             ),
                             _buildEditorialItem(
                               Icons.filter_vintage_outlined,
-                              'Suggestion Focus',
-                              'Hệ thống tự động thanh lọc các thành phần không mong muốn và tập trung vào DNA yêu thích.',
+                              l10n.suggestionFocus,
+                              l10n.suggestionFocusDesc,
                             ),
                             _buildEditorialItem(
                               Icons.psychology_outlined,
-                              'Discovery Curve',
-                              'Kiểm soát mức độ bứt phá của AI, từ những bước chân an toàn đến những trải nghiệm hương liệu đột phá.',
+                              l10n.discoveryCurve,
+                              l10n.discoveryCurveDesc,
                             ),
                           ],
                         ),
@@ -411,7 +425,7 @@ class _AiPreferencesScreenState extends ConsumerState<AiPreferencesScreen>
                             elevation: 0,
                           ),
                           child: Text(
-                            'TIẾP TỤC KHÁM PHÁ',
+                            l10n.continueExploring.toUpperCase(),
                             style: GoogleFonts.montserrat(
                               fontSize: 12,
                               fontWeight: FontWeight.w800,
@@ -471,17 +485,47 @@ class _AiPreferencesScreenState extends ConsumerState<AiPreferencesScreen>
   }
 
   Future<void> _handleSave() async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       await ref.read(aiPreferencesProvider.notifier).updatePreferences(
         riskLevel: _riskLevel, preferredNotes: _preferredNotes, avoidedNotes: _avoidedNotes
       );
       if (mounted) Navigator.pop(context);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${l10n.error}: $e')));
     }
   }
 
-  void _showAddNoteDialog(bool isPreferred) {
+  Future<void> _handleReset() async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.resetDna, style: GoogleFonts.playfairDisplay(fontWeight: FontWeight.bold)),
+        content: Text(l10n.resetDnaConfirm, style: GoogleFonts.montserrat()),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.no.toUpperCase(), style: GoogleFonts.montserrat(color: AppTheme.mutedSilver))),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: Text(l10n.reset.toUpperCase(), style: GoogleFonts.montserrat(color: const Color(0xFFD44638), fontWeight: FontWeight.bold))),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      try {
+        await ref.read(aiPreferencesProvider.notifier).resetPreferences();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.dnaResetSuccess)));
+        }
+        setState(() {
+          _isInitialized = false;
+        });
+      } catch (e) {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${l10n.error}: $e')));
+      }
+    }
+  }
+
+  void _showAddNoteDialog(bool isPreferred, AppLocalizations l10n) {
     final allSelectedNotes = {
       ...(_preferredNotes ?? []),
       ...(_avoidedNotes ?? []),
@@ -503,6 +547,7 @@ class _AiPreferencesScreenState extends ConsumerState<AiPreferencesScreen>
             else _avoidedNotes?.add(normalizedNote);
           });
         },
+        l10n: l10n,
       ),
     );
   }
@@ -511,8 +556,9 @@ class _AiPreferencesScreenState extends ConsumerState<AiPreferencesScreen>
 class RadarChartPainter extends CustomPainter {
   final List<String> preferredNotes;
   final double animationValue;
+  final AppLocalizations l10n;
 
-  RadarChartPainter({required this.preferredNotes, required this.animationValue});
+  RadarChartPainter({required this.preferredNotes, required this.animationValue, required this.l10n});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -520,7 +566,7 @@ class RadarChartPainter extends CustomPainter {
     final radius = size.width * 0.35;
     const sides = 5;
     const angle = (2 * math.pi) / sides;
-    final labels = ['Woody', 'Floral', 'Citrus', 'Spicy', 'Musky'];
+    final labels = [l10n.woody, l10n.floral, l10n.citrus, l10n.spicy, l10n.musky];
 
     final helixPaint = Paint()
       ..color = AppTheme.accentGold.withValues(alpha: 0.05)
@@ -545,17 +591,17 @@ class RadarChartPainter extends CustomPainter {
       canvas.drawCircle(Offset(pX, pY), 1 + random.nextDouble() * 2, particlePaint);
     }
 
-    final Map<String, double> scores = {'Woody': 0.3, 'Floral': 0.3, 'Citrus': 0.3, 'Spicy': 0.3, 'Musky': 0.3};
+    final Map<String, double> scores = {for (var l in labels) l: 0.3};
     final Map<String, List<String>> keywords = {
-      'Woody': ['gỗ', 'đàn hương', 'wood', 'cedar', 'agarwood', 'trầm'],
-      'Floral': ['hoa', 'rose', 'jasmine', 'floral', 'violet', 'nhài'],
-      'Citrus': ['cam', 'chanh', 'citrus', 'lemon', 'bergamot', 'lime'],
-      'Spicy': ['gia vị', 'spicy', 'tiêu', 'pepper', 'quế', 'ginger'],
-      'Musky': ['xạ hương', 'musk', 'amber', 'vanilla', 'da thuộc'],
+      l10n.woody: ['gỗ', 'đàn hương', 'wood', 'cedar', 'agarwood', 'trầm'],
+      l10n.floral: ['hoa', 'rose', 'jasmine', 'floral', 'violet', 'nhài'],
+      l10n.citrus: ['cam', 'chanh', 'citrus', 'lemon', 'bergamot', 'lime'],
+      l10n.spicy: ['gia vị', 'spicy', 'tiêu', 'pepper', 'quế', 'ginger'],
+      l10n.musky: ['xạ hương', 'musk', 'amber', 'vanilla', 'da thuộc'],
     };
     for (var l in labels) {
       for (var n in preferredNotes) {
-        if (keywords[l]!.any((kw) => n.toLowerCase().contains(kw))) {
+        if (keywords[l]!.any((kw) => n.toLowerCase().contains(kw.toLowerCase()))) {
           scores[l] = (scores[l]! + 0.18).clamp(0.2, 1.0);
         }
       }
@@ -641,7 +687,8 @@ class _AddNoteSheet extends ConsumerStatefulWidget {
   final bool isPreferred;
   final List<String> existingNotes;
   final Function(String) onAdd;
-  const _AddNoteSheet({required this.isPreferred, required this.existingNotes, required this.onAdd});
+  final AppLocalizations l10n;
+  const _AddNoteSheet({required this.isPreferred, required this.existingNotes, required this.onAdd, required this.l10n});
   @override ConsumerState<_AddNoteSheet> createState() => _AddNoteSheetState();
 }
 
@@ -659,17 +706,17 @@ class _AddNoteSheetState extends ConsumerState<_AddNoteSheet> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('KHÁM PHÁ NỐT HƯƠNG', style: GoogleFonts.playfairDisplay(fontSize: 16, fontWeight: FontWeight.bold)),
+              Text(widget.l10n.exploreNotes.toUpperCase(), style: GoogleFonts.playfairDisplay(fontSize: 16, fontWeight: FontWeight.bold)),
               IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close_rounded))
             ],
           ),
           const SizedBox(height: 16),
           TextField(
             onChanged: (v) => setState(() => _search = v),
-            decoration: InputDecoration(hintText: 'Tìm kiếm nốt hương...', prefixIcon: const Icon(Icons.search_rounded), filled: true, fillColor: Colors.white, border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none)),
+            decoration: InputDecoration(hintText: widget.l10n.searchNotesHint, prefixIcon: const Icon(Icons.search_rounded), filled: true, fillColor: Colors.white, border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none)),
           ),
           const SizedBox(height: 24),
-          Text('XU HƯỚNG HIỆN TẠI', style: GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.w800, color: AppTheme.accentGold)),
+          Text(widget.l10n.currentTrends.toUpperCase(), style: GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.w800, color: AppTheme.accentGold)),
           const SizedBox(height: 12),
           _buildTrendingNotes(),
           const SizedBox(height: 24),
@@ -706,7 +753,7 @@ class _AddNoteSheetState extends ConsumerState<_AddNoteSheet> {
       data: (notes) {
         final filtered = notes.where((n) => n.toLowerCase().contains(_search.toLowerCase()) && !widget.existingNotes.contains(n)).toList();
         if (filtered.isEmpty && _search.isNotEmpty) {
-           return Center(child: TextButton(onPressed: () { widget.onAdd(_search); Navigator.pop(context); }, child: Text('Thêm nốt "$_search" mới', style: GoogleFonts.montserrat(color: AppTheme.accentGold, fontWeight: FontWeight.bold))));
+           return Center(child: TextButton(onPressed: () { widget.onAdd(_search); Navigator.pop(context); }, child: Text('${widget.l10n.addNewNote} "$_search"', style: GoogleFonts.montserrat(color: AppTheme.accentGold, fontWeight: FontWeight.bold))));
         }
         return ListView.builder(itemCount: filtered.length, itemBuilder: (c, i) => ListTile(title: Text(filtered[i], style: GoogleFonts.montserrat(fontSize: 14)), trailing: const Icon(Icons.add_circle_outline_rounded, color: AppTheme.accentGold), onTap: () { widget.onAdd(filtered[i]); Navigator.pop(context); }));
       },

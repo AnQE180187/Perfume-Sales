@@ -22,6 +22,7 @@ import '../../features/payment/presentation/screens/payment_method_screen.dart';
 import '../../features/address/presentation/screens/address_management_screen.dart';
 import '../../features/profile/presentation/screens/profile_edit_screen.dart';
 import '../../features/profile/presentation/screens/ai_preferences_screen.dart';
+import '../../features/profile/presentation/screens/settings_screen.dart';
 import '../../features/search/presentation/search_screen.dart';
 import '../../features/wishlist/presentation/wishlist_screen.dart';
 import '../../features/product/presentation/explore_screen.dart';
@@ -32,6 +33,10 @@ import '../../features/loyalty/presentation/loyalty_screen.dart';
 import '../../features/home/presentation/screens/brand_story_screen.dart';
 import '../../features/quiz/presentation/quiz_screen.dart';
 import '../../features/staff/staff_shell.dart';
+import '../../features/legal/presentation/screens/privacy_policy_screen.dart';
+import '../../features/legal/presentation/screens/terms_of_service_screen.dart';
+import '../../features/support/presentation/screens/help_center_screen.dart';
+import '../../features/support/presentation/screens/contact_us_screen.dart';
 import '../widgets/main_shell.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -256,6 +261,26 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/ai-preferences',
         builder: (context, state) => const AiPreferencesScreen(),
+      ),
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: '/privacy-policy',
+        builder: (context, state) => const PrivacyPolicyScreen(),
+      ),
+      GoRoute(
+        path: '/terms-of-service',
+        builder: (context, state) => const TermsOfServiceScreen(),
+      ),
+      GoRoute(
+        path: '/help-center',
+        builder: (context, state) => const HelpCenterScreen(),
+      ),
+      GoRoute(
+        path: '/contact-us',
+        builder: (context, state) => const ContactUsScreen(),
       ),
 
       // ── Staff Routes ────────────────────────────────────────────────

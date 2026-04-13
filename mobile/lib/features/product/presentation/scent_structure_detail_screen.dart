@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
+import '../../../l10n/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 
 class ScentStructureDetailScreen extends StatelessWidget {
@@ -21,6 +21,7 @@ class ScentStructureDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final safeNotes = notes ?? const <String>[];
     var safeTopNotes = topNotes ?? const <String>[];
     var safeHeartNotes = heartNotes ?? const <String>[];
@@ -74,7 +75,7 @@ class ScentStructureDetailScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            'Architecture of Scent',
+            l10n.architectureOfScent,
             textAlign: TextAlign.center,
             style: GoogleFonts.playfairDisplay(
               fontSize: 26,
@@ -87,7 +88,7 @@ class ScentStructureDetailScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(
-              'A journey through the olfactory layers, revealing the $totalNotes unique notes curated for this masterpiece.',
+              l10n.architectureOfScentDesc,
               textAlign: TextAlign.center,
               style: GoogleFonts.montserrat(
                 fontSize: 13,
@@ -112,7 +113,7 @@ class ScentStructureDetailScreen extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          'Cấu trúc mùi hương',
+          l10n.scentStructure,
           style: GoogleFonts.playfairDisplay(
             fontSize: 24,
             fontWeight: FontWeight.w600,
@@ -138,26 +139,23 @@ class ScentStructureDetailScreen extends StatelessWidget {
               summaryCard,
               const SizedBox(height: 48),
               _ScentLayerTimelineItem(
-                title: 'Top Notes',
+                title: l10n.topNotes,
                 subtitle: 'Immédiat — 0 to 15 mins',
-                description:
-                    'The initial spark that captures your senses. Light, fresh, and ethereal.',
+                description: l10n.topNotesDesc,
                 notes: safeTopNotes,
                 icon: Icons.auto_awesome_outlined,
               ),
               _ScentLayerTimelineItem(
-                title: 'Heart Notes',
+                title: l10n.heartNotes,
                 subtitle: 'Cœur — 20 mins to 2 hours',
-                description:
-                    'The true soul of the fragrance. Full-bodied floral or spicy signatures.',
+                description: l10n.heartNotesDesc,
                 notes: safeHeartNotes,
                 icon: Icons.spa_outlined,
               ),
               _ScentLayerTimelineItem(
-                title: 'Base Notes',
+                title: l10n.baseNotes,
                 subtitle: 'Sillage — 3 to 8 hours',
-                description:
-                    'The lingering memory. Deep, resonant notes that bind with the skin.',
+                description: l10n.baseNotesDesc,
                 notes: safeBaseNotes,
                 icon: Icons.park_outlined,
                 isLast: true,
@@ -203,6 +201,7 @@ class _ScentLayerTimelineItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: EdgeInsets.only(bottom: isLast ? 0 : 56),
       child: Row(
@@ -273,7 +272,7 @@ class _ScentLayerTimelineItem extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 if (notes.isEmpty)
-                  _buildEmptyState()
+                  _buildEmptyState(l10n)
                 else
                   Wrap(
                     spacing: 8,
@@ -311,7 +310,7 @@ class _ScentLayerTimelineItem extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -332,7 +331,7 @@ class _ScentLayerTimelineItem extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Text(
-            'Information pending...',
+            l10n.informationPending,
             style: GoogleFonts.montserrat(
               fontSize: 11,
               fontStyle: FontStyle.italic,
@@ -374,4 +373,3 @@ class _DashedLinePainter extends CustomPainter {
   @override
   bool shouldRepaint(CustomPainter oldDelegate) => false;
 }
-

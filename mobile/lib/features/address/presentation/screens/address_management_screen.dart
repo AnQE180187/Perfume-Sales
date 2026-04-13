@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../models/address.dart';
 import '../../providers/address_providers.dart';
 import '../widgets/address_card.dart';
@@ -26,6 +27,7 @@ class _AddressManagementScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final addressesAsync = ref.watch(addressListProvider);
 
     return Scaffold(
@@ -38,7 +40,7 @@ class _AddressManagementScreenState
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: AppTheme.deepCharcoal),
         ),
         title: Text(
-          'SỔ ĐỊA CHỈ',
+          l10n.addressBook.toUpperCase(),
           style: GoogleFonts.montserrat(
             fontSize: 14,
             fontWeight: FontWeight.w700,
@@ -69,7 +71,7 @@ class _AddressManagementScreenState
             padding: const EdgeInsets.fromLTRB(20, 10, 20, 100),
             children: [
               if (defaultAddress != null) ...[
-                _SectionHeader(title: 'Địa chỉ mặc định'),
+                _SectionHeader(title: l10n.defaultAddressUpper),
                 const SizedBox(height: 12),
                 AddressCard(
                   address: defaultAddress,
@@ -82,7 +84,7 @@ class _AddressManagementScreenState
                 const SizedBox(height: 32),
               ],
               if (others.isNotEmpty) ...[
-                _SectionHeader(title: 'Địa chỉ khác'),
+                _SectionHeader(title: l10n.otherAddressesUpper),
                 const SizedBox(height: 12),
                 ...others.map((address) => AddressCard(
                       address: address,
@@ -114,7 +116,7 @@ class _AddressManagementScreenState
                   ),
                 ),
                 child: Text(
-                  'THÊM ĐỊA CHỈ MỚI',
+                  l10n.addNewAddressUpper,
                   style: GoogleFonts.montserrat(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
@@ -146,19 +148,23 @@ class _AddressManagementScreenState
   }
 
   Future<void> _confirmDelete(BuildContext context, WidgetRef ref, Address address) async {
+    final l10n = AppLocalizations.of(context)!;
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('XÓA ĐỊA CHỈ', style: GoogleFonts.playfairDisplay(fontWeight: FontWeight.bold)),
-        content: Text('Bạn có chắc chắn muốn xóa địa chỉ này?'),
+        title: Text(l10n.deleteAddress.toUpperCase(), style: GoogleFonts.playfairDisplay(fontWeight: FontWeight.bold)),
+        content: Text(l10n.deleteAddressConfirm),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('HỦY')),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('XÓA', style: TextStyle(color: Colors.red))),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.cancelUpper)),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l10n.delete.toUpperCase(), style: const TextStyle(color: Colors.red))),
         ],
       ),
     );
     if (ok == true) {
       await ref.read(addressListProvider.notifier).deleteAddress(address.id);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.addressDeleted)));
+      }
     }
   }
 }
@@ -170,7 +176,7 @@ class _SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(
-      title.toUpperCase(),
+      title,
       style: GoogleFonts.montserrat(
         fontSize: 11,
         fontWeight: FontWeight.w700,
@@ -205,6 +211,7 @@ class _AddressEmptyState extends StatelessWidget {
   const _AddressEmptyState();
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -212,12 +219,12 @@ class _AddressEmptyState extends StatelessWidget {
           const Icon(Icons.location_on_outlined, size: 64, color: AppTheme.softTaupe),
           const SizedBox(height: 20),
           Text(
-            'Chưa có địa chỉ nào',
+            l10n.noAddressesFound,
             style: GoogleFonts.playfairDisplay(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(
-            'Hãy thêm địa chỉ để bắt đầu mua sắm',
+            l10n.addAddressHint,
             style: GoogleFonts.montserrat(color: AppTheme.mutedSilver),
           ),
         ],
@@ -233,6 +240,7 @@ class _AddressErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -240,7 +248,7 @@ class _AddressErrorState extends StatelessWidget {
           const Icon(Icons.error_outline_rounded, size: 48, color: Colors.red),
           const SizedBox(height: 16),
           Text(message, textAlign: TextAlign.center),
-          TextButton(onPressed: onRetry, child: const Text('Thử lại')),
+          TextButton(onPressed: onRetry, child: Text(l10n.retry)),
         ],
       ),
     );

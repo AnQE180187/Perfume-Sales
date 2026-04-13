@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
+import 'package:perfume_gpt_app/l10n/app_localizations.dart';
 import '../../../core/widgets/product_card.dart';
 import 'package:go_router/go_router.dart';
 import '../../product/models/product.dart';
@@ -180,6 +181,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final searchState = ref.watch(searchProvider);
     final filteredResults = _applyClientFilters(searchState.results);
 
@@ -224,7 +226,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _FilterSection(
-                    title: 'Dòng hương',
+                    title: l10n.scentFamily,
                     options: _scentOptions,
                     selected: _selectedScent,
                     onSelect: (v) => setState(
@@ -233,7 +235,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   ),
                   _buildDivider(),
                   _FilterSection(
-                    title: 'Dịp sử dụng',
+                    title: l10n.usageOccasion,
                     options: _occasionOptions,
                     selected: _selectedOccasion,
                     onSelect: (v) => setState(
@@ -242,7 +244,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   ),
                   _buildDivider(),
                   _FilterSection(
-                    title: 'Khoảng giá',
+                    title: l10n.priceRange,
                     options: _priceOptions,
                     selected: _selectedPrice,
                     onSelect: (v) => setState(
@@ -259,8 +261,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       children: [
                         Text(
                           _searchController.text.isEmpty
-                              ? 'Hương thơm nổi bật'
-                              : 'Kết quả tìm kiếm',
+                              ? l10n.featuredScents
+                              : l10n.searchResults,
                           style: GoogleFonts.playfairDisplay(
                             fontSize: 20,
                             fontWeight: FontWeight.w700,
@@ -272,7 +274,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                           Padding(
                             padding: const EdgeInsets.only(bottom: 3),
                             child: Text(
-                              '(${filteredResults.length} sản phẩm)',
+                              '(${filteredResults.length} ${l10n.productsFound})',
                               style: GoogleFonts.montserrat(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w500,
@@ -287,7 +289,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                             child: Padding(
                               padding: const EdgeInsets.only(bottom: 2),
                               child: Text(
-                                'Xóa lọc',
+                                l10n.clearFilter,
                                 style: GoogleFonts.montserrat(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,
@@ -369,7 +371,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           const SizedBox(height: 16),
           TextButton(
             onPressed: () => ref.read(searchProvider.notifier).loadInitial(),
-            child: const Text('Thu lại'),
+            child: Text(AppLocalizations.of(context)!.retry),
           ),
         ],
       ),
@@ -383,7 +385,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         children: [
           Icon(Icons.search_off_rounded, size: 64, color: AppTheme.mutedSilver.withValues(alpha: 0.4)),
           const SizedBox(height: 16),
-          Text('Không tìm thấy sản phẩm phù hợp', style: GoogleFonts.montserrat(fontSize: 14, color: AppTheme.mutedSilver)),
+          Text(AppLocalizations.of(context)!.noProductsFound, style: GoogleFonts.montserrat(fontSize: 14, color: AppTheme.mutedSilver)),
         ],
       ),
     );

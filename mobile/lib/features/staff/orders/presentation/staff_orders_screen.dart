@@ -7,6 +7,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/widgets/shimmer_loading.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../models/orders_models.dart';
 import '../providers/orders_provider.dart';
 import '../../pos/models/pos_models.dart';
@@ -62,6 +63,7 @@ class _StaffOrdersScreenState extends ConsumerState<StaffOrdersScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(ordersProvider);
 
     return Scaffold(
@@ -69,17 +71,17 @@ class _StaffOrdersScreenState extends ConsumerState<StaffOrdersScreen> {
       body: NestedScrollView(
         controller: _scrollController,
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
-          SliverToBoxAdapter(child: _buildGradientHeader(context)),
-          SliverToBoxAdapter(child: _buildSearchBar()),
+          SliverToBoxAdapter(child: _buildGradientHeader(context, l10n)),
+          SliverToBoxAdapter(child: _buildSearchBar(l10n)),
         ],
-        body: _buildBody(state),
+        body: _buildBody(state, l10n),
       ),
     );
   }
 
   // ── Gradient Header ────────────────────────────────────────────
 
-  Widget _buildGradientHeader(BuildContext context) {
+  Widget _buildGradientHeader(BuildContext context, AppLocalizations l10n) {
     return Container(
       padding: EdgeInsets.fromLTRB(
         AppSpacing.md,
@@ -116,7 +118,7 @@ class _StaffOrdersScreenState extends ConsumerState<StaffOrdersScreen> {
           ),
           AppSpacing.horzSm,
           Text(
-            'Đơn hàng',
+            l10n.ordersHistoryLabel,
             style: GoogleFonts.playfairDisplay(
               fontSize: 18,
               fontWeight: FontWeight.w700,
@@ -140,7 +142,7 @@ class _StaffOrdersScreenState extends ConsumerState<StaffOrdersScreen> {
                   ),
                 ),
                 child: Text(
-                  '$total đơn',
+                  l10n.totalOrdersCount(total),
                   style: GoogleFonts.montserrat(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -157,7 +159,7 @@ class _StaffOrdersScreenState extends ConsumerState<StaffOrdersScreen> {
 
   // ── Search Bar ─────────────────────────────────────────────────
 
-  Widget _buildSearchBar() {
+  Widget _buildSearchBar(AppLocalizations l10n) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.md,
@@ -169,7 +171,7 @@ class _StaffOrdersScreenState extends ConsumerState<StaffOrdersScreen> {
         controller: _searchController,
         onChanged: _onSearch,
         decoration: InputDecoration(
-          hintText: 'Tìm mã đơn, SĐT, tên khách...',
+          hintText: l10n.searchOrdersHint,
           hintStyle: GoogleFonts.montserrat(
             fontSize: 13,
             color: AppTheme.mutedSilver,
@@ -211,7 +213,7 @@ class _StaffOrdersScreenState extends ConsumerState<StaffOrdersScreen> {
 
   // ── Body ───────────────────────────────────────────────────────
 
-  Widget _buildBody(OrdersState state) {
+  Widget _buildBody(OrdersState state, AppLocalizations l10n) {
     if (state.isLoading) {
       return ListView.builder(
         padding: const EdgeInsets.all(AppSpacing.md),
@@ -237,7 +239,7 @@ class _StaffOrdersScreenState extends ConsumerState<StaffOrdersScreen> {
               ),
               AppSpacing.vertMd,
               Text(
-                'Không thể tải đơn hàng',
+                l10n.unableLoadData,
                 style: GoogleFonts.montserrat(
                   fontSize: 14,
                   color: AppTheme.mutedSilver,
@@ -246,7 +248,7 @@ class _StaffOrdersScreenState extends ConsumerState<StaffOrdersScreen> {
               AppSpacing.vertSm,
               TextButton(
                 onPressed: () => ref.read(ordersProvider.notifier).loadOrders(),
-                child: const Text('Thử lại'),
+                child: Text(l10n.retry),
               ),
             ],
           ),
@@ -266,7 +268,7 @@ class _StaffOrdersScreenState extends ConsumerState<StaffOrdersScreen> {
             ),
             AppSpacing.vertMd,
             Text(
-              'Chưa có đơn hàng nào',
+              l10n.noOrdersYet,
               style: GoogleFonts.montserrat(
                 fontSize: 14,
                 color: AppTheme.mutedSilver,
@@ -301,7 +303,7 @@ class _StaffOrdersScreenState extends ConsumerState<StaffOrdersScreen> {
               child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
             );
           }
-          return _buildOrderCard(state.orders[i]);
+          return _buildOrderCard(state.orders[i], l10n);
         },
       ),
     );
@@ -309,8 +311,8 @@ class _StaffOrdersScreenState extends ConsumerState<StaffOrdersScreen> {
 
   // ── Order Card ─────────────────────────────────────────────────
 
-  Widget _buildOrderCard(StaffOrder order) {
-    final payBadge = _paymentBadge(order.paymentStatus);
+  Widget _buildOrderCard(StaffOrder order, AppLocalizations l10n) {
+    final payBadge = _paymentBadge(order.paymentStatus, l10n);
 
     return GestureDetector(
       onTap: () => _showDetailSheet(order.id),
@@ -462,7 +464,7 @@ class _StaffOrdersScreenState extends ConsumerState<StaffOrdersScreen> {
                         ),
                         AppSpacing.vertXxs,
                         Text(
-                          '${order.items.length} SP',
+                          l10n.itemCount(order.items.length),
                           style: GoogleFonts.montserrat(
                             fontSize: 11,
                             color: AppTheme.mutedSilver,
@@ -493,23 +495,23 @@ class _StaffOrdersScreenState extends ConsumerState<StaffOrdersScreen> {
 
   // ── Helpers ────────────────────────────────────────────────────
 
-  _PayBadge _paymentBadge(String status) {
+  _PayBadge _paymentBadge(String status, AppLocalizations l10n) {
     switch (status) {
       case 'PAID':
         return _PayBadge(
-          label: 'Đã TT',
+          label: l10n.statusPaid,
           color: Colors.green.shade600,
           icon: Icons.check_circle_rounded,
         );
       case 'PENDING':
         return _PayBadge(
-          label: 'Chờ TT',
+          label: l10n.statusPendingPayment,
           color: Colors.orange.shade600,
           icon: Icons.hourglass_empty_rounded,
         );
       case 'FAILED':
         return _PayBadge(
-          label: 'Đã hủy',
+          label: l10n.statusCancelled,
           color: Colors.red.shade600,
           icon: Icons.cancel_rounded,
         );
@@ -531,6 +533,7 @@ class _OrderDetailSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final detail = ref.watch(orderDetailProvider(orderId));
     final currencyFmt = NumberFormat('#,###', 'vi_VN');
     final dateFmt = DateFormat('dd/MM/yyyy HH:mm');
@@ -571,7 +574,7 @@ class _OrderDetailSheet extends ConsumerWidget {
                     child: Padding(
                       padding: AppSpacing.screenAll,
                       child: Text(
-                        'Lỗi: $e',
+                        '${l10n.error}: $e',
                         style: GoogleFonts.montserrat(
                           fontSize: 13,
                           color: Colors.red.shade400,
@@ -583,26 +586,26 @@ class _OrderDetailSheet extends ConsumerWidget {
                     controller: scrollCtrl,
                     padding: const EdgeInsets.all(AppSpacing.md),
                     children: [
-                      _buildDetailHeader(context, order, currencyFmt, dateFmt),
+                      _buildDetailHeader(context, l10n, order, currencyFmt, dateFmt),
                       AppSpacing.vertMd,
                       if (order.user != null || order.phone != null)
-                        _buildCustomerCard(order),
+                        _buildCustomerCard(l10n, order),
                       if (order.user != null || order.phone != null)
                         AppSpacing.vertMd,
-                      _buildItemsList(order, currencyFmt),
+                      _buildItemsList(l10n, order, currencyFmt),
                       AppSpacing.vertMd,
-                      _buildOrderSummary(order, currencyFmt),
+                      _buildOrderSummary(l10n, order, currencyFmt),
                       if (order.payments.isNotEmpty) ...[
                         AppSpacing.vertMd,
-                        _buildPaymentInfo(order),
+                        _buildPaymentInfo(l10n, order),
                       ],
                       if (order.isPaid) ...[
                         AppSpacing.vertMd,
-                        _buildReturnButton(context, ref, order),
+                        _buildReturnButton(context, l10n, ref, order),
                       ],
                       if (!order.isPaid && order.status != 'CANCELLED') ...[
                         AppSpacing.vertMd,
-                        _buildActionButtons(context, ref, order),
+                        _buildActionButtons(context, l10n, ref, order),
                       ],
                       AppSpacing.vertMd,
                     ],
@@ -618,6 +621,7 @@ class _OrderDetailSheet extends ConsumerWidget {
 
   Widget _buildDetailHeader(
     BuildContext context,
+    AppLocalizations l10n,
     StaffOrder order,
     NumberFormat currencyFmt,
     DateFormat dateFmt,
@@ -679,10 +683,10 @@ class _OrderDetailSheet extends ConsumerWidget {
               ),
               child: Text(
                 isCancelled
-                    ? 'Đã hủy'
+                    ? l10n.statusCancelled
                     : isPaid
-                    ? 'Đã thanh toán'
-                    : 'Chờ thanh toán',
+                    ? l10n.statusPaid
+                    : l10n.statusPendingPayment,
                 style: GoogleFonts.montserrat(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
@@ -702,6 +706,7 @@ class _OrderDetailSheet extends ConsumerWidget {
 
   Widget _buildReturnButton(
     BuildContext context,
+    AppLocalizations l10n,
     WidgetRef ref,
     StaffOrder order,
   ) {
@@ -714,14 +719,14 @@ class _OrderDetailSheet extends ConsumerWidget {
             builder: (ctx) => AlertDialog(
               shape: RoundedRectangleBorder(borderRadius: AppRadius.cardBorder),
               title: Text(
-                'Xác nhận trả hàng',
+                l10n.confirmReturnTitle,
                 style: GoogleFonts.playfairDisplay(
                   fontWeight: FontWeight.w700,
                   color: AppTheme.deepCharcoal,
                 ),
               ),
               content: Text(
-                'Tạo yêu cầu trả hàng & hoàn tiền cho đơn ${order.code}?',
+                l10n.confirmReturnDesc(order.code),
                 style: GoogleFonts.montserrat(
                   fontSize: 13,
                   color: AppTheme.mutedSilver,
@@ -730,11 +735,11 @@ class _OrderDetailSheet extends ConsumerWidget {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(ctx, false),
-                  child: const Text('Không'),
+                  child: Text(l10n.no),
                 ),
                 TextButton(
                   onPressed: () => Navigator.pop(ctx, true),
-                  child: const Text('Xác nhận'),
+                  child: Text(l10n.confirm),
                 ),
               ],
             ),
@@ -770,7 +775,7 @@ class _OrderDetailSheet extends ConsumerWidget {
                       ),
                     )
                     .toList(),
-                reason: 'Khách trả hàng tại quầy',
+                reason: l10n.reasonCustomerReturnCounter,
               );
 
           if (!context.mounted) return;
@@ -781,15 +786,15 @@ class _OrderDetailSheet extends ConsumerWidget {
             SnackBar(
               content: Text(
                 ok
-                    ? 'Đã tạo trả hàng & hoàn tiền thành công'
-                    : 'Không thể xử lý trả hàng',
+                    ? l10n.returnSuccess
+                    : l10n.returnError,
               ),
               backgroundColor: ok ? Colors.green.shade600 : Colors.red.shade600,
             ),
           );
         },
         icon: const Icon(Icons.keyboard_return_rounded, size: 18),
-        label: const Text('Trả hàng / Hoàn tiền'),
+        label: Text(l10n.returnRefundLabel),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.blueGrey.shade700,
           foregroundColor: Colors.white,
@@ -802,6 +807,7 @@ class _OrderDetailSheet extends ConsumerWidget {
 
   Widget _buildActionButtons(
     BuildContext context,
+    AppLocalizations l10n,
     WidgetRef ref,
     StaffOrder order,
   ) {
@@ -828,7 +834,7 @@ class _OrderDetailSheet extends ConsumerWidget {
                   ref.read(staffTabIndexProvider.notifier).state = 1;
                 },
                 icon: const Icon(Icons.replay_rounded, size: 18),
-                label: const Text('Thanh toán lại'),
+                label: Text(l10n.repay),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange.shade600,
                   foregroundColor: Colors.white,
@@ -857,7 +863,7 @@ class _OrderDetailSheet extends ConsumerWidget {
                   ref.read(staffTabIndexProvider.notifier).state = 1;
                 },
                 icon: const Icon(Icons.edit_rounded, size: 18),
-                label: const Text('Chỉnh sửa'),
+                label: Text(l10n.edit),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.accentGold,
                   foregroundColor: Colors.white,
@@ -871,9 +877,9 @@ class _OrderDetailSheet extends ConsumerWidget {
             AppSpacing.horzSm,
             Expanded(
               child: OutlinedButton.icon(
-                onPressed: () => _confirmCancelOrder(context, ref, order),
+                onPressed: () => _confirmCancelOrder(context, l10n, ref, order),
                 icon: const Icon(Icons.cancel_outlined, size: 18),
-                label: const Text('Hủy đơn'),
+                label: Text(l10n.statusCancelled),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.red.shade600,
                   side: BorderSide(color: Colors.red.shade300),
@@ -892,6 +898,7 @@ class _OrderDetailSheet extends ConsumerWidget {
 
   void _confirmCancelOrder(
     BuildContext context,
+    AppLocalizations l10n,
     WidgetRef ref,
     StaffOrder order,
   ) {
@@ -900,14 +907,14 @@ class _OrderDetailSheet extends ConsumerWidget {
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: AppRadius.cardBorder),
         title: Text(
-          'Xác nhận hủy đơn',
+          l10n.confirmCancelOrderTitle,
           style: GoogleFonts.playfairDisplay(
             fontWeight: FontWeight.w700,
             color: AppTheme.deepCharcoal,
           ),
         ),
         content: Text(
-          'Bạn có chắc muốn hủy đơn ${order.code}? Thao tác này không thể hoàn tác.',
+          l10n.confirmCancelOrderDesc(order.code),
           style: GoogleFonts.montserrat(
             fontSize: 13,
             color: AppTheme.mutedSilver,
@@ -917,7 +924,7 @@ class _OrderDetailSheet extends ConsumerWidget {
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text(
-              'Không',
+              l10n.no,
               style: GoogleFonts.montserrat(color: AppTheme.mutedSilver),
             ),
           ),
@@ -934,7 +941,7 @@ class _OrderDetailSheet extends ConsumerWidget {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
-                      success ? 'Đã hủy đơn ${order.code}' : 'Lỗi hủy đơn',
+                      success ? l10n.cancelOrderSuccess(order.code) : l10n.cancelOrderError,
                     ),
                     backgroundColor: success
                         ? Colors.green.shade600
@@ -943,8 +950,8 @@ class _OrderDetailSheet extends ConsumerWidget {
                 );
               }
             },
-            child: Text(
-              'Hủy đơn',
+              child: Text(
+              l10n.statusCancelled,
               style: GoogleFonts.montserrat(
                 color: Colors.red.shade600,
                 fontWeight: FontWeight.w600,
@@ -956,7 +963,7 @@ class _OrderDetailSheet extends ConsumerWidget {
     );
   }
 
-  Widget _buildCustomerCard(StaffOrder order) {
+  Widget _buildCustomerCard(AppLocalizations l10n, StaffOrder order) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
@@ -985,7 +992,7 @@ class _OrderDetailSheet extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  order.user?.fullName ?? 'Khách lẻ',
+                  order.user?.fullName ?? l10n.guest,
                   style: GoogleFonts.montserrat(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -1016,7 +1023,7 @@ class _OrderDetailSheet extends ConsumerWidget {
     );
   }
 
-  Widget _buildItemsList(StaffOrder order, NumberFormat currencyFmt) {
+  Widget _buildItemsList(AppLocalizations l10n, StaffOrder order, NumberFormat currencyFmt) {
     return Container(
       decoration: BoxDecoration(
         color: AppTheme.creamWhite,
@@ -1034,7 +1041,7 @@ class _OrderDetailSheet extends ConsumerWidget {
               AppSpacing.sm,
             ),
             child: Text(
-              'Sản phẩm (${order.items.length})',
+              '${l10n.products} (${order.items.length})',
               style: GoogleFonts.montserrat(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
@@ -1114,12 +1121,12 @@ class _OrderDetailSheet extends ConsumerWidget {
     );
   }
 
-  Widget _buildOrderSummary(StaffOrder order, NumberFormat currencyFmt) {
+  Widget _buildOrderSummary(AppLocalizations l10n, StaffOrder order, NumberFormat currencyFmt) {
     final rows = <Map<String, dynamic>>[
-      {'label': 'Tạm tính', 'value': order.totalAmount, 'bold': false},
+      {'label': l10n.subtotal, 'value': order.totalAmount, 'bold': false},
       if (order.discountAmount > 0)
-        {'label': 'Giảm giá', 'value': -order.discountAmount, 'bold': false},
-      {'label': 'Tổng cộng', 'value': order.finalAmount, 'bold': true},
+        {'label': l10n.discount, 'value': -order.discountAmount, 'bold': false},
+      {'label': l10n.total, 'value': order.finalAmount, 'bold': true},
     ];
 
     return Container(
@@ -1162,7 +1169,7 @@ class _OrderDetailSheet extends ConsumerWidget {
     );
   }
 
-  Widget _buildPaymentInfo(StaffOrder order) {
+  Widget _buildPaymentInfo(AppLocalizations l10n, StaffOrder order) {
     final p = order.payments.first;
     final providerLabel = switch (p.provider) {
       'COD' => 'Tiền mặt',
@@ -1191,7 +1198,7 @@ class _OrderDetailSheet extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Phương thức thanh toán',
+                  l10n.paymentMethod,
                   style: GoogleFonts.montserrat(
                     fontSize: 11,
                     color: AppTheme.mutedSilver,
@@ -1217,7 +1224,7 @@ class _OrderDetailSheet extends ConsumerWidget {
               borderRadius: AppRadius.chipBorder,
             ),
             child: Text(
-              p.status == 'PAID' ? 'Thành công' : p.status,
+              p.status == 'PAID' ? l10n.success : p.status,
               style: GoogleFonts.montserrat(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,

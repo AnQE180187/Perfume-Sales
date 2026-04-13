@@ -120,6 +120,7 @@ class Order {
   final DateTime updatedAt;
   final OrderStatus status;
   final PaymentStatus paymentStatus;
+  final String paymentMethod;
   final double totalAmount;
   final double discountAmount;
   final double finalAmount;
@@ -138,6 +139,7 @@ class Order {
     required this.updatedAt,
     required this.status,
     required this.paymentStatus,
+    required this.paymentMethod,
     required this.totalAmount,
     required this.discountAmount,
     required this.finalAmount,
@@ -183,6 +185,7 @@ class Order {
       updatedAt: _parseDate(json['updatedAt']),
       status: _parseOrderStatus(json['status']),
       paymentStatus: _parsePaymentStatus(json['paymentStatus']),
+      paymentMethod: (json['paymentMethod'] ?? '').toString(),
       totalAmount: _readDouble(json['totalAmount']),
       discountAmount: _readDouble(json['discountAmount']),
       finalAmount: _readDouble(json['finalAmount']),

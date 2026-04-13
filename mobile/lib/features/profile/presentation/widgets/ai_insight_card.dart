@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/luxury_button.dart';
 
@@ -7,11 +8,6 @@ import '../../../../core/widgets/luxury_button.dart';
 ///
 /// Reusable card displaying user's AI-generated scent preferences.
 /// Can be used on Profile, Home, or Onboarding screens.
-///
-/// Why this is extracted:
-/// - Reusable across multiple screens
-/// - Separates AI insight presentation from profile logic
-/// - Makes it easy to A/B test different insight card designs
 class AiInsightCard extends StatelessWidget {
   final List<String> olfactoryTags;
   final VoidCallback onFindNextScent;
@@ -26,6 +22,7 @@ class AiInsightCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     // Show at most 3 tags to keep card compact
     final displayTags = olfactoryTags.take(3).toList();
 
@@ -50,7 +47,7 @@ class AiInsightCard extends StatelessWidget {
             // High-end photographic background
             Positioned.fill(
               child: Image.network(
-                'https://images.unsplash.com/photo-1541544181051-e46607bc22a4?w=800', // Reliable placeholder
+                'https://images.unsplash.com/photo-1541544181051-e46607bc22a4?w=800',
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) => Container(
                   color: AppTheme.deepCharcoal.withValues(alpha: 0.8),
@@ -85,7 +82,7 @@ class AiInsightCard extends StatelessWidget {
                       const Icon(Icons.auto_awesome_rounded, color: AppTheme.accentGold, size: 12),
                       const SizedBox(width: 8),
                       Text(
-                        'AI SCENT SIGNATURE',
+                        l10n.aiScentSignature,
                         style: GoogleFonts.montserrat(
                           fontSize: 10,
                           fontWeight: FontWeight.w800,
@@ -97,7 +94,7 @@ class AiInsightCard extends StatelessWidget {
                   ),
                   const Spacer(),
                   Text(
-                    'Dấu ấn mùi hương riêng biệt',
+                    l10n.uniqueScentSignature,
                     style: GoogleFonts.playfairDisplay(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
@@ -159,7 +156,7 @@ class AiInsightCard extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                'KHÁM PHÁ',
+                                l10n.exploreCta,
                                 style: GoogleFonts.montserrat(
                                   fontSize: 9,
                                   fontWeight: FontWeight.w800,

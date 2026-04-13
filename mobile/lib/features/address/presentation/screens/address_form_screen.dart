@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_input.dart';
 import '../../../../core/widgets/bottom_sheet_picker.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../models/address.dart';
 import '../../models/address_form_state.dart';
 import '../../providers/address_providers.dart';
@@ -16,6 +17,7 @@ class AddressFormScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(addressFormProvider(initialAddress));
     final notifier = ref.read(addressFormProvider(initialAddress).notifier);
 
@@ -41,7 +43,7 @@ class AddressFormScreen extends ConsumerWidget {
     Future<void> pickProvince() async {
       final selected = await showBottomSheetPicker<int>(
         context: context,
-        title: 'Chọn Tỉnh / Thành phố',
+        title: l10n.pickProvince,
         items: state.provinces
             .map((item) => PickerItem(value: item.id, label: item.name))
             .toList(),
@@ -56,7 +58,7 @@ class AddressFormScreen extends ConsumerWidget {
       if (state.provinceId == null) return;
       final selected = await showBottomSheetPicker<int>(
         context: context,
-        title: 'Chọn Quận / Huyện',
+        title: l10n.pickDistrict,
         items: state.districts
             .map((item) => PickerItem(value: item.id, label: item.name))
             .toList(),
@@ -72,7 +74,7 @@ class AddressFormScreen extends ConsumerWidget {
       if (state.districtId == null) return;
       final selected = await showBottomSheetPicker<String>(
         context: context,
-        title: 'Chọn Phường / Xã',
+        title: l10n.pickWard,
         items: state.wards
             .map((item) => PickerItem(value: item.code, label: item.name))
             .toList(),
@@ -87,7 +89,7 @@ class AddressFormScreen extends ConsumerWidget {
       if (state.services.isEmpty) return;
       final selected = await showBottomSheetPicker<int>(
         context: context,
-        title: 'Chọn dịch vụ vận chuyển',
+        title: l10n.pickService,
         items: state.services
             .map((item) => PickerItem(value: item.id, label: item.name))
             .toList(),
@@ -118,7 +120,7 @@ class AddressFormScreen extends ConsumerWidget {
           ),
         ),
         title: Text(
-          (state.isEditing ? 'Chỉnh sửa địa chỉ' : 'Thêm địa chỉ mới').toUpperCase(),
+          (state.isEditing ? l10n.editAddress : l10n.addNewAddress).toUpperCase(),
           style: GoogleFonts.montserrat(
             fontSize: 13,
             fontWeight: FontWeight.w700,
@@ -132,22 +134,22 @@ class AddressFormScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _SectionTitle(title: 'Phân loại'),
+            _SectionTitle(title: l10n.category),
             _LabelSelector(selected: state.label, onChanged: notifier.setLabel),
             const SizedBox(height: 32),
             
-            _SectionTitle(title: 'Người nhận'),
+            _SectionTitle(title: l10n.recipientName),
             AppInput(
-              label: 'Thanh toán',
-              hint: 'Tên người nhận',
+              label: l10n.recipientName,
+              hint: l10n.recipientNameHint,
               initialValue: state.recipientName,
               errorText: state.errorOf('recipientName'),
               onChanged: notifier.setRecipientName,
             ),
             const SizedBox(height: 20),
             AppInput(
-              label: 'Liên hệ',
-              hint: 'Số điện thoại',
+              label: l10n.phone,
+              hint: l10n.phoneHint,
               initialValue: state.phone,
               errorText: state.errorOf('phone'),
               keyboardType: TextInputType.phone,
@@ -155,9 +157,9 @@ class AddressFormScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 32),
 
-            _SectionTitle(title: 'Vị trí'),
+            _SectionTitle(title: l10n.location),
             AppInput(
-              label: 'Tỉnh / Thành phố',
+              label: l10n.provinceCity,
               initialValue: provinceName,
               errorText: state.errorOf('provinceId'),
               readOnly: true,
@@ -169,7 +171,7 @@ class AddressFormScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 20),
             AppInput(
-              label: 'Quận / Huyện',
+              label: l10n.district,
               initialValue: districtName,
               errorText: state.errorOf('districtId'),
               readOnly: true,
@@ -182,7 +184,7 @@ class AddressFormScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 20),
             AppInput(
-              label: 'Phường / Xã',
+              label: l10n.ward,
               initialValue: wardName,
               errorText: state.errorOf('wardCode'),
               readOnly: true,
@@ -195,8 +197,8 @@ class AddressFormScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 20),
             AppInput(
-              label: 'Địa chỉ cụ thể',
-              hint: 'Số nhà, tên đường...',
+              label: l10n.specificAddress,
+              hint: l10n.specificAddressHint,
               initialValue: state.detailAddress,
               errorText: state.errorOf('detailAddress'),
               maxLines: 2,
@@ -204,9 +206,9 @@ class AddressFormScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 32),
 
-            _SectionTitle(title: 'Tùy chọn khác'),
+            _SectionTitle(title: l10n.otherOptions),
             AppInput(
-              label: 'Dịch vụ GHN',
+              label: l10n.ghnService,
               initialValue: serviceName,
               readOnly: true,
               enabled: state.districtId != null,
@@ -218,8 +220,8 @@ class AddressFormScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 20),
             AppInput(
-              label: 'Ghi chú',
-              hint: 'Chỉ dẫn giao hàng...',
+              label: l10n.deliveryNote,
+              hint: l10n.noteHint,
               initialValue: state.note,
               maxLines: 2,
               textInputAction: TextInputAction.done,
@@ -232,7 +234,7 @@ class AddressFormScreen extends ConsumerWidget {
                 contentPadding: EdgeInsets.zero,
                 activeColor: AppTheme.accentGold,
                 title: Text(
-                  'Đặt làm địa chỉ mặc định',
+                  l10n.setDefaultAddress,
                   style: GoogleFonts.montserrat(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -268,7 +270,7 @@ class AddressFormScreen extends ConsumerWidget {
                     child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                   )
                 : Text(
-                    state.isEditing ? 'Cập nhật địa chỉ' : 'Lưu địa chỉ',
+                    state.isEditing ? l10n.updateAddress : l10n.saveAddress,
                     style: GoogleFonts.montserrat(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -349,14 +351,25 @@ class _LabelSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: AddressLabel.values.map((label) {
         final active = selected == label;
         IconData icon;
+        String labelText;
         switch (label) {
-          case AddressLabel.home: icon = Icons.home_outlined; break;
-          case AddressLabel.office: icon = Icons.work_outline_rounded; break;
-          case AddressLabel.gift: icon = Icons.card_giftcard_rounded; break;
+          case AddressLabel.home: 
+            icon = Icons.home_outlined; 
+            labelText = l10n.homeLabel;
+            break;
+          case AddressLabel.office: 
+            icon = Icons.work_outline_rounded; 
+            labelText = l10n.officeLabel;
+            break;
+          case AddressLabel.gift: 
+            icon = Icons.card_giftcard_rounded; 
+            labelText = l10n.giftLabel;
+            break;
         }
         
         return Expanded(
@@ -392,7 +405,7 @@ class _LabelSelector extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      label.displayName,
+                      labelText,
                       style: GoogleFonts.montserrat(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../l10n/app_localizations.dart';
 import '../providers/cart_provider.dart';
 import '../providers/cart_selection_provider.dart';
 import 'widgets/cart_item_tile.dart';
@@ -23,7 +24,6 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   @override
   void initState() {
     super.initState();
-    // Defer initial selection sync to after the first build frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final items = ref.read(cartProvider).items;
@@ -50,11 +50,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final cartState = ref.watch(cartProvider);
     final selection = ref.watch(cartSelectionProvider);
 
-    // Initialize selection when cart loads — deferred to avoid modifying
-    // a provider while the widget tree is building.
     ref.listen<CartState>(cartProvider, (previous, next) {
       if (next.items.isNotEmpty) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -75,86 +74,76 @@ class _CartScreenState extends ConsumerState<CartScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAF7F2),
-      appBar: _buildAppBar(cartState, selection),
+      appBar: _buildAppBar(cartState, selection, l10n),
       body: cartState.isLoading && cartState.items.isEmpty
           ? const Center(
               child: CircularProgressIndicator(color: AppTheme.accentGold),
             )
           : cartState.items.isEmpty
-          ? _buildEmptyCart()
-          : Column(
-              children: [
-                Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                    children: [
-
-                      // Cart Items
-                      ...cartState.items.map((item) {
-                        return CartItemTile(
-                          item: item,
-                          isSelected: selection.selectedIds.contains(item.id),
-                          onSelectChanged: (selected) {
-                            ref
-                                .read(cartSelectionProvider.notifier)
-                                .toggle(item.id, cartState.items.length);
-                          },
-                          onQuantityChanged: (quantity) {
-                            ref
-                                .read(cartProvider.notifier)
-                                .updateQuantity(item.id, quantity);
-                          },
-                          onRemove: () {
-                            ref.read(cartProvider.notifier).removeItem(item.id);
-                            ref
-                                .read(cartSelectionProvider.notifier)
-                                .removeId(item.id);
-                          },
-                        );
-                      }),
-
-                      const SizedBox(height: 12),
-
-                      // Promo Code Section
-                      PromoCodeSection(
-                        controller: _promoController,
-                        hasPromoCode: cartState.promoCode != null,
-                        promoCode: cartState.promoCode,
-                        promoDiscount: cartState.promoDiscount,
-                        isLoading: cartState.isLoading,
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      // Price Breakdown
-                      if (selection.selectedIds.isNotEmpty)
-                        PriceSummary(
-                          subtotal: selectedSubtotal,
-                          discount: selectedDiscount,
-                          total: total,
+              ? _buildEmptyCart(l10n)
+              : Column(
+                  children: [
+                    Expanded(
+                      child: ListView(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
                         ),
-
-                      const SizedBox(height: 16),
-                    ],
-                  ),
+                        children: [
+                          ...cartState.items.map((item) {
+                            return CartItemTile(
+                              item: item,
+                              isSelected: selection.selectedIds.contains(item.id),
+                              onSelectChanged: (selected) {
+                                ref
+                                    .read(cartSelectionProvider.notifier)
+                                    .toggle(item.id, cartState.items.length);
+                              },
+                              onQuantityChanged: (quantity) {
+                                ref
+                                    .read(cartProvider.notifier)
+                                    .updateQuantity(item.id, quantity);
+                              },
+                              onRemove: () {
+                                ref.read(cartProvider.notifier).removeItem(item.id);
+                                ref
+                                    .read(cartSelectionProvider.notifier)
+                                    .removeId(item.id);
+                              },
+                            );
+                          }),
+                          const SizedBox(height: 12),
+                          PromoCodeSection(
+                            controller: _promoController,
+                            hasPromoCode: cartState.promoCode != null,
+                            promoCode: cartState.promoCode,
+                            promoDiscount: cartState.promoDiscount,
+                            isLoading: cartState.isLoading,
+                          ),
+                          const SizedBox(height: 12),
+                          if (selection.selectedIds.isNotEmpty)
+                            PriceSummary(
+                              subtotal: selectedSubtotal,
+                              discount: selectedDiscount,
+                              total: total,
+                            ),
+                          const SizedBox(height: 16),
+                        ],
+                      ),
+                    ),
+                    CartSummarySection(
+                      cartState: cartState,
+                      selectedItems: selection.selectedIds,
+                    ),
+                  ],
                 ),
-
-                // Sticky Checkout CTA
-                CartSummarySection(
-                  cartState: cartState,
-                  selectedItems: selection.selectedIds,
-                ),
-              ],
-            ),
     );
   }
 
   PreferredSizeWidget _buildAppBar(
     CartState cartState,
     CartSelectionState selection,
+    AppLocalizations l10n,
   ) {
     return AppBar(
       backgroundColor: const Color(0xFFFAF7F2),
@@ -169,7 +158,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
         onPressed: () => Navigator.pop(context),
       ),
       title: Text(
-        'Giỏ hàng'.toUpperCase(),
+        l10n.cart.toUpperCase(),
         style: GoogleFonts.montserrat(
           fontSize: 14,
           fontWeight: FontWeight.w800,
@@ -181,7 +170,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
         if (cartState.items.isNotEmpty) ...[
           IconButton(
             icon: Icon(
-              selection.selectAll ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+              selection.selectAll
+                  ? Icons.check_circle_rounded
+                  : Icons.radio_button_unchecked_rounded,
               size: 20,
               color: AppTheme.accentGold,
             ),
@@ -191,7 +182,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                   .read(cartSelectionProvider.notifier)
                   .toggleAll(cartState.items.map((e) => e.id).toList());
             },
-            tooltip: 'Chọn tất cả',
+            tooltip: l10n.selectAll,
           ),
           IconButton(
             icon: const Icon(
@@ -222,7 +213,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     );
   }
 
-  Widget _buildEmptyCart() {
+  Widget _buildEmptyCart(AppLocalizations l10n) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -236,7 +227,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             ),
             const SizedBox(height: 24),
             Text(
-              'Gio hang dang trong',
+              l10n.yourCartEmpty,
               style: GoogleFonts.playfairDisplay(
                 fontSize: 22,
                 fontWeight: FontWeight.w600,
@@ -245,7 +236,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Kham pha bo suu tap nuoc hoa cao cap',
+              l10n.discoverCollection,
               style: GoogleFonts.montserrat(
                 fontSize: 13,
                 color: AppTheme.mutedSilver,
@@ -267,7 +258,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                   ),
                 ),
                 child: Text(
-                  'Kham pha ngay',
+                  l10n.exploreCollection,
                   style: GoogleFonts.montserrat(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -282,4 +273,3 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     );
   }
 }
-

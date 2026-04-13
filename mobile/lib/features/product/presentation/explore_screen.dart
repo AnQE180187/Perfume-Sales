@@ -7,7 +7,9 @@ import '../../../core/widgets/app_async_widget.dart';
 import '../../../core/widgets/product_card.dart';
 import '../../../core/widgets/shimmer_loading.dart';
 import '../providers/product_provider.dart';
+import '../providers/product_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
+import 'package:perfume_gpt_app/l10n/app_localizations.dart';
 
 class ExploreScreen extends ConsumerStatefulWidget {
   const ExploreScreen({super.key});
@@ -58,7 +60,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'Tìm thương hiệu, nốt hương hoặc cảm xúc...',
+                          AppLocalizations.of(context)!.searchExploreHint,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.montserrat(
@@ -88,10 +90,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   ),
                 ),
                 dataBuilder: (products) => GridView.builder(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 8,
-                  ),
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     childAspectRatio: 0.52,
@@ -106,7 +105,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                       product: product,
                       variant: ProductCardVariant.grid,
                       badge: (product.rating ?? 0) >= 4.9
-                          ? 'ĐÁNH GIÁ CAO'
+                          ? AppLocalizations.of(context)!.topRated
                           : null,
                       isFavorite: isFav,
                       onTap: () => context.push('/product/${product.id}'),

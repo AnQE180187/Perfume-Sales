@@ -27,10 +27,14 @@ class AiPreferencesNotifier extends StateNotifier<AsyncValue<AiPreferences>> {
     if (preferredNotes != null) updatedData['preferredNotes'] = preferredNotes;
     if (avoidedNotes != null) updatedData['avoidedNotes'] = avoidedNotes;
 
-    state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
       return await _service.updatePreferences(updatedData);
     });
+  }
+
+  Future<void> resetPreferences() async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() => _service.resetPreferences());
   }
 }
 

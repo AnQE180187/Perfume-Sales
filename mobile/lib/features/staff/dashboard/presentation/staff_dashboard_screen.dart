@@ -7,6 +7,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/widgets/shimmer_loading.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../models/daily_report.dart';
 import '../providers/dashboard_provider.dart';
 
@@ -15,6 +16,7 @@ class StaffDashboardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(dashboardProvider);
     final currencyFmt = NumberFormat('#,###', 'vi_VN');
 
@@ -56,11 +58,11 @@ class StaffDashboardScreen extends ConsumerWidget {
                   ] else if (state.error != null && state.report == null)
                     _buildError(context, ref, state.error!)
                   else if (state.report != null) ...[
-                    _buildKpiGrid(state.report!, currencyFmt),
+                    _buildKpiGrid(state.report!, currencyFmt, l10n),
                     AppSpacing.vertLg,
-                    _buildQuickStats(state.report!),
+                    _buildQuickStats(state.report!, l10n),
                     AppSpacing.vertLg,
-                    _buildTopProducts(state.report!, currencyFmt),
+                    _buildTopProducts(state.report!, currencyFmt, l10n),
                   ],
                 ]),
               ),
@@ -78,13 +80,14 @@ class StaffDashboardScreen extends ConsumerWidget {
     WidgetRef ref,
     DashboardState state,
   ) {
+    final l10n = AppLocalizations.of(context)!;
     final dateFmt = DateFormat('dd/MM/yyyy');
     final hour = DateTime.now().hour;
     final greeting = hour < 12
-        ? 'Chào buổi sáng'
+        ? l10n.goodMorning
         : hour < 18
-        ? 'Chào buổi chiều'
-        : 'Chào buổi tối';
+        ? l10n.goodAfternoon
+        : l10n.goodEvening;
 
     return Container(
       padding: EdgeInsets.fromLTRB(
@@ -135,7 +138,7 @@ class StaffDashboardScreen extends ConsumerWidget {
                   ),
                 ),
                 Text(
-                  'Báo cáo bán hàng',
+                  l10n.salesReport,
                   style: GoogleFonts.playfairDisplay(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -210,6 +213,7 @@ class StaffDashboardScreen extends ConsumerWidget {
   // ── Error ──────────────────────────────────────────────────────
 
   Widget _buildError(BuildContext context, WidgetRef ref, String error) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
@@ -222,7 +226,7 @@ class StaffDashboardScreen extends ConsumerWidget {
           Icon(Icons.cloud_off_rounded, size: 48, color: Colors.red.shade300),
           AppSpacing.vertSm,
           Text(
-            'Không thể tải dữ liệu',
+            l10n.unableLoadData,
             style: GoogleFonts.montserrat(
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -233,7 +237,7 @@ class StaffDashboardScreen extends ConsumerWidget {
           OutlinedButton.icon(
             onPressed: () => ref.read(dashboardProvider.notifier).loadReport(),
             icon: const Icon(Icons.refresh_rounded, size: 16),
-            label: const Text('Thử lại'),
+            label: Text(l10n.retry),
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.red.shade600,
               side: BorderSide(color: Colors.red.shade300),
@@ -249,7 +253,7 @@ class StaffDashboardScreen extends ConsumerWidget {
 
   // ── KPI Grid ───────────────────────────────────────────────────
 
-  Widget _buildKpiGrid(DailyReport report, NumberFormat currencyFmt) {
+  Widget _buildKpiGrid(DailyReport report, NumberFormat currencyFmt, AppLocalizations l10n) {
     return Column(
       children: [
         // Revenue hero card
@@ -290,7 +294,7 @@ class StaffDashboardScreen extends ConsumerWidget {
                   ),
                   const SizedBox(width: 10),
                   Text(
-                    'Tổng doanh thu',
+                    l10n.totalRevenue,
                     style: GoogleFonts.montserrat(
                       fontSize: 13,
                       color: Colors.white60,
@@ -317,7 +321,7 @@ class StaffDashboardScreen extends ConsumerWidget {
             Expanded(
               child: _kpiTile(
                 Icons.receipt_long_rounded,
-                'Tổng đơn',
+                l10n.totalOrdersLabel,
                 '${report.totalOrders}',
                 Colors.blue,
               ),
@@ -326,7 +330,7 @@ class StaffDashboardScreen extends ConsumerWidget {
             Expanded(
               child: _kpiTile(
                 Icons.check_circle_rounded,
-                'Đã TT',
+                l10n.paidLabel,
                 '${report.completedOrders}',
                 Colors.green,
               ),
@@ -335,7 +339,7 @@ class StaffDashboardScreen extends ConsumerWidget {
             Expanded(
               child: _kpiTile(
                 Icons.trending_up_rounded,
-                'TB/đơn',
+                l10n.avgPerOrder,
                 report.avgOrderValue > 0
                     ? '${currencyFmt.format(report.avgOrderValue)}đ'
                     : '0đ',
@@ -400,7 +404,7 @@ class StaffDashboardScreen extends ConsumerWidget {
 
   // ── Quick Stats ────────────────────────────────────────────────
 
-  Widget _buildQuickStats(DailyReport report) {
+  Widget _buildQuickStats(DailyReport report, AppLocalizations l10n) {
     final pending = report.totalOrders - report.completedOrders;
     final rate = report.totalOrders > 0
         ? ((report.completedOrders / report.totalOrders) * 100).round()
@@ -416,12 +420,12 @@ class StaffDashboardScreen extends ConsumerWidget {
       child: IntrinsicHeight(
         child: Row(
           children: [
-            _quickCol('Chờ xử lý', '$pending', Colors.orange.shade600),
+            _quickCol(l10n.pendingProcess, '$pending', Colors.orange.shade600),
             _vDivider(),
-            _quickCol('Tỷ lệ TT', '$rate%', Colors.green.shade600),
+            _quickCol(l10n.paymentRate, '$rate%', Colors.green.shade600),
             _vDivider(),
             _quickCol(
-              'Top SP',
+              'Top SP', // This seems fine or use l10n.topBestSellers truncated
               report.topProducts.isNotEmpty
                   ? '${report.topProducts.first.totalQuantity}'
                   : '0',
@@ -467,7 +471,7 @@ class StaffDashboardScreen extends ConsumerWidget {
 
   // ── Top Products ───────────────────────────────────────────────
 
-  Widget _buildTopProducts(DailyReport report, NumberFormat currencyFmt) {
+  Widget _buildTopProducts(DailyReport report, NumberFormat currencyFmt, AppLocalizations l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -483,7 +487,7 @@ class StaffDashboardScreen extends ConsumerWidget {
             ),
             const SizedBox(width: 8),
             Text(
-              'Top sản phẩm bán chạy',
+              l10n.topBestSellers,
               style: GoogleFonts.playfairDisplay(
                 fontSize: 17,
                 fontWeight: FontWeight.w700,
@@ -511,7 +515,7 @@ class StaffDashboardScreen extends ConsumerWidget {
                   ),
                   AppSpacing.vertXs,
                   Text(
-                    'Chưa có đơn hàng nào',
+                    l10n.noOrdersYet,
                     style: GoogleFonts.montserrat(
                       fontSize: 13,
                       color: AppTheme.mutedSilver,

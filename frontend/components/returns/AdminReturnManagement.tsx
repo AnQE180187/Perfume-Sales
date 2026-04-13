@@ -29,7 +29,20 @@ import {
 import { Select } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Check, X, Box, CreditCard, RotateCcw, Search, Store, Globe, RefreshCcw, Loader2, Banknote, Truck } from "lucide-react";
+import {
+  Check,
+  X,
+  Box,
+  CreditCard,
+  RotateCcw,
+  Search,
+  Store,
+  Globe,
+  RefreshCcw,
+  Loader2,
+  Banknote,
+  Truck,
+} from "lucide-react";
 import api from "@/lib/axios";
 import {
   staffOrdersService,
@@ -102,32 +115,39 @@ export const AdminReturnManagement = ({
   const [selectedReturn, setSelectedReturn] = useState<ReturnRequest | null>(
     null,
   );
-  
+
   // Dialog States
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [isReceiveOpen, setIsReceiveOpen] = useState(false);
   const [isRefundOpen, setIsRefundOpen] = useState(false);
-  const [refundMethod, setRefundMethod] = useState<"cash" | "bank_transfer" | "gateway">("cash");
+  const [refundMethod, setRefundMethod] = useState<
+    "cash" | "bank_transfer" | "gateway"
+  >("cash");
   const [note, setNote] = useState("");
   const [receiptImageUrl, setReceiptImageUrl] = useState("");
   const [isUploadingReceipt, setIsUploadingReceipt] = useState(false);
   const [calculatingRefund, setCalculatingRefund] = useState(false);
-  const [receiveItemsState, setReceiveItemsState] = useState<Record<string, { qtyReceived: number, sealIntact: boolean }>>({});
+  const [receiveItemsState, setReceiveItemsState] = useState<
+    Record<string, { qtyReceived: number; sealIntact: boolean }>
+  >({});
   const [audits, setAudits] = useState<any[]>([]);
   const [auditsLoading, setAuditsLoading] = useState(false);
 
   useEffect(() => {
     if (isReceiveOpen && selectedReturn) {
-      const initial: Record<string, { qtyReceived: number, sealIntact: boolean }> = {};
-      selectedReturn.items.forEach(i => {
-         initial[i.variantId] = { qtyReceived: i.quantity, sealIntact: true };
+      const initial: Record<
+        string,
+        { qtyReceived: number; sealIntact: boolean }
+      > = {};
+      selectedReturn.items.forEach((i) => {
+        initial[i.variantId] = { qtyReceived: i.quantity, sealIntact: true };
       });
       setReceiveItemsState(initial);
     }
-    
+
     if (selectedReturn && (isReviewOpen || isReceiveOpen || isRefundOpen)) {
       fetchAudits(selectedReturn.id);
-      
+
       // Default refund method based on origin
       if (isRefundOpen) {
         if (selectedReturn.origin === "ONLINE") {
@@ -155,7 +175,9 @@ export const AdminReturnManagement = ({
     }
   };
 
-  const handleReceiptUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleReceiptUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
     const file = files[0];
@@ -163,7 +185,7 @@ export const AdminReturnManagement = ({
       toast.error(`Ảnh "${file.name}" vượt quá 5MB`);
       return;
     }
-    
+
     setIsUploadingReceipt(true);
     try {
       const formData = new FormData();
@@ -180,7 +202,7 @@ export const AdminReturnManagement = ({
     } finally {
       setIsUploadingReceipt(false);
       // Reset input value to allow selecting the same file again if it was removed
-      e.target.value = '';
+      e.target.value = "";
     }
   };
 
@@ -268,7 +290,9 @@ export const AdminReturnManagement = ({
     setCalculatingRefund(true);
     try {
       const res = await returnsService.getSuggestedRefund(selectedReturn.id);
-      setSelectedReturn(prev => prev ? { ...prev, refundAmount: res.suggestedAmount } : null);
+      setSelectedReturn((prev) =>
+        prev ? { ...prev, refundAmount: res.suggestedAmount } : null,
+      );
       toast.success("Đã tính toán số tiền hoàn dựa trên thực nhận");
     } catch (err: any) {
       toast.error("Lỗi tính toán số tiền", { description: err.message });
@@ -280,10 +304,15 @@ export const AdminReturnManagement = ({
   const handleRefund = async () => {
     if (!selectedReturn) return;
     try {
-      const idempotencyKey = "admin-refund-" + Date.now();
+      const idempotencyKey = crypto.randomUUID();
       await returnsService.triggerRefund(
         selectedReturn.id,
-        { method: refundMethod, transactionId: undefined, note, receiptImage: receiptImageUrl },
+        {
+          method: refundMethod,
+          transactionId: undefined,
+          note,
+          receiptImage: receiptImageUrl,
+        },
         idempotencyKey,
       );
       toast.success(`Đã xác nhận hoàn tiền và gửi thông báo cho khách hàng`);
@@ -305,7 +334,7 @@ export const AdminReturnManagement = ({
     setPosSelectedItems({});
     try {
       const order = await staffOrdersService.getByCode(key);
-      
+
       const orderDate = new Date(order.createdAt).setHours(0, 0, 0, 0);
       const today = new Date().setHours(0, 0, 0, 0);
 
@@ -339,7 +368,7 @@ export const AdminReturnManagement = ({
 
     setPosSubmitting(true);
     try {
-      const idempotencyKey = "pos-create-" + Date.now();
+      const idempotencyKey = crypto.randomUUID();
       await returnsService.posCreateReturn(
         {
           orderId: posOrder.id,
@@ -363,7 +392,10 @@ export const AdminReturnManagement = ({
 
   const handleCancel = async (id: string) => {
     try {
-      await returnsService.adminCancelReturn(id, "Hủy yêu cầu bởi nhân viên/cửa hàng");
+      await returnsService.adminCancelReturn(
+        id,
+        "Hủy yêu cầu bởi nhân viên/cửa hàng",
+      );
       toast.success("Hủy yêu cầu thành công");
       loadData();
     } catch (err: any) {
@@ -387,11 +419,16 @@ export const AdminReturnManagement = ({
             Quản lý Đổi trả
           </h2>
           <p className="text-muted-foreground mt-1 text-sm">
-            Hệ thống CRM theo dõi và xử lý các yêu cầu đổi trả hàng hóa, quy trình hoàn tiền tinh gọn.
+            Hệ thống CRM theo dõi và xử lý các yêu cầu đổi trả hàng hóa, quy
+            trình hoàn tiền tinh gọn.
           </p>
         </div>
         <div className="flex items-center space-x-3">
-          <Button variant="outline" className="glass border-gold/20" onClick={loadData}>
+          <Button
+            variant="outline"
+            className="glass border-gold/20"
+            onClick={loadData}
+          >
             <RefreshCcw className="w-4 h-4 mr-2 text-gold" /> Làm mới
           </Button>
           {!isAdmin && (
@@ -411,23 +448,51 @@ export const AdminReturnManagement = ({
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="w-full space-y-6"
+      >
         {isAdmin && (
           <TabsList className="bg-background/40 glass border border-gold/10 p-1 w-full max-w-[450px] mx-auto sm:mx-0 grid grid-cols-3">
-            <TabsTrigger value="all" className="data-[state=active]:bg-gold/20 data-[state=active]:text-gold">
-              <Box className="w-4 h-4 mr-2" /> 
+            <TabsTrigger
+              value="all"
+              className="data-[state=active]:bg-gold/20 data-[state=active]:text-gold"
+            >
+              <Box className="w-4 h-4 mr-2" />
               Tất cả
-              <Badge variant="secondary" className="ml-2 bg-background/50 text-[10px] py-0">{counts.all}</Badge>
+              <Badge
+                variant="secondary"
+                className="ml-2 bg-background/50 text-[10px] py-0"
+              >
+                {counts.all}
+              </Badge>
             </TabsTrigger>
-            <TabsTrigger value="online" className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400">
-              <Globe className="w-4 h-4 mr-2" /> 
+            <TabsTrigger
+              value="online"
+              className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400"
+            >
+              <Globe className="w-4 h-4 mr-2" />
               Trực tuyến
-              <Badge variant="secondary" className="ml-2 bg-background/50 text-[10px] py-0">{counts.online}</Badge>
+              <Badge
+                variant="secondary"
+                className="ml-2 bg-background/50 text-[10px] py-0"
+              >
+                {counts.online}
+              </Badge>
             </TabsTrigger>
-            <TabsTrigger value="pos" className="data-[state=active]:bg-rose-500/20 data-[state=active]:text-rose-400">
-              <Store className="w-4 h-4 mr-2" /> 
+            <TabsTrigger
+              value="pos"
+              className="data-[state=active]:bg-rose-500/20 data-[state=active]:text-rose-400"
+            >
+              <Store className="w-4 h-4 mr-2" />
               Tại Quầy
-              <Badge variant="secondary" className="ml-2 bg-background/50 text-[10px] py-0">{counts.pos}</Badge>
+              <Badge
+                variant="secondary"
+                className="ml-2 bg-background/50 text-[10px] py-0"
+              >
+                {counts.pos}
+              </Badge>
             </TabsTrigger>
           </TabsList>
         )}
@@ -443,7 +508,9 @@ export const AdminReturnManagement = ({
                 <TableHead>Lý do</TableHead>
                 <TableHead className="w-[180px]">Vận chuyển</TableHead>
                 <TableHead className="w-[180px]">Trạng thái</TableHead>
-                <TableHead className="text-right w-[160px]">Hành động</TableHead>
+                <TableHead className="text-right w-[160px]">
+                  Hành động
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -452,7 +519,9 @@ export const AdminReturnManagement = ({
                   <TableCell colSpan={8} className="text-center py-12">
                     <div className="flex flex-col items-center justify-center space-y-3">
                       <RefreshCcw className="w-8 h-8 animate-spin text-gold/50" />
-                      <p className="text-muted-foreground text-sm">Đang đồng bộ dữ liệu...</p>
+                      <p className="text-muted-foreground text-sm">
+                        Đang đồng bộ dữ liệu...
+                      </p>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -461,7 +530,9 @@ export const AdminReturnManagement = ({
                   <TableCell colSpan={8} className="text-center py-16">
                     <div className="flex flex-col items-center justify-center space-y-3">
                       <Box className="w-12 h-12 text-muted-foreground/30" />
-                      <p className="text-muted-foreground">Không tìm thấy yêu cầu trả hàng nào trong mục này</p>
+                      <p className="text-muted-foreground">
+                        Không tìm thấy yêu cầu trả hàng nào trong mục này
+                      </p>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -473,11 +544,17 @@ export const AdminReturnManagement = ({
                   >
                     <TableCell>
                       {req.origin === "POS" ? (
-                        <Badge variant="outline" className="border-rose-500/30 text-rose-400 bg-rose-500/10">
+                        <Badge
+                          variant="outline"
+                          className="border-rose-500/30 text-rose-400 bg-rose-500/10"
+                        >
                           <Store className="w-3 h-3 mr-1" /> POS
                         </Badge>
                       ) : (
-                        <Badge variant="outline" className="border-cyan-500/30 text-cyan-400 bg-cyan-500/10">
+                        <Badge
+                          variant="outline"
+                          className="border-cyan-500/30 text-cyan-400 bg-cyan-500/10"
+                        >
                           <Globe className="w-3 h-3 mr-1" /> Online
                         </Badge>
                       )}
@@ -489,37 +566,51 @@ export const AdminReturnManagement = ({
                       {req.orderId.substring(0, 8).toUpperCase()}
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {new Date((req as any).createdAt).toLocaleDateString("vi-VN")}
+                      {new Date((req as any).createdAt).toLocaleDateString(
+                        "vi-VN",
+                      )}
                     </TableCell>
                     <TableCell className="max-w-[200px] truncate text-sm">
-                      {req.reason || <span className="text-muted-foreground/50 italic">Không có lý do</span>}
+                      {req.reason || (
+                        <span className="text-muted-foreground/50 italic">
+                          Không có lý do
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell>
                       {req.shipments && req.shipments.length > 0 ? (
                         <div className="flex flex-col gap-1">
                           {req.shipments.map((s, idx) => {
-                            const isAutomated = s.courier === 'GHN';
+                            const isAutomated = s.courier === "GHN";
                             return (
                               <div key={idx} className="flex flex-col gap-0.5">
                                 <a
-                                  href={isAutomated ? `https://ghn.vn/blogs/trang-thai-don-hang?order_code=${s.trackingNumber}` : '#'}
+                                  href={
+                                    isAutomated
+                                      ? `https://ghn.vn/blogs/trang-thai-don-hang?order_code=${s.trackingNumber}`
+                                      : "#"
+                                  }
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className={cn(
                                     "text-[10px] font-mono font-bold flex items-center gap-1 px-2 py-0.5 rounded border w-fit transition-colors",
-                                    isAutomated 
-                                      ? "text-cyan-400 bg-cyan-500/10 border-cyan-500/20 hover:bg-cyan-500/20" 
-                                      : "text-amber-400 bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20"
+                                    isAutomated
+                                      ? "text-cyan-400 bg-cyan-500/10 border-cyan-500/20 hover:bg-cyan-500/20"
+                                      : "text-amber-400 bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20",
                                   )}
                                   onClick={(e) => e.stopPropagation()}
                                 >
                                   <Truck className="w-2.5 h-2.5" />
                                   {s.trackingNumber}
-                                  {isAutomated && <Badge className="h-3 px-1 text-[7px] bg-cyan-500 text-black border-none ml-1">GHN</Badge>}
+                                  {isAutomated && (
+                                    <Badge className="h-3 px-1 text-[7px] bg-cyan-500 text-black border-none ml-1">
+                                      GHN
+                                    </Badge>
+                                  )}
                                 </a>
-                                {s.status && (
-                                  <span className="text-[8px] text-muted-foreground ml-1 uppercase font-medium">
-                                    • {s.status}
+                                {s.receivedAt && (
+                                  <span className="text-[8px] text-green-500 ml-1 uppercase font-medium">
+                                    • Đã nhận
                                   </span>
                                 )}
                               </div>
@@ -527,20 +618,27 @@ export const AdminReturnManagement = ({
                           })}
                         </div>
                       ) : (
-                        <span className="text-[10px] text-muted-foreground/40 italic">Chưa có vận đơn</span>
+                        <span className="text-[10px] text-muted-foreground/40 italic">
+                          Chưa có vận đơn
+                        </span>
                       )}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={`${getStatusColor(req.status)} text-[10px] px-2 py-0.5 tracking-wide`}>
+                      <Badge
+                        variant="outline"
+                        className={`${getStatusColor(req.status)} text-[10px] px-2 py-0.5 tracking-wide`}
+                      >
                         {getStatusLabel(req.status)}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right space-x-2">
-                       {/* ADMIN ONLY ACTIONS */}
+                      {/* ADMIN ONLY ACTIONS */}
                       {isAdmin &&
-                        ["REQUESTED", "REVIEWING", "AWAITING_CUSTOMER"].includes(
-                          req.status,
-                        ) && (
+                        [
+                          "REQUESTED",
+                          "REVIEWING",
+                          "AWAITING_CUSTOMER",
+                        ].includes(req.status) && (
                           <Button
                             size="sm"
                             variant="outline"
@@ -557,53 +655,62 @@ export const AdminReturnManagement = ({
                         )}
 
                       {/* CANCEL ACTION (FOR UNAPPROVED REQUESTS - STAFF ONLY) */}
-                      {!isAdmin && ["REQUESTED", "REVIEWING"].includes(req.status) && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-8 text-red-500/80 hover:text-red-500 hover:bg-red-500/10"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (window.confirm("Bạn có chắc chắn muốn hủy yêu cầu trả hàng này?")) {
-                               handleCancel(req.id);
-                            }
-                          }}
-                        >
-                          <X className="w-3.5 h-3.5 mr-1" /> Hủy
-                        </Button>
-                      )}
+                      {!isAdmin &&
+                        ["REQUESTED", "REVIEWING"].includes(req.status) && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 text-red-500/80 hover:text-red-500 hover:bg-red-500/10"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (
+                                window.confirm(
+                                  "Bạn có chắc chắn muốn hủy yêu cầu trả hàng này?",
+                                )
+                              ) {
+                                handleCancel(req.id);
+                              }
+                            }}
+                          >
+                            <X className="w-3.5 h-3.5 mr-1" /> Hủy
+                          </Button>
+                        )}
 
                       {/* GENERAL ACTIONS (HIDE RECEIVE FOR ADMIN IF POS) */}
-                      {["RETURNING", "APPROVED"].includes(req.status) && !(isAdmin && req.origin === "POS") && (
-                        <Button
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedReturn(req);
-                            setNote("");
-                            setIsReceiveOpen(true);
-                          }}
-                          className="h-8 bg-teal-600/90 hover:bg-teal-500 text-white shadow-md shadow-teal-900/20"
-                        >
-                          <Box className="w-3.5 h-3.5 mr-1" /> {req.origin === "POS" ? "Nhận Quầy" : "Nhận Kho"}
-                        </Button>
-                      )}
-                      
+                      {["RETURNING", "APPROVED"].includes(req.status) &&
+                        !(isAdmin && req.origin === "POS") && (
+                          <Button
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedReturn(req);
+                              setNote("");
+                              setIsReceiveOpen(true);
+                            }}
+                            className="h-8 bg-teal-600/90 hover:bg-teal-500 text-white shadow-md shadow-teal-900/20"
+                          >
+                            <Box className="w-3.5 h-3.5 mr-1" />{" "}
+                            {req.origin === "POS" ? "Nhận Quầy" : "Nhận Kho"}
+                          </Button>
+                        )}
+
                       {/* HIDE REFUND FOR ADMIN IF POS */}
-                      {["RECEIVED", "REFUND_FAILED"].includes(req.status) && !(isAdmin && req.origin === "POS") && (
-                        <Button
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedReturn(req);
-                            setNote("");
-                            setIsRefundOpen(true);
-                          }}
-                          className="h-8 bg-indigo-600/90 hover:bg-indigo-500 text-white shadow-md shadow-indigo-900/20"
-                        >
-                          <CreditCard className="w-3.5 h-3.5 mr-1" /> Hoàn tiền
-                        </Button>
-                      )}
+                      {["RECEIVED", "REFUND_FAILED"].includes(req.status) &&
+                        !(isAdmin && req.origin === "POS") && (
+                          <Button
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedReturn(req);
+                              setNote("");
+                              setIsRefundOpen(true);
+                            }}
+                            className="h-8 bg-indigo-600/90 hover:bg-indigo-500 text-white shadow-md shadow-indigo-900/20"
+                          >
+                            <CreditCard className="w-3.5 h-3.5 mr-1" /> Hoàn
+                            tiền
+                          </Button>
+                        )}
                     </TableCell>
                   </TableRow>
                 ))
@@ -617,125 +724,200 @@ export const AdminReturnManagement = ({
       <Dialog open={isReviewOpen} onOpenChange={setIsReviewOpen}>
         <DialogContent className="glass border-gold/30 sm:max-w-3xl max-h-[90vh] flex flex-col shadow-2xl rounded-2xl overflow-hidden p-0">
           <DialogHeader className="border-b border-border/50 px-6 pt-6 pb-4 bg-background/80 backdrop-blur-md">
-            <DialogTitle className="text-xl text-gold pb-1 border-b border-gold/10 inline-block">Xét duyệt Yêu cầu Đổi Trả</DialogTitle>
+            <DialogTitle className="text-xl text-gold pb-1 border-b border-gold/10 inline-block">
+              Xét duyệt Yêu cầu Đổi Trả
+            </DialogTitle>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar space-y-6">
             <div className="bg-background/40 p-4 rounded-xl border border-border/50 flex flex-col sm:flex-row justify-between gap-4">
-               <div>
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Mã Yêu Cầu</p>
-                  <strong className="font-mono text-foreground text-lg">{selectedReturn?.id.substring(0,8)}</strong>
-               </div>
-               <div>
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Mã Đơn Hàng</p>
-                  <strong className="font-mono text-foreground text-lg">{selectedReturn?.orderId.substring(0,8)}</strong>
-               </div>
-               <div>
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Nguồn</p>
-                  <Badge variant="outline" className={selectedReturn?.origin === "POS" ? "border-rose-500/30 text-rose-400 bg-rose-500/10" : "border-cyan-500/30 text-cyan-400 bg-cyan-500/10"}>
-                     {selectedReturn?.origin === "POS" ? "POS" : "Online"}
-                  </Badge>
-               </div>
+              <div>
+                <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                  Mã Yêu Cầu
+                </p>
+                <strong className="font-mono text-foreground text-lg">
+                  {selectedReturn?.id.substring(0, 8)}
+                </strong>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                  Mã Đơn Hàng
+                </p>
+                <strong className="font-mono text-foreground text-lg">
+                  {selectedReturn?.orderId.substring(0, 8)}
+                </strong>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
+                  Nguồn
+                </p>
+                <Badge
+                  variant="outline"
+                  className={
+                    selectedReturn?.origin === "POS"
+                      ? "border-rose-500/30 text-rose-400 bg-rose-500/10"
+                      : "border-cyan-500/30 text-cyan-400 bg-cyan-500/10"
+                  }
+                >
+                  {selectedReturn?.origin === "POS" ? "POS" : "Online"}
+                </Badge>
+              </div>
             </div>
 
             {/* Refund Total Info */}
             <div className="flex items-center space-x-2 text-sm text-muted-foreground bg-gold/5 p-3 rounded-lg border border-gold/10">
-              <span className="text-gold font-medium">Lý do chung:</span> 
+              <span className="text-gold font-medium">Lý do chung:</span>
               <span>{selectedReturn?.reason || "Không có lý do chung"}</span>
             </div>
 
             <div>
-               <h3 className="text-sm font-semibold text-foreground mb-3 uppercase tracking-wider border-b border-border/50 pb-2">Chi tiết sản phẩm cần trả</h3>
-               <div className="space-y-4">
-                  {selectedReturn?.items.map((item, idx) => (
-                    <div key={item.id} className="bg-background/30 border border-border/50 rounded-xl p-4 transition-all hover:border-gold/20">
-                       <div className="flex justify-between items-start mb-3">
-                            <div className="flex items-center gap-3">
-                                {item.variant?.product?.images?.[0]?.url && (
-                                  // eslint-disable-next-line @next/next/no-img-element
-                                  <img src={item.variant.product.images[0].url} alt="Product" className="w-12 h-12 object-cover rounded-md border border-border/50" />
-                                )}
-                                <div>
-                                  <p className="font-medium text-foreground line-clamp-1">
-                                     {item.variant?.product?.name || "Sản phẩm không xác định"}
-                                  </p>
-                                  <p className="text-xs text-muted-foreground mt-0.5">
-                                    Variant: <span className="font-mono text-gold/80">{item.variantId.substring(0,8).toUpperCase()}</span> 
-                                    {item.variant?.volume && ` • ${item.variant.volume}`}
-                                  </p>
-                                </div>
-                            </div>
-                          <Badge className="bg-foreground text-background font-mono text-sm px-3">SL: {item.quantity}</Badge>
-                       </div>
-                       
-                       {/* Evidence display */}
-                       {item.images && item.images.length > 0 && (
-                          <div className="mt-4">
-                             <p className="text-xs text-muted-foreground mb-2">Bằng chứng đổi trả ({item.images.length} tệp):</p>
-                             <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-2">
-                                {item.images.map((url, iIndex) => {
-                                   const isVideo = url.match(/\.(mp4|webm|mov)$/i) || url.includes("res.cloudinary.com/perfume-gpt/video") || url.includes("returns/videos");
-                                   return (
-                                     <div key={iIndex} className="relative flex-none w-32 h-32 rounded-lg border border-border/50 overflow-hidden bg-black/40 group">
-                                        {isVideo ? (
-                                           <video src={url} controls className="w-full h-full object-cover" />
-                                        ) : (
-                                           // eslint-disable-next-line @next/next/no-img-element
-                                           <img src={url} alt={`Evidence ${iIndex}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                                        )}
-                                     </div>
-                                   );
-                                })}
-                             </div>
-                          </div>
-                       )}
+              <h3 className="text-sm font-semibold text-foreground mb-3 uppercase tracking-wider border-b border-border/50 pb-2">
+                Chi tiết sản phẩm cần trả
+              </h3>
+              <div className="space-y-4">
+                {selectedReturn?.items.map((item, idx) => (
+                  <div
+                    key={item.id}
+                    className="bg-background/30 border border-border/50 rounded-xl p-4 transition-all hover:border-gold/20"
+                  >
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex items-center gap-3">
+                        {item.variant?.product?.images?.[0]?.url && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={item.variant.product.images[0].url}
+                            alt="Product"
+                            className="w-12 h-12 object-cover rounded-md border border-border/50"
+                          />
+                        )}
+                        <div>
+                          <p className="font-medium text-foreground line-clamp-1">
+                            {item.variant?.product?.name ||
+                              "Sản phẩm không xác định"}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            Variant:{" "}
+                            <span className="font-mono text-gold/80">
+                              {item.variantId.substring(0, 8).toUpperCase()}
+                            </span>
+                            {item.variant?.volume &&
+                              ` • ${item.variant.volume}`}
+                          </p>
+                        </div>
+                      </div>
+                      <Badge className="bg-foreground text-background font-mono text-sm px-3">
+                        SL: {item.quantity}
+                      </Badge>
                     </div>
-                  ))}
-               </div>
+
+                    {/* Evidence display */}
+                    {item.images && item.images.length > 0 && (
+                      <div className="mt-4">
+                        <p className="text-xs text-muted-foreground mb-2">
+                          Bằng chứng đổi trả ({item.images.length} tệp):
+                        </p>
+                        <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-2">
+                          {item.images.map((url, iIndex) => {
+                            const isVideo =
+                              url.match(/\.(mp4|webm|mov)$/i) ||
+                              url.includes(
+                                "res.cloudinary.com/perfume-gpt/video",
+                              ) ||
+                              url.includes("returns/videos");
+                            return (
+                              <div
+                                key={iIndex}
+                                className="relative flex-none w-32 h-32 rounded-lg border border-border/50 overflow-hidden bg-black/40 group"
+                              >
+                                {isVideo ? (
+                                  <video
+                                    src={url}
+                                    controls
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img
+                                    src={url}
+                                    alt={`Evidence ${iIndex}`}
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                  />
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="space-y-3 pt-4 border-t border-border/50">
-               <h3 className="text-xs font-semibold text-foreground flex items-center gap-2 uppercase tracking-wider">
-                  <RotateCcw className="w-3 h-3 text-gold" /> Nhật ký xử lý
-               </h3>
-               <div className="bg-black/20 rounded-xl border border-border/50 overflow-hidden">
-                  {auditsLoading ? (
-                    <div className="p-4 flex justify-center"><Loader2 className="w-4 h-4 animate-spin text-gold/50" /></div>
-                  ) : audits.length === 0 ? (
-                    <div className="p-4 text-center text-[10px] text-muted-foreground italic">Chưa có nhật ký hoạt động</div>
-                  ) : (
-                    <div className="max-h-40 overflow-y-auto custom-scrollbar">
-                       {audits.map((a, idx) => (
-                         <div key={a.id} className="p-3 border-b border-border/30 last:border-0 flex justify-between items-start gap-3">
-                            <div className="flex-1">
-                               <p className={cn(
-                                 "text-[10px] font-bold uppercase tracking-widest mb-0.5",
-                                 a.action.includes('FAILED') ? 'text-red-400' : 'text-gold/80'
-                               )}>
-                                 {a.action.replace(/_/g, ' ')}
-                               </p>
-                               {a.payload?.message && <p className="text-[9px] text-muted-foreground italic">{a.payload.message}</p>}
-                               {a.payload?.orderCode && (
-                                 <p className="text-[9px] text-cyan-400 font-mono mt-0.5">Vận đơn: {a.payload.orderCode}</p>
-                               )}
-                            </div>
-                            <span className="text-[9px] text-muted-foreground font-mono">{new Date(a.createdAt).toLocaleString('vi-VN')}</span>
-                         </div>
-                       ))}
-                    </div>
-                  )}
-               </div>
+              <h3 className="text-xs font-semibold text-foreground flex items-center gap-2 uppercase tracking-wider">
+                <RotateCcw className="w-3 h-3 text-gold" /> Nhật ký xử lý
+              </h3>
+              <div className="bg-black/20 rounded-xl border border-border/50 overflow-hidden">
+                {auditsLoading ? (
+                  <div className="p-4 flex justify-center">
+                    <Loader2 className="w-4 h-4 animate-spin text-gold/50" />
+                  </div>
+                ) : audits.length === 0 ? (
+                  <div className="p-4 text-center text-[10px] text-muted-foreground italic">
+                    Chưa có nhật ký hoạt động
+                  </div>
+                ) : (
+                  <div className="max-h-40 overflow-y-auto custom-scrollbar">
+                    {audits.map((a, idx) => (
+                      <div
+                        key={a.id}
+                        className="p-3 border-b border-border/30 last:border-0 flex justify-between items-start gap-3"
+                      >
+                        <div className="flex-1">
+                          <p
+                            className={cn(
+                              "text-[10px] font-bold uppercase tracking-widest mb-0.5",
+                              a.action.includes("FAILED")
+                                ? "text-red-400"
+                                : "text-gold/80",
+                            )}
+                          >
+                            {a.action.replace(/_/g, " ")}
+                          </p>
+                          {a.payload?.message && (
+                            <p className="text-[9px] text-muted-foreground italic">
+                              {a.payload.message}
+                            </p>
+                          )}
+                          {a.payload?.orderCode && (
+                            <p className="text-[9px] text-cyan-400 font-mono mt-0.5">
+                              Vận đơn: {a.payload.orderCode}
+                            </p>
+                          )}
+                        </div>
+                        <span className="text-[9px] text-muted-foreground font-mono">
+                          {new Date(a.createdAt).toLocaleString("vi-VN")}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="space-y-2 pt-4 border-t border-border/50">
               <label className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
-                Ghi chú hoặc Phản hồi cho {selectedReturn?.origin === "POS" ? "Staff" : "khách"} (nếu từ chối)
+                Ghi chú hoặc Phản hồi cho{" "}
+                {selectedReturn?.origin === "POS" ? "Staff" : "khách"} (nếu từ
+                chối)
               </label>
               <Input
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                placeholder={selectedReturn?.origin === "POS" 
-                  ? "Nhập ghi chú hoặc lý do chi tiết để phản hồi lại cho nhân viên tại quầy..." 
-                  : "Nhập ghi chú hoặc lý do chi tiết để thông báo lại khách hàng..."
+                placeholder={
+                  selectedReturn?.origin === "POS"
+                    ? "Nhập ghi chú hoặc lý do chi tiết để phản hồi lại cho nhân viên tại quầy..."
+                    : "Nhập ghi chú hoặc lý do chi tiết để thông báo lại khách hàng..."
                 }
                 className="bg-background/50 border-gold/20 h-11 focus-visible:ring-gold/30"
               />
@@ -763,91 +945,126 @@ export const AdminReturnManagement = ({
       <Dialog open={isReceiveOpen} onOpenChange={setIsReceiveOpen}>
         <DialogContent className="glass border-gold/30 sm:max-w-md shadow-2xl rounded-2xl">
           <DialogHeader className="border-b border-border/50 pb-4">
-            <DialogTitle className="text-xl text-teal-400 font-semibold">Xác nhận Nhận Hàng</DialogTitle>
+            <DialogTitle className="text-xl text-teal-400 font-semibold">
+              Xác nhận Nhận Hàng
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-5 py-4">
             <div className="bg-teal-500/10 p-4 rounded-xl border border-teal-500/20">
               <p className="text-sm text-teal-200/80 leading-relaxed">
-                 Hệ thống sẽ cập nhật kho {selectedReturn?.origin === "POS" ? "tại quầy (POS)" : "cho cửa hàng chính"} và đánh dấu quy trình hoàn trả hàng bước vào giai đoạn hoàn tiền. Nếu hàng bị bóc seal, yêu cầu sẽ tự động bị TỪ CHỐI (Không hoàn tiền).
+                Hệ thống sẽ cập nhật kho{" "}
+                {selectedReturn?.origin === "POS"
+                  ? "tại quầy (POS)"
+                  : "cho cửa hàng chính"}{" "}
+                và đánh dấu quy trình hoàn trả hàng bước vào giai đoạn hoàn
+                tiền. Nếu hàng bị bóc seal, yêu cầu sẽ tự động bị TỪ CHỐI (Không
+                hoàn tiền).
               </p>
             </div>
 
             <div className="space-y-3">
-               <label className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Tình trạng Sản phẩm Nhận về</label>
-               {selectedReturn?.items.map((item) => (
-                  <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between bg-black/20 p-3 rounded-xl border border-border/50 gap-3">
-                     <div className="flex items-center gap-3">
-                        {item.variant?.product?.images?.[0]?.url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={item.variant.product.images[0].url} alt="Product" className="w-10 h-10 object-cover rounded-md border border-border/50" />
-                        ) : (
-                          <div className="w-10 h-10 rounded-md border border-border/50 bg-white/5 flex items-center justify-center">
-                            <Box className="w-5 h-5 text-muted-foreground/30" />
-                          </div>
-                        )}
-                        <div className="flex flex-col">
-                           <span className="text-sm font-semibold text-foreground line-clamp-1">
-                              {item.variant?.product?.name || `Mẫu #${item.variantId.slice(-6).toUpperCase()}`}
-                           </span>
-                           <span className="text-xs text-muted-foreground mt-0.5">
-                              {item.variant?.volume && `${item.variant.volume} • `}SL Yêu cầu: {item.quantity}
-                           </span>
-                        </div>
-                     </div>
-                     
-                     <div className="flex items-center space-x-4">
-                       <div className="flex items-center gap-2 bg-background/50 px-2 py-1.5 rounded-lg border border-border">
-                         <label className="text-[10px] text-muted-foreground uppercase font-bold">Thực nhận:</label>
-                         <input 
-                           type="number"
-                           min="0"
-                           max={item.quantity}
-                           value={receiveItemsState[item.variantId]?.qtyReceived ?? item.quantity}
-                           onChange={(e) => {
-                             const v = parseInt(e.target.value) || 0;
-                             setReceiveItemsState(prev => ({
-                               ...prev,
-                               [item.variantId]: {
-                                 ...prev[item.variantId],
-                                 qtyReceived: Math.min(item.quantity, Math.max(0, v))
-                               }
-                             }));
-                           }}
-                           className="bg-transparent border-none text-sm w-10 text-center text-gold font-bold focus:ring-0 p-0"
-                         />
-                       </div>
-
-                       <div 
-                          className="flex items-center space-x-2 bg-background/50 px-3 py-2 rounded-lg border border-border cursor-pointer hover:bg-white/5 transition-colors"
-                          onClick={() => {
-                             setReceiveItemsState(prev => ({
-                                ...prev,
-                                [item.variantId]: {
-                                    ...prev[item.variantId],
-                                    sealIntact: !(prev[item.variantId]?.sealIntact ?? true)
-                                }
-                             }))
-                          }}
-                       >
-                          <Checkbox 
-                             checked={receiveItemsState[item.variantId]?.sealIntact ?? true} 
-                             onCheckedChange={(checked) => {
-                               setReceiveItemsState(prev => ({
-                                 ...prev,
-                                 [item.variantId]: {
-                                   ...prev[item.variantId],
-                                   sealIntact: checked === true
-                                 }
-                               }))
-                             }}
-                          />
-                          <span className={`text-sm font-semibold ${receiveItemsState[item.variantId]?.sealIntact !== false ? 'text-teal-400' : 'text-red-400'}`}>
-                             {receiveItemsState[item.variantId]?.sealIntact !== false ? 'Nguyên seal' : 'Lỗi/Hư'}
-                          </span>
-                       </div>
-                     </div>
+              <label className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
+                Tình trạng Sản phẩm Nhận về
+              </label>
+              {selectedReturn?.items.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between bg-black/20 p-3 rounded-xl border border-border/50 gap-3"
+                >
+                  <div className="flex items-center gap-3">
+                    {item.variant?.product?.images?.[0]?.url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={item.variant.product.images[0].url}
+                        alt="Product"
+                        className="w-10 h-10 object-cover rounded-md border border-border/50"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-md border border-border/50 bg-white/5 flex items-center justify-center">
+                        <Box className="w-5 h-5 text-muted-foreground/30" />
+                      </div>
+                    )}
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold text-foreground line-clamp-1">
+                        {item.variant?.product?.name ||
+                          `Mẫu #${item.variantId.slice(-6).toUpperCase()}`}
+                      </span>
+                      <span className="text-xs text-muted-foreground mt-0.5">
+                        {item.variant?.volume && `${item.variant.volume} • `}SL
+                        Yêu cầu: {item.quantity}
+                      </span>
+                    </div>
                   </div>
-               ))}
+
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center gap-2 bg-background/50 px-2 py-1.5 rounded-lg border border-border">
+                      <label className="text-[10px] text-muted-foreground uppercase font-bold">
+                        Thực nhận:
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        max={item.quantity}
+                        value={
+                          receiveItemsState[item.variantId]?.qtyReceived ??
+                          item.quantity
+                        }
+                        onChange={(e) => {
+                          const v = parseInt(e.target.value) || 0;
+                          setReceiveItemsState((prev) => ({
+                            ...prev,
+                            [item.variantId]: {
+                              ...prev[item.variantId],
+                              qtyReceived: Math.min(
+                                item.quantity,
+                                Math.max(0, v),
+                              ),
+                            },
+                          }));
+                        }}
+                        className="bg-transparent border-none text-sm w-10 text-center text-gold font-bold focus:ring-0 p-0"
+                      />
+                    </div>
+
+                    <div
+                      className="flex items-center space-x-2 bg-background/50 px-3 py-2 rounded-lg border border-border cursor-pointer hover:bg-white/5 transition-colors"
+                      onClick={() => {
+                        setReceiveItemsState((prev) => ({
+                          ...prev,
+                          [item.variantId]: {
+                            ...prev[item.variantId],
+                            sealIntact: !(
+                              prev[item.variantId]?.sealIntact ?? true
+                            ),
+                          },
+                        }));
+                      }}
+                    >
+                      <Checkbox
+                        checked={
+                          receiveItemsState[item.variantId]?.sealIntact ?? true
+                        }
+                        onCheckedChange={(checked) => {
+                          setReceiveItemsState((prev) => ({
+                            ...prev,
+                            [item.variantId]: {
+                              ...prev[item.variantId],
+                              sealIntact: checked === true,
+                            },
+                          }));
+                        }}
+                      />
+                      <span
+                        className={`text-sm font-semibold ${receiveItemsState[item.variantId]?.sealIntact !== false ? "text-teal-400" : "text-red-400"}`}
+                      >
+                        {receiveItemsState[item.variantId]?.sealIntact !== false
+                          ? "Nguyên seal"
+                          : "Lỗi/Hư"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
 
             <div className="space-y-2">
@@ -880,29 +1097,43 @@ export const AdminReturnManagement = ({
       <Dialog open={isRefundOpen} onOpenChange={setIsRefundOpen}>
         <DialogContent className="glass border-indigo-500/30 sm:max-w-md shadow-2xl rounded-2xl">
           <DialogHeader className="border-b border-border/50 pb-4">
-            <DialogTitle className="text-xl text-indigo-400">Xác Nhận Hoàn Đơn Hàng</DialogTitle>
+            <DialogTitle className="text-xl text-indigo-400">
+              Xác Nhận Hoàn Đơn Hàng
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4 px-1 max-h-[70vh] overflow-y-auto custom-scrollbar">
             <div className="bg-indigo-500/10 border border-indigo-500/20 p-3 rounded-xl flex items-baseline justify-between">
-               <p className="text-xs text-indigo-300">
-                  Đơn hàng: <strong className="font-mono text-white">{selectedReturn?.orderId.substring(0, 8)}</strong>
-               </p>
-               {selectedReturn?.origin === "ONLINE" && (
-                 <Badge className="bg-cyan-500/20 text-cyan-400 border-none text-[8px] h-4">Trực Tuyến</Badge>
-               )}
+              <p className="text-xs text-indigo-300">
+                Đơn hàng:{" "}
+                <strong className="font-mono text-white">
+                  {selectedReturn?.orderId.substring(0, 8)}
+                </strong>
+              </p>
+              {selectedReturn?.origin === "ONLINE" && (
+                <Badge className="bg-cyan-500/20 text-cyan-400 border-none text-[8px] h-4">
+                  Trực Tuyến
+                </Badge>
+              )}
             </div>
 
-             <div className="space-y-3">
+            <div className="space-y-3">
               <label className="text-xs uppercase tracking-wider font-semibold text-muted-foreground block">
                 Phương thức hoàn tiền thực tế
               </label>
-               <div className={cn("grid gap-3", selectedReturn?.origin === "ONLINE" ? "grid-cols-1" : "grid-cols-2")}>
+              <div
+                className={cn(
+                  "grid gap-3",
+                  selectedReturn?.origin === "ONLINE"
+                    ? "grid-cols-1"
+                    : "grid-cols-2",
+                )}
+              >
                 {selectedReturn?.origin !== "ONLINE" && (
                   <button
                     onClick={() => setRefundMethod("cash")}
                     className={`flex items-center justify-center gap-2 p-3 rounded-xl border transition-all ${
-                      refundMethod === "cash" 
-                        ? "bg-indigo-500/20 border-indigo-500 text-indigo-300 shadow-lg shadow-indigo-900/20" 
+                      refundMethod === "cash"
+                        ? "bg-indigo-500/20 border-indigo-500 text-indigo-300 shadow-lg shadow-indigo-900/20"
                         : "bg-black/20 border-border/50 text-muted-foreground hover:border-indigo-500/30"
                     }`}
                   >
@@ -913,8 +1144,8 @@ export const AdminReturnManagement = ({
                 <button
                   onClick={() => setRefundMethod("bank_transfer")}
                   className={`flex items-center justify-center gap-2 p-3 rounded-xl border transition-all ${
-                    refundMethod === "bank_transfer" 
-                      ? "bg-indigo-500/20 border-indigo-500 text-indigo-300 shadow-lg shadow-indigo-900/20" 
+                    refundMethod === "bank_transfer"
+                      ? "bg-indigo-500/20 border-indigo-500 text-indigo-300 shadow-lg shadow-indigo-900/20"
                       : "bg-black/20 border-border/50 text-muted-foreground hover:border-indigo-500/30"
                   }`}
                 >
@@ -926,31 +1157,40 @@ export const AdminReturnManagement = ({
 
             {/* Refund Amount Info */}
             <div className="bg-indigo-500/10 border border-indigo-500/30 p-3 rounded-xl flex justify-between items-center group">
-               <div>
-                  <p className="text-[9px] uppercase tracking-widest text-indigo-300/70 font-bold mb-0.5">Tiền hoàn trả</p>
-                  <p className="text-xl font-heading font-bold text-indigo-400 group-hover:text-indigo-300 transition-colors leading-none">
-                    {formatVND(selectedReturn?.refundAmount || 0)}
-                  </p>
-               </div>
-               <Button 
+              <div>
+                <p className="text-[9px] uppercase tracking-widest text-indigo-300/70 font-bold mb-0.5">
+                  Tiền hoàn trả
+                </p>
+                <p className="text-xl font-heading font-bold text-indigo-400 group-hover:text-indigo-300 transition-colors leading-none">
+                  {formatVND(selectedReturn?.refundAmount || 0)}
+                </p>
+              </div>
+              <Button
                 size="sm"
                 variant="ghost"
                 onClick={handleAutoCalc}
                 disabled={calculatingRefund}
                 className="h-7 text-[9px] font-bold text-indigo-400 hover:text-white hover:bg-indigo-500/30 border border-indigo-500/20"
-               >
-                 {calculatingRefund ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Auto Calc"}
-               </Button>
+              >
+                {calculatingRefund ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  "Auto Calc"
+                )}
+              </Button>
             </div>
 
             {/* Bank Info for Chuyển khoản */}
-            {refundMethod === "bank_transfer" && selectedReturn?.paymentInfo && (
-              <div className="bg-black/20 border border-white/5 rounded-xl p-3 space-y-2 animate-in fade-in slide-in-from-top-2">
-                 <div className="flex justify-between items-center border-b border-white/5 pb-1.5">
-                    <h4 className="text-[10px] font-bold text-indigo-300 uppercase tracking-widest">Thông tin thụ hưởng</h4>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
+            {refundMethod === "bank_transfer" &&
+              selectedReturn?.paymentInfo && (
+                <div className="bg-black/20 border border-white/5 rounded-xl p-3 space-y-2 animate-in fade-in slide-in-from-top-2">
+                  <div className="flex justify-between items-center border-b border-white/5 pb-1.5">
+                    <h4 className="text-[10px] font-bold text-indigo-300 uppercase tracking-widest">
+                      Thông tin thụ hưởng
+                    </h4>
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       className="h-6 px-2 text-[9px] text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10"
                       onClick={() => {
                         const info = selectedReturn.paymentInfo as any;
@@ -961,23 +1201,35 @@ export const AdminReturnManagement = ({
                     >
                       <RefreshCcw className="w-3 h-3 mr-1" /> Sao chép
                     </Button>
-                 </div>
-                 <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-[11px]">
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-[11px]">
                     <div>
-                       <p className="text-[8px] text-muted-foreground uppercase font-semibold">Ngân hàng</p>
-                       <p className="font-semibold text-foreground italic">{(selectedReturn.paymentInfo as any).bankName}</p>
+                      <p className="text-[8px] text-muted-foreground uppercase font-semibold">
+                        Ngân hàng
+                      </p>
+                      <p className="font-semibold text-foreground italic">
+                        {(selectedReturn.paymentInfo as any).bankName}
+                      </p>
                     </div>
                     <div>
-                       <p className="text-[8px] text-muted-foreground uppercase font-semibold">Số tài khoản</p>
-                       <p className="font-mono font-bold text-indigo-400">{(selectedReturn.paymentInfo as any).accountNumber}</p>
+                      <p className="text-[8px] text-muted-foreground uppercase font-semibold">
+                        Số tài khoản
+                      </p>
+                      <p className="font-mono font-bold text-indigo-400">
+                        {(selectedReturn.paymentInfo as any).accountNumber}
+                      </p>
                     </div>
                     <div className="col-span-2">
-                       <p className="text-[8px] text-muted-foreground uppercase font-semibold">Chủ tài khoản</p>
-                       <p className="font-semibold text-foreground uppercase">{(selectedReturn.paymentInfo as any).accountName}</p>
+                      <p className="text-[8px] text-muted-foreground uppercase font-semibold">
+                        Chủ tài khoản
+                      </p>
+                      <p className="font-semibold text-foreground uppercase">
+                        {(selectedReturn.paymentInfo as any).accountName}
+                      </p>
                     </div>
-                 </div>
-              </div>
-            )}
+                  </div>
+                </div>
+              )}
 
             <div className="space-y-4">
               {refundMethod === "bank_transfer" && (
@@ -994,17 +1246,22 @@ export const AdminReturnManagement = ({
                   />
                   {isUploadingReceipt && (
                     <div className="flex items-center text-xs text-indigo-400 mt-2 font-medium">
-                      <Loader2 className="w-3 h-3 mr-2 animate-spin" /> Đang tải ảnh lên...
+                      <Loader2 className="w-3 h-3 mr-2 animate-spin" /> Đang tải
+                      ảnh lên...
                     </div>
                   )}
                   {receiptImageUrl && !isUploadingReceipt && (
                     <div className="mt-2 w-full max-h-40 overflow-hidden rounded-lg border border-indigo-500/30 relative group bg-black/40 flex justify-center">
-                      <img src={receiptImageUrl} alt="Receipt Preview" className="w-full max-h-40 object-contain" />
-                      <button 
+                      <img
+                        src={receiptImageUrl}
+                        alt="Receipt Preview"
+                        className="w-full max-h-40 object-contain"
+                      />
+                      <button
                         onClick={() => setReceiptImageUrl("")}
                         className="absolute top-2 right-2 bg-black/60 hover:bg-red-500 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
                       >
-                         <X className="w-3.5 h-3.5" />
+                        <X className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   )}
@@ -1014,10 +1271,12 @@ export const AdminReturnManagement = ({
               {refundMethod === "cash" && (
                 <div className="bg-emerald-500/10 p-4 rounded-xl border border-emerald-500/20 flex gap-3">
                   <div className="bg-emerald-500/20 p-2 rounded-lg self-start">
-                     <Banknote className="w-4 h-4 text-emerald-400" />
+                    <Banknote className="w-4 h-4 text-emerald-400" />
                   </div>
                   <p className="text-xs text-emerald-200/80 leading-relaxed">
-                    Xác nhận hoàn tiền bằng <strong>tiền mặt</strong> trực tiếp tại quầy. Nhân viên vui lòng kiểm tra kỹ số tiền trả cho khách hàng.
+                    Xác nhận hoàn tiền bằng <strong>tiền mặt</strong> trực tiếp
+                    tại quầy. Nhân viên vui lòng kiểm tra kỹ số tiền trả cho
+                    khách hàng.
                   </p>
                 </div>
               )}
@@ -1029,7 +1288,11 @@ export const AdminReturnManagement = ({
                 <Input
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
-                  placeholder={refundMethod === "cash" ? "Ví dụ: Đã trả tiền mặt cho khách..." : "Ví dụ: Mã giao dịch hoặc ghi chú hoàn tiền..."}
+                  placeholder={
+                    refundMethod === "cash"
+                      ? "Ví dụ: Đã trả tiền mặt cho khách..."
+                      : "Ví dụ: Mã giao dịch hoặc ghi chú hoàn tiền..."
+                  }
                   className="bg-background/50 border-indigo-500/20 h-11 focus-visible:ring-indigo-500"
                 />
               </div>
@@ -1054,37 +1317,39 @@ export const AdminReturnManagement = ({
         <DialogContent className="glass border-gold/30 max-w-3xl max-h-[90vh] flex flex-col overflow-hidden rounded-[24px] p-0 shadow-2xl">
           <DialogHeader className="px-6 pt-6 pb-2 border-b border-border/50">
             <DialogTitle className="text-2xl text-gold pb-2 flex items-center">
-               <Store className="w-6 h-6 mr-3 text-gold/70" />
-               Khởi tạo Yêu cầu Đổi Trả Quầy (POS)
+              <Store className="w-6 h-6 mr-3 text-gold/70" />
+              Khởi tạo Yêu cầu Đổi Trả Quầy (POS)
             </DialogTitle>
           </DialogHeader>
-          
+
           <div className="p-6 pb-2">
             <div className="relative group">
-               <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-gold transition-colors" />
-               <Input
-                 placeholder="Nhập mã đơn khách mua (VD: ORD-...) hoặc Quét Barcode..."
-                 value={posSearchKey}
-                 onChange={(e) => setPosSearchKey(e.target.value)}
-                 onKeyDown={(e) => e.key === "Enter" && handlePosOrderSearch()}
-                 className="w-full bg-black/40 border-gold/20 h-14 pl-12 pr-28 text-lg rounded-xl focus-visible:ring-gold/30"
-                 autoFocus
-               />
-               <Button 
-                  onClick={handlePosOrderSearch} 
-                  disabled={posLoading}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 h-10 w-24 bg-gold/10 text-gold hover:bg-gold hover:text-black border border-gold/20"
-               >
-                 {posLoading ? "Đang tìm..." : "Kiểm tra"}
-               </Button>
+              <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-gold transition-colors" />
+              <Input
+                placeholder="Nhập mã đơn khách mua (VD: ORD-...) hoặc Quét Barcode..."
+                value={posSearchKey}
+                onChange={(e) => setPosSearchKey(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handlePosOrderSearch()}
+                className="w-full bg-black/40 border-gold/20 h-14 pl-12 pr-28 text-lg rounded-xl focus-visible:ring-gold/30"
+                autoFocus
+              />
+              <Button
+                onClick={handlePosOrderSearch}
+                disabled={posLoading}
+                className="absolute right-2 top-1/2 -translate-y-1/2 h-10 w-24 bg-gold/10 text-gold hover:bg-gold hover:text-black border border-gold/20"
+              >
+                {posLoading ? "Đang tìm..." : "Kiểm tra"}
+              </Button>
             </div>
           </div>
 
           <div className="flex-1 overflow-y-auto px-6 custom-scrollbar">
             {posLoading && (
               <div className="flex flex-col justify-center items-center h-40 space-y-4">
-                 <div className="w-8 h-8 rounded-full border-2 border-gold/30 border-t-gold animate-spin" />
-                 <p className="text-muted-foreground animate-pulse">Đang truy xuất hệ thống...</p>
+                <div className="w-8 h-8 rounded-full border-2 border-gold/30 border-t-gold animate-spin" />
+                <p className="text-muted-foreground animate-pulse">
+                  Đang truy xuất hệ thống...
+                </p>
               </div>
             )}
 
@@ -1092,27 +1357,33 @@ export const AdminReturnManagement = ({
               <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 mb-6">
                 <div className="bg-gradient-to-br from-gold/10 to-transparent p-5 rounded-2xl border border-gold/20 shadow-inner">
                   <div className="flex justify-between items-start mb-2">
-                     <div>
-                        <p className="text-xs uppercase tracking-[0.2em] text-gold font-semibold mb-1">
-                          Thông tin giao dịch
-                        </p>
-                        <p className="font-mono text-xl text-foreground">
-                          {posOrder.code || posOrder.id.substring(0, 8)}
-                        </p>
-                     </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.2em] text-gold font-semibold mb-1">
+                        Thông tin giao dịch
+                      </p>
+                      <p className="font-mono text-xl text-foreground">
+                        {posOrder.code || posOrder.id.substring(0, 8)}
+                      </p>
+                    </div>
                     <Badge className="bg-teal-500/20 text-teal-400 border-teal-500/30 px-3 py-1">
                       {posOrder.status}
                     </Badge>
                   </div>
                   <div className="flex items-center text-sm mt-3 text-muted-foreground bg-background/40 inline-flex px-3 py-1.5 rounded-lg border border-border/50">
                     <span className="w-2 h-2 rounded-full bg-gold mr-2" />
-                    Khách: <strong className="text-foreground ml-1">{posOrder.user?.fullName || posOrder.user?.email || "Khách mua lẻ"}</strong>
+                    Khách:{" "}
+                    <strong className="text-foreground ml-1">
+                      {posOrder.user?.fullName ||
+                        posOrder.user?.email ||
+                        "Khách mua lẻ"}
+                    </strong>
                   </div>
                 </div>
 
                 <div>
                   <label className="text-sm font-semibold mb-3 block text-foreground flex items-center">
-                    <Box className="w-4 h-4 mr-2 text-gold" /> Chọn sản phẩm đổi trả
+                    <Box className="w-4 h-4 mr-2 text-gold" /> Chọn sản phẩm đổi
+                    trả
                   </label>
                   <div className="space-y-3">
                     {posOrder.items.map((item) => {
@@ -1124,18 +1395,27 @@ export const AdminReturnManagement = ({
                         >
                           <div className="flex-1 mr-4">
                             <p className="font-medium text-foreground text-sm line-clamp-1">
-                              {item.product?.name || item.variant?.product?.name || item.variant?.name || "Sản phẩm không xác định"}
+                              {item.product?.name ||
+                                item.variant?.product?.name ||
+                                item.variant?.name ||
+                                "Sản phẩm không xác định"}
                             </p>
                             {item.variant && (
                               <p className="text-xs text-muted-foreground mt-0.5">
-                                Loại: <span className="text-foreground/80">{item.variant.name}</span>
+                                Loại:{" "}
+                                <span className="text-foreground/80">
+                                  {item.variant.name}
+                                </span>
                               </p>
                             )}
-                            <Badge variant="outline" className="mt-2 text-[10px] bg-background">
+                            <Badge
+                              variant="outline"
+                              className="mt-2 text-[10px] bg-background"
+                            >
                               SL Đã mua: {item.quantity}
                             </Badge>
                           </div>
-                          
+
                           <div className="flex items-center space-x-1 bg-black/40 rounded-lg p-1 border border-border/50">
                             <Button
                               size="icon"
@@ -1160,7 +1440,10 @@ export const AdminReturnManagement = ({
                               onClick={() => {
                                 setPosSelectedItems((prev) => ({
                                   ...prev,
-                                  [item.variantId]: Math.min(item.quantity, qty + 1),
+                                  [item.variantId]: Math.min(
+                                    item.quantity,
+                                    qty + 1,
+                                  ),
                                 }));
                               }}
                             >
@@ -1189,7 +1472,11 @@ export const AdminReturnManagement = ({
           </div>
 
           <DialogFooter className="p-6 bg-background/80 border-t border-border/50 backdrop-blur-md">
-            <Button variant="ghost" onClick={() => setIsPosCreateOpen(false)} className="rounded-xl h-11">
+            <Button
+              variant="ghost"
+              onClick={() => setIsPosCreateOpen(false)}
+              className="rounded-xl h-11"
+            >
               Hủy
             </Button>
             <Button

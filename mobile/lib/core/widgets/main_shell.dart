@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:perfume_gpt_app/l10n/app_localizations.dart';
 
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/product/presentation/explore_screen.dart';
@@ -137,18 +138,19 @@ class _LuxuryBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
         // Left side
-        _buildItem(0, Icons.home_outlined, Icons.home_rounded, 'MAISON'),
-        _buildItem(1, Icons.explore_outlined, Icons.explore_rounded, 'EXPLORE'),
+        _buildItem(0, Icons.home_outlined, Icons.home_rounded, l10n.navHome),
+        _buildItem(1, Icons.explore_outlined, Icons.explore_rounded, l10n.navExplore),
 
         // Middle gap for FAB
         const SizedBox(width: 80),
 
         // Right side
-        _buildItem(3, Icons.notifications_outlined, Icons.notifications_rounded, 'ALERTS'),
-        _buildItem(4, Icons.person_outline_rounded, Icons.person_rounded, 'PROFILE'),
+        _buildItem(3, Icons.notifications_outlined, Icons.notifications_rounded, l10n.navAlerts),
+        _buildItem(4, Icons.person_outline_rounded, Icons.person_rounded, l10n.navProfile),
       ],
     );
   }
