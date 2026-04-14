@@ -33,6 +33,9 @@ export default function AdminOrders() {
         REFUNDED: { label: t('payment_status.refunded'), color: 'text-blue-500' },
     };
     const [orders, setOrders] = useState<Order[]>([]);
+    const [total, setTotal] = useState(0);
+    const [skip, setSkip] = useState(0);
+    const [take, setTake] = useState(20);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [activeTab, setActiveTab] = useState<'ALL' | 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'CANCELLED' | 'REFUND_REQUIRED'>('ALL');
@@ -45,18 +48,23 @@ export default function AdminOrders() {
     const fetchOrders = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await orderService.listAll(0, 100);
+            const res = await orderService.listAll(skip, take);
             setOrders(res.data);
+            setTotal(res.total);
         } catch (error) {
             console.error('Failed to fetch orders:', error);
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [skip, take]);
 
     useEffect(() => {
         fetchOrders();
     }, [fetchOrders]);
+
+    useEffect(() => {
+        setSkip(0);
+    }, [take]);
 
     useEffect(() => {
         const loadRefundInfo = async () => {
@@ -191,6 +199,9 @@ export default function AdminOrders() {
         }
         return o.status === activeTab;
     });
+
+    const currentPage = Math.floor(skip / take) + 1;
+    const totalPages = Math.max(1, Math.ceil(total / take));
 
     return (
         <AuthGuard allowedRoles={['admin', 'staff']}>
@@ -336,6 +347,42 @@ export default function AdminOrders() {
                                 <p className="text-[10px] font-bold tracking-widest uppercase text-stone-400">{t('table.no_orders')}</p>
                             </div>
                         )}
+                    </div>
+                </div>
+
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <p className="text-[10px] uppercase tracking-widest font-bold text-stone-400">
+                        {total === 0 ? '0' : `${skip + 1}-${Math.min(skip + take, total)} / ${total}`}
+                    </p>
+                    <div className="flex items-center gap-3">
+                        <select
+                            value={take}
+                            onChange={(e) => setTake(Number(e.target.value))}
+                            className="bg-white dark:bg-zinc-900 border border-stone-200 dark:border-white/10 rounded-full px-3 py-2 text-[10px] uppercase tracking-widest font-bold"
+                        >
+                            <option value={10}>10 / page</option>
+                            <option value={20}>20 / page</option>
+                            <option value={50}>50 / page</option>
+                        </select>
+                        <button
+                            type="button"
+                            onClick={() => setSkip((s) => Math.max(0, s - take))}
+                            disabled={skip === 0}
+                            className="px-4 py-2 rounded-full border border-stone-200 dark:border-white/10 text-[10px] font-bold uppercase tracking-widest disabled:opacity-50"
+                        >
+                            Prev
+                        </button>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400 min-w-24 text-center">
+                            {currentPage}/{totalPages}
+                        </span>
+                        <button
+                            type="button"
+                            onClick={() => setSkip((s) => (s + take < total ? s + take : s))}
+                            disabled={skip + take >= total}
+                            className="px-4 py-2 rounded-full border border-stone-200 dark:border-white/10 text-[10px] font-bold uppercase tracking-widest disabled:opacity-50"
+                        >
+                            Next
+                        </button>
                     </div>
                 </div>
 

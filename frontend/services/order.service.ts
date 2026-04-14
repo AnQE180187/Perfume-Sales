@@ -73,8 +73,8 @@ export const orderService = {
   }) {
     return api.post<Order>("/orders", dto).then((r) => r.data);
   },
-  listMy() {
-    return api.get<Order[]>("/orders").then((r) => r.data);
+  listMy(params?: { skip?: number; take?: number }) {
+    return api.get<OrderListResponse>("/orders", { params }).then((r) => r.data);
   },
   getById(id: string) {
     return api.get<Order>("/orders/" + id).then((r) => r.data);

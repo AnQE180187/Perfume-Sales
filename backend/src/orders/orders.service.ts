@@ -166,38 +166,54 @@ export class OrdersService {
     return order;
   }
 
-  async listMyOrders(userId: string) {
-    const orders = await this.prisma.order.findMany({
-      where: { userId },
-      include: {
-        items: {
-          include: {
-            variant: {
-              include: {
-                product: {
-                  include: { images: { orderBy: { order: 'asc' }, take: 1 } },
+  async listMyOrders(userId: string, skip = 0, take = 10) {
+    const safeSkip = Math.max(0, skip || 0);
+    const safeTake = Math.min(100, Math.max(1, take || 10));
+
+    const [orders, total] = await Promise.all([
+      this.prisma.order.findMany({
+        where: { userId },
+        skip: safeSkip,
+        take: safeTake,
+        include: {
+          items: {
+            include: {
+              variant: {
+                include: {
+                  product: {
+                    include: { images: { orderBy: { order: 'asc' }, take: 1 } },
+                  },
                 },
               },
+              review: true,
             },
-            review: true,
+          },
+          promotions: true,
+          returnRequests: {
+            where: { status: { not: 'CANCELLED' } },
+            include: { items: true },
           },
         },
-        promotions: true,
-        returnRequests: {
-          where: { status: { not: 'CANCELLED' } },
-          include: { items: true },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.order.count({ where: { userId } }),
+    ]);
 
-    return orders.map((order) => ({
+    const data = orders.map((order) => ({
       ...order,
       items: order.items.map((item) => ({
         ...item,
         product: item.variant.product,
       })),
     }));
+
+    return {
+      data,
+      total,
+      skip: safeSkip,
+      take: safeTake,
+      pages: Math.ceil(total / safeTake),
+    };
   }
 
   async listAllOrders(skip: number, take: number) {
