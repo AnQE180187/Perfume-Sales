@@ -23,13 +23,28 @@ export class OrdersController {
   }
 
   @Get()
-  async listMy(@Req() req: any) {
-    return this.ordersService.listMyOrders(req.user.userId);
+  async listMy(
+    @Req() req: any,
+    @Query('skip') skip?: string | number,
+    @Query('take') take?: string | number,
+  ) {
+    const parsedSkip = Number(skip ?? 0);
+    const parsedTake = Number(take ?? 10);
+    return this.ordersService.listMyOrders(
+      req.user.userId,
+      Number.isFinite(parsedSkip) ? parsedSkip : 0,
+      Number.isFinite(parsedTake) ? parsedTake : 10,
+    );
   }
 
   @Get('admin/all')
-  async listAll(@Query('skip') skip?: number, @Query('take') take?: number) {
-    return this.ordersService.listAllOrders(skip || 0, take || 10);
+  async listAll(@Query('skip') skip?: string | number, @Query('take') take?: string | number) {
+    const parsedSkip = Number(skip ?? 0);
+    const parsedTake = Number(take ?? 10);
+    return this.ordersService.listAllOrders(
+      Number.isFinite(parsedSkip) ? parsedSkip : 0,
+      Number.isFinite(parsedTake) ? parsedTake : 10,
+    );
   }
 
   @Get(':id')
