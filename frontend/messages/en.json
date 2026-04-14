@@ -1189,7 +1189,8 @@
         "search_placeholder": "Universal registry search...",
         "stats": {
           "revenue": "Total Revenue",
-          "consultations": "Active Consultations",
+          "orders": "Total Orders",
+          "consultations": "AI Consultations",
           "members": "Prestige Members",
           "delivery": "Avg. Delivery"
         },
