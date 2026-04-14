@@ -1190,7 +1190,8 @@
         "search_placeholder": "Tìm theo mã đơn, tên, số điện thoại...",
         "stats": {
           "revenue": "Tổng Doanh thu",
-          "consultations": "Tư vấn Đang hoạt động",
+          "orders": "Tổng Đơn hàng",
+          "consultations": "Lượt tư vấn AI",
           "members": "Thành viên Cao cấp",
           "delivery": "Giao hàng Tb."
         },
