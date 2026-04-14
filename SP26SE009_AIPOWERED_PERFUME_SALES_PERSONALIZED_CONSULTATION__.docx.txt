@@ -1,4 +1,4 @@
-﻿CAPSTONE PROJECT REGISTER 
+﻿	CAPSTONE PROJECT REGISTER 
  
 Class:            Duration time:  from 01/01/2026 To 30/04/2026
 (*) Profession: <Software Engineer>                   Specialty: <ES>  Hộp Văn bản    <IS>   Hộp Văn bản    <JS>    Hộp Văn bản                            
