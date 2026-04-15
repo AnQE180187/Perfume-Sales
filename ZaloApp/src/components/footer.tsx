@@ -17,9 +17,9 @@ const NAV_ITEMS = [
     icon: HomeIcon,
   },
   {
-    name: "Danh mục",
-    path: "/categories",
-    icon: CategoryIcon,
+    name: "Tìm hương",
+    path: "/ai-quiz",
+    icon: SparklesIcon,
   },
   {
     name: "Tư vấn AI",

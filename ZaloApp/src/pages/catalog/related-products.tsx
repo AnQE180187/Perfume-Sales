@@ -4,13 +4,13 @@ import { useMemo } from "react";
 import { productsState } from "@/state";
 
 export interface RelatedProductsProps {
-  currentProductId: number;
+  currentProductId: string;
 }
 
 export default function RelatedProducts(props: RelatedProductsProps) {
   const products = useAtomValue(productsState);
   const otherProducts = useMemo(
-    () => products.filter((product) => product.id !== props.currentProductId),
+    () => products.filter((product) => String(product.id) !== String(props.currentProductId)),
     [products, props.currentProductId]
   );
 

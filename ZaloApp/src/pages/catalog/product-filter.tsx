@@ -3,50 +3,62 @@ import { SelectSkeleton } from "@/components/skeleton";
 import { useAtom, useAtomValue } from "jotai";
 import { Suspense } from "react";
 import {
-  colorsState,
-  selectedColorState,
-  selectedSizeState,
-  sizesState,
+  selectedGenderState, gendersState,
+  selectedBrandState, brandsState,
+  selectedPriceRangeState, priceRangesState, PriceRange
 } from "@/state";
-import { Color } from "@/types";
 
 export default function ProductFilter() {
-  const sizes = useAtomValue(sizesState);
-  const [size, setSize] = useAtom(selectedSizeState);
-  const colors = useAtomValue(colorsState);
-  const [color, setColor] = useAtom(selectedColorState);
+  const genders = useAtomValue(gendersState);
+  const [gender, setGender] = useAtom(selectedGenderState);
+  
+  const brands = useAtomValue(brandsState);
+  const [brand, setBrand] = useAtom(selectedBrandState);
+  
+  const priceRanges = useAtomValue(priceRangesState);
+  const [price, setPrice] = useAtom(selectedPriceRangeState);
 
   return (
-    <div className="flex px-4 py-3 space-x-2 overflow-x-auto">
+    <div className="flex px-4 py-3 space-x-2 overflow-x-auto no-scrollbar">
+      <Suspense fallback={<SelectSkeleton width={90} />}>
+        <Select
+          items={genders}
+          value={genders.find(g => g.id === gender)}
+          onChange={(val: any) => setGender(val?.id)}
+          renderTitle={(selected?: any) => `Giới tính${selected ? `: ${selected.label}` : ""}`}
+          renderItemLabel={(item: any) => item.label}
+          renderItemKey={(item: any) => item.id}
+        />
+      </Suspense>
+
       <Suspense fallback={<SelectSkeleton width={110} />}>
         <Select
-          items={sizes}
-          value={size}
-          onChange={setSize}
-          renderTitle={(selectedSize?: string) =>
-            `Kích thước${selectedSize ? `: ${selectedSize}` : ""}`
-          }
-          renderItemKey={(size: string) => String(size)}
+          items={priceRanges}
+          value={priceRanges.find(p => p.id === price)}
+          onChange={(val: any) => setPrice(val?.id as PriceRange)}
+          renderTitle={(selected?: any) => `Giá${selected ? `: ${selected.label}` : ""}`}
+          renderItemLabel={(item: any) => item.label}
+          renderItemKey={(item: any) => item.id}
         />
       </Suspense>
-      <Suspense fallback={<SelectSkeleton width={95} />}>
+
+      <Suspense fallback={<SelectSkeleton width={110} />}>
         <Select
-          items={colors}
-          value={color}
-          onChange={setColor}
-          renderTitle={(selectedColor?: Color) =>
-            `Màu sắc${selectedColor ? `: ${selectedColor.name}` : ""}`
-          }
-          renderItemLabel={(color: Color) => color.name}
-          renderItemKey={(color: Color) => color.name}
+          items={brands}
+          value={brand}
+          onChange={(val: any) => setBrand(val)}
+          renderTitle={(selected?: string) => `Brand${selected ? `: ${selected}` : ""}`}
+          renderItemKey={(item: string) => String(item)}
         />
       </Suspense>
-      {(color !== undefined || size !== undefined) && (
+
+      {(gender !== undefined || price !== undefined || brand !== undefined) && (
         <button
-          className="bg-primary text-white rounded-full h-8 flex-none px-3"
+          className="bg-primary text-white text-xs whitespace-nowrap rounded-full h-8 flex-none px-3"
           onClick={() => {
-            setColor(undefined);
-            setSize(undefined);
+            setGender(undefined);
+            setPrice(undefined);
+            setBrand(undefined);
           }}
         >
           Xoá bộ lọc
