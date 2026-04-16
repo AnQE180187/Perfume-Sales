@@ -6,6 +6,7 @@ import '../../../core/theme/app_text_style.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../services/loyalty_service.dart';
+import '../../cart/providers/promotions_provider.dart';
 
 class LoyaltyScreen extends ConsumerWidget {
   const LoyaltyScreen({super.key});
@@ -102,7 +103,7 @@ class _PointsHeroCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.4),
+            color: AppTheme.deepCharcoal.withValues(alpha: 0.4),
             blurRadius: 25,
             offset: const Offset(0, 12),
           ),
@@ -398,7 +399,7 @@ class _TiersCard extends StatelessWidget {
                           child: Icon(
                             tier.icon,
                             size: 24,
-                            color: isUnlocked ? Colors.white : AppTheme.mutedSilver.withValues(alpha: 0.3),
+                            color: isUnlocked ? AppTheme.creamWhite : AppTheme.mutedSilver.withValues(alpha: 0.3),
                           ),
                         ),
                       ],
@@ -1085,6 +1086,7 @@ class _RedeemPromoCard extends ConsumerWidget {
           );
           ref.refresh(loyaltyStatusProvider);
           ref.refresh(redeemablePromotionsProvider);
+          ref.refresh(activePromotionsProvider);
         }
       } catch (e) {
         if (context.mounted) {

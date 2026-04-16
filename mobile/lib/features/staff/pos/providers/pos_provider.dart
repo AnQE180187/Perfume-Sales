@@ -27,12 +27,19 @@ final posSelectedStoreIdProvider = StateProvider<String?>((ref) => null);
 
 final posSearchQueryProvider = StateProvider<String>((ref) => '');
 
+final posSelectedFamilyProvider = StateProvider<String>((ref) => 'All');
+
 final posProductsProvider = FutureProvider<List<PosProduct>>((ref) async {
   final service = ref.watch(staffPosServiceProvider);
   final storeId = ref.watch(posSelectedStoreIdProvider);
   final query = ref.watch(posSearchQueryProvider);
+  final family = ref.watch(posSelectedFamilyProvider);
+  
   if (storeId == null) return const [];
-  return service.searchProducts(query: query, storeId: storeId);
+  final products = await service.searchProducts(query: query, storeId: storeId);
+  
+  if (family == 'All') return products;
+  return products.where((p) => p.family == family).toList();
 });
 
 // ── POS Order State ─────────────────────────────────────────────────
@@ -47,23 +54,29 @@ class PosState {
   /// Attached customer phone (before checkout).
   final String? customerPhone;
 
+  /// Full customer details (if found via lookup).
+  final LoyaltyResult? customerInfo;
+
   final bool isLoading;
   final String? error;
   final String? successMessage;
   final bool isReturnLoading;
   final String? returnError;
   final String? returnSuccessMessage;
+  final List<LoyaltyResult> customerSuggestions;
 
   const PosState({
     this.currentOrder,
     this.localCart = const [],
     this.customerPhone,
+    this.customerInfo,
     this.isLoading = false,
     this.error,
     this.successMessage,
     this.isReturnLoading = false,
     this.returnError,
     this.returnSuccessMessage,
+    this.customerSuggestions = const [],
   });
 
   /// Whether we're editing a server-side order (from Orders tab).
@@ -79,12 +92,14 @@ class PosState {
     PosOrder? currentOrder,
     List<LocalCartItem>? localCart,
     String? customerPhone,
+    LoyaltyResult? customerInfo,
     bool? isLoading,
     String? error,
     String? successMessage,
     bool? isReturnLoading,
     String? returnError,
     String? returnSuccessMessage,
+    List<LoyaltyResult>? customerSuggestions,
     bool clearOrder = false,
     bool clearCustomer = false,
   }) {
@@ -94,12 +109,16 @@ class PosState {
       customerPhone: clearCustomer
           ? null
           : (customerPhone ?? this.customerPhone),
+      customerInfo: clearCustomer
+          ? null
+          : (customerInfo ?? this.customerInfo),
       isLoading: isLoading ?? this.isLoading,
       error: error,
       successMessage: successMessage,
       isReturnLoading: isReturnLoading ?? this.isReturnLoading,
       returnError: returnError,
       returnSuccessMessage: returnSuccessMessage,
+      customerSuggestions: customerSuggestions ?? this.customerSuggestions,
     );
   }
 }
@@ -152,13 +171,18 @@ class PosNotifier extends StateNotifier<PosState> {
   }
 
   void setCustomerPhone(String phone) {
-    state = state.copyWith(customerPhone: phone);
+    if (phone.isEmpty) {
+      state = state.copyWith(clearCustomer: true);
+    } else {
+      state = state.copyWith(customerPhone: phone);
+    }
   }
 
   // ── Checkout (one-shot create + pay) ──────────────────────────
 
   Future<Map<String, dynamic>?> checkoutCash(String storeId) async {
     if (state.localCart.isEmpty) return null;
+    final oldOrderId = state.currentOrder?.id;
     state = state.copyWith(isLoading: true, error: null, successMessage: null);
     try {
       final result = await _service.checkout(
@@ -167,6 +191,11 @@ class PosNotifier extends StateNotifier<PosState> {
         paymentMethod: 'CASH',
         customerPhone: state.customerPhone,
       );
+      if (oldOrderId != null) {
+        try {
+          await _service.cancelOrder(oldOrderId);
+        } catch (_) {}
+      }
       final order = PosOrder.fromJson(result);
       state = PosState(
         currentOrder: order,
@@ -181,6 +210,7 @@ class PosNotifier extends StateNotifier<PosState> {
 
   Future<Map<String, dynamic>?> checkoutQr(String storeId) async {
     if (state.localCart.isEmpty) return null;
+    final oldOrderId = state.currentOrder?.id;
     state = state.copyWith(isLoading: true, error: null, successMessage: null);
     try {
       final result = await _service.checkout(
@@ -189,6 +219,11 @@ class PosNotifier extends StateNotifier<PosState> {
         paymentMethod: 'QR',
         customerPhone: state.customerPhone,
       );
+      if (oldOrderId != null) {
+        try {
+          await _service.cancelOrder(oldOrderId);
+        } catch (_) {}
+      }
       // QR returns { order: {...}, checkoutUrl: "..." }
       state = state.copyWith(isLoading: false);
       return result;
@@ -196,6 +231,78 @@ class PosNotifier extends StateNotifier<PosState> {
       state = state.copyWith(isLoading: false, error: e.toString());
       return null;
     }
+  }
+
+  Future<bool> saveAsDraft(String storeId) async {
+    if (state.localCart.isEmpty) return false;
+    final oldOrderId = state.currentOrder?.id;
+    state = state.copyWith(isLoading: true, error: null, successMessage: null);
+    try {
+      final order = await _service.saveAsDraft(
+        storeId: storeId,
+        items: state.localCart.map((c) => c.toCheckoutJson()).toList(),
+        customerPhone: state.customerPhone,
+      );
+      if (oldOrderId != null && oldOrderId != order.id) {
+        try {
+          await _service.cancelOrder(oldOrderId);
+        } catch (_) {}
+      }
+      state = PosState(
+        currentOrder: order,
+        successMessage: 'Đơn đã được lưu vào quản lý!',
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
+    }
+  }
+
+  Future<void> lookupLoyalty(String phone) async {
+    if (phone.isEmpty) return;
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final result = await _service.lookupLoyalty(phone);
+      if (result != null) {
+        final loyalty = LoyaltyResult.fromJson(result);
+        state = state.copyWith(
+          isLoading: false,
+          customerPhone: phone,
+          customerInfo: loyalty,
+          successMessage: 'Đã tìm thấy thành viên: ${loyalty.fullName ?? phone}',
+        );
+      } else {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'Không tìm thấy thông tin thành viên.',
+        );
+      }
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  Future<void> autoSearchCustomers(String phone) async {
+    if (phone.length < 3) {
+      state = state.copyWith(customerSuggestions: []);
+      return;
+    }
+    try {
+      final results = await _service.searchCustomers(phone);
+      final suggestions = results.map((e) => LoyaltyResult.fromJson(e)).toList();
+      state = state.copyWith(customerSuggestions: suggestions);
+    } catch (_) {
+      state = state.copyWith(customerSuggestions: []);
+    }
+  }
+
+  void selectCustomerSuggestion(LoyaltyResult suggestion) {
+    state = state.copyWith(
+      customerPhone: suggestion.phone,
+      customerInfo: suggestion,
+      customerSuggestions: [],
+    );
   }
 
   // ── Edit-mode operations (existing server-side order) ─────────
@@ -281,7 +388,35 @@ class PosNotifier extends StateNotifier<PosState> {
     state = state.copyWith(isLoading: true, error: null, successMessage: null);
     try {
       final order = await _service.getOrder(orderId);
-      state = PosState(currentOrder: order);
+      final List<LocalCartItem> cartItems = order.items.map((it) {
+        return LocalCartItem(
+          variantId: it.variantId,
+          variantName: it.variant?.name ?? '',
+          productName: it.variant?.product?.name ?? '',
+          price: it.unitPrice,
+          quantity: it.quantity,
+          stock: 100, // Stock info not available in OrderItem payload
+        );
+      }).toList();
+
+      LoyaltyResult? custInfo;
+      if (order.user != null) {
+        custInfo = LoyaltyResult(
+          registered: true,
+          userId: order.user!.id,
+          fullName: order.user!.fullName,
+          phone: order.user!.phone ?? '',
+          loyaltyPoints: order.user!.loyaltyPoints,
+          tier: order.user!.tier,
+        );
+      }
+
+      state = PosState(
+        currentOrder: order,
+        localCart: cartItems,
+        customerPhone: order.phone ?? order.user?.phone,
+        customerInfo: custInfo,
+      );
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
@@ -424,33 +559,9 @@ class PosNotifier extends StateNotifier<PosState> {
         throw Exception('Không tạo được phiếu trả hàng');
       }
 
-      final receiveItems = orderItems
-          .map(
-            (e) => {
-              'variantId': e.variantId,
-              'qtyReceived': e.quantity,
-              'condition': 'NEW_SEALED',
-              'sealIntact': true,
-            },
-          )
-          .toList();
-
-      await _service.receiveReturn(
-        returnId: returnId,
-        items: receiveItems,
-        receivedLocation: 'POS',
-        note: 'Nhận hàng trực tiếp tại quầy',
-      );
-
-      await _service.refundReturn(
-        returnId: returnId,
-        method: 'cash',
-        note: 'Hoàn tiền tại quầy (mobile staff)',
-      );
-
       state = state.copyWith(
         isReturnLoading: false,
-        returnSuccessMessage: 'Tạo trả hàng & hoàn tiền thành công',
+        returnSuccessMessage: 'Tạo yêu cầu hoàn trả POS thành công!',
       );
       return true;
     } catch (e) {

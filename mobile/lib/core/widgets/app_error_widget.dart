@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import '../theme/app_spacing.dart';
+import '../theme/app_text_style.dart';
 
 /// Standardized error state widget for the Lumina design system.
 ///
@@ -61,10 +62,7 @@ class AppErrorWidget extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: GoogleFonts.montserrat(
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-                height: 1.5,
+              style: AppTextStyle.bodyMd(
                 color: isDark ? AppTheme.mutedSilver : const Color(0xFF6B6B6B),
               ),
             ),
@@ -79,7 +77,7 @@ class AppErrorWidget extends StatelessWidget {
                   icon: const Icon(Icons.refresh_rounded, size: 16),
                   label: Text(
                     'Thử lại',
-                    style: GoogleFonts.montserrat(
+                    style: AppTextStyle.button().copyWith(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                       letterSpacing: 0.5,

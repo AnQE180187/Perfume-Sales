@@ -7,9 +7,11 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/theme/app_theme.dart';
+import 'core/theme/app_text_style.dart';
 import 'core/routing/app_router.dart';
 import 'core/providers/settings_provider.dart';
 import 'core/config/app_config.dart';
+import 'features/auth/providers/auth_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -57,14 +59,19 @@ class MyApp extends ConsumerWidget {
     final router = ref.watch(routerProvider);
     final themeMode = ref.watch(themeModeProvider);
     final locale = ref.watch(localeProvider);
+    // Determine whether logged-in profile is staff and enable staff text styles
+    final profile = ref.watch(userProfileRawProvider);
+    final role = (profile?['role'] as String?)?.toUpperCase() ?? '';
+    final isStaff = role == 'STAFF';
+    AppTextStyle.setStaffMode(isStaff);
 
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'Lumina',
 
-      // Theme
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
+      // Theme (switch to staff theme if authenticated user role is STAFF)
+      theme: isStaff ? AppTheme.staffLightTheme : AppTheme.lightTheme,
+      darkTheme: isStaff ? AppTheme.staffDarkTheme : AppTheme.darkTheme,
       themeMode: themeMode,
 
       // Localization

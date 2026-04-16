@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:perfume_gpt_app/l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 
 class SectionHeader extends StatelessWidget {
@@ -18,6 +19,7 @@ class SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
@@ -32,35 +34,39 @@ class SectionHeader extends StatelessWidget {
                     subtitle!.toUpperCase(),
                     style: GoogleFonts.montserrat(
                       fontSize: 10,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w700,
                       letterSpacing: 1.5,
-                      color: AppTheme.mutedSilver,
+                      color: AppTheme.accentGold,
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 4),
                 ],
                 Text(
-                  title.toUpperCase(),
-                  style: GoogleFonts.montserrat(
-                    fontSize: 11,
+                  title,
+                  style: GoogleFonts.playfairDisplay(
+                    fontSize: 22,
                     fontWeight: FontWeight.w600,
-                    letterSpacing: 1.2,
-                    color: AppTheme.mutedSilver,
+                    letterSpacing: -0.2,
+                    color: AppTheme.deepCharcoal,
                   ),
                 ),
               ],
             ),
           ),
+          const SizedBox(width: 24),
           if (showViewAll && onViewAll != null)
             GestureDetector(
               onTap: onViewAll,
-              child: Text(
-                'VIEW COLLECTION',
-                style: GoogleFonts.montserrat(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 1,
-                  color: AppTheme.accentGold,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(
+                  l10n.viewCollection,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1,
+                    color: AppTheme.accentGold,
+                  ),
                 ),
               ),
             ),

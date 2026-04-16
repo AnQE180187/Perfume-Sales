@@ -14,12 +14,16 @@ class ShimmerBox extends StatefulWidget {
   final double width;
   final double height;
   final double borderRadius;
+  final Color? baseColor;
+  final Color? highlightColor;
 
   const ShimmerBox({
     super.key,
     this.width = double.infinity,
     this.height = 16,
     this.borderRadius = 4,
+    this.baseColor,
+    this.highlightColor,
   });
 
   @override
@@ -48,8 +52,8 @@ class _ShimmerBoxState extends State<ShimmerBox>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final baseColor = isDark ? Colors.grey.shade800 : AppTheme.softTaupe;
-    final highlightColor = isDark ? Colors.grey.shade700 : AppTheme.creamWhite;
+    final bColor = widget.baseColor ?? (isDark ? Colors.grey.shade800 : AppTheme.softTaupe);
+    final hColor = widget.highlightColor ?? (isDark ? Colors.grey.shade700 : AppTheme.creamWhite);
 
     return AnimatedBuilder(
       animation: _controller,
@@ -63,7 +67,7 @@ class _ShimmerBoxState extends State<ShimmerBox>
             gradient: LinearGradient(
               begin: Alignment(-1.0 + 2.0 * t, 0),
               end: Alignment(1.0 + 2.0 * t, 0),
-              colors: [baseColor, highlightColor, baseColor],
+              colors: [bColor, hColor, bColor],
             ),
           ),
         );
@@ -174,8 +178,15 @@ class ShimmerListTile extends StatelessWidget {
 /// Full-width card skeleton — for alert cards, order cards, etc.
 class ShimmerCard extends StatelessWidget {
   final double height;
+  final Color? baseColor;
+  final Color? highlightColor;
 
-  const ShimmerCard({super.key, this.height = 100});
+  const ShimmerCard({
+    super.key,
+    this.height = 100,
+    this.baseColor,
+    this.highlightColor,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -184,7 +195,12 @@ class ShimmerCard extends StatelessWidget {
         horizontal: AppSpacing.md,
         vertical: AppSpacing.xs,
       ),
-      child: ShimmerBox(height: height, borderRadius: AppRadius.md),
+      child: ShimmerBox(
+        height: height,
+        borderRadius: AppRadius.md,
+        baseColor: baseColor,
+        highlightColor: highlightColor,
+      ),
     );
   }
 }

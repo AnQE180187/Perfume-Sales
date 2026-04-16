@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import '../theme/app_radius.dart';
+import '../theme/app_text_style.dart';
 
 enum AppButtonVariant { primary, secondary, outline, text, danger }
 
@@ -150,12 +151,12 @@ class AppButton extends StatelessWidget {
         Flexible(
           child: Text(
             text,
-            style: GoogleFonts.montserrat(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              height: 1.1,
-              color: textColor,
-            ),
+            style: AppTextStyle.button().copyWith(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  height: 1.1,
+                  color: textColor,
+                ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),

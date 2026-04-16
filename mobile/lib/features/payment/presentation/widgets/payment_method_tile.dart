@@ -32,12 +32,12 @@ class PaymentMethodTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: isSelected
               ? const Color(0xFFFDF6E9) // warm light gold
-              : Colors.white,
+              : AppTheme.creamWhite,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected
                 ? AppTheme.accentGold
-                : AppTheme.softTaupe,
+                : AppTheme.softTaupe.withValues(alpha: 0.3),
             width: isSelected ? 1.6 : 1.0,
           ),
           boxShadow: isSelected
@@ -151,7 +151,7 @@ class PaymentMethodTile extends StatelessWidget {
                             child: const Icon(
                               Icons.check_rounded,
                               size: 16,
-                              color: Colors.white,
+                              color: AppTheme.creamWhite,
                             ),
                           )
                         : Container(

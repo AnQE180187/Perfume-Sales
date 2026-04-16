@@ -15,6 +15,7 @@ class CheckoutState {
   final String? errorMessage;
   final String? createdOrderId;
   final String? payosCheckoutUrl;
+  final bool isPaymentSuccessful;
   final String? promoCode;
   final double promoDiscount;
   final String? promoDiscountType;
@@ -33,6 +34,7 @@ class CheckoutState {
     this.errorMessage,
     this.createdOrderId,
     this.payosCheckoutUrl,
+    this.isPaymentSuccessful = false,
     this.promoCode,
     this.promoDiscount = 0,
     this.promoDiscountType,
@@ -73,6 +75,7 @@ class CheckoutState {
     String? errorMessage,
     String? createdOrderId,
     String? payosCheckoutUrl,
+    bool? isPaymentSuccessful,
     String? promoCode,
     double? promoDiscount,
     String? promoDiscountType,
@@ -95,6 +98,7 @@ class CheckoutState {
       errorMessage: errorMessage,
       createdOrderId: createdOrderId ?? this.createdOrderId,
       payosCheckoutUrl: payosCheckoutUrl,
+      isPaymentSuccessful: isPaymentSuccessful ?? this.isPaymentSuccessful,
       promoCode: promoCode ?? this.promoCode,
       promoDiscount: promoDiscount ?? this.promoDiscount,
       promoDiscountType: promoDiscountType ?? this.promoDiscountType,

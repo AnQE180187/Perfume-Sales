@@ -113,8 +113,16 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
           ),
         ),
         dataBuilder: (state) {
-          final returnedOrders = [...state.active, ...state.completed]
-              .where((o) => o.returnRequests.isNotEmpty)
+          // Business rule:
+          // - Orders with an active return request show in "Returns"
+          // - If the return request is cancelled, the order behaves as normal
+          //   (i.e., still appears in "Completed" if completed)
+          final activeOrders =
+              state.active.where((o) => !o.hasActiveReturn).toList();
+          final completedOrders =
+              state.completed.where((o) => !o.hasActiveReturn).toList();
+          final returnedOrders = state.all
+              .where((o) => o.hasActiveReturn)
               .toList()
             ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
@@ -122,13 +130,13 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
             controller: _tabController,
             children: [
               ActiveOrdersSection(
-                orders: state.active,
+                orders: activeOrders,
                 onRefresh: _refresh,
                 onTapOrder: _openOrderDetail,
                 onTrackOrder: _openTracking,
               ),
               CompletedOrdersSection(
-                orders: state.completed,
+                orders: completedOrders,
                 onRefresh: _refresh,
                 onTapOrder: _openOrderDetail,
               ),

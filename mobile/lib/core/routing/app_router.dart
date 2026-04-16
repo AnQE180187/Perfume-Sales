@@ -24,12 +24,14 @@ import '../../features/profile/presentation/screens/profile_edit_screen.dart';
 import '../../features/profile/presentation/screens/ai_preferences_screen.dart';
 import '../../features/profile/presentation/screens/settings_screen.dart';
 import '../../features/search/presentation/search_screen.dart';
+import '../../features/stores/presentation/boutiques_screen.dart';
 import '../../features/wishlist/presentation/wishlist_screen.dart';
 import '../../features/product/presentation/explore_screen.dart';
 import '../../features/product/presentation/product_detail_screen.dart';
 import '../../features/product/presentation/reviews_screen.dart';
 import '../../features/product/presentation/product_story_screen.dart';
 import '../../features/loyalty/presentation/loyalty_screen.dart';
+import '../../features/scent_club/presentation/scent_club_screen.dart';
 import '../../features/home/presentation/screens/brand_story_screen.dart';
 import '../../features/quiz/presentation/quiz_screen.dart';
 import '../../features/staff/staff_shell.dart';
@@ -200,11 +202,22 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/search',
-        builder: (context, state) => const SearchScreen(),
+        builder: (context, state) {
+          final scent = state.uri.queryParameters['scent'];
+          return SearchScreen(initialScent: scent);
+        },
+      ),
+      GoRoute(
+        path: '/boutiques',
+        builder: (context, state) => const BoutiquesScreen(),
       ),
       GoRoute(
         path: '/wishlist',
         builder: (context, state) => const WishlistScreen(),
+      ),
+      GoRoute(
+        path: '/scent-club',
+        builder: (context, state) => const ScentClubScreen(),
       ),
       GoRoute(
         path: '/explore',
@@ -254,10 +267,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/brand-story',
         builder: (context, state) => const BrandStoryScreen(),
       ),
-      GoRoute(
-        path: '/quiz',
-        builder: (context, state) => const QuizScreen(),
-      ),
+      GoRoute(path: '/quiz', builder: (context, state) => const QuizScreen()),
       GoRoute(
         path: '/ai-preferences',
         builder: (context, state) => const AiPreferencesScreen(),

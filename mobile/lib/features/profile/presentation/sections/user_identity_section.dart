@@ -16,44 +16,55 @@ class UserIdentitySection extends StatelessWidget {
 
   const UserIdentitySection({super.key, required this.profile});
 
+  String _getInitials(String fullName) {
+    final trimmed = fullName.trim();
+    if (trimmed.isEmpty) return 'U';
+    final parts = trimmed.split(RegExp(r'\s+'));
+    if (parts.length == 1) return parts[0][0].toUpperCase();
+    return '${parts[0][0]}${parts[parts.length - 1][0]}'.toUpperCase();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final initials = _getInitials(profile.name);
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
       child: Column(
         children: [
-          // Avatar with premium gold stroke
+          // Avatar (aligned with Drawer style)
           Container(
             width: 110,
             height: 110,
-            padding: const EdgeInsets.all(3),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: AppTheme.accentGold.withValues(alpha: 0.3),
+                color: AppTheme.champagneGold.withValues(alpha: 0.6),
                 width: 1,
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.champagneGold.withValues(alpha: 0.12),
+                  blurRadius: 16,
+                  spreadRadius: 2,
+                ),
+              ],
             ),
-            child: Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.accentGold.withValues(alpha: 0.1),
-                    blurRadius: 20,
-                    spreadRadius: 2,
-                  ),
-                ],
-              ),
-              child: ClipOval(
-                child: profile.avatarUrl != null
-                    ? Image.network(
-                        profile.avatarUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _buildPlaceholder(),
-                      )
-                    : _buildPlaceholder(),
-              ),
+            child: CircleAvatar(
+              radius: 55,
+              backgroundColor: AppTheme.softTaupe.withValues(alpha: 0.5),
+              backgroundImage: profile.avatarUrl != null
+                  ? NetworkImage(profile.avatarUrl!)
+                  : null,
+              child: profile.avatarUrl == null
+                  ? Text(
+                      initials,
+                      style: GoogleFonts.playfairDisplay(
+                        fontSize: 36,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.accentGold,
+                      ),
+                    )
+                  : null,
             ),
           ),
           const SizedBox(height: 24),
@@ -106,17 +117,6 @@ class UserIdentitySection extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildPlaceholder() {
-    return Container(
-      color: AppTheme.accentGold.withValues(alpha: 0.06),
-      child: Icon(
-        Icons.person_outline,
-        size: 42,
-        color: AppTheme.accentGold.withValues(alpha: 0.5),
       ),
     );
   }

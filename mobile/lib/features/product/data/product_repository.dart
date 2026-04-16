@@ -20,6 +20,10 @@ class ProductRepository {
     int? categoryId,
     int? brandId,
     String? search,
+    String? notes,
+    String? occasion,
+    int? minPrice,
+    int? maxPrice,
   }) async {
     final rawList = await _apiService.getProducts(
       skip: skip,
@@ -27,6 +31,10 @@ class ProductRepository {
       categoryId: categoryId,
       brandId: brandId,
       search: search,
+      notes: notes,
+      occasion: occasion,
+      minPrice: minPrice,
+      maxPrice: maxPrice,
     );
     return rawList
         .map((json) => Product.fromJson(json as Map<String, dynamic>))

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../models/order.dart';
+import '../../services/review_status_store.dart';
 import '../widgets/empty_orders_widget.dart';
 import '../widgets/order_card.dart';
 import '../widgets/write_review_bottom_sheet.dart';
@@ -24,11 +25,29 @@ class CompletedOrdersSection extends StatefulWidget {
 
 class _CompletedOrdersSectionState extends State<CompletedOrdersSection> {
   final Set<String> _reviewedOrderIds = {};
+  final _store = ReviewStatusStore();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadReviewedState();
+  }
+
+  Future<void> _loadReviewedState() async {
+    final ids = await _store.getReviewedOrderIds();
+    if (!mounted) return;
+    setState(() {
+      _reviewedOrderIds
+        ..clear()
+        ..addAll(ids);
+    });
+  }
 
   Future<void> _openReview(Order order) async {
     final result = await WriteReviewBottomSheet.show(context, order);
     if (result == true && mounted) {
       setState(() => _reviewedOrderIds.add(order.id));
+      await _store.markReviewed(order.id);
     }
   }
 

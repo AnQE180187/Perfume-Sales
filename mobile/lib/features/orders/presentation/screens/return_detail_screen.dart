@@ -8,7 +8,6 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/currency_utils.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../models/order.dart';
-import '../../services/return_service.dart';
 import '../../providers/order_provider.dart';
 import '../widgets/return_status_badge.dart';
 
@@ -677,6 +676,7 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
     final amount = refund['amount'] ?? 0;
     final createdAt = refund['createdAt'] != null ? DateTime.parse(refund['createdAt']) : DateTime.now();
     final timeStr = DateFormat('HH:mm dd/MM/yyyy').format(createdAt);
+    final proofImages = _extractRefundProofImages(ret, refund);
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -692,9 +692,18 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
             children: [
               const Icon(Icons.check_circle, color: Color(0xFF2E7D32)),
               const SizedBox(width: 10),
-              Text(
-                l10n.refundConfirmed,
-                style: GoogleFonts.montserrat(color: const Color(0xFF1B5E20), fontWeight: FontWeight.w800, fontSize: 13),
+              Expanded(
+                child: Text(
+                  l10n.refundConfirmed,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.montserrat(
+                    color: const Color(0xFF1B5E20),
+                    fontWeight: FontWeight.w800,
+                    fontSize: 13,
+                    height: 1.2,
+                  ),
+                ),
               ),
               const Spacer(),
               Container(
@@ -714,8 +723,144 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
           _infoRow(l10n.refundedAmount, formatVND((amount as num).toDouble())),
           const SizedBox(height: 8),
           _infoRow(l10n.timeUpper, timeStr),
+          if (proofImages.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            _buildRefundProofImages(proofImages, l10n),
+          ],
         ],
       ),
+    );
+  }
+
+  List<String> _extractRefundProofImages(
+    Map<String, dynamic> ret,
+    Map<String, dynamic> refund,
+  ) {
+    final urls = <String>[];
+
+    void addFrom(dynamic raw) {
+      if (raw is List) {
+        for (final it in raw) {
+          if (it == null) continue;
+          if (it is String && it.trim().isNotEmpty) urls.add(it.trim());
+          if (it is Map && it['url'] != null) {
+            final u = it['url'].toString().trim();
+            if (u.isNotEmpty) urls.add(u);
+          }
+        }
+      }
+    }
+
+    addFrom(ret['refundProofImages']);
+    addFrom(ret['refundImages']);
+    addFrom(refund['images']);
+    addFrom(refund['evidenceImages']);
+    addFrom(refund['proofImages']);
+
+    // de-duplicate while preserving order
+    final seen = <String>{};
+    final deduped = <String>[];
+    for (final u in urls) {
+      if (seen.add(u)) deduped.add(u);
+    }
+    return deduped;
+  }
+
+  Widget _buildRefundProofImages(List<String> urls, AppLocalizations l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n.evidenceImages.toUpperCase(),
+          style: GoogleFonts.montserrat(
+            fontSize: 10,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1.0,
+            color: const Color(0xFF1B5E20).withValues(alpha: 0.7),
+          ),
+        ),
+        const SizedBox(height: 10),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: urls
+                .map(
+                  (u) => GestureDetector(
+                    onTap: () => _openImagePreview(context, u),
+                    child: Container(
+                      margin: const EdgeInsets.only(right: 10),
+                      width: 86,
+                      height: 86,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: const Color(0xFF2E7D32).withValues(alpha: 0.25),
+                        ),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(14),
+                        child: Image.network(
+                          u,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                            color: Colors.white.withValues(alpha: 0.35),
+                            child: Icon(
+                              Icons.broken_image_outlined,
+                              size: 26,
+                              color: const Color(0xFF1B5E20)
+                                  .withValues(alpha: 0.55),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+                .toList(growable: false),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _openImagePreview(BuildContext context, String url) {
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.black.withValues(alpha: 0.9),
+          insetPadding: const EdgeInsets.all(18),
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: InteractiveViewer(
+                  minScale: 0.8,
+                  maxScale: 4,
+                  child: Image.network(
+                    url,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => Center(
+                      child: Icon(
+                        Icons.broken_image_outlined,
+                        color: Colors.white.withValues(alpha: 0.75),
+                        size: 40,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 8,
+                right: 8,
+                child: IconButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: const Icon(Icons.close_rounded, color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

@@ -49,4 +49,9 @@ export class OrdersController {
   ) {
     return this.ordersService.updateStatus(id, dto.status, dto.paymentStatus);
   }
+
+  @Post(':id/cancel')
+  async cancel(@Req() req: any, @Param('id') id: string) {
+    return this.ordersService.cancelMyOrder(req.user.userId, id);
+  }
 }

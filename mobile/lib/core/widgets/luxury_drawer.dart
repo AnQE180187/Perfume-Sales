@@ -34,39 +34,29 @@ class LuxuryDrawer extends ConsumerWidget {
       _MenuItem(
         icon: Icons.workspace_premium_outlined,
         label: l10n.scentClub,
-        route: '/loyalty',
-      ),
-      _MenuItem(
-        icon: Icons.local_florist_outlined,
-        label: l10n.fragranceLibrary,
-        route: '/explore',
+        route: AppRoutes.scentClub,
       ),
       _MenuItem(
         icon: Icons.location_on_outlined,
         label: l10n.boutiques,
         route: '/boutiques',
       ),
-      _MenuItem(
-        icon: Icons.auto_awesome_outlined,
-        label: l10n.scentQuiz,
-        route: '/quiz',
-      ),
-      _MenuItem(icon: Icons.diamond_outlined, label: l10n.exclusiveCollection),
+      // removed scent quiz menu item per UX request
     ];
   }
 
   List<_MenuItem> _getSecondaryItems(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return [
-      _MenuItem(icon: Icons.auto_stories_outlined, label: l10n.journal),
-      _MenuItem(icon: Icons.science_outlined, label: l10n.ingredientsDictionary),
-      _MenuItem(icon: Icons.card_giftcard_outlined, label: l10n.giftService),
       _MenuItem(
         icon: Icons.history_edu_outlined,
         label: l10n.brandStory,
         route: AppRoutes.brandStory,
       ),
-      _MenuItem(icon: Icons.support_agent_outlined, label: l10n.supportConcierge),
+      _MenuItem(
+        icon: Icons.support_agent_outlined,
+        label: l10n.supportConcierge,
+      ),
     ];
   }
 
@@ -483,7 +473,7 @@ class _DrawerMenuTileState extends State<_DrawerMenuTile>
         )!;
         final textColor = Color.lerp(
           AppTheme.deepCharcoal,
-          AppTheme.deepCharcoal.withValues(alpha: 0.75),
+          AppTheme.deepCharcoal.withValues(alpha: 0.9),
           _iconTint.value,
         )!;
 

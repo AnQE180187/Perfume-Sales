@@ -88,7 +88,7 @@ class WishlistScreen extends ConsumerWidget {
                 fontSize: 20,
                 fontWeight: FontWeight.w400,
                 height: 1.4,
-                color: AppTheme.deepCharcoal.withValues(alpha: 0.7),
+                color: AppTheme.deepCharcoal,
               ),
             ),
             const SizedBox(height: 40),

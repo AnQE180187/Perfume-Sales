@@ -7,10 +7,12 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/routing/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_utils.dart';
+import '../../../core/utils/date_utils.dart';
 import '../../../core/widgets/luxury_button.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../address/providers/address_providers.dart';
 import '../../orders/providers/order_provider.dart';
+import '../models/checkout_state.dart';
 import '../providers/checkout_provider.dart';
 import 'sections/checkout_address_section.dart';
 import 'sections/checkout_items_section.dart';
@@ -24,127 +26,138 @@ class CheckoutScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     ref.watch(addressListProvider);
+
+    // Listen for payment success to navigate automatically
+    ref.listen<CheckoutState>(checkoutProvider, (previous, next) {
+      if (next.isPaymentSuccessful && !(previous?.isPaymentSuccessful ?? false)) {
+        ref.invalidate(orderProvider);
+        context.go(AppRoutes.orderSuccess);
+      }
+    });
+
     final checkoutState = ref.watch(checkoutProvider);
     final itemCount = checkoutState.orderItems.fold<int>(
       0,
       (sum, item) => sum + item.quantity,
     );
 
-    return Scaffold(
-      backgroundColor: AppTheme.ivoryBackground,
-      appBar: AppBar(
+    return _CheckoutLifecycleWrapper(
+      child: Scaffold(
         backgroundColor: AppTheme.ivoryBackground,
-        elevation: 0,
-        centerTitle: true,
-        title: Text(
-          l10n.payment.toUpperCase(),
-          style: GoogleFonts.montserrat(
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 2.4,
-            color: AppTheme.deepCharcoal,
+        appBar: AppBar(
+          backgroundColor: AppTheme.ivoryBackground,
+          elevation: 0,
+          centerTitle: true,
+          title: Text(
+            l10n.payment.toUpperCase(),
+            style: GoogleFonts.montserrat(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 2.4,
+              color: AppTheme.deepCharcoal,
+            ),
+          ),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: AppTheme.deepCharcoal),
+            onPressed: () => context.pop(),
           ),
         ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.deepCharcoal),
-          onPressed: () => context.pop(),
-        ),
-      ),
-      body: checkoutState.orderItems.isEmpty
-          ? checkoutState.isCartLoading
-                ? const Center(
-                    child: CircularProgressIndicator(
-                      color: AppTheme.accentGold,
-                    ),
-                  )
-                : _EmptyCheckoutState(
-                    onReturnToCart: () => context.go(AppRoutes.cart),
-                    message:
-                        checkoutState.cartError ??
-                        l10n.emptyCheckoutMessage,
-                  )
-          : ListView(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 140),
-              children: [
-                _CompactOrderHeader(
-                  itemCount: itemCount,
-                  totalAmount: checkoutState.totalAmount,
-                ),
-                const SizedBox(height: 24),
-                _SectionLabel(label: l10n.shippingAddressUpper),
-                const SizedBox(height: 12),
-                CheckoutAddressSection(
-                  address: checkoutState.selectedAddress,
-                  onTap: () => _showAddressSheet(context, ref),
-                  highlight: checkoutState.selectedAddress == null,
-                ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 24),
-                  child: Divider(color: Color(0xFFE5D5C0), thickness: 0.5),
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _SectionLabel(label: l10n.paymentMethodUpper),
-                    ),
-                    TextButton(
-                      onPressed: () =>
-                          context.push(AppRoutes.profilePaymentMethods),
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        body: checkoutState.orderItems.isEmpty
+            ? checkoutState.isCartLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        color: AppTheme.accentGold,
                       ),
-                      child: Text(
-                        l10n.change,
-                        style: GoogleFonts.montserrat(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.5,
-                          color: AppTheme.accentGold,
+                    )
+                  : _EmptyCheckoutState(
+                      onReturnToCart: () => context.go(AppRoutes.cart),
+                      message:
+                          checkoutState.cartError ??
+                          l10n.emptyCheckoutMessage,
+                    )
+            : ListView(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 140),
+                children: [
+                  _CompactOrderHeader(
+                    itemCount: itemCount,
+                    totalAmount: checkoutState.totalAmount,
+                  ),
+                  const SizedBox(height: 24),
+                  _SectionLabel(label: l10n.shippingAddressUpper),
+                  const SizedBox(height: 12),
+                  CheckoutAddressSection(
+                    address: checkoutState.selectedAddress,
+                    onTap: () => _showAddressSheet(context, ref),
+                    highlight: checkoutState.selectedAddress == null,
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 24),
+                    child: Divider(color: Color(0xFFE5D5C0), thickness: 0.5),
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _SectionLabel(label: l10n.paymentMethodUpper),
+                      ),
+                      TextButton(
+                        onPressed: () =>
+                            context.push(AppRoutes.profilePaymentMethods),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: Text(
+                          l10n.change,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.5,
+                            color: AppTheme.accentGold,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                CheckoutPaymentSection(
-                  method: checkoutState.selectedPaymentMethod,
-                  onEdit: () => context.push(AppRoutes.profilePaymentMethods),
-                ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 24),
-                  child: Divider(color: Color(0xFFE5D5C0), thickness: 0.5),
-                ),
-                _SectionLabel(label: l10n.itemsUpper),
-                const SizedBox(height: 12),
-                CheckoutItemsSection(items: checkoutState.orderItems),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 24),
-                  child: Divider(color: Color(0xFFE5D5C0), thickness: 0.5),
-                ),
-                _SectionLabel(label: l10n.payment),
-                const SizedBox(height: 12),
-                CheckoutPriceSection(
-                  subtotal: checkoutState.subtotal,
-                  shippingCost: checkoutState.shippingCost,
-                  tax: checkoutState.tax,
-                  discount: checkoutState.discountAmount,
-                  totalAmount: checkoutState.totalAmount,
-                ),
-                const SizedBox(height: 40),
-                const _TrustSignalsRow(),
-              ],
-            ),
-      bottomNavigationBar: checkoutState.orderItems.isEmpty
-          ? null
-          : _CheckoutBottomBar(
-              totalAmount: checkoutState.totalAmount,
-              isSubmitting: checkoutState.isSubmitting,
-              canConfirm: checkoutState.canConfirm,
-              pendingPayment: checkoutState.pendingOnlinePayment,
-              onConfirm: () => _handleConfirmOrder(context, ref),
-            ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  CheckoutPaymentSection(
+                    method: checkoutState.selectedPaymentMethod,
+                    onEdit: () => context.push(AppRoutes.profilePaymentMethods),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 24),
+                    child: Divider(color: Color(0xFFE5D5C0), thickness: 0.5),
+                  ),
+                  _SectionLabel(label: l10n.itemsUpper),
+                  const SizedBox(height: 12),
+                  CheckoutItemsSection(items: checkoutState.orderItems),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 24),
+                    child: Divider(color: Color(0xFFE5D5C0), thickness: 0.5),
+                  ),
+                  _SectionLabel(label: l10n.payment),
+                  const SizedBox(height: 12),
+                  CheckoutPriceSection(
+                    subtotal: checkoutState.subtotal,
+                    shippingCost: checkoutState.shippingCost,
+                    tax: checkoutState.tax,
+                    discount: checkoutState.discountAmount,
+                    totalAmount: checkoutState.totalAmount,
+                  ),
+                  const SizedBox(height: 40),
+                  const _TrustSignalsRow(),
+                ],
+              ),
+        bottomNavigationBar: checkoutState.orderItems.isEmpty
+            ? null
+            : _CheckoutBottomBar(
+                totalAmount: checkoutState.totalAmount,
+                isSubmitting: checkoutState.isSubmitting,
+                canConfirm: checkoutState.canConfirm,
+                pendingPayment: checkoutState.pendingOnlinePayment,
+                onConfirm: () => _handleConfirmOrder(context, ref),
+              ),
+      ),
     );
   }
 
@@ -173,6 +186,7 @@ class CheckoutScreen extends ConsumerWidget {
       if (!context.mounted) return;
 
       if (isPaid) {
+        // Handled by ref.listen but adding here for safety/immediacy
         ref.invalidate(orderProvider);
         context.go(AppRoutes.orderSuccess);
         return;
@@ -260,6 +274,41 @@ class CheckoutScreen extends ConsumerWidget {
   }
 }
 
+class _CheckoutLifecycleWrapper extends ConsumerStatefulWidget {
+  final Widget child;
+  const _CheckoutLifecycleWrapper({required this.child});
+
+  @override
+  ConsumerState<_CheckoutLifecycleWrapper> createState() => _CheckoutLifecycleWrapperState();
+}
+
+class _CheckoutLifecycleWrapperState extends ConsumerState<_CheckoutLifecycleWrapper> {
+  late final AppLifecycleListener _listener;
+
+  @override
+  void initState() {
+    super.initState();
+    _listener = AppLifecycleListener(
+      onResume: () {
+        // App is back from background (potentially from external payment browser)
+        final checkoutState = ref.read(checkoutProvider);
+        if (checkoutState.pendingOnlinePayment && !checkoutState.isPaymentSuccessful) {
+          ref.read(checkoutProvider.notifier).isOnlinePaymentPaid();
+        }
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _listener.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}
+
 class _CompactOrderHeader extends StatelessWidget {
   final int itemCount;
   final double totalAmount;
@@ -321,7 +370,7 @@ class _CompactOrderHeader extends StatelessWidget {
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                        '${l10n.estDelivery}: 20 - 22 ${l10n.april}',
+                        '${l10n.estDelivery}: ${AppDateUtils.getEstimatedDeliveryRange(2, 4, l10n.localeName)}',
                         style: GoogleFonts.montserrat(
                           fontSize: 11,
                           fontWeight: FontWeight.w500,
