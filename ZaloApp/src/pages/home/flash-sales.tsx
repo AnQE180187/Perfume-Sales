@@ -7,7 +7,7 @@ export default function FlashSales() {
   const products = useAtomValue(flashSaleProductsState);
 
   return (
-    <Section title="Flash Sales" viewMoreTo="/flash-sales">
+    <Section title="Bộ sưu tập nước hoa" viewMoreTo="/flash-sales">
       <ProductGrid products={products} />
     </Section>
   );

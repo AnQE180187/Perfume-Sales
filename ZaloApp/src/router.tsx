@@ -9,11 +9,19 @@ import SearchPage from "@/pages/search";
 import AiChatPage from "@/pages/ai-chat";
 import AiQuizPage from "@/pages/ai-quiz";
 import OrdersPage from "@/pages/profile/orders";
+import EditProfilePage from "@/pages/profile/edit";
+import AddressesPage from "@/pages/profile/addresses";
+import VouchersPage from "@/pages/profile/vouchers";
+import LoginPage from "@/pages/login";
 import { createBrowserRouter } from "react-router-dom";
 import { getBasePath } from "@/utils/zma";
 
 const router = createBrowserRouter(
   [
+    {
+      path: "/login",
+      element: <LoginPage />
+    },
     {
       path: "/",
       element: <Layout />,
@@ -51,7 +59,7 @@ const router = createBrowserRouter(
           path: "/flash-sales",
           element: <ProductListPage />,
           handle: {
-            title: "Flash Sales",
+            title: "Bộ sưu tập nước hoa",
           },
         },
         {
@@ -96,6 +104,21 @@ const router = createBrowserRouter(
           handle: {
             title: "Đơn hàng của tôi",
           },
+        },
+        {
+          path: "/profile/edit",
+          element: <EditProfilePage />,
+          handle: { title: "Chỉnh sửa hồ sơ" }
+        },
+        {
+          path: "/profile/addresses",
+          element: <AddressesPage />,
+          handle: { title: "Địa chỉ nhận hàng" }
+        },
+        {
+          path: "/profile/vouchers",
+          element: <VouchersPage />,
+          handle: { title: "Kho Voucher" }
         },
       ],
     },

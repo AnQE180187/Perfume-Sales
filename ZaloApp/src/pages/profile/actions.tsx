@@ -17,12 +17,17 @@ export default function ProfileActions() {
         {
           label: "Thông tin tài khoản",
           icon: ProfileIcon,
-          onClick: toBeImplemented,
+          onClick: () => navigate("/profile/edit"),
         },
         {
           label: "Đổi voucher",
           icon: VoucherIcon,
-          onClick: toBeImplemented,
+          onClick: () => navigate("/profile/vouchers"),
+        },
+        {
+          label: "Địa chỉ nhận hàng",
+          icon: PackageIcon,
+          onClick: () => navigate("/profile/addresses"),
         },
         {
           label: "Theo dõi đơn hàng",

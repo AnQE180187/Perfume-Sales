@@ -17,18 +17,27 @@ export const userState = atom(() =>
 // Backend system's User Info (from Prisma)
 export const systemUserState = atom<any | null>(null);
 
-// Atom to trigger initialization (login & fetch base data)
+// Atom to trigger initialization (silent re-login & fetch base data)
 export const appInitState = atom(
   (get) => get(systemUserState),
   async (get, set) => {
     try {
-      console.log("Initializing App & Zalo Login...");
-      const sysUser = await authService.login();
-      if (sysUser) {
-        set(systemUserState, sysUser);
+      const hasLoggedIn = localStorage.getItem("hasLoggedIn");
+      if (hasLoggedIn === "true") {
+        console.log("Initializing App: Attempting silent re-login...");
+        // Use refresh token to silently restore session without Zalo dialog
+        const sysUser = await authService.silentReLogin();
+        if (sysUser) {
+          set(systemUserState, sysUser);
+          console.log("Silent re-login successful.");
+        } else {
+          // Refresh token expired — clear flag so user is redirected to login
+          localStorage.removeItem("hasLoggedIn");
+        }
       }
     } catch (error) {
       console.error("Initialization Failed:", error);
+      localStorage.removeItem("hasLoggedIn");
     }
   }
 );
@@ -51,17 +60,19 @@ export const selectedTabIndexState = atom(0);
 export const productsState = atom(async (get) => {
   try {
     const categories: any[] = await get(categoriesState);
-    const res = await axiosClient.get("/products");
-    const response = res.data || res;
-    const items = response.products || response; // Handle both list Public schema and mock array
+    // axiosClient interceptor already returns response.data directly
+    const response: any = await axiosClient.get("/products");
+    // Backend returns { items, total, skip, take }
+    const items = response?.items || response?.products || (Array.isArray(response) ? response : []);
+
     return items.map((p: any) => ({
       ...p,
       image: p.images?.[0]?.url || p.image || "https://file.hstatic.net/1000388226/file/nuoc-hoa-thu-hut-phai-dep.jpg",
       price: p.variants?.[0]?.price || p.price || 0,
-      sizes: p.variants ? p.variants.map((v: any) => v.label || `${v.volume}ml`) : p.sizes,
+      sizes: p.variants ? p.variants.map((v: any) => v.label || `${v.volume}ml`) : (p.sizes || []),
       description: p.description,
       variants: p.variants,
-      category: categories.find((c: any) => c.id === p.categoryId) || { name: 'Chưa có phân loại' } // Safe fallback
+      category: categories.find((c: any) => c.id === p.categoryId) || p.category || { name: 'Chưa có phân loại' },
     }));
   } catch (err) {
     return [];
@@ -70,8 +81,9 @@ export const productsState = atom(async (get) => {
 
 export const categoriesState = atom(async () => {
   try {
-    const res = await axiosClient.get("/catalog/categories");
-    return res.data || res || [];
+    const res: any = await axiosClient.get("/catalog/categories");
+    // axiosClient interceptor returns response.data directly
+    return Array.isArray(res) ? res : (res?.data || res || []);
   } catch {
     return [];
   }
@@ -113,12 +125,95 @@ export const colorsState = atom<Color[]>([
 
 export const selectedColorState = atom<Color | undefined>(undefined);
 
-export const productState = atomFamily((id: number) =>
+export const productState = atomFamily((id: string) =>
   atom(async (get) => {
-    const products = await get(productsState);
-    return products.find((product) => product.id === id);
+    if (!id) return undefined;
+    try {
+      // Fetch directly from API by UUID — instant, no need to wait for full products list
+      const res = await axiosClient.get(`/products/${id}`);
+      const raw = res as any;
+      // Map from backend shape to the UI shape used in this app
+      const categories: any[] = await get(categoriesState);
+      return {
+        ...raw,
+        image: raw.images?.[0]?.url || raw.image || "https://file.hstatic.net/1000388226/file/nuoc-hoa-thu-hut-phai-dep.jpg",
+        price: raw.variants?.[0]?.price || raw.price || 0,
+        sizes: raw.variants ? raw.variants.map((v: any) => v.label || `${v.volume}ml`) : (raw.sizes || []),
+        description: raw.description,
+        variants: raw.variants,
+        category: categories.find((c: any) => c.id === raw.categoryId) || raw.category || { name: "Nước hoa" },
+      };
+    } catch {
+      // Fallback: search in list cache if direct fetch fails
+      const products = await get(productsState);
+      return products.find((product) => String(product.id) === String(id));
+    }
   })
 );
+
+// ===== FILTER ATOMS =====
+export const selectedGenderState = atom<string | undefined>(undefined);
+export const gendersState = atom([
+  { id: 'MALE', label: 'Nam' },
+  { id: 'FEMALE', label: 'Nữ' },
+  { id: 'UNISEX', label: 'Unisex' }
+]);
+
+export const selectedBrandState = atom<string | undefined>(undefined);
+export const brandsState = atom(async (get) => {
+  const products = await get(productsState);
+  const brandNames = Array.from(new Set(products.map((p) => p.brand?.name).filter(Boolean)));
+  return brandNames as string[];
+});
+
+export type PriceRange = "P1" | "P2" | "P3" | "P4";
+export const selectedPriceRangeState = atom<PriceRange | undefined>(undefined);
+export const priceRangesState = atom([
+  { id: "P1", label: "< 1.500.000" },
+  { id: "P2", label: "1.5tr - 3tr" },
+  { id: "P3", label: "3tr - 5tr" },
+  { id: "P4", label: "> 5.000.000" }
+]);
+
+export const filteredProductsState = atom(async (get) => {
+  const products = await get(productsState);
+  const gender = get(selectedGenderState);
+  const brand = get(selectedBrandState);
+  const priceRange = get(selectedPriceRangeState);
+  const size = get(selectedSizeState);
+  const color = get(selectedColorState);
+
+  return products.filter((p) => {
+    // Brand filter
+    if (brand && p.brand?.name !== brand && p.brand?.id !== Number(brand)) return false;
+
+    // Gender filter
+    if (gender) {
+      const g = (p.gender || '').toUpperCase();
+      if (gender === 'MALE' && g !== 'MALE' && g !== 'MEN' && g !== 'NAM') return false;
+      if (gender === 'FEMALE' && g !== 'FEMALE' && g !== 'WOMEN' && g !== 'NU' && g !== 'NỮ') return false;
+      if (gender === 'UNISEX' && g !== 'UNISEX' && g !== 'ALL' && g !== '') return false;
+    }
+
+    // Price filter (based on minimum variant price or base price)
+    if (priceRange) {
+      const price = p.price; 
+      if (priceRange === 'P1' && price >= 1500000) return false;
+      if (priceRange === 'P2' && (price < 1500000 || price > 3000000)) return false;
+      if (priceRange === 'P3' && (price <= 3000000 || price > 5000000)) return false;
+      if (priceRange === 'P4' && price <= 5000000) return false;
+    }
+
+    // Size filter
+    if (size && (!p.sizes || !p.sizes.includes(size))) return false;
+
+    // Color filter
+    if (color && (!p.colors || !p.colors.some((c: any) => c.name === color.name))) return false;
+
+    return true;
+  });
+});
+// ========================
 
 export const cartState = atom<Cart>([]);
 

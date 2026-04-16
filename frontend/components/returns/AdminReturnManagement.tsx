@@ -854,8 +854,8 @@ export const AdminReturnManagement = ({
                                 ) : (
                                   // eslint-disable-next-line @next/next/no-img-element
                                   <img
-                                    src={url}
-                                    alt={`Evidence ${iIndex}`}
+                                    src={item.variant.product.images[0].url}
+                                    alt={item.variant?.product?.name || "Product image"}
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                   />
                                 )}
@@ -1088,7 +1088,6 @@ export const AdminReturnManagement = ({
                       </span>
                     </div>
                   </div>
-                </div>
               ))}
             </div>
 
