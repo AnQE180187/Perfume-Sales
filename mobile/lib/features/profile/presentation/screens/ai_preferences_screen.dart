@@ -51,34 +51,44 @@ class _AiPreferencesScreenState extends ConsumerState<AiPreferencesScreen>
               color: AppTheme.deepCharcoal, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(
-          l10n.aiScentDna.toUpperCase(),
-          style: GoogleFonts.playfairDisplay(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 2,
-            color: AppTheme.deepCharcoal,
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            l10n.aiScentDna.toUpperCase(),
+            style: GoogleFonts.playfairDisplay(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.2,
+              color: AppTheme.deepCharcoal,
+            ),
           ),
         ),
         centerTitle: true,
         actions: [
           TextButton(
             onPressed: _handleReset,
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
             child: Text(
               l10n.reset.toUpperCase(),
               style: GoogleFonts.montserrat(
-                fontSize: 12,
+                fontSize: 11,
                 fontWeight: FontWeight.w700,
                 color: AppTheme.accentGold,
               ),
             ),
           ),
           IconButton(
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
             icon: const Icon(Icons.info_outline_rounded,
-                color: AppTheme.mutedSilver, size: 22),
+                color: AppTheme.mutedSilver, size: 20),
             onPressed: _showInfoSheet,
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 12),
         ],
       ),
       body: prefsAsync.when(

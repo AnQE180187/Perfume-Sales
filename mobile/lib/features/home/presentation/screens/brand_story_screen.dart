@@ -16,7 +16,11 @@ class BrandStoryScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: AppTheme.creamWhite,
+            size: 20,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -57,7 +61,11 @@ class BrandStoryScreen extends StatelessWidget {
               errorBuilder: (context, error, stackTrace) => Container(
                 color: AppTheme.deepCharcoal.withValues(alpha: 0.9),
                 child: const Center(
-                  child: Icon(Icons.auto_awesome_rounded, color: AppTheme.accentGold, size: 60),
+                  child: Icon(
+                    Icons.auto_awesome_rounded,
+                    color: AppTheme.accentGold,
+                    size: 60,
+                  ),
                 ),
               ),
             ),
@@ -68,9 +76,9 @@ class BrandStoryScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Colors.black.withValues(alpha: 0.7),
-                    Colors.black.withValues(alpha: 0.2),
-                    Colors.black.withValues(alpha: 0.7),
+                    AppTheme.deepCharcoal.withValues(alpha: 0.7),
+                    AppTheme.deepCharcoal.withValues(alpha: 0.2),
+                    AppTheme.deepCharcoal.withValues(alpha: 0.7),
                   ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
@@ -86,9 +94,14 @@ class BrandStoryScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                      border: Border.all(
+                        color: AppTheme.creamWhite.withValues(alpha: 0.3),
+                      ),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
@@ -96,7 +109,7 @@ class BrandStoryScreen extends StatelessWidget {
                       style: GoogleFonts.montserrat(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                        color: AppTheme.creamWhite,
                         letterSpacing: 4,
                       ),
                     ),
@@ -107,7 +120,7 @@ class BrandStoryScreen extends StatelessWidget {
                     style: GoogleFonts.playfairDisplay(
                       fontSize: 32,
                       fontWeight: FontWeight.w400,
-                      color: Colors.white,
+                      color: AppTheme.creamWhite,
                       height: 1.2,
                     ),
                     textAlign: TextAlign.center,
@@ -118,7 +131,7 @@ class BrandStoryScreen extends StatelessWidget {
                       fontSize: 48,
                       fontWeight: FontWeight.w700,
                       fontStyle: FontStyle.italic,
-                      color: Colors.white,
+                      color: AppTheme.creamWhite,
                       height: 1.2,
                     ),
                     textAlign: TextAlign.center,
@@ -129,7 +142,10 @@ class BrandStoryScreen extends StatelessWidget {
                     height: 80,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Colors.white, Colors.white.withValues(alpha: 0)],
+                        colors: [
+                          AppTheme.creamWhite,
+                          AppTheme.creamWhite.withValues(alpha: 0),
+                        ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                       ),
@@ -176,7 +192,7 @@ class BrandStoryScreen extends StatelessWidget {
             style: GoogleFonts.montserrat(
               fontSize: 15,
               fontWeight: FontWeight.w300,
-              color: AppTheme.deepCharcoal.withValues(alpha: 0.7),
+              color: AppTheme.deepCharcoal,
               height: 1.8,
             ),
           ),
@@ -193,7 +209,11 @@ class BrandStoryScreen extends StatelessWidget {
                 width: double.infinity,
                 color: AppTheme.softTaupe.withValues(alpha: 0.2),
                 child: const Center(
-                  child: Icon(Icons.science_outlined, color: AppTheme.accentGold, size: 40),
+                  child: Icon(
+                    Icons.science_outlined,
+                    color: AppTheme.accentGold,
+                    size: 40,
+                  ),
                 ),
               ),
             ),
@@ -205,7 +225,7 @@ class BrandStoryScreen extends StatelessWidget {
 
   Widget _buildMethodSection() {
     return Container(
-      color: Colors.white,
+      color: AppTheme.creamWhite,
       padding: const EdgeInsets.symmetric(vertical: 80, horizontal: 24),
       child: Column(
         children: [
@@ -221,19 +241,22 @@ class BrandStoryScreen extends StatelessWidget {
           _MethodStep(
             icon: Icons.wind_power_outlined,
             title: 'Sourcing',
-            description: 'We travel the globe to source the highest quality raw materials from sustainable estates.',
+            description:
+                'We travel the globe to source the highest quality raw materials from sustainable estates.',
           ),
           const SizedBox(height: 48),
           _MethodStep(
             icon: Icons.auto_awesome_outlined,
             title: 'Analysis',
-            description: 'Our AI engine analyzes millions of sensory data points to understand human olfactory resonance.',
+            description:
+                'Our AI engine analyzes millions of sensory data points to understand human olfactory resonance.',
           ),
           const SizedBox(height: 48),
           _MethodStep(
             icon: Icons.favorite_outline_rounded,
             title: 'Crafting',
-            description: 'Each bottle is finished by hand in our atelier, ensuring the human touch remains at our core.',
+            description:
+                'Each bottle is finished by hand in our atelier, ensuring the human touch remains at our core.',
           ),
         ],
       ),
@@ -253,7 +276,11 @@ class BrandStoryScreen extends StatelessWidget {
               errorBuilder: (context, error, stackTrace) => Container(
                 color: AppTheme.deepCharcoal,
                 child: const Center(
-                  child: Icon(Icons.star_border_rounded, color: AppTheme.accentGold, size: 60),
+                  child: Icon(
+                    Icons.star_border_rounded,
+                    color: AppTheme.accentGold,
+                    size: 60,
+                  ),
                 ),
               ),
             ),
@@ -274,7 +301,7 @@ class BrandStoryScreen extends StatelessWidget {
                     style: GoogleFonts.playfairDisplay(
                       fontSize: 36,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: AppTheme.creamWhite,
                       height: 1.2,
                     ),
                     textAlign: TextAlign.center,
@@ -285,7 +312,10 @@ class BrandStoryScreen extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.accentGold,
                       foregroundColor: AppTheme.deepCharcoal,
-                      padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 20),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 48,
+                        vertical: 20,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(40),
                       ),
@@ -332,7 +362,9 @@ class _MethodStep extends StatelessWidget {
           decoration: BoxDecoration(
             color: AppTheme.ivoryBackground,
             borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.1)),
+            border: Border.all(
+              color: AppTheme.accentGold.withValues(alpha: 0.1),
+            ),
           ),
           child: Icon(icon, color: AppTheme.accentGold, size: 32),
         ),
@@ -353,7 +385,7 @@ class _MethodStep extends StatelessWidget {
             style: GoogleFonts.montserrat(
               fontSize: 14,
               fontWeight: FontWeight.w400,
-              color: AppTheme.deepCharcoal.withValues(alpha: 0.5),
+              color: AppTheme.mutedSilver,
               height: 1.6,
             ),
             textAlign: TextAlign.center,

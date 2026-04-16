@@ -89,7 +89,7 @@ class _FeaturedCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
+              color: AppTheme.deepCharcoal.withValues(alpha: 0.06),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -108,15 +108,18 @@ class _FeaturedCard extends StatelessWidget {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    Image.network(
-                      product.imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: const Color(0xFFF5F1ED),
-                        child: const Icon(
-                          Icons.image_outlined,
-                          size: 40,
-                          color: AppTheme.mutedSilver,
+                    Hero(
+                      tag: 'product-${product.id}',
+                      child: Image.network(
+                        product.imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          color: const Color(0xFFF5F1ED),
+                          child: const Icon(
+                            Icons.image_outlined,
+                            size: 40,
+                            color: AppTheme.mutedSilver,
+                          ),
                         ),
                       ),
                     ),
@@ -132,7 +135,7 @@ class _FeaturedCard extends StatelessWidget {
                             begin: Alignment.topRight,
                             end: Alignment.bottomLeft,
                             colors: [
-                              Colors.black.withValues(alpha: 0.15),
+                              AppTheme.deepCharcoal.withValues(alpha: 0.15),
                               Colors.transparent,
                             ],
                           ),
@@ -183,7 +186,7 @@ class _FeaturedCard extends StatelessWidget {
                       fontSize: 13,
                       fontWeight: FontWeight.w400,
                       height: 1.25,
-                      color: AppTheme.deepCharcoal.withValues(alpha: 0.8),
+                      color: AppTheme.deepCharcoal,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -261,7 +264,7 @@ class _GridCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
+              color: AppTheme.deepCharcoal.withValues(alpha: 0.04),
               blurRadius: 16,
               offset: const Offset(0, 6),
             ),
@@ -279,15 +282,18 @@ class _GridCard extends StatelessWidget {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    Image.network(
-                      product.imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: const Color(0xFFF5F1ED),
-                        child: const Icon(
-                          Icons.image_outlined,
-                          size: 40,
-                          color: AppTheme.mutedSilver,
+                    Hero(
+                      tag: 'product-${product.id}',
+                      child: Image.network(
+                        product.imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          color: const Color(0xFFF5F1ED),
+                          child: const Icon(
+                            Icons.image_outlined,
+                            size: 40,
+                            color: AppTheme.mutedSilver,
+                          ),
                         ),
                       ),
                     ),
@@ -303,7 +309,7 @@ class _GridCard extends StatelessWidget {
                             begin: Alignment.topRight,
                             end: Alignment.bottomLeft,
                             colors: [
-                              Colors.black.withValues(alpha: 0.15),
+                              AppTheme.deepCharcoal.withValues(alpha: 0.15),
                               Colors.transparent,
                             ],
                           ),
@@ -377,7 +383,7 @@ class _GridCard extends StatelessWidget {
                         fontSize: 13,
                         fontWeight: FontWeight.w400,
                         height: 1.2,
-                        color: AppTheme.deepCharcoal.withValues(alpha: 0.7),
+                        color: AppTheme.deepCharcoal,
                       ),
                     ),
                     if (product.notes.isNotEmpty) ...[
@@ -470,7 +476,7 @@ class _ListCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.04),
+                color: AppTheme.deepCharcoal.withValues(alpha: 0.04),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -480,19 +486,22 @@ class _ListCard extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.network(
-                  product.imageUrl,
-                  width: 90,
-                  height: 90,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
+                child: Hero(
+                  tag: 'product-${product.id}',
+                  child: Image.network(
+                    product.imageUrl,
                     width: 90,
                     height: 90,
-                    color: const Color(0xFFF5F1ED),
-                    child: const Icon(
-                      Icons.image_outlined,
-                      size: 32,
-                      color: AppTheme.mutedSilver,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      width: 90,
+                      height: 90,
+                      color: const Color(0xFFF5F1ED),
+                      child: const Icon(
+                        Icons.image_outlined,
+                        size: 32,
+                        color: AppTheme.mutedSilver,
+                      ),
                     ),
                   ),
                 ),
@@ -604,7 +613,10 @@ class _ScentTag extends StatelessWidget {
     if (s.contains('bergamot') || s.contains('lemon') || s.contains('citrus')) {
       return const Color(0xFFFDF7E7); // Citrus Pastel
     }
-    if (s.contains('jasmine') || s.contains('rose') || s.contains('floral') || s.contains('lavender')) {
+    if (s.contains('jasmine') ||
+        s.contains('rose') ||
+        s.contains('floral') ||
+        s.contains('lavender')) {
       return const Color(0xFFF5EEFD); // Floral Pastel
     }
     if (s.contains('wood') || s.contains('cedar') || s.contains('sandalwood')) {
@@ -621,7 +633,10 @@ class _ScentTag extends StatelessWidget {
     if (s.contains('bergamot') || s.contains('lemon') || s.contains('citrus')) {
       return const Color(0xFF8B7310);
     }
-    if (s.contains('jasmine') || s.contains('rose') || s.contains('floral') || s.contains('lavender')) {
+    if (s.contains('jasmine') ||
+        s.contains('rose') ||
+        s.contains('floral') ||
+        s.contains('lavender')) {
       return const Color(0xFF6A1B9A);
     }
     if (s.contains('wood') || s.contains('cedar') || s.contains('sandalwood')) {
@@ -668,7 +683,7 @@ class _LuxuryBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.9),
+        color: AppTheme.creamWhite.withValues(alpha: 0.9),
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
@@ -734,7 +749,7 @@ class _FavoriteButton extends StatelessWidget {
         child: Icon(
           isFavorite ? Icons.favorite : Icons.favorite_border,
           size: 22,
-          color: isFavorite ? Colors.red : Colors.white,
+          color: isFavorite ? const Color(0xFFD32F2F) : AppTheme.creamWhite,
         ),
       ),
     );

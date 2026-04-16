@@ -1,7 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../config/env.dart';
 import '../storage/secure_token_storage.dart';
+import '../providers/settings_provider.dart';
+import 'cache_interceptor.dart';
 import 'interceptors.dart';
 
 /// Centralized Dio-based HTTP client.
@@ -11,8 +14,9 @@ import 'interceptors.dart';
 class ApiClient {
   late final Dio dio;
   final SecureTokenStorage tokenStorage;
+  final SharedPreferences prefs;
 
-  ApiClient({required this.tokenStorage}) {
+  ApiClient({required this.tokenStorage, required this.prefs}) {
     dio = Dio(
       BaseOptions(
         baseUrl: EnvConfig.fullBaseUrl,
@@ -25,8 +29,9 @@ class ApiClient {
       ),
     );
 
-    // Order matters: auth first, then logger
+    // Order matters: Cache first, then auth, then logger
     dio.interceptors.addAll([
+      CacheInterceptor(prefs),
       AuthInterceptor(tokenStorage: tokenStorage, dio: dio),
       createLogger(),
     ]);
@@ -99,5 +104,6 @@ final secureTokenStorageProvider = Provider<SecureTokenStorage>((ref) {
 /// Single instance of [ApiClient] available app-wide.
 final apiClientProvider = Provider<ApiClient>((ref) {
   final tokenStorage = ref.watch(secureTokenStorageProvider);
-  return ApiClient(tokenStorage: tokenStorage);
+  final prefs = ref.watch(sharedPreferencesProvider);
+  return ApiClient(tokenStorage: tokenStorage, prefs: prefs);
 });

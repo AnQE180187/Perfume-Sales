@@ -84,6 +84,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get userCancelled => 'User cancelled';
 
   @override
+  String get posOutOfStock => 'Out of Stock';
+
+  @override
+  String posLowStockWarning(int count) {
+    return 'Only $count left';
+  }
+
+  @override
+  String posStockLabel(int count) {
+    return 'Stock: $count';
+  }
+
+  @override
   String get orderConfirmError => 'Could not confirm order';
 
   @override
@@ -369,6 +382,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get theStory => 'THE STORY';
 
   @override
+  String get storyHeader => 'The story behind the scent';
+
+  @override
+  String get storyInspiration => 'INSPIRATION';
+
+  @override
+  String get storyCraftsmanship => 'CRAFTSMANSHIP';
+
+  @override
+  String get backToProductStory => 'BACK TO PRODUCT';
+
+  @override
+  String get discoverNotesStory => 'DISCOVER SCENT NOTES';
+
+  @override
   String get acquireScent => 'ACQUIRE SCENT';
 
   @override
@@ -620,7 +648,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tailoredRecommendations => 'TAILORED RECOMMENDATIONS';
 
   @override
-  String get viewCollection => 'VIEW COLLECTION';
+  String get viewCollection => 'Xem tất cả';
 
   @override
   String get eauDeParfum => 'EAU DE PARFUM';
@@ -723,7 +751,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get paymentSummary => 'PAYMENT SUMMARY';
 
   @override
-  String get totalAmount => 'TOTAL AMOUNT';
+  String get totalAmount => 'Total Amount';
 
   @override
   String get shippingAddressUpper => 'SHIPPING ADDRESS';
@@ -1023,7 +1051,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get boutiques => 'Boutiques';
 
   @override
-  String get scentQuiz => 'Scent Quiz';
+  String get scentQuiz => 'Quiz AI';
 
   @override
   String get exclusiveCollection => 'Exclusive Collection';
@@ -2062,9 +2090,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Accumulate points through shopping and activities.';
 
   @override
-  String get howToEatTitle => 'HOW TO EARN?';
-
-  @override
   String get howToEarnTitle => 'HOW TO EARN?';
 
   @override
@@ -2187,4 +2212,83 @@ class AppLocalizationsEn extends AppLocalizations {
   String redeemSuccess(String code) {
     return 'Redeemed successfully! Code $code is now in your wallet.';
   }
+
+  @override
+  String get reverseLogistics => 'REVERSE LOGISTICS';
+
+  @override
+  String get auditTrail => 'AUDIT TRAIL';
+
+  @override
+  String get stockAdjustmentLogs => 'Stock Adjustment Logs';
+
+  @override
+  String get recentActivity => 'Recent Activity';
+
+  @override
+  String get conversionRate => 'Conversion Rate';
+
+  @override
+  String get cancelRate => 'Cancel Rate';
+
+  @override
+  String get refundVolume => 'Refund Volume';
+
+  @override
+  String get grossRevenue => 'GROSS REVENUE';
+
+  @override
+  String get transCount => 'TRANS. COUNT';
+
+  @override
+  String get aovEfficiency => 'AOV / EFFICIENCY';
+
+  @override
+  String get analyticsCommand => 'ANALYTICS COMMAND';
+
+  @override
+  String get globalNetwork => 'GLOBAL NETWORK';
+
+  @override
+  String get topPerformanceCollection => 'TOP PERFORMANCE COLLECTION';
+
+  @override
+  String get noRecentActivity => 'NO RECENT ACTIVITY';
+
+  @override
+  String get noPendingReturns => 'NO PENDING RETURNS FOUND';
+
+  @override
+  String get terminateSession => 'TERMINATE SESSION';
+
+  @override
+  String get terminateSessionConfirm =>
+      'Are you sure you want to log out from this terminal?';
+
+  @override
+  String get scanToPay => 'SCAN TO PAY';
+
+  @override
+  String get loyaltyGateway => 'LOYALTY GATEWAY';
+
+  @override
+  String get terminateRequest => 'TERMINATE REQUEST';
+
+  @override
+  String get encryptionActive => 'ENCRYPTION ACTIVE';
+
+  @override
+  String get client => 'CLIENT';
+
+  @override
+  String get loyaltyPoints => 'LOYALTY POINTS';
+
+  @override
+  String get member => 'MEMBER';
+
+  @override
+  String get returnsHistory => 'Returns History';
+
+  @override
+  String get allAteliers => 'ALL ATELIERS';
 }

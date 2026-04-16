@@ -44,6 +44,7 @@ class StaffOrder {
   final StaffOrderStaff? staff;
   final List<StaffOrderItem> items;
   final List<StaffOrderPayment> payments;
+  final bool hasReturnRequest;
 
   const StaffOrder({
     required this.id,
@@ -60,6 +61,7 @@ class StaffOrder {
     this.staff,
     this.items = const [],
     this.payments = const [],
+    this.hasReturnRequest = false,
   });
 
   bool get isPaid => paymentStatus == 'PAID';
@@ -101,6 +103,7 @@ class StaffOrder {
           .whereType<Map<String, dynamic>>()
           .map((e) => StaffOrderPayment.fromJson(e))
           .toList(),
+      hasReturnRequest: (json['returnRequests'] as List? ?? []).isNotEmpty,
     );
   }
 }
@@ -223,13 +226,19 @@ class StaffOrderItemVariant {
 class StaffOrderItemProduct {
   final String id;
   final String name;
+  final String? imageUrl;
 
-  const StaffOrderItemProduct({required this.id, required this.name});
+  const StaffOrderItemProduct({required this.id, required this.name, this.imageUrl});
 
   factory StaffOrderItemProduct.fromJson(Map<String, dynamic> json) {
+    String? img;
+    if (json['images'] != null && (json['images'] as List).isNotEmpty) {
+      img = json['images'][0]['url'] as String?;
+    }
     return StaffOrderItemProduct(
       id: json['id'] as String,
       name: json['name'] as String,
+      imageUrl: img,
     );
   }
 }

@@ -121,6 +121,38 @@ class StaffPosService {
     }
   }
 
+  Future<Map<String, dynamic>?> lookupLoyalty(String phone) async {
+    try {
+      final response = await client.get(
+        ApiEndpoints.staffPosLoyalty,
+        queryParameters: {'phone': phone},
+      );
+      final data = response.data is Map && response.data['data'] != null
+          ? response.data['data']
+          : response.data;
+      if (data == null) return null;
+      return Map<String, dynamic>.from(data as Map);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> searchCustomers(String phone) async {
+    try {
+      final response = await client.get(
+        '/staff/pos/search-customers',
+        queryParameters: {'phone': phone},
+      );
+      final data = response.data;
+      if (data is List) {
+        return data.map((e) => Map<String, dynamic>.from(e)).toList();
+      }
+      return [];
+    } catch (_) {
+      return [];
+    }
+  }
+
   Future<Map<String, dynamic>> checkout({
     required String storeId,
     required List<Map<String, dynamic>> items,
@@ -142,6 +174,30 @@ class StaffPosService {
           ? response.data['data']
           : response.data;
       return Map<String, dynamic>.from(data as Map);
+    } catch (e) {
+      _rethrowMapped(e);
+    }
+  }
+
+  Future<PosOrder> saveAsDraft({
+    required String storeId,
+    required List<Map<String, dynamic>> items,
+    String? customerPhone,
+  }) async {
+    try {
+      final response = await client.post(
+        ApiEndpoints.staffPosSaveDraft,
+        data: {
+          'storeId': storeId,
+          'items': items,
+          if (customerPhone != null && customerPhone.isNotEmpty)
+            'customerPhone': customerPhone,
+        },
+      );
+      final data = response.data is Map && response.data['data'] != null
+          ? response.data['data']
+          : response.data;
+      return PosOrder.fromJson(Map<String, dynamic>.from(data as Map));
     } catch (e) {
       _rethrowMapped(e);
     }
@@ -286,6 +342,31 @@ class StaffPosService {
           if (transactionId != null && transactionId.isNotEmpty)
             'transactionId': transactionId,
           if (note != null && note.isNotEmpty) 'note': note,
+        },
+      );
+      final data = response.data is Map && response.data['data'] != null
+          ? response.data['data']
+          : response.data;
+      return Map<String, dynamic>.from(data as Map);
+    } catch (e) {
+      _rethrowMapped(e);
+    }
+  }
+
+  Future<Map<String, dynamic>> aiConsult({
+    String? gender,
+    String? occasion,
+    double? budget,
+    String? notes,
+  }) async {
+    try {
+      final response = await client.post(
+        '/staff/pos/ai-consult',
+        data: {
+          if (gender != null) 'gender': gender,
+          if (occasion != null) 'occasion': occasion,
+          if (budget != null) 'budget': budget,
+          if (notes != null && notes.isNotEmpty) 'notes': notes,
         },
       );
       final data = response.data is Map && response.data['data'] != null

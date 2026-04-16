@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../../../core/theme/app_theme.dart';
 
 class PickerItem<T> {
   final T value;
@@ -18,7 +20,7 @@ Future<T?> showBottomSheetPicker<T>({
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
-    backgroundColor: Colors.white,
+    backgroundColor: AppTheme.creamWhite,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
@@ -71,9 +73,10 @@ class _BottomSheetPickerState<T> extends State<_BottomSheetPicker<T>> {
                 Expanded(
                   child: Text(
                     widget.title,
-                    style: const TextStyle(
-                      fontSize: 16,
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: 18,
                       fontWeight: FontWeight.w700,
+                      color: AppTheme.deepCharcoal,
                     ),
                   ),
                 ),
@@ -108,7 +111,7 @@ class _BottomSheetPickerState<T> extends State<_BottomSheetPicker<T>> {
                 return ListTile(
                   title: Text(item.label),
                   trailing: isSelected
-                      ? const Icon(Icons.check_circle, color: Colors.amber)
+                      ? const Icon(Icons.check_circle, color: AppTheme.accentGold)
                       : null,
                   onTap: () => Navigator.of(context).pop(item.value),
                 );

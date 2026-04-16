@@ -15,7 +15,8 @@ class QuizScreen extends ConsumerStatefulWidget {
   ConsumerState<QuizScreen> createState() => _QuizScreenState();
 }
 
-class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProviderStateMixin {
+class _QuizScreenState extends ConsumerState<QuizScreen>
+    with SingleTickerProviderStateMixin {
   bool _showIntro = true;
   late AnimationController _analysisController;
 
@@ -86,10 +87,26 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
               ),
             ),
           ),
-          
+
           SafeArea(
             child: Column(
               children: [
+                // Cancel / close button
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.close_rounded,
+                        size: 22,
+                        color: AppTheme.deepCharcoal.withValues(alpha: 0.8),
+                      ),
+                      onPressed: () => Navigator.of(context).maybePop(),
+                      tooltip: l10n.cancel,
+                    ),
+                  ),
+                ),
                 if (quizState.errorMessage != null)
                   _buildErrorHeader(quizState.errorMessage!, l10n),
                 Expanded(
@@ -108,9 +125,15 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
 
   Widget _buildCurrentStage(QuizState state, AppLocalizations l10n) {
     if (_showIntro) return _buildIntro(l10n, key: const ValueKey('intro'));
-    if (state.isAnalyzing) return _buildAnalyzing(l10n, key: const ValueKey('analyzing'));
-    if (state.isComplete) return _buildResults(state, l10n, key: const ValueKey('results'));
-    return _buildQuizFlow(state, l10n, key: ValueKey('step_${state.currentStep}'));
+    if (state.isAnalyzing)
+      return _buildAnalyzing(l10n, key: const ValueKey('analyzing'));
+    if (state.isComplete)
+      return _buildResults(state, l10n, key: const ValueKey('results'));
+    return _buildQuizFlow(
+      state,
+      l10n,
+      key: ValueKey('step_${state.currentStep}'),
+    );
   }
 
   Widget _buildErrorHeader(String message, AppLocalizations l10n) {
@@ -144,7 +167,11 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
               color: AppTheme.accentGold.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(30),
             ),
-            child: const Icon(Icons.auto_awesome_rounded, color: AppTheme.accentGold, size: 40),
+            child: const Icon(
+              Icons.auto_awesome_rounded,
+              color: AppTheme.accentGold,
+              size: 40,
+            ),
           ),
           const SizedBox(height: 40),
           Text(
@@ -173,9 +200,11 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
             onPressed: () => setState(() => _showIntro = false),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.accentGold,
-              foregroundColor: Colors.white,
+              foregroundColor: AppTheme.creamWhite,
               padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 20),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(40),
+              ),
               elevation: 8,
               shadowColor: AppTheme.accentGold.withValues(alpha: 0.3),
             ),
@@ -225,15 +254,29 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
         break;
       case 1:
         questionText = l10n.q2Text;
-        optionTitles = [l10n.q2Opt1, l10n.q2Opt2, l10n.q2Opt3, l10n.q2Opt4, l10n.q2Opt5];
+        optionTitles = [
+          l10n.q2Opt1,
+          l10n.q2Opt2,
+          l10n.q2Opt3,
+          l10n.q2Opt4,
+          l10n.q2Opt5,
+        ];
         break;
       case 2:
         questionText = l10n.q3Text;
-        optionTitles = questionRaw.options.map((o) => o.title).toList(); // Budget values are fine as is
+        optionTitles = questionRaw.options
+            .map((o) => o.title)
+            .toList(); // Budget values are fine as is
         break;
       case 3:
         questionText = l10n.q4Text;
-        optionTitles = [l10n.q4Opt1, l10n.q4Opt2, l10n.q4Opt3, l10n.q4Opt4, l10n.q4Opt5];
+        optionTitles = [
+          l10n.q4Opt1,
+          l10n.q4Opt2,
+          l10n.q4Opt3,
+          l10n.q4Opt4,
+          l10n.q4Opt5,
+        ];
         break;
       case 4:
         questionText = l10n.q5Text;
@@ -256,9 +299,9 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
                   height: 3,
                   margin: const EdgeInsets.symmetric(horizontal: 3),
                   decoration: BoxDecoration(
-                    color: isPassed || isCurrent 
-                      ? AppTheme.accentGold 
-                      : AppTheme.softTaupe.withValues(alpha: 0.3),
+                    color: isPassed || isCurrent
+                        ? AppTheme.accentGold
+                        : AppTheme.softTaupe.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -276,7 +319,10 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
                 children: [
                   if (state.canGoBack)
                     IconButton(
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+                      icon: const Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        size: 18,
+                      ),
                       onPressed: () => ref.read(quizProvider.notifier).goBack(),
                     ),
                   Text(
@@ -316,16 +362,21 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
               final isSelected = selectedIndex == index;
 
               return GestureDetector(
-                onTap: () => ref.read(quizProvider.notifier).selectOption(index),
+                onTap: () =>
+                    ref.read(quizProvider.notifier).selectOption(index),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 400),
                   curve: Curves.easeOutCubic,
                   padding: const EdgeInsets.all(28),
                   decoration: BoxDecoration(
-                    color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.5),
+                    color: isSelected
+                        ? AppTheme.creamWhite
+                        : AppTheme.creamWhite.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(28),
                     border: Border.all(
-                      color: isSelected ? AppTheme.accentGold : Colors.transparent,
+                      color: isSelected
+                          ? AppTheme.accentGold
+                          : Colors.transparent,
                       width: 2,
                     ),
                     boxShadow: [
@@ -337,20 +388,25 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
                           offset: const Offset(0, 0),
                         ),
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: isSelected ? 0.12 : 0.04),
+                        color: AppTheme.deepCharcoal.withValues(
+                          alpha: isSelected ? 0.12 : 0.04,
+                        ),
                         blurRadius: isSelected ? 25 : 10,
                         offset: Offset(0, isSelected ? 12 : 4),
                       ),
                     ],
                   ),
-                  transform: Matrix4.identity()..translate(0.0, isSelected ? -8.0 : 0.0),
+                  transform: Matrix4.identity()
+                    ..translate(0.0, isSelected ? -8.0 : 0.0),
                   child: Row(
                     children: [
                       Container(
                         width: 50,
                         height: 50,
                         decoration: BoxDecoration(
-                          color: isSelected ? AppTheme.accentGold.withValues(alpha: 0.1) : AppTheme.ivoryBackground,
+                          color: isSelected
+                              ? AppTheme.accentGold.withValues(alpha: 0.1)
+                              : AppTheme.ivoryBackground,
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Icon(
@@ -365,13 +421,19 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
                           title,
                           style: GoogleFonts.montserrat(
                             fontSize: 17,
-                            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                            fontWeight: isSelected
+                                ? FontWeight.w700
+                                : FontWeight.w500,
                             color: AppTheme.deepCharcoal,
                           ),
                         ),
                       ),
                       if (isSelected)
-                        const Icon(Icons.check_circle_rounded, color: AppTheme.accentGold, size: 24),
+                        const Icon(
+                          Icons.check_circle_rounded,
+                          color: AppTheme.accentGold,
+                          size: 24,
+                        ),
                     ],
                   ),
                 ),
@@ -398,7 +460,11 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
                 return CustomPaint(
                   painter: AuraAnalysisPainter(_analysisController.value),
                   child: const Center(
-                    child: Icon(Icons.auto_awesome_rounded, color: AppTheme.accentGold, size: 50),
+                    child: Icon(
+                      Icons.auto_awesome_rounded,
+                      color: AppTheme.accentGold,
+                      size: 50,
+                    ),
                   ),
                 );
               },
@@ -424,14 +490,16 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
             ),
           ),
           const SizedBox(height: 40),
-          
+
           Container(
             width: 280,
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppTheme.creamWhite,
               borderRadius: BorderRadius.circular(28),
-              border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.1)),
+              border: Border.all(
+                color: AppTheme.accentGold.withValues(alpha: 0.1),
+              ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -450,14 +518,24 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
 
   Widget _buildStatusRow(String text, double delayInSec) {
     return FutureBuilder(
-      future: Future.delayed(Duration(milliseconds: (delayInSec * 1000).toInt())),
+      future: Future.delayed(
+        Duration(milliseconds: (delayInSec * 1000).toInt()),
+      ),
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) return const SizedBox(height: 20);
+        if (snapshot.connectionState == ConnectionState.waiting)
+          return const SizedBox(height: 20);
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: Row(
             children: [
-              const Text('>', style: TextStyle(color: AppTheme.accentGold, fontSize: 10, fontFamily: 'monospace')),
+              const Text(
+                '>',
+                style: TextStyle(
+                  color: AppTheme.accentGold,
+                  fontSize: 10,
+                  fontFamily: 'monospace',
+                ),
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -483,7 +561,11 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
       padding: const EdgeInsets.symmetric(vertical: 40),
       child: Column(
         children: [
-          const Icon(Icons.check_circle_outline_rounded, color: AppTheme.accentGold, size: 80),
+          const Icon(
+            Icons.check_circle_outline_rounded,
+            color: AppTheme.accentGold,
+            size: 80,
+          ),
           const SizedBox(height: 24),
           Text(
             l10n.yourScentSignature,
@@ -509,7 +591,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
             ),
           ),
           const SizedBox(height: 40),
-          
+
           if (state.recommendations.isNotEmpty)
             SizedBox(
               height: 550,
@@ -540,8 +622,12 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
                     },
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 18),
-                      side: BorderSide(color: AppTheme.softTaupe.withValues(alpha: 0.3)),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      side: BorderSide(
+                        color: AppTheme.softTaupe.withValues(alpha: 0.3),
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
                     child: Text(
                       l10n.retakeQuiz,
@@ -564,9 +650,11 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.deepCharcoal,
-                      foregroundColor: Colors.white,
+                      foregroundColor: AppTheme.creamWhite,
                       padding: const EdgeInsets.symmetric(vertical: 18),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
                     child: Text(
                       l10n.exploreStore,
@@ -596,11 +684,11 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
     return Container(
       width: 280,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppTheme.creamWhite,
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: AppTheme.deepCharcoal.withValues(alpha: 0.05),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -631,14 +719,18 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
                     child: GlassContainer(
                       padding: const EdgeInsets.all(8),
                       borderRadius: 12,
-                      child: const Icon(Icons.favorite_border_rounded, size: 18, color: Colors.white),
+                      child: const Icon(
+                        Icons.favorite_border_rounded,
+                        size: 18,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
           ),
-          
+
           Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -670,11 +762,11 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
                   decoration: BoxDecoration(
                     color: AppTheme.accentGold.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.1)),
+                    border: Border.all(
+                      color: AppTheme.accentGold.withValues(alpha: 0.1),
+                    ),
                   ),
-                  child: RichText(
-                    text: _buildHighlightedReason(reason),
-                  ),
+                  child: RichText(text: _buildHighlightedReason(reason)),
                 ),
                 const SizedBox(height: 12),
                 if (productId != null)
@@ -692,7 +784,11 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
                           ),
                         ),
                         const SizedBox(width: 8),
-                        const Icon(Icons.arrow_forward_rounded, size: 14, color: AppTheme.deepCharcoal),
+                        const Icon(
+                          Icons.arrow_forward_rounded,
+                          size: 14,
+                          color: AppTheme.deepCharcoal,
+                        ),
                       ],
                     ),
                   ),
@@ -707,20 +803,41 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
   TextSpan _buildHighlightedReason(String reason) {
     final List<TextSpan> spans = [];
     final words = reason.split(' ');
-    final keywords = ['hương', 'nốt', 'tinh', 'phù', 'hợp', 'sang', 'trọng', 'cuốn', 'hút', 'quyến', 'rũ', 'scent', 'note', 'matching', 'luxury', 'elegant'];
+    final keywords = [
+      'hương',
+      'nốt',
+      'tinh',
+      'phù',
+      'hợp',
+      'sang',
+      'trọng',
+      'cuốn',
+      'hút',
+      'quyến',
+      'rũ',
+      'scent',
+      'note',
+      'matching',
+      'luxury',
+      'elegant',
+    ];
 
     for (var word in words) {
       final isKeyword = keywords.any((k) => word.toLowerCase().contains(k));
-      spans.add(TextSpan(
-        text: '$word ',
-        style: GoogleFonts.montserrat(
-          fontSize: 12,
-          fontWeight: isKeyword ? FontWeight.w700 : FontWeight.w400,
-          color: AppTheme.deepCharcoal,
-          backgroundColor: isKeyword ? AppTheme.accentGold.withValues(alpha: 0.1) : null,
-          height: 1.5,
+      spans.add(
+        TextSpan(
+          text: '$word ',
+          style: GoogleFonts.montserrat(
+            fontSize: 12,
+            fontWeight: isKeyword ? FontWeight.w700 : FontWeight.w400,
+            color: AppTheme.deepCharcoal,
+            backgroundColor: isKeyword
+                ? AppTheme.accentGold.withValues(alpha: 0.1)
+                : null,
+            height: 1.5,
+          ),
         ),
-      ));
+      );
     }
     return TextSpan(children: spans);
   }
@@ -729,7 +846,11 @@ class _QuizScreenState extends ConsumerState<QuizScreen> with SingleTickerProvid
     return Container(
       color: AppTheme.softTaupe.withValues(alpha: 0.1),
       child: Center(
-        child: Icon(Icons.shopping_bag_outlined, color: AppTheme.softTaupe.withValues(alpha: 0.3), size: 40),
+        child: Icon(
+          Icons.shopping_bag_outlined,
+          color: AppTheme.softTaupe.withValues(alpha: 0.3),
+          size: 40,
+        ),
       ),
     );
   }
@@ -750,7 +871,7 @@ class AuraAnalysisPainter extends CustomPainter {
       paint.color = AppTheme.accentGold.withValues(alpha: 0.2 + (i * 0.2));
       final radius = (size.width / 2) - (i * 15);
       final rotation = (progress * 2 * 3.14159) * (1 + (i * 0.5));
-      
+
       final rect = Rect.fromCircle(center: center, radius: radius);
       canvas.drawArc(rect, rotation, 2.0, false, paint);
       canvas.drawArc(rect, rotation + 3.14159, 1.0, false, paint);
@@ -758,10 +879,20 @@ class AuraAnalysisPainter extends CustomPainter {
 
     final dotPaint = Paint()..color = AppTheme.accentGold;
     for (int i = 0; i < 8; i++) {
-        final angle = (progress * 2 * math.pi) + (i * math.pi / 4);
-        final x = center.dx + (size.width / 2.5) * 0.8 * (1 + 0.1 * (progress % 1)) * math.cos(angle);
-        final y = center.dy + (size.height / 2.5) * 0.8 * (1 + 0.1 * (progress % 1)) * math.sin(angle);
-        canvas.drawCircle(Offset(x, y), 2, dotPaint);
+      final angle = (progress * 2 * math.pi) + (i * math.pi / 4);
+      final x =
+          center.dx +
+          (size.width / 2.5) *
+              0.8 *
+              (1 + 0.1 * (progress % 1)) *
+              math.cos(angle);
+      final y =
+          center.dy +
+          (size.height / 2.5) *
+              0.8 *
+              (1 + 0.1 * (progress % 1)) *
+              math.sin(angle);
+      canvas.drawCircle(Offset(x, y), 2, dotPaint);
     }
   }
 

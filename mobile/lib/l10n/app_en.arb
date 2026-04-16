@@ -24,6 +24,19 @@
   "payosNoteLong": "PayOS allows instant QR scanning or bank transfer. COD is suitable if you prefer to check the goods before paying.",
   "returnReasonExample": "Example: The product leaked during delivery...",
   "userCancelled": "User cancelled",
+  "posOutOfStock": "Out of Stock",
+  "posLowStockWarning": "Only {count} left",
+  "@posLowStockWarning": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "posStockLabel": "Stock: {count}",
+  "@posStockLabel": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
   "orderConfirmError": "Could not confirm order",
   "missingPaymentLink": "Order created but no payment link found. Please retry.",
   "unableOpenPayment": "Unable to open payment page. Tap button to retry.",
@@ -119,6 +132,11 @@
   "neuralInsight": "NEURAL INSIGHT",
   "scentProfile": "SCENT PROFILE",
   "theStory": "THE STORY",
+  "storyHeader": "The story behind the scent",
+  "storyInspiration": "INSPIRATION",
+  "storyCraftsmanship": "CRAFTSMANSHIP",
+  "backToProductStory": "BACK TO PRODUCT",
+  "discoverNotesStory": "DISCOVER SCENT NOTES",
   "acquireScent": "ACQUIRE SCENT",
   "topNotes": "TOP NOTES",
   "heartNotes": "HEART NOTES",
@@ -202,7 +220,7 @@
   "searchFragrance": "SEARCH FRAGRANCE...",
   "personalizedSelection": "PERSONALIZED SELECTION",
   "tailoredRecommendations": "TAILORED RECOMMENDATIONS",
-  "viewCollection": "VIEW COLLECTION",
+  "viewCollection": "Xem tất cả",
   "eauDeParfum": "EAU DE PARFUM",
   "rating": "rating",
   "noReviews": "No reviews yet",
@@ -339,7 +357,7 @@
   "scentClub": "Scent Club",
   "fragranceLibrary": "Fragrance Library",
   "boutiques": "Boutiques",
-  "scentQuiz": "Scent Quiz",
+  "scentQuiz": "Quiz AI",
   "exclusiveCollection": "Exclusive Collection",
   "journal": "Journal",
   "ingredientsDictionary": "Ingredients Dictionary",
@@ -699,9 +717,6 @@
   "defaultTier": "Default",
   "howToStayTitle": "HOW TO EARN?",
   "howToStayDesc": "Accumulate points through shopping and activities.",
-  "howToEatTitle": "HOW TO EARN?",
-  "howToStayTitle": "HOW TO EARN?",
-  "howToStayDesc": "Accumulate points through shopping and activities.",
   "howToEarnTitle": "HOW TO EARN?",
   "shoppingEarnTitle": "SHOPPING BEAUTY",
   "shoppingEarnDesc": "Every 10,000đ spent = 1 point",
@@ -760,5 +775,32 @@
     "placeholders": {
       "code": { "type": "String" }
     }
-  }
+  },
+  "reverseLogistics": "REVERSE LOGISTICS",
+  "auditTrail": "AUDIT TRAIL",
+  "stockAdjustmentLogs": "Stock Adjustment Logs",
+  "recentActivity": "Recent Activity",
+  "conversionRate": "Conversion Rate",
+  "cancelRate": "Cancel Rate",
+  "refundVolume": "Refund Volume",
+  "grossRevenue": "GROSS REVENUE",
+  "transCount": "TRANS. COUNT",
+  "aovEfficiency": "AOV / EFFICIENCY",
+  "analyticsCommand": "ANALYTICS COMMAND",
+  "globalNetwork": "GLOBAL NETWORK",
+  "topPerformanceCollection": "TOP PERFORMANCE COLLECTION",
+  "noRecentActivity": "NO RECENT ACTIVITY",
+  "noPendingReturns": "NO PENDING RETURNS FOUND",
+  "terminateSession": "TERMINATE SESSION",
+  "terminateSessionConfirm": "Are you sure you want to log out from this terminal?",
+  "scanToPay": "SCAN TO PAY",
+  "loyaltyGateway": "LOYALTY GATEWAY",
+  "terminateRequest": "TERMINATE REQUEST",
+  "encryptionActive": "ENCRYPTION ACTIVE",
+  "client": "CLIENT",
+  "loyaltyPoints": "LOYALTY POINTS",
+  "member": "MEMBER",
+  "returnsHistory": "Returns History",
+  "allAteliers": "ALL ATELIERS",
+  "totalAmount": "Total Amount"
 }

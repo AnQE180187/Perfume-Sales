@@ -242,6 +242,24 @@ abstract class AppLocalizations {
   /// **'User cancelled'**
   String get userCancelled;
 
+  /// No description provided for @posOutOfStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Out of Stock'**
+  String get posOutOfStock;
+
+  /// No description provided for @posLowStockWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Only {count} left'**
+  String posLowStockWarning(int count);
+
+  /// No description provided for @posStockLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Stock: {count}'**
+  String posStockLabel(int count);
+
   /// No description provided for @orderConfirmError.
   ///
   /// In en, this message translates to:
@@ -776,6 +794,36 @@ abstract class AppLocalizations {
   /// **'THE STORY'**
   String get theStory;
 
+  /// No description provided for @storyHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'The story behind the scent'**
+  String get storyHeader;
+
+  /// No description provided for @storyInspiration.
+  ///
+  /// In en, this message translates to:
+  /// **'INSPIRATION'**
+  String get storyInspiration;
+
+  /// No description provided for @storyCraftsmanship.
+  ///
+  /// In en, this message translates to:
+  /// **'CRAFTSMANSHIP'**
+  String get storyCraftsmanship;
+
+  /// No description provided for @backToProductStory.
+  ///
+  /// In en, this message translates to:
+  /// **'BACK TO PRODUCT'**
+  String get backToProductStory;
+
+  /// No description provided for @discoverNotesStory.
+  ///
+  /// In en, this message translates to:
+  /// **'DISCOVER SCENT NOTES'**
+  String get discoverNotesStory;
+
   /// No description provided for @acquireScent.
   ///
   /// In en, this message translates to:
@@ -1277,7 +1325,7 @@ abstract class AppLocalizations {
   /// No description provided for @viewCollection.
   ///
   /// In en, this message translates to:
-  /// **'VIEW COLLECTION'**
+  /// **'Xem tất cả'**
   String get viewCollection;
 
   /// No description provided for @eauDeParfum.
@@ -1475,7 +1523,7 @@ abstract class AppLocalizations {
   /// No description provided for @totalAmount.
   ///
   /// In en, this message translates to:
-  /// **'TOTAL AMOUNT'**
+  /// **'Total Amount'**
   String get totalAmount;
 
   /// No description provided for @shippingAddressUpper.
@@ -2069,7 +2117,7 @@ abstract class AppLocalizations {
   /// No description provided for @scentQuiz.
   ///
   /// In en, this message translates to:
-  /// **'Scent Quiz'**
+  /// **'Quiz AI'**
   String get scentQuiz;
 
   /// No description provided for @exclusiveCollection.
@@ -4040,12 +4088,6 @@ abstract class AppLocalizations {
   /// **'Accumulate points through shopping and activities.'**
   String get howToStayDesc;
 
-  /// No description provided for @howToEatTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'HOW TO EARN?'**
-  String get howToEatTitle;
-
   /// No description provided for @howToEarnTitle.
   ///
   /// In en, this message translates to:
@@ -4273,6 +4315,162 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Redeemed successfully! Code {code} is now in your wallet.'**
   String redeemSuccess(String code);
+
+  /// No description provided for @reverseLogistics.
+  ///
+  /// In en, this message translates to:
+  /// **'REVERSE LOGISTICS'**
+  String get reverseLogistics;
+
+  /// No description provided for @auditTrail.
+  ///
+  /// In en, this message translates to:
+  /// **'AUDIT TRAIL'**
+  String get auditTrail;
+
+  /// No description provided for @stockAdjustmentLogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Stock Adjustment Logs'**
+  String get stockAdjustmentLogs;
+
+  /// No description provided for @recentActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent Activity'**
+  String get recentActivity;
+
+  /// No description provided for @conversionRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversion Rate'**
+  String get conversionRate;
+
+  /// No description provided for @cancelRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel Rate'**
+  String get cancelRate;
+
+  /// No description provided for @refundVolume.
+  ///
+  /// In en, this message translates to:
+  /// **'Refund Volume'**
+  String get refundVolume;
+
+  /// No description provided for @grossRevenue.
+  ///
+  /// In en, this message translates to:
+  /// **'GROSS REVENUE'**
+  String get grossRevenue;
+
+  /// No description provided for @transCount.
+  ///
+  /// In en, this message translates to:
+  /// **'TRANS. COUNT'**
+  String get transCount;
+
+  /// No description provided for @aovEfficiency.
+  ///
+  /// In en, this message translates to:
+  /// **'AOV / EFFICIENCY'**
+  String get aovEfficiency;
+
+  /// No description provided for @analyticsCommand.
+  ///
+  /// In en, this message translates to:
+  /// **'ANALYTICS COMMAND'**
+  String get analyticsCommand;
+
+  /// No description provided for @globalNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'GLOBAL NETWORK'**
+  String get globalNetwork;
+
+  /// No description provided for @topPerformanceCollection.
+  ///
+  /// In en, this message translates to:
+  /// **'TOP PERFORMANCE COLLECTION'**
+  String get topPerformanceCollection;
+
+  /// No description provided for @noRecentActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'NO RECENT ACTIVITY'**
+  String get noRecentActivity;
+
+  /// No description provided for @noPendingReturns.
+  ///
+  /// In en, this message translates to:
+  /// **'NO PENDING RETURNS FOUND'**
+  String get noPendingReturns;
+
+  /// No description provided for @terminateSession.
+  ///
+  /// In en, this message translates to:
+  /// **'TERMINATE SESSION'**
+  String get terminateSession;
+
+  /// No description provided for @terminateSessionConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to log out from this terminal?'**
+  String get terminateSessionConfirm;
+
+  /// No description provided for @scanToPay.
+  ///
+  /// In en, this message translates to:
+  /// **'SCAN TO PAY'**
+  String get scanToPay;
+
+  /// No description provided for @loyaltyGateway.
+  ///
+  /// In en, this message translates to:
+  /// **'LOYALTY GATEWAY'**
+  String get loyaltyGateway;
+
+  /// No description provided for @terminateRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'TERMINATE REQUEST'**
+  String get terminateRequest;
+
+  /// No description provided for @encryptionActive.
+  ///
+  /// In en, this message translates to:
+  /// **'ENCRYPTION ACTIVE'**
+  String get encryptionActive;
+
+  /// No description provided for @client.
+  ///
+  /// In en, this message translates to:
+  /// **'CLIENT'**
+  String get client;
+
+  /// No description provided for @loyaltyPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'LOYALTY POINTS'**
+  String get loyaltyPoints;
+
+  /// No description provided for @member.
+  ///
+  /// In en, this message translates to:
+  /// **'MEMBER'**
+  String get member;
+
+  /// No description provided for @returnsHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Returns History'**
+  String get returnsHistory;
+
+  /// No description provided for @allAteliers.
+  ///
+  /// In en, this message translates to:
+  /// **'ALL ATELIERS'**
+  String get allAteliers;
 }
 
 class _AppLocalizationsDelegate

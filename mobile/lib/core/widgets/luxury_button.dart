@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
+import '../theme/app_text_style.dart';
 
 class LuxuryButton extends StatelessWidget {
   final String text;
@@ -61,7 +62,7 @@ class LuxuryButton extends StatelessWidget {
                   Flexible(
                     child: Text(
                       text,
-                      style: GoogleFonts.montserrat(
+                      style: AppTextStyle.button().copyWith(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         height: 1.1,

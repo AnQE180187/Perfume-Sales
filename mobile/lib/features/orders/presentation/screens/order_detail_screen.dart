@@ -35,198 +35,210 @@ class OrderDetailScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppTheme.ivoryBackground,
-      body: orderAsync.when(
-        data: (order) => RefreshIndicator(
-          color: AppTheme.accentGold,
-          onRefresh: () async {
-            ref.invalidate(orderDetailProvider(orderId));
-            ref.invalidate(orderPaymentProvider(orderId));
-          },
-          child: CustomScrollView(
-            slivers: [
-              SliverAppBar(
-                expandedHeight: 140,
-                pinned: true,
-                backgroundColor: AppTheme.ivoryBackground,
-                surfaceTintColor: Colors.transparent,
-                leading: IconButton(
-                  icon: Container(
-                    padding: const EdgeInsets.all(7),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.9),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.06),
-                          blurRadius: 8,
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.arrow_back_ios_new_rounded,
-                      size: 16,
-                      color: AppTheme.deepCharcoal,
-                    ),
-                  ),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-                flexibleSpace: FlexibleSpaceBar(
-                  background: Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [Color(0xFFF8F2EB), Color(0xFFEDE3D8)],
+      body: _OrderDetailLifecycleWrapper(
+        orderId: orderId,
+        child: orderAsync.when(
+          data: (order) => RefreshIndicator(
+            color: AppTheme.accentGold,
+            onRefresh: () async {
+              ref.invalidate(orderDetailProvider(orderId));
+              ref.invalidate(orderPaymentProvider(orderId));
+            },
+            child: CustomScrollView(
+              slivers: [
+                SliverAppBar(
+                  expandedHeight: 140,
+                  pinned: true,
+                  backgroundColor: AppTheme.ivoryBackground,
+                  surfaceTintColor: Colors.transparent,
+                  leading: IconButton(
+                    icon: Container(
+                      padding: const EdgeInsets.all(7),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.9),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.06),
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        size: 16,
+                        color: AppTheme.deepCharcoal,
                       ),
                     ),
-                    child: SafeArea(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(56, 12, 20, 0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              l10n.orderDetail,
-                              style: GoogleFonts.playfairDisplay(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w700,
-                                color: AppTheme.deepCharcoal,
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                  flexibleSpace: FlexibleSpaceBar(
+                    background: Container(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [Color(0xFFF8F2EB), Color(0xFFEDE3D8)],
+                        ),
+                      ),
+                      child: SafeArea(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(56, 12, 20, 0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                l10n.orderDetail,
+                                style: GoogleFonts.playfairDisplay(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppTheme.deepCharcoal,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.receipt_long_rounded,
-                                  size: 14,
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.receipt_long_rounded,
+                                    size: 14,
+                                    color: AppTheme.mutedSilver,
+                                  ),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    order.code,
+                                    style: GoogleFonts.montserrat(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppTheme.mutedSilver,
+                                      letterSpacing: 0.3,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  OrderStatusBadge(status: order.status),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${l10n.placedOn} ${_formatDateTime(order.createdAt)}',
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 11.5,
                                   color: AppTheme.mutedSilver,
                                 ),
-                                const SizedBox(width: 5),
-                                Text(
-                                  order.code,
-                                  style: GoogleFonts.montserrat(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppTheme.mutedSilver,
-                                    letterSpacing: 0.3,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                OrderStatusBadge(status: order.status),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${l10n.placedOn} ${_formatDateTime(order.createdAt)}',
-                              style: GoogleFonts.montserrat(
-                                fontSize: 11.5,
-                                color: AppTheme.mutedSilver,
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
 
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-                sliver: SliverList(
-                  delegate: SliverChildListDelegate([
-                    _ProductList(order: order),
-                    const SizedBox(height: 14),
-                    _PriceBreakdown(order: order),
-                    const SizedBox(height: 14),
-                    _ShippingAddress(order: order),
-                    const SizedBox(height: 14),
-                    paymentAsync.when(
-                      data: (payment) => _PaymentInfo(
-                        paymentLabel: _paymentLabel(
-                          order,
-                          payment?.status.name.toUpperCase(),
-                          l10n,
-                        ),
-                      ),
-                      loading: () =>
-                          _PaymentInfo(paymentLabel: l10n.checkingPayment),
-                      error: (err, stack) {
-                        return _PaymentInfo(
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate([
+                      _ProductList(order: order),
+                      const SizedBox(height: 14),
+                      _PriceBreakdown(order: order),
+                      const SizedBox(height: 14),
+                      _ShippingAddress(order: order),
+                      const SizedBox(height: 14),
+                      paymentAsync.when(
+                        data: (payment) => _PaymentInfo(
                           paymentLabel: _paymentLabel(
                             order,
-                            order.paymentStatus.name.toUpperCase(),
+                            payment?.status.name.toUpperCase(),
                             l10n,
                           ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 24),
+                        ),
+                        loading: () =>
+                            _PaymentInfo(paymentLabel: l10n.checkingPayment),
+                        error: (err, stack) {
+                          return _PaymentInfo(
+                            paymentLabel: _paymentLabel(
+                              order,
+                              order.paymentStatus.name.toUpperCase(),
+                              l10n,
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 24),
 
-                    if (order.canTrack) ...[
-                      _GoldButton(
-                        icon: Icons.location_on_outlined,
-                        label: l10n.trackOrderUpper,
-                        onPressed: () =>
-                            context.push(AppRoutes.trackOrderWithId(order.id)),
+                      if (order.canTrack) ...[
+                        _GoldButton(
+                          icon: Icons.location_on_outlined,
+                          label: l10n.trackOrderUpper,
+                          onPressed: () =>
+                              context.push(AppRoutes.trackOrderWithId(order.id)),
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+                      
+                      _SupportButton(
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                l10n.supportContactMessage,
+                                style: GoogleFonts.montserrat(fontSize: 13),
+                              ),
+                              backgroundColor: AppTheme.deepCharcoal,
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          );
+                        },
                       ),
                       const SizedBox(height: 12),
-                    ],
-                    
-                    _SupportButton(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              l10n.supportContactMessage,
-                              style: GoogleFonts.montserrat(fontSize: 13),
-                            ),
-                            backgroundColor: AppTheme.deepCharcoal,
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 12),
 
-                    if (order.status == OrderStatus.completed && !order.hasActiveReturn) ...[
-                      _SubtleReturnButton(
-                        onPressed: () => context.push(AppRoutes.returnOrderWithId(order.id)),
-                      ),
-                    ],
-                  ]),
-                ),
-              ),
-            ],
-          ),
-        ),
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppTheme.accentGold),
-        ),
-        error: (error, _) => Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.error_outline_rounded,
-                  size: 48,
-                  color: AppTheme.mutedSilver,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  error.toString(),
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.montserrat(
-                    fontSize: 14,
-                    color: AppTheme.mutedSilver,
+                      if (order.status == OrderStatus.completed && !order.hasActiveReturn) ...[
+                        _SubtleReturnButton(
+                          onPressed: () => context.push(AppRoutes.returnOrderWithId(order.id)),
+                        ),
+                      ],
+
+                      if (order.status == OrderStatus.pending ||
+                          order.status == OrderStatus.confirmed ||
+                          order.status == OrderStatus.processing) ...[
+                        const SizedBox(height: 12),
+                        _CancelOrderButton(
+                          onPressed: () => _handleCancel(context, ref, order),
+                        ),
+                      ],
+                    ]),
                   ),
                 ),
               ],
+            ),
+          ),
+          loading: () => const Center(
+            child: CircularProgressIndicator(color: AppTheme.accentGold),
+          ),
+          error: (error, _) => Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.error_outline_rounded,
+                    size: 48,
+                    color: AppTheme.mutedSilver,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    error.toString(),
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 14,
+                      color: AppTheme.mutedSilver,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -240,10 +252,67 @@ class OrderDetailScreen extends ConsumerWidget {
 
   String _paymentLabel(Order order, String? status, AppLocalizations l10n) {
     if (order.paymentMethod == 'COD') return l10n.cod;
-    if (status == 'PAID' || status == 'COMPLETED') return l10n.paid;
-    if (status == 'PENDING') return l10n.pending;
-    if (status == 'CANCELLED' || status == 'EXPIRED') return l10n.cancelled;
-    return l10n.pending;
+
+    // Use synced status if available, fallback to order's payment status
+    final effectiveStatus = status ?? order.paymentStatus.name.toUpperCase();
+
+    if (effectiveStatus == 'PAID' || effectiveStatus == 'COMPLETED') {
+      return l10n.paid;
+    }
+    if (effectiveStatus == 'CANCELLED' || effectiveStatus == 'EXPIRED') {
+      return l10n.cancelled;
+    }
+    return l10n.pending; // Will show "Chờ thanh toán" after l10n update
+  }
+
+  Future<void> _handleCancel(
+      BuildContext context, WidgetRef ref, Order order) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => _LuxuryConfirmDialog(
+        title: l10n.confirmCancelOrderTitle,
+        content: l10n.confirmCancelOrderDesc(order.code),
+        confirmLabel: l10n.confirm,
+        cancelLabel: l10n.cancel,
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        // Show loading dialog
+        if (!context.mounted) return;
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const Center(
+            child: CircularProgressIndicator(color: AppTheme.accentGold),
+          ),
+        );
+
+        await ref.read(orderProvider.notifier).cancelOrder(order.id);
+
+        if (context.mounted) {
+          Navigator.of(context).pop(); // Close loading
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(l10n.cancelOrderSuccess(order.code)),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          Navigator.of(context).pop(); // Close loading
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(l10n.cancelOrderError),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
   }
 }
 
@@ -750,6 +819,120 @@ class _SubtleReturnButton extends StatelessWidget {
   }
 }
 
+class _CancelOrderButton extends StatelessWidget {
+  final VoidCallback onPressed;
+  const _CancelOrderButton({required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      onPressed: onPressed,
+      style: TextButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+      ),
+      child: Text(
+        AppLocalizations.of(context)!.cancelOrder,
+        style: GoogleFonts.montserrat(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: Colors.red[700],
+          decoration: TextDecoration.underline,
+          decorationColor: Colors.red[700],
+        ),
+      ),
+    );
+  }
+}
+
+class _LuxuryConfirmDialog extends StatelessWidget {
+  final String title;
+  final String content;
+  final String confirmLabel;
+  final String cancelLabel;
+
+  const _LuxuryConfirmDialog({
+    required this.title,
+    required this.content,
+    required this.confirmLabel,
+    required this.cancelLabel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      backgroundColor: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.playfairDisplay(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.deepCharcoal,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              content,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.montserrat(
+                fontSize: 14,
+                color: AppTheme.mutedSilver,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: Text(
+                      cancelLabel,
+                      style: GoogleFonts.montserrat(
+                        color: AppTheme.mutedSilver,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red[700],
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      confirmLabel,
+                      style: GoogleFonts.montserrat(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class LuxuryButton extends StatelessWidget {
   final String text;
   final VoidCallback onPressed;
@@ -788,4 +971,37 @@ class LuxuryButton extends StatelessWidget {
       ),
     );
   }
+}
+
+class _OrderDetailLifecycleWrapper extends ConsumerStatefulWidget {
+  final String orderId;
+  final Widget child;
+  const _OrderDetailLifecycleWrapper({required this.orderId, required this.child});
+
+  @override
+  ConsumerState<_OrderDetailLifecycleWrapper> createState() => _OrderDetailLifecycleWrapperState();
+}
+
+class _OrderDetailLifecycleWrapperState extends ConsumerState<_OrderDetailLifecycleWrapper> {
+  late final AppLifecycleListener _listener;
+
+  @override
+  void initState() {
+    super.initState();
+    _listener = AppLifecycleListener(
+      onResume: () {
+        ref.invalidate(orderDetailProvider(widget.orderId));
+        ref.invalidate(orderPaymentProvider(widget.orderId));
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _listener.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }

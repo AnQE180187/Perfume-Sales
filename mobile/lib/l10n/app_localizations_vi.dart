@@ -48,7 +48,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get paid => 'Đã thanh toán';
 
   @override
-  String get pending => 'Chờ xử lý';
+  String get pending => 'Chờ thanh toán';
 
   @override
   String get cancelled => 'Đã hủy';
@@ -81,6 +81,19 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get userCancelled => 'Người dùng đã hủy';
+
+  @override
+  String get posOutOfStock => 'Hết hàng';
+
+  @override
+  String posLowStockWarning(int count) {
+    return 'Chỉ còn $count';
+  }
+
+  @override
+  String posStockLabel(int count) {
+    return 'Stock: $count';
+  }
 
   @override
   String get orderConfirmError => 'Không thể xác nhận đơn hàng';
@@ -134,7 +147,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get avgPerOrder => 'TB/đơn';
 
   @override
-  String get pendingProcess => 'Chờ xử lý';
+  String get pendingProcess => 'Chờ xác nhận';
 
   @override
   String get paymentRate => 'Tỷ lệ TT';
@@ -169,7 +182,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get statusProcessing => 'Đang xử lý';
 
   @override
-  String get statusPending => 'Chờ xử lý';
+  String get statusPending => 'Chờ xác nhận';
 
   @override
   String get confirmReturnTitle => 'Xác nhận trả hàng';
@@ -368,6 +381,21 @@ class AppLocalizationsVi extends AppLocalizations {
   String get theStory => 'CÂU CHUYỆN';
 
   @override
+  String get storyHeader => 'Câu chuyện phía sau mùi hương';
+
+  @override
+  String get storyInspiration => 'NGUỒN CẢM HỨNG';
+
+  @override
+  String get storyCraftsmanship => 'NGHỆ THUẬT CHẾ TÁC';
+
+  @override
+  String get backToProductStory => 'QUAY LẠI SẢN PHẨM';
+
+  @override
+  String get discoverNotesStory => 'KHÁM PHÁ TẦNG HƯƠNG';
+
+  @override
   String get acquireScent => 'SỞ HỮU MÙI HƯƠNG';
 
   @override
@@ -531,7 +559,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get orderNumberCopied => 'Đã sao chép mã đơn hàng';
 
   @override
-  String get orderStatusPending => 'Chờ xử lý';
+  String get orderStatusPending => 'Chờ xác nhận';
 
   @override
   String get orderStatusConfirmed => 'Đã xác nhận';
@@ -555,7 +583,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get orderStatusRefunded => 'Đã hoàn tiền';
 
   @override
-  String get orderDescPending => 'Đơn hàng đang được xử lý';
+  String get orderDescPending => 'Đơn hàng đang chờ xác nhận';
 
   @override
   String get orderDescConfirmed => 'Đơn hàng đã xác nhận và đang chuẩn bị';
@@ -618,7 +646,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get tailoredRecommendations => 'GỢI Ý PHÙ HỢP VỚI BẠN';
 
   @override
-  String get viewCollection => 'XEM BỘ SƯU TẬP';
+  String get viewCollection => 'Xem tất cả';
 
   @override
   String get eauDeParfum => 'NƯỚC HOA EAU DE PARFUM';
@@ -721,7 +749,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get paymentSummary => 'TÓM TẮT THANH TOÁN';
 
   @override
-  String get totalAmount => 'TỔNG CỘNG';
+  String get totalAmount => 'Tổng số tiền';
 
   @override
   String get shippingAddressUpper => 'ĐỊA CHỈ GIAO HÀNG';
@@ -769,7 +797,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get paymentStatusPaid => 'Hoàn tất thanh toán';
 
   @override
-  String get paymentStatusPending => 'Chưa thanh toán (Chờ xử lý)';
+  String get paymentStatusPending => 'Chờ thanh toán';
 
   @override
   String get paymentStatusFailed => 'Thanh toán thất bại';
@@ -1022,7 +1050,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get boutiques => 'Hệ thống cửa hàng';
 
   @override
-  String get scentQuiz => 'Trắc nghiệm Mùi hương';
+  String get scentQuiz => 'Quiz AI';
 
   @override
   String get exclusiveCollection => 'Bộ sưu tập độc quyền';
@@ -1647,8 +1675,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get deleteAddress => 'Xóa địa chỉ';
 
   @override
-  String get deleteAddressConfirm =>
-      'Are you sure you want to delete this address?';
+  String get deleteAddressConfirm => 'Bạn có chắc chắn muốn xóa địa chỉ này?';
 
   @override
   String get noAddressesFound => 'Chưa có địa chỉ nào';
@@ -2064,9 +2091,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get howToStayDesc => 'Tích lũy điểm thông qua mua sắm và hoạt động.';
 
   @override
-  String get howToEatTitle => 'HOW TO EARN?';
-
-  @override
   String get howToEarnTitle => 'LÀM SAO ĐỂ TÍCH ĐIỂM?';
 
   @override
@@ -2190,4 +2214,83 @@ class AppLocalizationsVi extends AppLocalizations {
   String redeemSuccess(String code) {
     return 'Đổi thành công! Mã $code đã có trong ví của bạn.';
   }
+
+  @override
+  String get reverseLogistics => 'LOGISTICS NGƯỢC';
+
+  @override
+  String get auditTrail => 'NHẬT KÝ KIỂM TRA';
+
+  @override
+  String get stockAdjustmentLogs => 'Lịch sử điều chỉnh kho';
+
+  @override
+  String get recentActivity => 'Hoạt động gần đây';
+
+  @override
+  String get conversionRate => 'Tỷ lệ chuyển đổi';
+
+  @override
+  String get cancelRate => 'Tỷ lệ hủy';
+
+  @override
+  String get refundVolume => 'Lượng hoàn tiền';
+
+  @override
+  String get grossRevenue => 'DOANH THU GỘP';
+
+  @override
+  String get transCount => 'SỐ GIAO DỊCH';
+
+  @override
+  String get aovEfficiency => 'AOV / HIỆU SUẤT';
+
+  @override
+  String get analyticsCommand => 'BỘ CHỈ HUY PHÂN TÍCH';
+
+  @override
+  String get globalNetwork => 'TOÀN HỆ THỐNG';
+
+  @override
+  String get topPerformanceCollection => 'BỘ SƯU TẬP HIỆU SUẤT CAO';
+
+  @override
+  String get noRecentActivity => 'KHÔNG CÓ HOẠT ĐỘNG GẦN ĐÂY';
+
+  @override
+  String get noPendingReturns => 'KHÔNG TÌM THẤY YÊU CẦU HOÀN TRẢ';
+
+  @override
+  String get terminateSession => 'CHẤM DỨT PHIÊN';
+
+  @override
+  String get terminateSessionConfirm =>
+      'Bạn có chắc chắn muốn đăng xuất khỏi nhà ga này?';
+
+  @override
+  String get scanToPay => 'QUÉT ĐỂ THANH TOÁN';
+
+  @override
+  String get loyaltyGateway => 'CỔNG THÀNH VIÊN';
+
+  @override
+  String get terminateRequest => 'CHẤM DỨT YÊU CẦU';
+
+  @override
+  String get encryptionActive => 'MÃ HÓA ĐANG HOẠT ĐỘNG';
+
+  @override
+  String get client => 'KHÁCH HÀNG';
+
+  @override
+  String get loyaltyPoints => 'ĐIỂM THÀNH VIÊN';
+
+  @override
+  String get member => 'THÀNH VIÊN';
+
+  @override
+  String get returnsHistory => 'Lịch sử trả hàng';
+
+  @override
+  String get allAteliers => 'TẤT CẢ CỨA HÀNG';
 }

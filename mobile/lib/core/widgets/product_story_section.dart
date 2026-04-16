@@ -61,17 +61,21 @@ class _ProductStorySectionState extends State<ProductStorySection> {
                   color: Colors.transparent,
                   child: InkWell(
                     borderRadius: BorderRadius.circular(8),
-                    onTap: () => Navigator.of(context, rootNavigator: true).push(
-                      MaterialPageRoute(
-                        builder: (_) => ProductStoryScreen(
-                          productId: widget.productId,
-                          productName: widget.productName,
-                          imageUrl: widget.imageUrl,
+                    onTap: () =>
+                        Navigator.of(context, rootNavigator: true).push(
+                          MaterialPageRoute(
+                            builder: (_) => ProductStoryScreen(
+                              productId: widget.productId,
+                              productName: widget.productName,
+                              imageUrl: widget.imageUrl,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -109,7 +113,7 @@ class _ProductStorySectionState extends State<ProductStorySection> {
                 style: GoogleFonts.montserrat(
                   fontSize: 13,
                   height: 1.65,
-                  color: AppTheme.deepCharcoal.withValues(alpha: 0.75),
+                  color: AppTheme.deepCharcoal,
                 ),
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
@@ -119,7 +123,7 @@ class _ProductStorySectionState extends State<ProductStorySection> {
                 style: GoogleFonts.montserrat(
                   fontSize: 13,
                   height: 1.65,
-                  color: AppTheme.deepCharcoal.withValues(alpha: 0.75),
+                  color: AppTheme.deepCharcoal,
                 ),
               ),
             ),

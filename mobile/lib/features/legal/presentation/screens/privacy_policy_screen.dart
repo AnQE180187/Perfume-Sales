@@ -15,8 +15,11 @@ class PrivacyPolicyScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded,
-              color: AppTheme.deepCharcoal, size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: AppTheme.deepCharcoal,
+            size: 20,
+          ),
           onPressed: () => context.pop(),
         ),
         title: Text(
@@ -95,7 +98,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
               fontSize: 14,
               height: 1.6,
               fontWeight: FontWeight.w400,
-              color: AppTheme.deepCharcoal.withValues(alpha: 0.7),
+              color: AppTheme.deepCharcoal,
             ),
           ),
         ],

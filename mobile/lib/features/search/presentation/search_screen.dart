@@ -10,7 +10,8 @@ import '../providers/search_provider.dart';
 import 'widgets/search_header.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
-  const SearchScreen({super.key});
+  final String? initialScent;
+  const SearchScreen({super.key, this.initialScent});
 
   @override
   ConsumerState<SearchScreen> createState() => _SearchScreenState();
@@ -24,18 +25,40 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   String? _selectedOccasion;
   String? _selectedPrice;
 
-  static const _scentOptions = ['Woody', 'Floral', 'Fresh', 'Sweet', 'Spicy'];
+  static const _scentOptions = [
+    'Woody',
+    'Floral',
+    'Fresh',
+    'Sweet',
+    'Spicy',
+    'Gourmand',
+    'Citrus',
+    'Musk',
+    'Amber',
+  ];
   static const _occasionOptions = ['Daily', 'Office', 'Date', 'Party'];
   static const _priceOptions = ['<1M', '1-3M', '>3M'];
 
-  bool get _hasActiveFilters =>
-      _selectedScent != null ||
-      _selectedOccasion != null ||
-      _selectedPrice != null;
+  bool get _hasActiveFilters {
+    final state = ref.read(searchProvider);
+    return state.scentFamily != null ||
+        state.occasion != null ||
+        state.priceRange != null;
+  }
 
   @override
   void initState() {
     super.initState();
+    // Initialize filter from widget if provided
+    if (widget.initialScent != null) {
+      // Normalize: find match in options (case-insensitive)
+      final match = _scentOptions.firstWhere(
+        (o) => o.toLowerCase() == widget.initialScent!.toLowerCase(),
+        orElse: () => widget.initialScent!,
+      );
+      Future.microtask(() => ref.read(searchProvider.notifier).setScentFamily(match));
+    }
+
     // Load initial products through the provider
     Future.microtask(() => ref.read(searchProvider.notifier).loadInitial());
   }
@@ -46,144 +69,17 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     super.dispose();
   }
 
-  List<Product> _applyClientFilters(List<Product> products) {
-    return products.where((p) {
-      if (_selectedScent != null && !_matchesScent(p, _selectedScent!)) {
-        return false;
-      }
-      if (_selectedOccasion != null &&
-          !_matchesOccasion(p, _selectedOccasion!)) {
-        return false;
-      }
-      if (_selectedPrice != null && !_matchesPrice(p, _selectedPrice!)) {
-        return false;
-      }
-      return true;
-    }).toList();
-  }
-
-  bool _matchesScent(Product p, String scent) {
-    final allNotes = [
-      ...p.notes,
-      ...p.topNotes,
-      ...p.heartNotes,
-      ...p.baseNotes,
-    ].map((n) => n.toLowerCase());
-    final desc = (p.description ?? '').toLowerCase();
-    switch (scent) {
-      case 'Woody':
-        return allNotes.any(
-              (n) => [
-                'sandalwood',
-                'cedar',
-                'wood',
-                'oud',
-                'vetiver',
-                'patchouli',
-              ].any((k) => n.contains(k)),
-            ) ||
-            desc.contains('wood') ||
-            desc.contains('cedar');
-      case 'Floral':
-        return allNotes.any(
-          (n) => [
-            'rose',
-            'jasmine',
-            'lily',
-            'iris',
-            'peony',
-            'violet',
-            'floral',
-          ].any((k) => n.contains(k)),
-        );
-      case 'Fresh':
-        return allNotes.any(
-          (n) => [
-            'bergamot',
-            'lemon',
-            'fresh',
-            'citrus',
-            'green',
-            'mint',
-            'aqua',
-          ].any((k) => n.contains(k)),
-        );
-      case 'Sweet':
-        return allNotes.any(
-          (n) => [
-            'vanilla',
-            'sweet',
-            'caramel',
-            'honey',
-            'amber',
-            'musk',
-          ].any((k) => n.contains(k)),
-        );
-      case 'Spicy':
-        return allNotes.any(
-          (n) => [
-            'pepper',
-            'spice',
-            'cardamom',
-            'ginger',
-            'clove',
-            'cinnamon',
-          ].any((k) => n.contains(k)),
-        );
-      default:
-        return true;
-    }
-  }
-
-  bool _matchesOccasion(Product p, String occasion) {
-    final text = '${p.name} ${p.description ?? ''} ${p.notes.join(' ')}'
-        .toLowerCase();
-    switch (occasion) {
-      case 'Daily':
-        return text.contains('fresh') ||
-            text.contains('light') ||
-            text.contains('green');
-      case 'Office':
-        return text.contains('clean') ||
-            text.contains('iris') ||
-            text.contains('subtle');
-      case 'Date':
-        return text.contains('rose') ||
-            text.contains('jasmine') ||
-            text.contains('sensual');
-      case 'Party':
-        return text.contains('bold') ||
-            text.contains('oud') ||
-            text.contains('intense');
-      default:
-        return true;
-    }
-  }
-
-  bool _matchesPrice(Product p, String priceRange) {
-    switch (priceRange) {
-      case '<1M':
-        return p.price < 1000000;
-      case '1-3M':
-        return p.price >= 1000000 && p.price <= 3000000;
-      case '>3M':
-        return p.price > 3000000;
-      default:
-        return true;
-    }
-  }
-
-  void _clearFilters() => setState(() {
-    _selectedScent = null;
-    _selectedOccasion = null;
-    _selectedPrice = null;
-  });
+  void _clearFilters() => ref.read(searchProvider.notifier).clearFilters();
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final searchState = ref.watch(searchProvider);
-    final filteredResults = _applyClientFilters(searchState.results);
+    final filteredResults = searchState.results;
+
+    final selectedScent = searchState.scentFamily;
+    final selectedOccasion = searchState.occasion;
+    final selectedPrice = searchState.priceRange;
 
     return Scaffold(
       backgroundColor: AppTheme.ivoryBackground,
@@ -204,11 +100,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 background: SearchHeader(
                   controller: _searchController,
                   onChanged: (value) {
-                    if (value.isNotEmpty) {
-                      ref.read(searchProvider.notifier).search(value);
-                    } else {
-                      ref.read(searchProvider.notifier).loadInitial();
-                    }
+                    ref.read(searchProvider.notifier).search(value);
                   },
                   onClear: () {
                     _searchController.clear();
@@ -228,28 +120,22 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   _FilterSection(
                     title: l10n.scentFamily,
                     options: _scentOptions,
-                    selected: _selectedScent,
-                    onSelect: (v) => setState(
-                      () => _selectedScent = _selectedScent == v ? null : v,
-                    ),
+                    selected: selectedScent,
+                    onSelect: (v) => ref.read(searchProvider.notifier).setScentFamily(v),
                   ),
                   _buildDivider(),
                   _FilterSection(
                     title: l10n.usageOccasion,
                     options: _occasionOptions,
-                    selected: _selectedOccasion,
-                    onSelect: (v) => setState(
-                      () => _selectedOccasion = _selectedOccasion == v ? null : v,
-                    ),
+                    selected: selectedOccasion,
+                    onSelect: (v) => ref.read(searchProvider.notifier).setOccasion(v),
                   ),
                   _buildDivider(),
                   _FilterSection(
                     title: l10n.priceRange,
                     options: _priceOptions,
-                    selected: _selectedPrice,
-                    onSelect: (v) => setState(
-                      () => _selectedPrice = _selectedPrice == v ? null : v,
-                    ),
+                    selected: selectedPrice,
+                    onSelect: (v) => ref.read(searchProvider.notifier).setPriceRange(v),
                   ),
                   const SizedBox(height: 12),
                   
@@ -259,31 +145,42 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text(
-                          _searchController.text.isEmpty
-                              ? l10n.featuredScents
-                              : l10n.searchResults,
-                          style: GoogleFonts.playfairDisplay(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.deepCharcoal,
+                        Expanded(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  _searchController.text.isEmpty
+                                      ? l10n.featuredScents
+                                      : l10n.searchResults,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                  style: GoogleFonts.playfairDisplay(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppTheme.deepCharcoal,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              if (!searchState.isLoading)
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 3),
+                                  child: Text(
+                                    '(${filteredResults.length} ${l10n.productsFound})',
+                                    style: GoogleFonts.montserrat(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w500,
+                                      color: AppTheme.mutedSilver,
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
-                        const SizedBox(width: 10),
-                        if (!searchState.isLoading)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 3),
-                            child: Text(
-                              '(${filteredResults.length} ${l10n.productsFound})',
-                              style: GoogleFonts.montserrat(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w500,
-                                color: AppTheme.mutedSilver,
-                              ),
-                            ),
-                          ),
-                        const Spacer(),
-                        if (_hasActiveFilters)
+                        if (_hasActiveFilters) ...[
+                          const SizedBox(width: 12),
                           GestureDetector(
                             onTap: _clearFilters,
                             child: Padding(
@@ -299,6 +196,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                               ),
                             ),
                           ),
+                        ],
                       ],
                     ),
                   ),

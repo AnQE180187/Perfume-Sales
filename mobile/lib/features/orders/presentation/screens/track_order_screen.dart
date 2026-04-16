@@ -131,7 +131,10 @@ class TrackOrderScreen extends ConsumerWidget {
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
                     // Map card
-                    TrackingMapCard(label: tracking.mapLabel),
+                    TrackingMapCard(
+                      label: tracking.mapLabel,
+                      trackingCode: tracking.trackingCode,
+                    ),
                     const SizedBox(height: 20),
 
                     // Timeline section header

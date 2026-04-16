@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/routing/app_routes.dart';
-import '../../../core/widgets/floating_icon_button.dart';
 import '../../../core/widgets/product_size_selector.dart';
 import '../../../core/widgets/ai_scent_analysis_card.dart';
 import '../../../core/widgets/scent_structure_section.dart';
@@ -12,6 +11,7 @@ import '../../../core/widgets/product_story_section.dart';
 import '../../../core/widgets/product_bottom_cta.dart';
 import 'package:perfume_gpt_app/l10n/app_localizations.dart';
 import '../../cart/providers/cart_provider.dart';
+import '../../cart/providers/cart_selection_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
 import 'scent_structure_detail_screen.dart';
 import '../providers/product_provider.dart';
@@ -142,13 +142,13 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                     leading: Padding(
                       padding: const EdgeInsets.only(left: 8.0, top: 4.0),
                       child: IconButton(
-                        icon: const Icon(Icons.arrow_back, color: Colors.white, size: 22),
+                        icon: Icon(Icons.arrow_back, color: AppTheme.creamWhite, size: 22),
                         onPressed: () => context.pop(),
                       ),
                     ),
                     actions: [
                       IconButton(
-                        icon: const Icon(Icons.share_outlined, color: Colors.white, size: 22),
+                        icon: Icon(Icons.share_outlined, color: AppTheme.creamWhite, size: 22),
                         onPressed: () {},
                       ),
                       const SizedBox(width: 4),
@@ -163,7 +163,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                           return IconButton(
                             icon: Icon(
                               isFav ? Icons.favorite : Icons.favorite_border,
-                              color: isFav ? Colors.red : Colors.white,
+                              color: isFav ? const Color(0xFFD32F2F) : AppTheme.creamWhite,
                               size: 22,
                             ),
                             onPressed: () => ref
@@ -230,7 +230,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                                         begin: Alignment.topCenter,
                                         end: Alignment.bottomCenter,
                                         colors: [
-                                          Colors.black.withValues(alpha: 0.45),
+                                          AppTheme.deepCharcoal.withValues(alpha: 0.45),
                                           Colors.transparent,
                                         ],
                                       ),
@@ -261,8 +261,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                                           height: 6,
                                           decoration: BoxDecoration(
                                             color: i == _currentImagePage
-                                                ? Colors.white
-                                                : Colors.white.withValues(
+                                                ? AppTheme.creamWhite
+                                                : AppTheme.creamWhite.withValues(
                                                     alpha: 0.4,
                                                   ),
                                             borderRadius: BorderRadius.circular(
@@ -294,20 +294,20 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                           decoration: BoxDecoration(
                             color: AppTheme.ivoryBackground,
                             borderRadius: BorderRadius.circular(28),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.10),
-                                blurRadius: 32,
-                                spreadRadius: 0,
-                                offset: const Offset(0, 8),
-                              ),
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.04),
-                                blurRadius: 8,
-                                spreadRadius: 0,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppTheme.deepCharcoal.withValues(alpha: 0.10),
+                                    blurRadius: 32,
+                                    spreadRadius: 0,
+                                    offset: const Offset(0, 8),
+                                  ),
+                                  BoxShadow(
+                                    color: AppTheme.deepCharcoal.withValues(alpha: 0.04),
+                                    blurRadius: 8,
+                                    spreadRadius: 0,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -350,40 +350,52 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  if (product.rating != null) ...[
-                                    const Icon(
-                                      Icons.star,
-                                      size: 14,
-                                      color: AppTheme.accentGold,
-                                    ),
-                                    const SizedBox(width: 5),
-                                    Text(
-                                      '${product.rating}/5',
-                                      style: GoogleFonts.montserrat(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: AppTheme.deepCharcoal,
+                                  if (product.rating != null)
+                                    Expanded(
+                                      child: Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.star,
+                                            size: 14,
+                                            color: AppTheme.accentGold,
+                                          ),
+                                          const SizedBox(width: 5),
+                                          Text(
+                                            '${product.rating!.toStringAsFixed(1)}/5',
+                                            style: GoogleFonts.montserrat(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
+                                              color: AppTheme.deepCharcoal,
+                                            ),
+                                          ),
+                                          if (product.reviews != null) ...[
+                                            const SizedBox(width: 4),
+                                            Flexible(
+                                              child: Text(
+                                                '· ${product.reviews} ${AppLocalizations.of(context)!.rating}',
+                                                style: GoogleFonts.montserrat(
+                                                  fontSize: 11,
+                                                  color: AppTheme.mutedSilver,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ],
                                       ),
-                                    ),
-                                    if (product.reviews != null) ...[
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        '· ${product.reviews} ${AppLocalizations.of(context)!.rating}',
+                                    )
+                                  else
+                                    Expanded(
+                                      child: Text(
+                                        AppLocalizations.of(context)!.noReviews,
                                         style: GoogleFonts.montserrat(
                                           fontSize: 11,
                                           color: AppTheme.mutedSilver,
                                         ),
                                       ),
-                                    ],
-                                  ] else
-                                    Text(
-                                      AppLocalizations.of(context)!.noReviews,
-                                      style: GoogleFonts.montserrat(
-                                        fontSize: 11,
-                                        color: AppTheme.mutedSilver,
-                                      ),
                                     ),
-                                  const Spacer(),
+                                  const SizedBox(width: 8),
                                   GestureDetector(
                                     onTap: () => context.push(
                                       AppRoutes.reviewsWithProductId(
@@ -439,6 +451,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                           () => _isAIAnalysisExpanded = !_isAIAnalysisExpanded,
                         ),
                         notes: product.notes,
+                        scentAnalysis: product.scentAnalysis,
                       ),
                     ),
                   ),
@@ -541,7 +554,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                           .read(cartProvider.notifier)
                           .addItemByVariant(variant.id, quantity: 1);
 
-                      if (!mounted) return;
+                      if (!context.mounted) return;
+                      final l10nAfter = AppLocalizations.of(context)!;
                       messenger.clearSnackBars();
                       messenger.showSnackBar(
                         SnackBar(
@@ -555,7 +569,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                               const SizedBox(width: 10),
                               Expanded(
                                 child: Text(
-                                  '${AppLocalizations.of(context)!.addedToCart} ${product.name}',
+                                  '${l10nAfter.addedToCart} ${product.name}',
                                   style: const TextStyle(fontSize: 13),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -569,7 +583,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                                   }
                                 },
                                 child: Text(
-                                  AppLocalizations.of(context)!.viewCart,
+                                  l10nAfter.viewCart,
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w700,
@@ -591,10 +605,70 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                         ),
                       );
                     } catch (error) {
-                      if (!mounted) return;
+                      if (!context.mounted) return;
+                      final l10nAfter = AppLocalizations.of(context)!;
                       messenger.showSnackBar(
                         SnackBar(
-                          content: Text('${AppLocalizations.of(context)!.failedAddToCart}: $error'),
+                          content: Text('${l10nAfter.failedAddToCart}: $error'),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    }
+                  },
+                  onBuyNow: () async {
+                    final l10n = AppLocalizations.of(context)!;
+                    final variant = _findSelectedVariant(product, selectedSize);
+                    if (variant == null || variant.id.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(l10n.variantNotFound),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                      return;
+                    }
+
+                    try {
+                      // 1) Add to cart (backend may merge quantities)
+                      await ref
+                          .read(cartProvider.notifier)
+                          .addItemByVariant(variant.id, quantity: 1);
+
+                      if (!mounted) return;
+
+                      // 2) Select ONLY this product in checkout
+                      final cart = ref.read(cartProvider);
+                      final target = cart.items.firstWhere(
+                        (it) {
+                          final sameProduct = it.productId == product.id;
+                          final sizeMatch = (it.size ?? '')
+                              .toLowerCase()
+                              .contains(selectedSize.toLowerCase());
+                          return sameProduct && (sizeMatch || it.size == null);
+                        },
+                        orElse: () => cart.items.firstWhere(
+                          (it) => it.productId == product.id,
+                          orElse: () => cart.items.isNotEmpty
+                              ? cart.items.first
+                              : throw StateError('empty cart'),
+                        ),
+                      );
+
+                      ref
+                          .read(cartSelectionProvider.notifier)
+                          .setSelection({target.id}, selectAll: false);
+
+                      if (!context.mounted) return;
+                      final messenger = ScaffoldMessenger.of(context);
+                      messenger.hideCurrentSnackBar();
+                      context.push(AppRoutes.checkout);
+                    } catch (e) {
+                      if (!context.mounted) return;
+                      final l10nAfter = AppLocalizations.of(context)!;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('${l10nAfter.error}: $e'),
+                          backgroundColor: const Color(0xFFD32F2F),
                           behavior: SnackBarBehavior.floating,
                         ),
                       );

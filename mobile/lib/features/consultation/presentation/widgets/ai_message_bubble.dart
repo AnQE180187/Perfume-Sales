@@ -107,7 +107,7 @@ class _AiMessageBubbleState extends ConsumerState<AiMessageBubble> {
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
                           height: 1.6,
-                          color: AppTheme.deepCharcoal.withValues(alpha: 0.9),
+                          color: AppTheme.deepCharcoal,
                         ),
                       ),
                     ],
@@ -213,7 +213,9 @@ class _ReactionBtn extends StatelessWidget {
         child: Icon(
           isActive ? activeIcon : icon,
           size: 16,
-          color: isActive ? AppTheme.accentGold : AppTheme.mutedSilver.withValues(alpha: 0.6),
+          color: isActive
+              ? AppTheme.accentGold
+              : AppTheme.mutedSilver.withValues(alpha: 0.6),
         ),
       ),
     );
@@ -328,7 +330,7 @@ class _RecommendationCard extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    
+
                     // Add to Cart invitation style
                     GestureDetector(
                       onTap: () => _addToCart(context, ref),
@@ -405,7 +407,11 @@ class _RecommendationCard extends ConsumerWidget {
             const SizedBox(height: 32),
             Row(
               children: [
-                const Icon(Icons.auto_awesome, color: AppTheme.accentGold, size: 20),
+                const Icon(
+                  Icons.auto_awesome,
+                  color: AppTheme.accentGold,
+                  size: 20,
+                ),
                 const SizedBox(width: 12),
                 Text(
                   'AI SPECIALIST INSIGHT',
@@ -436,7 +442,7 @@ class _RecommendationCard extends ConsumerWidget {
                   style: GoogleFonts.montserrat(
                     fontSize: 15,
                     height: 1.8,
-                    color: AppTheme.deepCharcoal.withValues(alpha: 0.8),
+                    color: AppTheme.deepCharcoal,
                   ),
                 ),
               ),
@@ -450,9 +456,17 @@ class _RecommendationCard extends ConsumerWidget {
                   backgroundColor: AppTheme.deepCharcoal,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 18),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
-                child: Text('ĐÃ HIỂU', style: GoogleFonts.montserrat(fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+                child: Text(
+                  'ĐÃ HIỂU',
+                  style: GoogleFonts.montserrat(
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.5,
+                  ),
+                ),
               ),
             ),
           ],
@@ -495,9 +509,7 @@ class _ProductImage extends StatelessWidget {
     return Container(
       height: 140,
       width: double.infinity,
-      decoration: const BoxDecoration(
-        color: Color(0xFFF9F9F9),
-      ),
+      decoration: const BoxDecoration(color: Color(0xFFF9F9F9)),
       child: url.isNotEmpty
           ? Image.network(
               url,
@@ -509,11 +521,7 @@ class _ProductImage extends StatelessWidget {
   }
 
   Widget _placeholder() => const Center(
-    child: Icon(
-      Icons.spa_outlined,
-      size: 32,
-      color: AppTheme.softTaupe,
-    ),
+    child: Icon(Icons.spa_outlined, size: 32, color: AppTheme.softTaupe),
   );
 }
 

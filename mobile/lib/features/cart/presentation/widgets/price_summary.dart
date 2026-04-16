@@ -53,14 +53,16 @@ class PriceSummary extends StatelessWidget {
             _PriceRow(
               label: l10n.memberDiscount,
               value: '-${formatVND(discount)}',
-              valueColor: const Color(0xffb8860b),
+              valueColor: AppTheme.accentGold,
             ),
           ],
           const SizedBox(height: 10),
           _PriceRow(
             label: l10n.shippingFee,
             value: shipping == 0 ? l10n.notCalculated : formatVND(shipping),
-            valueColor: shipping == 0 ? AppTheme.mutedSilver.withValues(alpha: 0.5) : null,
+            valueColor: shipping == 0
+                ? AppTheme.mutedSilver.withValues(alpha: 0.5)
+                : null,
           ),
           const SizedBox(height: 20),
           Padding(
@@ -71,9 +73,9 @@ class PriceSummary extends StatelessWidget {
                 (index) => Expanded(
                   child: Container(
                     height: 1,
-                    color: index % 2 == 0 
-                      ? AppTheme.softTaupe.withValues(alpha: 0.15) 
-                      : Colors.transparent,
+                    color: index % 2 == 0
+                        ? AppTheme.softTaupe.withValues(alpha: 0.15)
+                        : Colors.transparent,
                   ),
                 ),
               ),
@@ -126,7 +128,7 @@ class _PriceRow extends StatelessWidget {
           label,
           style: GoogleFonts.montserrat(
             fontSize: 13,
-            color: AppTheme.deepCharcoal.withValues(alpha: 0.65),
+            color: AppTheme.mutedSilver,
           ),
         ),
         Text(
