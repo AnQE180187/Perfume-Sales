@@ -176,7 +176,7 @@ export function SalesChart({ data, period, onPeriodChange, loading }: SalesChart
                             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
                             <XAxis
                                 dataKey="label"
-                                tick={{ fontSize: 9, fill: '#888', fontFamily: 'inherit', textTransform: 'uppercase', letterSpacing: '0.1em' }}
+                                tick={{ fontSize: 9, fill: '#888', fontFamily: 'inherit', letterSpacing: '0.1em' }}
                                 axisLine={false}
                                 tickLine={false}
                                 interval="preserveStartEnd"
@@ -230,7 +230,7 @@ export function SalesChart({ data, period, onPeriodChange, loading }: SalesChart
                             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
                             <XAxis
                                 dataKey="label"
-                                tick={{ fontSize: 9, fill: '#888', fontFamily: 'inherit', textTransform: 'uppercase' }}
+                                tick={{ fontSize: 9, fill: '#888', fontFamily: 'inherit' }}
                                 axisLine={false}
                                 tickLine={false}
                                 interval="preserveStartEnd"
