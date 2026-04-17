@@ -68,7 +68,7 @@ class EmptyOrdersWidget extends StatelessWidget {
               style: GoogleFonts.montserrat(
                 fontSize: 14,
                 height: 1.6,
-                color: AppTheme.deepCharcoal.withValues(alpha: 0.6),
+                color: AppTheme.deepCharcoal,
                 fontWeight: FontWeight.w400,
               ),
               textAlign: TextAlign.center,

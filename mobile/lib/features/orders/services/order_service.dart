@@ -50,4 +50,8 @@ class OrderService {
         .map((it) => ShipmentInfo.fromJson(it.map((k, v) => MapEntry(k.toString(), v))))
         .toList();
   }
+
+  Future<void> cancelOrder(String orderId) async {
+    await _client.post(ApiEndpoints.cancelOrder(orderId));
+  }
 }

@@ -18,7 +18,17 @@ class CollectionScreen extends StatelessWidget {
           SliverAppBar(
             expandedHeight: 120,
             floating: true,
+            pinned: true,
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            leading: IconButton(
+              icon: Icon(
+                Icons.arrow_back,
+                color: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+              ),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
             flexibleSpace: FlexibleSpaceBar(
               centerTitle: true,
               title: Text(
@@ -31,6 +41,17 @@ class CollectionScreen extends StatelessWidget {
               ),
             ),
             actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).maybePop(),
+                child: Text(
+                  l10n.cancel,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+                  ),
+                ),
+              ),
               IconButton(
                 icon: Icon(
                   Icons.search_rounded,

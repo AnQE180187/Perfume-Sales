@@ -55,6 +55,7 @@ class AppRoutes {
   // SEARCH & DISCOVERY
   // ============================================
   static const String search = '/search';
+  static const String scentClub = '/scent-club';
 
   // ============================================
   // PAYMENT ROUTES

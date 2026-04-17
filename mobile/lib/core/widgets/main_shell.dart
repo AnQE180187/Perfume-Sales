@@ -9,6 +9,8 @@ import '../../features/consultation/presentation/consultation_screen.dart';
 import '../../features/membership/presentation/profile_screen.dart';
 import '../theme/app_theme.dart';
 import 'luxury_drawer.dart';
+import 'package:go_router/go_router.dart';
+import '../routing/app_routes.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -84,10 +86,7 @@ class _MainShellState extends State<MainShell> {
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [
-                  AppTheme.champagneGold,
-                  AppTheme.accentGold,
-                ],
+                colors: [AppTheme.champagneGold, AppTheme.accentGold],
               ),
             ),
             child: const Center(
@@ -115,6 +114,11 @@ class _MainShellState extends State<MainShell> {
           currentIndex: _selectedIndex,
           onChanged: (index) {
             if (index == 2) return;
+            if (index == 1) {
+              // Navigate to Quiz screen (scent quiz)
+              context.push(AppRoutes.quiz);
+              return;
+            }
             setState(() => _selectedIndex = index);
           },
         ),
@@ -143,19 +147,34 @@ class _LuxuryBottomNavBar extends StatelessWidget {
       children: [
         // Left side
         _buildItem(0, Icons.home_outlined, Icons.home_rounded, l10n.navHome),
-        _buildItem(1, Icons.explore_outlined, Icons.explore_rounded, l10n.navExplore),
+        _buildItem(1, Icons.quiz_outlined, Icons.quiz_rounded, l10n.scentQuiz),
 
         // Middle gap for FAB
         const SizedBox(width: 80),
 
         // Right side
-        _buildItem(3, Icons.notifications_outlined, Icons.notifications_rounded, l10n.navAlerts),
-        _buildItem(4, Icons.person_outline_rounded, Icons.person_rounded, l10n.navProfile),
+        _buildItem(
+          3,
+          Icons.notifications_outlined,
+          Icons.notifications_rounded,
+          l10n.navAlerts,
+        ),
+        _buildItem(
+          4,
+          Icons.person_outline_rounded,
+          Icons.person_rounded,
+          l10n.navProfile,
+        ),
       ],
     );
   }
 
-  Widget _buildItem(int index, IconData icon, IconData activeIcon, String label) {
+  Widget _buildItem(
+    int index,
+    IconData icon,
+    IconData activeIcon,
+    String label,
+  ) {
     return Expanded(
       child: _NavBarItem(
         icon: icon,
@@ -189,7 +208,9 @@ class _NavBarItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final inactiveColor = const Color(0xFF666666); // Higher contrast medium grey
+    final inactiveColor = const Color(
+      0xFF666666,
+    ); // Higher contrast medium grey
 
     return InkWell(
       onTap: onTap,

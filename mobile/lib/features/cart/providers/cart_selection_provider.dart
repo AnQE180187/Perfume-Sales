@@ -61,6 +61,13 @@ class CartSelectionNotifier extends StateNotifier<CartSelectionState> {
   void clear() {
     state = const CartSelectionState();
   }
+
+  void setSelection(Set<String> selectedIds, {bool? selectAll}) {
+    state = CartSelectionState(
+      selectedIds: selectedIds,
+      selectAll: selectAll ?? false,
+    );
+  }
 }
 
 final cartSelectionProvider =

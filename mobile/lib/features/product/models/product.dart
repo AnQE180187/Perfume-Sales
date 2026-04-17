@@ -56,6 +56,7 @@ class Product {
   final List<ProductVariant> variants;
   final bool? inStock;
   final List<String>? images;
+  final String? scentAnalysis;
 
   Product({
     required this.id,
@@ -76,6 +77,7 @@ class Product {
     this.variants = const [],
     this.inStock = true,
     this.images,
+    this.scentAnalysis,
   });
 
   Product copyWith({
@@ -97,6 +99,7 @@ class Product {
     List<ProductVariant>? variants,
     bool? inStock,
     List<String>? images,
+    String? scentAnalysis,
   }) {
     return Product(
       id: id ?? this.id,
@@ -117,6 +120,7 @@ class Product {
       variants: variants ?? this.variants,
       inStock: inStock ?? this.inStock,
       images: images ?? this.images,
+      scentAnalysis: scentAnalysis ?? this.scentAnalysis,
     );
   }
 
@@ -139,6 +143,7 @@ class Product {
       'variants': variants.map((v) => v.toJson()).toList(),
       'in_stock': inStock,
       'images': images,
+      'scentAnalysis': scentAnalysis,
     };
   }
 
@@ -295,6 +300,7 @@ class Product {
       variants: parsedVariants,
       inStock: inStock,
       images: imageList,
+      scentAnalysis: json['scentAnalysis'] as String?,
     );
   }
 }

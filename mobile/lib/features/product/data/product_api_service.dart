@@ -16,6 +16,10 @@ class ProductApiService {
     int? categoryId,
     int? brandId,
     String? search,
+    String? notes,
+    String? occasion,
+    int? minPrice,
+    int? maxPrice,
   }) async {
     final queryParams = <String, dynamic>{
       if (skip != null) 'skip': skip,
@@ -23,6 +27,10 @@ class ProductApiService {
       if (categoryId != null) 'categoryId': categoryId,
       if (brandId != null) 'brandId': brandId,
       if (search != null) 'search': search,
+      if (notes != null) 'notes': notes,
+      if (occasion != null) 'occasion': occasion,
+      if (minPrice != null) 'minPrice': minPrice,
+      if (maxPrice != null) 'maxPrice': maxPrice,
     };
 
     final response = await _client.get(

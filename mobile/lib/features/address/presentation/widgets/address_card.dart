@@ -27,7 +27,7 @@ class AddressCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isDefault = address.isDefault;
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -49,9 +49,11 @@ class AddressCard extends StatelessWidget {
             ),
         ],
         border: Border.all(
-          color: isDefault 
+          color: isDefault
               ? AppTheme.accentGold.withValues(alpha: 0.5)
-              : (selected ? AppTheme.deepCharcoal : AppTheme.softTaupe.withValues(alpha: 0.3)),
+              : (selected
+                    ? AppTheme.deepCharcoal
+                    : AppTheme.softTaupe.withValues(alpha: 0.3)),
           width: isDefault || selected ? 1.5 : 1,
         ),
       ),
@@ -86,7 +88,8 @@ class AddressCard extends StatelessWidget {
                                   ),
                                 ),
                                 const Spacer(),
-                                if (isDefault) _PremiumBadge(label: l10n.defaultUpper),
+                                if (isDefault)
+                                  _PremiumBadge(label: l10n.defaultUpper),
                               ],
                             ),
                             const SizedBox(height: 4),
@@ -106,7 +109,11 @@ class AddressCard extends StatelessWidget {
                   ),
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 16),
-                    child: Divider(height: 1, color: AppTheme.softTaupe, thickness: 0.5),
+                    child: Divider(
+                      height: 1,
+                      color: AppTheme.softTaupe,
+                      thickness: 0.5,
+                    ),
                   ),
                   Text(
                     address.fullAddress,
@@ -114,14 +121,18 @@ class AddressCard extends StatelessWidget {
                       fontSize: 14,
                       height: 1.6,
                       fontWeight: FontWeight.w400,
-                      color: AppTheme.deepCharcoal.withValues(alpha: 0.8),
+                      color: AppTheme.deepCharcoal,
                     ),
                   ),
                   if (address.note != null && address.note!.isNotEmpty) ...[
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        const Icon(Icons.note_alt_outlined, size: 14, color: AppTheme.mutedSilver),
+                        const Icon(
+                          Icons.note_alt_outlined,
+                          size: 14,
+                          color: AppTheme.mutedSilver,
+                        ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(

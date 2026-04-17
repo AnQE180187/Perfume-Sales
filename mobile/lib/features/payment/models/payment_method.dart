@@ -155,7 +155,7 @@ enum PaymentStatus {
   String get displayName {
     switch (this) {
       case PaymentStatus.pending:
-        return 'Chờ xử lý';
+        return 'Chờ thanh toán';
       case PaymentStatus.processing:
         return 'Đang xử lý';
       case PaymentStatus.success:

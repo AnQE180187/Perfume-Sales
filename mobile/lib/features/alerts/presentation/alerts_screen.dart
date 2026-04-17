@@ -65,7 +65,7 @@ class AlertsScreen extends ConsumerWidget {
                           fontSize: 13,
                           height: 1.6,
                           fontWeight: FontWeight.w500,
-                          color: AppTheme.deepCharcoal.withValues(alpha: 0.7),
+                          color: AppTheme.deepCharcoal,
                         ),
                       ),
                       const SizedBox(height: 18),
@@ -79,7 +79,11 @@ class AlertsScreen extends ConsumerWidget {
                       const SizedBox(height: 24),
                       _FilterChipsRow(
                         activeFilter: prefs.activeFilter,
-                        unreadCount: alertsAsync.value?.where((a) => a.isUnread).length ?? 0,
+                        unreadCount:
+                            alertsAsync.value
+                                ?.where((a) => a.isUnread)
+                                .length ??
+                            0,
                       ),
                       const SizedBox(height: 12),
                     ],
@@ -187,7 +191,7 @@ class _EmptyAlertsView extends StatelessWidget {
               style: GoogleFonts.playfairDisplay(
                 fontSize: 20,
                 fontWeight: FontWeight.w400,
-                color: AppTheme.deepCharcoal.withValues(alpha: 0.7),
+                color: AppTheme.deepCharcoal,
               ),
             ),
           ],
@@ -313,11 +317,13 @@ class _AlertsSummaryCard extends StatelessWidget {
                 Text(
                   unread == 0
                       ? AppLocalizations.of(context)!.allNotificationsRead
-                      : AppLocalizations.of(context)!.unreadNotifications(unread),
+                      : AppLocalizations.of(
+                          context,
+                        )!.unreadNotifications(unread),
                   style: GoogleFonts.montserrat(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: AppTheme.deepCharcoal.withValues(alpha: 0.85),
+                    color: AppTheme.deepCharcoal,
                   ),
                 ),
                 if (unread > 0)
@@ -328,7 +334,7 @@ class _AlertsSummaryCard extends StatelessWidget {
                       style: GoogleFonts.montserrat(
                         fontSize: 10,
                         fontWeight: FontWeight.w400,
-                        color: AppTheme.deepCharcoal.withValues(alpha: 0.5),
+                        color: AppTheme.mutedSilver,
                       ),
                     ),
                   ),
@@ -337,7 +343,8 @@ class _AlertsSummaryCard extends StatelessWidget {
           ),
           if (unread > 0)
             Consumer(
-              builder: (context, ref, _) => _MarkAllReadSummaryButton(unread: unread),
+              builder: (context, ref, _) =>
+                  _MarkAllReadSummaryButton(unread: unread),
             ),
         ],
       ),
@@ -585,9 +592,14 @@ class _Chip extends StatelessWidget {
               if (count != null && count! > 0) ...[
                 const SizedBox(width: 6),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 1,
+                  ),
                   decoration: BoxDecoration(
-                    color: isSelected ? AppTheme.accentGold : AppTheme.deepCharcoal.withValues(alpha: 0.1),
+                    color: isSelected
+                        ? AppTheme.accentGold
+                        : AppTheme.deepCharcoal.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
@@ -595,7 +607,9 @@ class _Chip extends StatelessWidget {
                     style: GoogleFonts.montserrat(
                       fontSize: 8,
                       fontWeight: FontWeight.w700,
-                      color: isSelected ? AppTheme.deepCharcoal : AppTheme.deepCharcoal.withValues(alpha: 0.6),
+                      color: isSelected
+                          ? AppTheme.deepCharcoal
+                          : AppTheme.deepCharcoal.withValues(alpha: 0.6),
                     ),
                   ),
                 ),
@@ -669,11 +683,7 @@ class _AlertCard extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Icon(
-                categoryIcon,
-                size: 18,
-                color: AppTheme.deepCharcoal.withValues(alpha: 0.8),
-              ),
+              child: Icon(categoryIcon, size: 18, color: AppTheme.deepCharcoal),
             ),
             const SizedBox(width: 16),
             // Content
@@ -688,7 +698,9 @@ class _AlertCard extends StatelessWidget {
                           alert.title,
                           style: GoogleFonts.montserrat(
                             fontSize: 14,
-                            fontWeight: alert.isUnread ? FontWeight.w700 : FontWeight.w600,
+                            fontWeight: alert.isUnread
+                                ? FontWeight.w700
+                                : FontWeight.w600,
                             color: AppTheme.deepCharcoal,
                           ),
                           maxLines: 1,
@@ -714,7 +726,7 @@ class _AlertCard extends StatelessWidget {
                       fontSize: 12,
                       height: 1.5,
                       fontWeight: FontWeight.w400,
-                      color: AppTheme.deepCharcoal.withValues(alpha: 0.6),
+                      color: AppTheme.deepCharcoal,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,

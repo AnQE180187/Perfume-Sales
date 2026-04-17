@@ -55,12 +55,14 @@ class TrackingViewData {
   final String header;
   final String etaText;
   final String mapLabel;
+  final String? trackingCode;
   final List<TrackingTimelineStep> steps;
 
   const TrackingViewData({
     required this.header,
     required this.etaText,
     required this.mapLabel,
+    required this.trackingCode,
     required this.steps,
   });
 }
@@ -96,6 +98,13 @@ class OrderNotifier extends AsyncNotifier<OrderListState> {
       return OrderListState.fromOrders(orders);
     });
   }
+
+  Future<void> cancelOrder(String orderId) async {
+    final service = ref.read(orderServiceProvider);
+    await service.cancelOrder(orderId);
+    await refresh();
+    ref.invalidate(orderDetailProvider(orderId));
+  }
 }
 
 final orderProvider = AsyncNotifierProvider<OrderNotifier, OrderListState>(
@@ -130,6 +139,7 @@ final trackingProvider = FutureProvider.family<TrackingViewData, String>((
   final order = await ref.watch(orderDetailProvider(orderId).future);
   final latestShipment = order.latestShipment;
 
+  final trackingCode = latestShipment?.trackingCode;
   final mapLabel = latestShipment?.trackingCode == null
       ? 'Đang chờ tạo vận đơn GHN'
       : 'Mã vận đơn: ${latestShipment!.trackingCode}';
@@ -186,7 +196,7 @@ final trackingProvider = FutureProvider.family<TrackingViewData, String>((
   });
 
   final headerMap = <OrderStatus, String>{
-    OrderStatus.pending: 'Đơn hàng đang chờ xử lý',
+    OrderStatus.pending: 'Đơn hàng đang chờ xác nhận',
     OrderStatus.confirmed: 'Đơn hàng đã được xác nhận',
     OrderStatus.processing: 'Đơn hàng đang được chuẩn bị',
     OrderStatus.shipped: 'Đơn hàng đang trên đường giao',
@@ -198,6 +208,7 @@ final trackingProvider = FutureProvider.family<TrackingViewData, String>((
     header: headerMap[order.status] ?? 'Đang cập nhật',
     etaText: etaText,
     mapLabel: mapLabel,
+    trackingCode: trackingCode,
     steps: order.status == OrderStatus.cancelled
         ? const [
             TrackingTimelineStep(

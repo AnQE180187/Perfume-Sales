@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../theme/app_theme.dart';
+import '../theme/app_text_style.dart';
 
 class AppInput extends StatefulWidget {
   final String label;
@@ -101,11 +102,9 @@ class _AppInputState extends State<AppInput> {
       obscureText: widget.obscureText,
       keyboardType: widget.keyboardType,
       textInputAction: widget.textInputAction,
-      style: GoogleFonts.montserrat(
-        fontSize: 14,
-        fontWeight: FontWeight.w500,
+      style: AppTextStyle.bodyMd(
         color: AppTheme.deepCharcoal,
-      ),
+      ).copyWith(fontWeight: FontWeight.w500),
       maxLines: widget.obscureText ? 1 : widget.maxLines,
       maxLength: widget.maxLength,
       inputFormatters: widget.inputFormatters,
@@ -116,20 +115,17 @@ class _AppInputState extends State<AppInput> {
       cursorColor: AppTheme.deepCharcoal,
       decoration: InputDecoration(
         labelText: widget.label.toUpperCase(),
-        labelStyle: GoogleFonts.montserrat(
-          fontSize: 10,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 1.2,
+        labelStyle: AppTextStyle.labelXs(
           color: AppTheme.mutedSilver,
-        ),
+          letterSpacing: 1.2,
+        ).copyWith(fontWeight: FontWeight.w700),
         hintText: widget.hint,
-        hintStyle: GoogleFonts.montserrat(
-          fontSize: 14,
+        hintStyle: AppTextStyle.bodyMd(
           color: AppTheme.mutedSilver.withValues(alpha: 0.5),
         ),
         floatingLabelBehavior: FloatingLabelBehavior.always,
         errorText: widget.errorText,
-        errorStyle: GoogleFonts.montserrat(fontSize: 11, color: Colors.red),
+        errorStyle: AppTextStyle.caption(color: Colors.red),
         prefixIcon: widget.prefixIcon,
         suffixIcon: widget.suffixIcon,
         filled: true,
@@ -137,11 +133,17 @@ class _AppInputState extends State<AppInput> {
         hoverColor: Colors.transparent,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppTheme.softTaupe.withValues(alpha: 0.4), width: 0.5),
+          borderSide: BorderSide(
+            color: AppTheme.softTaupe.withValues(alpha: 0.4),
+            width: 0.5,
+          ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppTheme.softTaupe.withValues(alpha: 0.4), width: 0.5),
+          borderSide: BorderSide(
+            color: AppTheme.softTaupe.withValues(alpha: 0.4),
+            width: 0.5,
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -151,7 +153,10 @@ class _AppInputState extends State<AppInput> {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Colors.red, width: 0.5),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 18,
+        ),
       ),
     );
   }

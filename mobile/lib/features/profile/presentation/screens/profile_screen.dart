@@ -114,8 +114,8 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   void _handleFindNextScent(BuildContext context, WidgetRef ref) {
-    // Navigate to AI consultation using GoRouter
-    context.push(AppRoutes.aiConsultation);
+    // Navigate to Explore screen using GoRouter
+    context.push(AppRoutes.explore);
   }
 
   void _handleViewScentProfile(BuildContext context, WidgetRef ref) {
