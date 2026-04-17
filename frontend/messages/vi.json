@@ -619,7 +619,12 @@
         "total_orders": "Tổng Đơn Hàng",
         "avg_order_value": "Giá Trị Đơn Trung Bình",
         "completion_rate": "Tỉ Lệ Hoàn Tất",
-        "completed_suffix": "Hoàn tất"
+        "cancel_rate": "Tỉ Lệ Hủy",
+        "refund_amount": "Lượng hoàn tiền",
+        "completed_suffix": "Hoàn tất",
+        "successful": "Hoàn tất",
+        "cancelled": "Đã hủy",
+        "refunded": "Hoàn tiền"
       },
       "top_products": {
         "title": "Quản Lý Đơn Hàng",
@@ -764,9 +769,9 @@
       }
     },
     "inventory": {
-      "title": "Quản Lý Đơn Hàng",
-      "subtitle": "Bạn càng khám phá nhiều, mối liên hệ của bạn với House càng sâu sắc.",
-      "store": "Phân bổ Boutique",
+      "title": "Quản lý kho",
+      "subtitle": "Kiểm soát và tối ưu hóa lượng hàng tồn tại quầy.",
+      "store": "Hệ thống quầy",
       "select_store": "Vui lòng chọn quầy để xem sản phẩm.",
       "no_store_assigned": "Chưa được gán quầy. Liên hệ Admin.",
       "total_units": "Tổng Sản Phẩm",
@@ -783,8 +788,8 @@
         "optimal": "Ổn định"
       },
       "operations": {
-        "title": "Quản Lý Đơn Hàng",
-        "desc": "Cập nhật hồ sơ của bạn hàng tháng",
+        "title": "Vận hành kho",
+        "desc": "Thực hiện nhập kho và điều chỉnh số lượng thực tế.",
         "selected_variant": "Phiên Bản Đã Chọn",
         "none": "Trống",
         "import_qty": "Số Lượng Nhập",
@@ -796,7 +801,7 @@
         "default_reason": "Điều chỉnh thủ công"
       },
       "logs": {
-        "title": "Quản Lý Đơn Hàng",
+        "title": "Nhật ký kho",
         "no_logs": "Chưa có nhật ký tồn kho."
       },
       "processing": "ĐANG CHUẨN BỊ",
@@ -847,7 +852,7 @@
       "no_orders": "Không tìm thấy đơn hàng nào phù hợp."
     },
     "pos": {
-      "title": "Quản Lý Đơn Hàng",
+      "title": "Hệ thống POS",
       "store": "Phân bổ Boutique",
       "select_store": "Vui lòng chọn quầy để xem sản phẩm.",
       "search_placeholder": "Tìm theo mã đơn, tên, số điện thoại...",
@@ -860,8 +865,8 @@
       "low_stock_warning": "Chỉ còn {count} sản phẩm trong kho!",
       "product_out_warning": "Sản phẩm đã hết hàng!",
       "ai": {
-        "title": "Quản Lý Đơn Hàng",
-        "desc": "Cập nhật hồ sơ của bạn hàng tháng",
+        "title": "Tư vấn AI",
+        "desc": "Khởi tạo gợi ý sản phẩm dựa trên nhu cầu khứu giác.",
         "gender": "Giới tính",
         "occasion": "Dịp sử dụng",
         "budget": "Ngân sách (VNĐ)",
@@ -887,7 +892,7 @@
       },
       "guest_customer": "Khách vãng lai",
       "cart": {
-        "title": "Quản Lý Đơn Hàng",
+        "title": "Giỏ hàng thanh toán",
         "paid": "ĐÃ THANH TOÁN",
         "customer": "Khách Hàng",
         "phone_placeholder": "Nhập SĐT khách hàng...",
@@ -1087,8 +1092,8 @@
         "view_return": "Xem Đơn Trả Hàng"
       },
       "returns": {
-        "title": "Quản Lý Đơn Hàng",
-        "subtitle": "Bạn càng khám phá nhiều, mối liên hệ của bạn với House càng sâu sắc.",
+        "title": "Hệ thống đổi trả",
+        "subtitle": "Quản lý các yêu cầu hoàn trả và logistics ngược.",
         "empty_title": "Chưa có sản phẩm yêu thích nào",
         "empty_desc": "Bắt đầu cuộc hành trình vào thế giới hương thơm xa hoa ngay hôm nay.",
         "back_to_orders": "Quay lại đơn hàng",
@@ -1112,7 +1117,7 @@
         },
         "detail": {
           "back": "Quay Lại",
-          "title": "Quản Lý Đơn Hàng",
+          "title": "Chi tiết đổi trả",
           "return_id": "Mã yêu cầu",
           "order": "Cộng hưởng Đơn hàng",
           "status": "Trạng Thái Đơn",
@@ -1139,8 +1144,8 @@
           "not_found": "Không tìm thấy đơn hàng"
         },
         "create_modal": {
-          "title": "Quản Lý Đơn Hàng",
-          "subtitle": "Bạn càng khám phá nhiều, mối liên hệ của bạn với House càng sâu sắc.",
+          "title": "Vận hành đổi trả",
+          "subtitle": "Khởi tạo yêu cầu đổi trả cho khách hàng tại quầy.",
           "select_items": "Chọn sản phẩm đổi trả",
           "quantity_label": "Số lượng: {qty}",
           "reason_label": "Lý do nhận lại (Bắt buộc)",

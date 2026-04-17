@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
-import '../theme/app_text_style.dart';
+import 'tappable_card.dart';
 
 class LuxuryButton extends StatelessWidget {
   final String text;
@@ -26,57 +26,65 @@ class LuxuryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDisabled = onPressed == null || isLoading;
+    final bgColor = backgroundColor ?? AppTheme.accentGold;
 
-    return SizedBox(
-      height: height ?? 46,
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: isDisabled ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor ?? AppTheme.accentGold,
-          foregroundColor: Colors.white,
-          disabledBackgroundColor: AppTheme.mutedSilver.withValues(alpha: 0.3),
-          elevation: 0,
-          padding: EdgeInsets.zero,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-          ),
+    return TappableCard(
+      onTap: isDisabled ? null : onPressed,
+      scaleDownFactor: 0.94,
+      borderRadius: BorderRadius.circular(24),
+      child: Container(
+        height: height ?? 46,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: isDisabled ? AppTheme.mutedSilver.withValues(alpha: 0.4) : bgColor,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: isDisabled ? null : [
+            BoxShadow(
+              color: bgColor.withValues(alpha: 0.35),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        child: isLoading
-            ? const SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (leadingIcon != null) ...[
-                    Icon(leadingIcon, size: 16),
-                    const SizedBox(width: 6),
-                  ],
-                  Flexible(
-                    child: Text(
-                      text,
-                      style: AppTextStyle.button().copyWith(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        height: 1.1,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+        child: Center(
+          child: isLoading
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
-                  if (trailingIcon != null) ...[
-                    const SizedBox(width: 6),
-                    Icon(trailingIcon, size: 16),
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (leadingIcon != null) ...[
+                      Icon(leadingIcon, size: 16, color: Colors.white),
+                      const SizedBox(width: 8),
+                    ],
+                    Flexible(
+                      child: Text(
+                        text,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                          letterSpacing: 0.5,
+                          height: 1.1,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (trailingIcon != null) ...[
+                      const SizedBox(width: 8),
+                      Icon(trailingIcon, size: 16, color: Colors.white),
+                    ],
                   ],
-                ],
-              ),
+                ),
+        ),
       ),
     );
   }

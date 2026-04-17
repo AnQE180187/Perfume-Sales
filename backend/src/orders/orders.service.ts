@@ -206,9 +206,17 @@ export class OrdersService {
     };
   }
 
-  async listAllOrders(skip: number, take: number) {
+  async listAllOrders(skip: number, take: number, startDate?: string, endDate?: string) {
+    const where: any = {};
+    if (startDate || endDate) {
+      where.createdAt = {};
+      if (startDate) where.createdAt.gte = new Date(startDate);
+      if (endDate) where.createdAt.lte = new Date(endDate);
+    }
+
     const [rawData, total] = await Promise.all([
       this.prisma.order.findMany({
+        where,
         skip,
         take,
         include: {
@@ -229,7 +237,7 @@ export class OrdersService {
         },
         orderBy: { createdAt: 'desc' },
       }),
-      this.prisma.order.count(),
+      this.prisma.order.count({ where }),
     ]);
 
     const data = rawData.map((order) => ({

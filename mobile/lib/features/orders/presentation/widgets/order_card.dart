@@ -201,23 +201,25 @@ class OrderCard extends StatelessWidget {
 
     return Row(
       children: [
-        TextButton(
-          onPressed: onViewDetail ?? onTap,
-          style: TextButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            minimumSize: Size.zero,
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
-          child: Text(
-            l10n.viewDetails,
-            style: GoogleFonts.montserrat(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: AppTheme.deepCharcoal.withValues(alpha: 0.6),
+        if (!isCancelled && !isReturn) ...[
+          TextButton(
+            onPressed: onViewDetail ?? onTap,
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: Text(
+              l10n.viewDetails,
+              style: GoogleFonts.montserrat(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.deepCharcoal.withValues(alpha: 0.6),
+              ),
             ),
           ),
-        ),
-        const SizedBox(width: 8),
+          const SizedBox(width: 8),
+        ],
         const Spacer(),
         Flexible(
           child: ElevatedButton(

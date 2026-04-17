@@ -176,21 +176,7 @@ class OrderDetailScreen extends ConsumerWidget {
                       ],
                       
                       _SupportButton(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                l10n.supportContactMessage,
-                                style: GoogleFonts.montserrat(fontSize: 13),
-                              ),
-                              backgroundColor: AppTheme.deepCharcoal,
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                          );
-                        },
+                        onPressed: () => context.push(AppRoutes.contactUs),
                       ),
                       const SizedBox(height: 12),
 

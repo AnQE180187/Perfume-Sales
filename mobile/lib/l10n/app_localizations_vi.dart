@@ -2246,13 +2246,13 @@ class AppLocalizationsVi extends AppLocalizations {
   String get aovEfficiency => 'AOV / HIỆU SUẤT';
 
   @override
-  String get analyticsCommand => 'BỘ CHỈ HUY PHÂN TÍCH';
+  String get analyticsCommand => 'PHÂN TÍCH DỮ LIỆU';
 
   @override
   String get globalNetwork => 'TOÀN HỆ THỐNG';
 
   @override
-  String get topPerformanceCollection => 'BỘ SƯU TẬP HIỆU SUẤT CAO';
+  String get topPerformanceCollection => 'Top sản phẩm bán chạy';
 
   @override
   String get noRecentActivity => 'KHÔNG CÓ HOẠT ĐỘNG GẦN ĐÂY';

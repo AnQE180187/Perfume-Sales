@@ -103,7 +103,7 @@ class _LogItem extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(log.variant?.product?.name?.toUpperCase() ?? "UNKNOWN PRODUCT", style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 0.5)),
+                Text(log.variant?.product?.name?.toUpperCase() ?? "SẢN PHẨM KHÔNG XÁC ĐỊNH", style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 0.5)),
                 Text("${log.variant?.name ?? ''} | ${log.reason?.toUpperCase() ?? ''}", style: GoogleFonts.montserrat(fontSize: 9, color: Colors.white38, letterSpacing: 1)),
               ],
             ),

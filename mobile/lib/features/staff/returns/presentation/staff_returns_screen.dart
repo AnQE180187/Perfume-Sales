@@ -44,6 +44,8 @@ class StaffReturnsScreen extends ConsumerWidget {
                     ),
                   ],
                 ),
+                const Spacer(),
+                _DateFilterButton(),
               ],
             ),
             const SizedBox(height: 32),
@@ -58,16 +60,27 @@ class StaffReturnsScreen extends ConsumerWidget {
                 ),
                 data: (list) {
                   final storeId = ref.watch(posSelectedStoreIdProvider);
+                  final range = ref.watch(returnsDateRangeProvider);
                   final posReturnsToday = list.where((item) {
                     try {
                       if (item['origin'] != 'POS') return false;
                       if (item['order']?['storeId'] != storeId) return false;
                       
+                      if (range == null) {
+                        // Default to today if no range selected
+                        final createdAt = DateTime.parse(item['createdAt']).toLocal();
+                        final now = DateTime.now();
+                        return createdAt.year == now.year &&
+                            createdAt.month == now.month &&
+                            createdAt.day == now.day;
+                      }
+                      
                       final createdAt = DateTime.parse(item['createdAt']).toLocal();
-                      final now = DateTime.now();
-                      return createdAt.year == now.year &&
-                          createdAt.month == now.month &&
-                          createdAt.day == now.day;
+                      // Compare with range (inclusive of the whole start and end days)
+                      final start = DateTime(range.start.year, range.start.month, range.start.day);
+                      final end = DateTime(range.end.year, range.end.month, range.end.day, 23, 59, 59);
+                      return createdAt.isAfter(start.subtract(const Duration(seconds: 1))) &&
+                             createdAt.isBefore(end.add(const Duration(seconds: 1)));
                     } catch (_) {
                       return false;
                     }
@@ -75,7 +88,10 @@ class StaffReturnsScreen extends ConsumerWidget {
 
                   if (posReturnsToday.isEmpty) {
                     return Center(
-                      child: Text("Không tìm thấy yêu cầu trả hàng nào hôm nay tại quầy",
+                      child: Text(
+                          range == null
+                              ? "Không tìm thấy yêu cầu trả hàng nào hôm nay tại quầy"
+                              : "Không tìm thấy yêu cầu trả hàng trong khoảng thời gian đã chọn",
                           style: GoogleFonts.montserrat(
                               fontSize: 11,
                               color: Colors.white38,
@@ -263,6 +279,238 @@ class _StatusBadge extends StatelessWidget {
         localized,
         style: GoogleFonts.montserrat(fontSize: 10, color: color.shade300, fontWeight: FontWeight.w600),
       ),
+    );
+  }
+}
+class _DateFilterButton extends ConsumerWidget {
+  void _applyRange(WidgetRef ref, DateTimeRange range) {
+    ref.read(returnsDateRangeProvider.notifier).state = range;
+    ref.read(staffReturnsProvider.notifier).loadReturns(
+          status: ref.read(returnStatusFilterProvider),
+          startDate: range.start.toUtc().toIso8601String(),
+          endDate: range.end.add(const Duration(hours: 23, minutes: 59, seconds: 59)).toUtc().toIso8601String(),
+        );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final range = ref.watch(returnsDateRangeProvider);
+    final hasRange = range != null;
+
+    return Theme(
+      data: ThemeData.dark(),
+      child: Container(
+        height: 44,
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        decoration: BoxDecoration(
+          color: hasRange ? AppTheme.accentGold.withOpacity(0.1) : const Color(0xFF121212),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: hasRange ? AppTheme.accentGold.withOpacity(0.3) : Colors.white10,
+          ),
+        ),
+        child: Row(
+          children: [
+            if (hasRange)
+              IconButton(
+                icon: const Icon(Icons.close_rounded, size: 18, color: AppTheme.accentGold),
+                onPressed: () {
+                  ref.read(returnsDateRangeProvider.notifier).state = null;
+                  ref.read(staffReturnsProvider.notifier).loadReturns(
+                        status: ref.read(returnStatusFilterProvider),
+                      );
+                },
+                tooltip: "Xoá lọc ngày",
+              ),
+            TextButton.icon(
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  backgroundColor: Colors.transparent,
+                  builder: (ctx) => _DateFilterSheet(
+                    currentRange: range,
+                    onSelect: (r) {
+                      Navigator.pop(ctx);
+                      _applyRange(ref, r);
+                    },
+                    onCustomRange: () async {
+                      Navigator.pop(ctx);
+                      final newRange = await showDateRangePicker(
+                        context: context,
+                        initialDateRange: range,
+                        firstDate: DateTime(2023),
+                        lastDate: DateTime.now(),
+                        builder: (context, child) {
+                          return Theme(
+                            data: ThemeData.dark().copyWith(
+                              colorScheme: const ColorScheme.dark(
+                                primary: AppTheme.accentGold,
+                                onPrimary: Colors.black,
+                                surface: Color(0xFF1A1A1A),
+                                onSurface: Colors.white,
+                              ),
+                              dialogBackgroundColor: const Color(0xFF121212),
+                            ),
+                            child: child!,
+                          );
+                        },
+                      );
+
+                      if (newRange != null) {
+                        _applyRange(ref, newRange);
+                      }
+                    },
+                  ),
+                );
+              },
+              icon: Icon(
+                Icons.calendar_today_rounded,
+                size: 16,
+                color: hasRange ? AppTheme.accentGold : Colors.white24,
+              ),
+              label: Text(
+                hasRange
+                    ? "${DateFormat('dd/MM').format(range.start)}${range.start.day == range.end.day ? '' : ' - ${DateFormat('dd/MM').format(range.end)}'}"
+                    : "Lọc theo ngày",
+                style: GoogleFonts.montserrat(
+                  fontSize: 12,
+                  color: hasRange ? AppTheme.accentGold : Colors.white24,
+                  fontWeight: hasRange ? FontWeight.w600 : FontWeight.w400,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DateFilterSheet extends StatelessWidget {
+  final DateTimeRange? currentRange;
+  final Function(DateTimeRange) onSelect;
+  final VoidCallback onCustomRange;
+
+  const _DateFilterSheet({
+    required this.currentRange,
+    required this.onSelect,
+    required this.onCustomRange,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF121212),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border.all(color: Colors.white10),
+      ),
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white10,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                "Chọn thời gian lọc",
+                style: GoogleFonts.playfairDisplay(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 24),
+              _buildOption(
+                icon: Icons.today_rounded,
+                title: "Hôm nay",
+                subtitle: DateFormat('dd/MM/yyyy').format(DateTime.now()),
+                onTap: () {
+                  final now = DateTime.now();
+                  final today = DateTime(now.year, now.month, now.day);
+                  onSelect(DateTimeRange(start: today, end: today));
+                },
+              ),
+              _buildOption(
+                icon: Icons.history_rounded,
+                title: "Hôm qua",
+                subtitle: DateFormat('dd/MM/yyyy').format(DateTime.now().subtract(const Duration(days: 1))),
+                onTap: () {
+                  final now = DateTime.now();
+                  final yesterday = DateTime(now.year, now.month, now.day).subtract(const Duration(days: 1));
+                  onSelect(DateTimeRange(start: yesterday, end: yesterday));
+                },
+              ),
+              _buildOption(
+                icon: Icons.date_range_rounded,
+                title: "7 ngày qua",
+                subtitle: "Từ ngày ${DateFormat('dd/MM').format(DateTime.now().subtract(const Duration(days: 7)))}",
+                onTap: () {
+                  final now = DateTime.now();
+                  final today = DateTime(now.year, now.month, now.day);
+                  onSelect(DateTimeRange(start: today.subtract(const Duration(days: 7)), end: today));
+                },
+              ),
+              const Divider(color: Colors.white10, height: 32),
+              _buildOption(
+                icon: Icons.calendar_month_rounded,
+                title: "Tùy chọn khoảng ngày",
+                subtitle: "Chọn ngày bắt đầu và kết thúc",
+                color: AppTheme.accentGold,
+                onTap: onCustomRange,
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOption({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+    Color? color,
+  }) {
+    return ListTile(
+      onTap: onTap,
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: (color ?? Colors.white).withOpacity(0.05),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(icon, color: color ?? Colors.white70, size: 20),
+      ),
+      title: Text(
+        title,
+        style: GoogleFonts.montserrat(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: GoogleFonts.montserrat(
+          fontSize: 11,
+          color: Colors.white38,
+        ),
+      ),
+      trailing: const Icon(Icons.chevron_right_rounded, color: Colors.white10),
+      contentPadding: EdgeInsets.zero,
     );
   }
 }

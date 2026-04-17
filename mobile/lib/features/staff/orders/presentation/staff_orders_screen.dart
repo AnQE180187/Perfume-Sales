@@ -51,17 +51,117 @@ class _StaffOrdersScreenState extends ConsumerState<StaffOrdersScreen> {
         _scrollController.position.pixels >=
             _scrollController.position.maxScrollExtent - 200) {
       final query = ref.read(ordersSearchQueryProvider);
+      final range = ref.read(ordersDateRangeProvider);
       ref
           .read(ordersProvider.notifier)
-          .loadMore(search: query.isEmpty ? null : query);
+          .loadMore(
+            search: query.isEmpty ? null : query,
+            startDate: range?.start.toUtc().toIso8601String(),
+            endDate: range?.end.add(const Duration(hours: 23, minutes: 59, seconds: 59)).toUtc().toIso8601String(),
+          );
     }
   }
 
   void _onSearch(String value) {
     ref.read(ordersSearchQueryProvider.notifier).state = value;
-    ref
-        .read(ordersProvider.notifier)
-        .loadOrders(search: value.isEmpty ? null : value);
+    final range = ref.read(ordersDateRangeProvider);
+    ref.read(ordersProvider.notifier).loadOrders(
+      search: value.isEmpty ? null : value,
+      startDate: range?.start.toUtc().toIso8601String(),
+      endDate: range?.end.add(const Duration(hours: 23, minutes: 59, seconds: 59)).toUtc().toIso8601String(),
+    );
+  }
+
+  Future<void> _selectDateRange() async {
+    final currentRange = ref.read(ordersDateRangeProvider);
+    final newRange = await showDateRangePicker(
+      context: context,
+      initialDateRange: currentRange,
+      firstDate: DateTime(2023),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: AppTheme.accentGold,
+              onPrimary: Colors.black,
+              surface: Color(0xFF1A1A1A),
+              onSurface: Colors.white,
+            ),
+            dialogBackgroundColor: const Color(0xFF121212),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (newRange != null) {
+      ref.read(ordersDateRangeProvider.notifier).state = newRange;
+      final q = ref.read(ordersSearchQueryProvider);
+      ref.read(ordersProvider.notifier).loadOrders(
+        search: q.isEmpty ? null : q,
+        startDate: newRange.start.toUtc().toIso8601String(),
+        endDate: newRange.end.add(const Duration(hours: 23, minutes: 59, seconds: 59)).toUtc().toIso8601String(),
+      );
+    }
+  }
+
+  void _clearDateRange() {
+    ref.read(ordersDateRangeProvider.notifier).state = null;
+    final q = ref.read(ordersSearchQueryProvider);
+    ref.read(ordersProvider.notifier).loadOrders(
+      search: q.isEmpty ? null : q,
+    );
+  }
+
+  void _applyRange(DateTimeRange range) {
+    ref.read(ordersDateRangeProvider.notifier).state = range;
+    final q = ref.read(ordersSearchQueryProvider);
+    ref.read(ordersProvider.notifier).loadOrders(
+      search: q.isEmpty ? null : q,
+      startDate: range.start.toUtc().toIso8601String(),
+      endDate: range.end.add(const Duration(hours: 23, minutes: 59, seconds: 59)).toUtc().toIso8601String(),
+    );
+  }
+
+  void _showFilterOptions() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _DateFilterSheet(
+        currentRange: ref.read(ordersDateRangeProvider),
+        onSelect: (range) {
+          Navigator.pop(context);
+          _applyRange(range);
+        },
+        onCustomRange: () async {
+          Navigator.pop(context);
+          final newRange = await showDateRangePicker(
+            context: context,
+            initialDateRange: ref.read(ordersDateRangeProvider),
+            firstDate: DateTime(2023),
+            lastDate: DateTime.now(),
+            builder: (context, child) {
+              return Theme(
+                data: ThemeData.dark().copyWith(
+                  colorScheme: const ColorScheme.dark(
+                    primary: AppTheme.accentGold,
+                    onPrimary: Colors.black,
+                    surface: Color(0xFF1A1A1A),
+                    onSurface: Colors.white,
+                  ),
+                  dialogBackgroundColor: const Color(0xFF121212),
+                ),
+                child: child!,
+              );
+            },
+          );
+          if (newRange != null) {
+            _applyRange(newRange);
+          }
+        },
+      ),
+    );
   }
 
   @override
@@ -83,7 +183,12 @@ class _StaffOrdersScreenState extends ConsumerState<StaffOrdersScreen> {
           color: AppTheme.accentGold,
           onRefresh: () async {
             final q = ref.read(ordersSearchQueryProvider);
-            await ref.read(ordersProvider.notifier).loadOrders(search: q.isEmpty ? null : q);
+            final range = ref.read(ordersDateRangeProvider);
+            await ref.read(ordersProvider.notifier).loadOrders(
+              search: q.isEmpty ? null : q,
+              startDate: range?.start.toIso8601String(),
+              endDate: range?.end.toIso8601String(),
+            );
           },
           child: CustomScrollView(
             controller: _scrollController,
@@ -245,41 +350,92 @@ class _StaffOrdersScreenState extends ConsumerState<StaffOrdersScreen> {
   // ── Search Bar ─────────────────────────────────────────────────
 
   Widget _buildSearchBar(AppLocalizations l10n) {
+    final range = ref.watch(ordersDateRangeProvider);
+    final hasRange = range != null;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      child: TextField(
-        controller: _searchController,
-        onChanged: _onSearch,
-        decoration: InputDecoration(
-          hintText: l10n.searchOrdersHint,
-          hintStyle: GoogleFonts.montserrat(fontSize: 13, color: Colors.white24),
-          prefixIcon: const Icon(Icons.search_rounded, color: Colors.white24, size: 20),
-          suffixIcon: _searchController.text.isNotEmpty
-              ? IconButton(
-                  icon: const Icon(Icons.clear_rounded, size: 18, color: Colors.white24),
-                  onPressed: () {
-                    _searchController.clear();
-                    _onSearch('');
-                  },
-                )
-              : null,
-          contentPadding: const EdgeInsets.symmetric(vertical: 10),
-          filled: true,
-          fillColor: const Color(0xFF0D0D0D),
-          border: OutlineInputBorder(
-            borderRadius: AppRadius.inputBorder,
-            borderSide: const BorderSide(color: Colors.white10),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _searchController,
+              onChanged: _onSearch,
+              decoration: InputDecoration(
+                hintText: l10n.searchOrdersHint,
+                hintStyle: GoogleFonts.montserrat(fontSize: 13, color: Colors.white24),
+                prefixIcon: const Icon(Icons.search_rounded, color: Colors.white24, size: 20),
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear_rounded, size: 18, color: Colors.white24),
+                        onPressed: () {
+                          _searchController.clear();
+                          _onSearch('');
+                        },
+                      )
+                    : null,
+                contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                filled: true,
+                fillColor: const Color(0xFF0D0D0D),
+                border: OutlineInputBorder(
+                  borderRadius: AppRadius.inputBorder,
+                  borderSide: const BorderSide(color: Colors.white10),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: AppRadius.inputBorder,
+                  borderSide: const BorderSide(color: Colors.white10),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: AppRadius.inputBorder,
+                  borderSide: const BorderSide(color: AppTheme.accentGold, width: 0.5),
+                ),
+              ),
+              style: GoogleFonts.montserrat(fontSize: 13, color: Colors.white),
+            ),
           ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: AppRadius.inputBorder,
-            borderSide: const BorderSide(color: Colors.white10),
+          AppSpacing.horzSm,
+          Theme(
+            data: ThemeData.dark(),
+            child: Container(
+              height: 44,
+              decoration: BoxDecoration(
+                color: hasRange ? AppTheme.accentGold.withOpacity(0.1) : const Color(0xFF0D0D0D),
+                borderRadius: AppRadius.inputBorder,
+                border: Border.all(
+                  color: hasRange ? AppTheme.accentGold.withOpacity(0.3) : Colors.white10,
+                ),
+              ),
+              child: Row(
+                children: [
+                  if (hasRange)
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded, size: 18, color: AppTheme.accentGold),
+                      onPressed: _clearDateRange,
+                      tooltip: "Xoá lọc ngày",
+                    ),
+                  TextButton.icon(
+                    onPressed: _showFilterOptions,
+                    icon: Icon(
+                      Icons.calendar_today_rounded,
+                      size: 16,
+                      color: hasRange ? AppTheme.accentGold : Colors.white24,
+                    ),
+                    label: Text(
+                      hasRange
+                          ? "${DateFormat('dd/MM').format(range.start)}${range.start.day == range.end.day ? '' : ' - ${DateFormat('dd/MM').format(range.end)}'}"
+                          : "Lọc ngày",
+                      style: GoogleFonts.montserrat(
+                        fontSize: 12,
+                        color: hasRange ? AppTheme.accentGold : Colors.white24,
+                        fontWeight: hasRange ? FontWeight.w600 : FontWeight.w400,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: AppRadius.inputBorder,
-            borderSide: const BorderSide(color: AppTheme.accentGold, width: 0.5),
-          ),
-        ),
-        style: GoogleFonts.montserrat(fontSize: 13, color: Colors.white),
+        ],
       ),
     );
   }
@@ -864,6 +1020,135 @@ class _HoverableOrderCardState extends State<_HoverableOrderCard> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _DateFilterSheet extends StatelessWidget {
+  final DateTimeRange? currentRange;
+  final Function(DateTimeRange) onSelect;
+  final VoidCallback onCustomRange;
+
+  const _DateFilterSheet({
+    required this.currentRange,
+    required this.onSelect,
+    required this.onCustomRange,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF121212),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border.all(color: Colors.white10),
+      ),
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white10,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                "Chọn thời gian lọc",
+                style: GoogleFonts.playfairDisplay(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 24),
+              _buildOption(
+                icon: Icons.today_rounded,
+                title: "Hôm nay",
+                subtitle: DateFormat('dd/MM/yyyy').format(DateTime.now()),
+                onTap: () {
+                  final now = DateTime.now();
+                  final today = DateTime(now.year, now.month, now.day);
+                  onSelect(DateTimeRange(start: today, end: today));
+                },
+              ),
+              _buildOption(
+                icon: Icons.history_rounded,
+                title: "Hôm qua",
+                subtitle: DateFormat('dd/MM/yyyy').format(DateTime.now().subtract(const Duration(days: 1))),
+                onTap: () {
+                  final now = DateTime.now();
+                  final yesterday = DateTime(now.year, now.month, now.day).subtract(const Duration(days: 1));
+                  onSelect(DateTimeRange(start: yesterday, end: yesterday));
+                },
+              ),
+              _buildOption(
+                icon: Icons.date_range_rounded,
+                title: "7 ngày qua",
+                subtitle: "Từ ngày ${DateFormat('dd/MM').format(DateTime.now().subtract(const Duration(days: 7)))}",
+                onTap: () {
+                  final now = DateTime.now();
+                  final today = DateTime(now.year, now.month, now.day);
+                  onSelect(DateTimeRange(start: today.subtract(const Duration(days: 7)), end: today));
+                },
+              ),
+              const Divider(color: Colors.white10, height: 32),
+              _buildOption(
+                icon: Icons.calendar_month_rounded,
+                title: "Tùy chọn khoảng ngày",
+                subtitle: "Chọn ngày bắt đầu và kết thúc",
+                color: AppTheme.accentGold,
+                onTap: onCustomRange,
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOption({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+    Color? color,
+  }) {
+    return ListTile(
+      onTap: onTap,
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: (color ?? Colors.white).withOpacity(0.05),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(icon, color: color ?? Colors.white70, size: 20),
+      ),
+      title: Text(
+        title,
+        style: GoogleFonts.montserrat(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: GoogleFonts.montserrat(
+          fontSize: 11,
+          color: Colors.white38,
+        ),
+      ),
+      trailing: const Icon(Icons.chevron_right_rounded, color: Colors.white10),
+      contentPadding: EdgeInsets.zero,
     );
   }
 }

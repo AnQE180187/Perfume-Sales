@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:palette_generator/palette_generator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
@@ -7,8 +8,8 @@ import '../../../core/routing/app_routes.dart';
 import '../../../core/widgets/product_size_selector.dart';
 import '../../../core/widgets/ai_scent_analysis_card.dart';
 import '../../../core/widgets/scent_structure_section.dart';
-import '../../../core/widgets/product_story_section.dart';
 import '../../../core/widgets/product_bottom_cta.dart';
+import '../../../core/widgets/luxury_button.dart';
 import 'package:perfume_gpt_app/l10n/app_localizations.dart';
 import '../../cart/providers/cart_provider.dart';
 import '../../cart/providers/cart_selection_provider.dart';
@@ -20,8 +21,13 @@ import '../../../core/widgets/product_price_section.dart';
 
 class ProductDetailScreen extends ConsumerStatefulWidget {
   final String productId;
+  final String? heroTag;
 
-  const ProductDetailScreen({super.key, required this.productId});
+  const ProductDetailScreen({
+    super.key,
+    required this.productId,
+    this.heroTag,
+  });
 
   @override
   ConsumerState<ProductDetailScreen> createState() =>
@@ -36,6 +42,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
   late Animation<double> _fadeAnimation;
   final PageController _pageController = PageController();
   int _currentImagePage = 0;
+  Color? _dominantColor;
+  String? _loadedImageUrl;
 
   // Size pricing map
   final Map<String, double> _sizePricing = {
@@ -80,6 +88,22 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
       curve: Curves.easeOut,
     );
     _animationController.forward();
+  }
+
+  Future<void> _extractColor(String imageUrl) async {
+    if (_loadedImageUrl == imageUrl) return;
+    _loadedImageUrl = imageUrl;
+    try {
+      final palette = await PaletteGenerator.fromImageProvider(
+        NetworkImage(imageUrl),
+        size: const Size(100, 100),
+      );
+      if (mounted) {
+        setState(() {
+          _dominantColor = palette.dominantColor?.color ?? palette.lightMutedColor?.color;
+        });
+      }
+    } catch (_) {}
   }
 
   @override
@@ -128,6 +152,10 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                     ? backendVariantSizes.first
                     : _selectedSize);
           final currentPrice = _priceFor(product, selectedSize);
+
+          if (_dominantColor == null && _loadedImageUrl != images.first) {
+            _extractColor(images.first);
+          }
 
           return Stack(
             children: [
@@ -178,7 +206,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                       background: FadeTransition(
                         opacity: _fadeAnimation,
                         child: Hero(
-                          tag: 'product-${product.id}',
+                          tag: widget.heroTag ?? 'product-${product.id}',
                           child: ClipRRect(
                             borderRadius: const BorderRadius.only(
                               bottomLeft: Radius.circular(32),
@@ -189,13 +217,13 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                               children: [
                                 // gradient background
                                 Container(
-                                  decoration: const BoxDecoration(
+                                  decoration: BoxDecoration(
                                     gradient: LinearGradient(
                                       begin: Alignment.topCenter,
                                       end: Alignment.bottomCenter,
                                       colors: [
-                                        Color(0xFFE8D5B7),
-                                        Color(0xFFF5F1ED),
+                                        _dominantColor?.withValues(alpha: 0.15) ?? const Color(0xFFE8D5B7),
+                                        _dominantColor?.withValues(alpha: 0.5) ?? const Color(0xFFF5F1ED),
                                       ],
                                     ),
                                   ),
@@ -508,15 +536,9 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                     ),
                   ),
 
-                  // ================= THE STORY =================
-                  const SliverToBoxAdapter(child: SizedBox(height: 64)),
+                  // ================= PRODUCT STORY =================
                   SliverToBoxAdapter(
-                    child: ProductStorySection(
-                      description: product.description,
-                      productId: product.id,
-                      productName: product.name,
-                      imageUrl: product.imageUrl,
-                    ),
+                    child: _ProductStorySection(product: product),
                   ),
 
                   // Bottom padding — space reserved for the sticky CTA overlay
@@ -679,6 +701,59 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+class _ProductStorySection extends StatelessWidget {
+  final Product product;
+
+  const _ProductStorySection({required this.product});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final story = product.story ?? product.description ?? '';
+    if (story.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 24,
+                height: 1,
+                color: AppTheme.accentGold,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                l10n.theStory.toUpperCase(),
+                style: GoogleFonts.montserrat(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 2,
+                  color: AppTheme.accentGold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          Text(
+             story,
+            maxLines: 4,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.montserrat(
+              fontSize: 14,
+              height: 1.7,
+              color: AppTheme.deepCharcoal.withValues(alpha: 0.7),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -13,47 +13,64 @@ class CartItemCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outline,
-          width: 0.5,
+    return Dismissible(
+      key: ValueKey(item.id),
+      direction: DismissDirection.endToStart,
+      onDismissed: (direction) {
+        ref.read(cartProvider.notifier).removeItem(item.id);
+      },
+      background: Container(
+        margin: const EdgeInsets.only(bottom: 20),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFF3B30).withValues(alpha: 0.9), // iOS Red
+          borderRadius: BorderRadius.circular(8),
         ),
-        borderRadius: BorderRadius.circular(8),
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 24),
+        child: const Icon(Icons.delete_sweep, color: Colors.white, size: 28),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Product Image
-          _buildProductImage(context),
-          const SizedBox(width: 16),
-
-          // Product Details
-          Expanded(child: _buildProductDetails(context)),
-
-          // Quantity Controls
-          Column(
-            children: [
-              QuantityControl(item: item),
-              const SizedBox(height: 12),
-              IconButton(
-                icon: Icon(
-                  Icons.delete_outline,
-                  size: 18,
-                  color: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.color?.withValues(alpha: 0.5),
-                ),
-                onPressed: () {
-                  ref.read(cartProvider.notifier).removeItem(item.id);
-                },
-              ),
-            ],
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 20),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outline,
+            width: 0.5,
           ),
-        ],
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Product Image
+            _buildProductImage(context),
+            const SizedBox(width: 16),
+
+            // Product Details
+            Expanded(child: _buildProductDetails(context)),
+
+            // Quantity Controls
+            Column(
+              children: [
+                QuantityControl(item: item),
+                const SizedBox(height: 12),
+                IconButton(
+                  icon: Icon(
+                    Icons.delete_outline,
+                    size: 18,
+                    color: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.color?.withValues(alpha: 0.5),
+                  ),
+                  onPressed: () {
+                    ref.read(cartProvider.notifier).removeItem(item.id);
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

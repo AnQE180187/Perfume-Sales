@@ -8,6 +8,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_radius.dart';
 import 'package:perfume_gpt_app/l10n/app_localizations.dart';
+import '../../../../core/config/env.dart';
 import '../../pos/providers/pos_provider.dart';
 import '../models/inventory_models.dart';
 import '../providers/inventory_provider.dart';
@@ -95,12 +96,12 @@ class _StaffInventoryScreenState extends ConsumerState<StaffInventoryScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "STOCK LEDGER",
+                "QUẢN LÝ KHO",
                 style: GoogleFonts.montserrat(fontSize: 10, color: AppTheme.accentGold, fontWeight: FontWeight.w800, letterSpacing: 4),
               ),
               const SizedBox(height: 4),
               Text(
-                "Inventory Management",
+                "Quản lý kho",
                 style: GoogleFonts.playfairDisplay(
                   fontSize: 28,
                   fontWeight: FontWeight.w700,
@@ -195,19 +196,19 @@ class _StaffInventoryScreenState extends ConsumerState<StaffInventoryScreen> {
       child: Row(
         children: [
           _GlassStatCard(
-            label: "TOTAL UNITS",
+            label: "TỔNG SẢN PHẨM",
             value: "${overview.stats.totalUnits}",
             icon: Icons.layers_outlined,
           ),
           const SizedBox(width: 24),
           _GlassStatCard(
-            label: "TOTAL SKU",
+            label: "TỔNG SKU",
             value: "${overview.variants.length}",
             icon: Icons.science_outlined,
           ),
           const SizedBox(width: 24),
           _GlassStatCard(
-            label: "LOW STOCK",
+            label: "SẮP HẾT HÀNG",
             value: "${overview.stats.lowStockCount}",
             icon: Icons.emergency_outlined,
             isAlert: overview.stats.lowStockCount > 0,
@@ -294,10 +295,10 @@ class _StaffInventoryScreenState extends ConsumerState<StaffInventoryScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Row(
                 children: [
-                  _TableHeaderText("COLLECTION DETAIL", flex: 4),
-                  _TableHeaderText("SKU / MONO", flex: 2),
-                  _TableHeaderText("STATUS", flex: 2),
-                  _TableHeaderText("ACTION", flex: 1),
+                  _TableHeaderText("CHI TIẾT BỘ SƯU TẬP", flex: 4),
+                  _TableHeaderText("MÃ SKU / ĐƠN VỊ", flex: 2),
+                  _TableHeaderText("TRẠNG THÁI", flex: 2),
+                  _TableHeaderText("THAO TÁC", flex: 1),
                 ],
               ),
             ),
@@ -318,7 +319,7 @@ class _StaffInventoryScreenState extends ConsumerState<StaffInventoryScreen> {
         children: [
           const Icon(Icons.auto_awesome_rounded, color: Colors.white10, size: 60),
           const SizedBox(height: 24),
-          Text("SELECT BOUTIQUE TERMINAL TO BEGIN AUDIT", style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white60, letterSpacing: 4)),
+          Text("VUI LÒNG CHỌN QUẦY ĐỂ BẮT ĐẦU KIỂM KHO", style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white60, letterSpacing: 4)),
         ],
       ),
     );
@@ -488,9 +489,17 @@ class _InventoryRow extends StatefulWidget {
 class _InventoryRowState extends State<_InventoryRow> {
   bool _isHovered = false;
 
+  String _normalizeImageUrl(String? url) {
+    if (url == null || url.isEmpty) return '';
+    if (url.startsWith('http')) return url;
+    return '${EnvConfig.apiBaseUrl}$url';
+  }
+
   @override
   Widget build(BuildContext context) {
     final isLow = widget.variant.stock < 10;
+    final imageUrl = _normalizeImageUrl(widget.variant.imageUrl);
+
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
@@ -522,9 +531,9 @@ class _InventoryRowState extends State<_InventoryRow> {
                         border: Border.all(
                           color: _isHovered ? AppTheme.accentGold.withOpacity(0.3) : Colors.transparent,
                         ),
-                        image: widget.variant.imageUrl != null ? DecorationImage(image: NetworkImage(widget.variant.imageUrl!), fit: BoxFit.cover) : null,
+                        image: imageUrl.isNotEmpty ? DecorationImage(image: NetworkImage(imageUrl), fit: BoxFit.cover) : null,
                       ),
-                      child: widget.variant.imageUrl == null ? const Icon(Icons.science_outlined, color: Colors.white12, size: 20) : null,
+                      child: imageUrl.isEmpty ? const Icon(Icons.science_outlined, color: Colors.white12, size: 20) : null,
                     ),
                     const SizedBox(width: 20),
                     Expanded(
@@ -567,7 +576,7 @@ class _InventoryRowState extends State<_InventoryRow> {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      "${widget.variant.stock} units",
+                      "${widget.variant.stock} sản phẩm",
                       style: GoogleFonts.robotoMono(fontSize: 14, color: Colors.white, fontWeight: FontWeight.bold),
                     ),
                   ],

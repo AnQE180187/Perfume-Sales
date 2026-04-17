@@ -14,6 +14,7 @@ import 'package:perfume_gpt_app/l10n/app_localizations.dart';
 import '../models/daily_report.dart';
 import '../providers/dashboard_provider.dart';
 import '../../../../core/widgets/app_error_widget.dart';
+import '../../../../core/config/env.dart';
 import '../../pos/providers/pos_provider.dart';
 
 class StaffDashboardScreen extends ConsumerWidget {
@@ -90,7 +91,7 @@ class StaffDashboardScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    selectedStoreId == null ? l10n.globalNetwork : "STATION ${selectedStoreId.substring(0, 4).toUpperCase()}",
+                    "QUẢN LÝ DOANH THU",
                     style: GoogleFonts.playfairDisplay(
                       fontSize: 24,
                       fontWeight: FontWeight.w700,
@@ -216,9 +217,9 @@ class StaffDashboardScreen extends ConsumerWidget {
           children: [
             Expanded(child: _ObsidianKpi(label: l10n.conversionRate, value: "${report.completionRate.toStringAsFixed(1)}%", icon: Icons.troubleshoot_rounded, isGold: true)),
             const SizedBox(width: 16),
-            Expanded(child: _ObsidianKpi(label: l10n.cancelRate, value: "${report.totalOrders > 0 ? (report.cancelledOrders / report.totalOrders * 100).toStringAsFixed(1) : 0}%", icon: Icons.cancel_outlined)),
+            Expanded(child: _ObsidianKpi(label: l10n.cancelRate, value: "${report.cancelRate.toStringAsFixed(1)}%", icon: Icons.cancel_outlined)),
             const SizedBox(width: 16),
-            Expanded(child: _ObsidianKpi(label: l10n.refundVolume, value: "${report.refundedOrders}", icon: Icons.replay_circle_filled_rounded)),
+            Expanded(child: _ObsidianKpi(label: l10n.refundVolume, value: "${fmt.format(report.totalRefundedAmount)}đ", icon: Icons.replay_circle_filled_rounded)),
           ],
         ),
       ],
@@ -315,9 +316,18 @@ class _HoverableProductRow extends StatefulWidget {
 class _HoverableProductRowState extends State<_HoverableProductRow> {
   bool _isHovered = false;
 
+  String _normalizeImageUrl(String? url) {
+    if (url == null || url.isEmpty) return '';
+    if (url.startsWith('http')) return url;
+    // Prepend host for relative paths
+    return '${EnvConfig.apiBaseUrl}$url';
+  }
+
   @override
   Widget build(BuildContext context) {
     final p = widget.product;
+    final imageUrl = _normalizeImageUrl(p.imageUrl as String?);
+
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
@@ -333,6 +343,20 @@ class _HoverableProductRowState extends State<_HoverableProductRow> {
           children: [
             Text("0${widget.index + 1}", style: GoogleFonts.robotoMono(fontSize: 10, color: AppTheme.accentGold)),
             const SizedBox(width: 24),
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.05),
+                border: Border.all(color: Colors.white10),
+                borderRadius: BorderRadius.circular(2),
+                image: imageUrl.isNotEmpty 
+                  ? DecorationImage(image: NetworkImage(imageUrl), fit: BoxFit.cover) 
+                  : null,
+              ),
+              child: imageUrl.isEmpty ? const Icon(Icons.science_outlined, color: Colors.white24, size: 14) : null,
+            ),
+            const SizedBox(width: 16),
             Expanded(child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

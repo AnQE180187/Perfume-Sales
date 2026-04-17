@@ -618,7 +618,12 @@
         "total_orders": "Total Orders",
         "avg_order_value": "Avg Order Value",
         "completion_rate": "Completion Rate",
-        "completed_suffix": "completed"
+        "cancel_rate": "Cancellation Rate",
+        "refund_amount": "Refund Amount",
+        "completed_suffix": "completed",
+        "successful": "Fufilled",
+        "cancelled": "Cancelled",
+        "refunded": "Refunded"
       },
       "top_products": {
         "title": "Top Selling Products",

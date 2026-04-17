@@ -1,12 +1,15 @@
+import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../features/banners/services/banner_service.dart';
+import '../../../../core/widgets/tappable_card.dart';
+import '../../../../core/widgets/custom_shimmer.dart';
 
 class HomeHeader extends ConsumerWidget {
   const HomeHeader({super.key});
@@ -15,7 +18,7 @@ class HomeHeader extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     return Padding(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -33,7 +36,7 @@ class HomeHeader extends ConsumerWidget {
                 icon: Icons.favorite_border,
                 onTap: () => context.push('/wishlist'),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
               _IconButton(
                 icon: Icons.shopping_bag_outlined,
                 onTap: () => context.push('/cart'),
@@ -42,51 +45,61 @@ class HomeHeader extends ConsumerWidget {
           ),
           const SizedBox(height: 24),
 
-          // Search Bar
-          GestureDetector(
-            onTap: () => context.push('/search'),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-              decoration: BoxDecoration(
-                color: AppTheme.creamWhite,
+          // Search Bar - Upgraded to Hero & TappableCard
+          Hero(
+            tag: 'search_bar_hero',
+            child: Material(
+              color: Colors.transparent,
+              child: TappableCard(
+                onTap: () => context.push('/search'),
+                scaleDownFactor: 0.98,
                 borderRadius: BorderRadius.circular(28),
+                useGlassmorphism: true,
+                glassOpacity: 0.98,
+                backgroundColor: AppTheme.creamWhite,
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.deepCharcoal.withValues(alpha: 0.04),
+                    color: AppTheme.deepCharcoal.withValues(alpha: 0.05),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                  const BoxShadow(
+                    color: Colors.white,
                     blurRadius: 8,
-                    offset: const Offset(0, 2),
+                    offset: Offset(-2, -2),
                   ),
                 ],
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.search,
-                    color: AppTheme.mutedSilver.withValues(alpha: 0.6),
-                    size: 20,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      l10n.searchExploreHintHome,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.montserrat(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w400,
-                        color: AppTheme.mutedSilver.withValues(alpha: 0.7),
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.search,
+                      color: AppTheme.mutedSilver.withValues(alpha: 0.6),
+                      size: 20,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        l10n.searchExploreHintHome,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          color: AppTheme.mutedSilver.withValues(alpha: 0.7),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
           const SizedBox(height: 28),
 
-          // Banners (fetched from backend)
+          // Banners (fetched from backend) - Upgraded with Shimmer & Glassmorphism
           const BannerCarousel(),
-          const SizedBox(height: 12),
+          const SizedBox(height: 20),
 
           // Headline
           RichText(
@@ -126,12 +139,22 @@ class _IconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return TappableCard(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(8),
-        child: Icon(icon, color: AppTheme.deepCharcoal, size: 24),
-      ),
+      scaleDownFactor: 0.85,
+      borderRadius: BorderRadius.circular(16),
+      useGlassmorphism: true,
+      glassOpacity: 0.7,
+      backgroundColor: Colors.white,
+      boxShadow: [
+        BoxShadow(
+          color: AppTheme.deepCharcoal.withValues(alpha: 0.04),
+          blurRadius: 8,
+          offset: const Offset(2, 2),
+        ),
+      ],
+      padding: const EdgeInsets.all(10),
+      child: Icon(icon, color: AppTheme.deepCharcoal, size: 22),
     );
   }
 }
@@ -148,7 +171,7 @@ class _BannerCarouselState extends ConsumerState<BannerCarousel> {
   Timer? _timer;
   int _current = 0;
 
-  static const _autoPlaySeconds = 4;
+  static const _autoPlaySeconds = 5;
 
   @override
   void initState() {
@@ -167,8 +190,8 @@ class _BannerCarouselState extends ConsumerState<BannerCarousel> {
       if (mounted && _pageController.hasClients) {
         _pageController.animateToPage(
           next,
-          duration: const Duration(milliseconds: 450),
-          curve: Curves.easeInOut,
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.fastOutSlowIn,
         );
         setState(() => _current = next);
       }
@@ -188,7 +211,7 @@ class _BannerCarouselState extends ConsumerState<BannerCarousel> {
       height: height,
       decoration: BoxDecoration(
         color: AppTheme.creamWhite,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Center(
         child: Icon(
@@ -206,9 +229,9 @@ class _BannerCarouselState extends ConsumerState<BannerCarousel> {
     return bannersAsync.when(
       data: (banners) {
         if (banners.isEmpty) return const SizedBox.shrink();
-        final height = 180.0;
+        final height = 185.0;
         return SizedBox(
-          height: height,
+          height: height + 20, // Extra space for dots
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -219,119 +242,128 @@ class _BannerCarouselState extends ConsumerState<BannerCarousel> {
                   onPageChanged: (i) => setState(() => _current = i),
                   itemBuilder: (context, index) {
                     final b = banners[index];
-                    return GestureDetector(
+                    return TappableCard(
                       onTap: () {
                         if (b.linkUrl != null && b.linkUrl!.startsWith('/')) {
                           context.push(b.linkUrl!);
                         }
                       },
-                      child: Container(
-                        margin: const EdgeInsets.only(right: 12),
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: Stack(
-                            fit: StackFit.expand,
-                            children: [
-                              // Image with fallback
-                              Image.network(
-                                b.imageUrl,
-                                fit: BoxFit.cover,
-                                width: double.infinity,
-                                loadingBuilder:
-                                    (context, child, loadingProgress) {
-                                      if (loadingProgress == null) return child;
-                                      return Container(
-                                        color: AppTheme.creamWhite,
-                                        child: const Center(
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                errorBuilder: (_, __, ___) => _placeholder(
-                                  MediaQuery.of(context).size.width * 0.85,
-                                  height,
-                                ),
+                      scaleDownFactor: 0.96,
+                      margin: const EdgeInsets.only(right: 14, bottom: 8, top: 4),
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.deepCharcoal.withValues(alpha: 0.08),
+                          blurRadius: 12,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(24),
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            // Image with Shimmer loading fallback
+                            Image.network(
+                              b.imageUrl,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return const CustomShimmer(
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                );
+                              },
+                              errorBuilder: (_, __, ___) => _placeholder(
+                                MediaQuery.of(context).size.width * 0.85,
+                                height,
                               ),
+                            ),
 
-                              // Gradient overlay + title/subtitle
-                              Positioned(
-                                left: 0,
-                                right: 0,
-                                bottom: 0,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 10,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                      colors: [
-                                        Colors.transparent,
-                                        Colors.black.withOpacity(0.45),
+                            // Glassmorphism overlay + title/subtitle
+                            Positioned(
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              child: ClipRRect(
+                                borderRadius: const BorderRadius.vertical(
+                                  bottom: Radius.circular(24),
+                                ),
+                                child: BackdropFilter(
+                                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 14,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(0.35),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        if (b.title != null && b.title!.isNotEmpty)
+                                          Text(
+                                            b.title!,
+                                            style: GoogleFonts.montserrat(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w700,
+                                              color: Colors.white,
+                                              letterSpacing: 0.5,
+                                            ),
+                                          ),
+                                        if (b.subtitle != null && b.subtitle!.isNotEmpty) ...[
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            b.subtitle!,
+                                            style: GoogleFonts.montserrat(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w400,
+                                              color: Colors.white.withOpacity(0.9),
+                                            ),
+                                          ),
+                                        ],
                                       ],
                                     ),
                                   ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      if (b.title != null &&
-                                          b.title!.isNotEmpty)
-                                        Text(
-                                          b.title!,
-                                          style: GoogleFonts.montserrat(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      if (b.subtitle != null &&
-                                          b.subtitle!.isNotEmpty)
-                                        Text(
-                                          b.subtitle!,
-                                          style: GoogleFonts.montserrat(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w400,
-                                            color: Colors.white.withOpacity(
-                                              0.9,
-                                            ),
-                                          ),
-                                        ),
-                                    ],
-                                  ),
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
                     );
                   },
                 ),
               ),
-
-              // Dots
+              
+              // Animated Dots
               const SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(banners.length, (i) {
                   final selected = i == _current;
                   return AnimatedContainer(
-                    duration: const Duration(milliseconds: 250),
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeOutCirc,
                     margin: const EdgeInsets.symmetric(horizontal: 4),
-                    width: selected ? 20 : 8,
+                    width: selected ? 24 : 8,
                     height: 8,
                     decoration: BoxDecoration(
                       color: selected
                           ? AppTheme.accentGold
-                          : AppTheme.mutedSilver.withValues(alpha: 0.35),
+                          : AppTheme.mutedSilver.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(8),
+                      // Subtle glow for active dot
+                      boxShadow: selected ? [
+                        BoxShadow(
+                          color: AppTheme.accentGold.withValues(alpha: 0.4),
+                          blurRadius: 4,
+                          spreadRadius: 1,
+                        )
+                      ] : null,
                     ),
                   );
                 }),
@@ -340,9 +372,9 @@ class _BannerCarouselState extends ConsumerState<BannerCarousel> {
           ),
         );
       },
-      loading: () => const SizedBox(
-        height: 180,
-        child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+      loading: () => const Padding(
+        padding: EdgeInsets.only(bottom: 20),
+        child: CustomShimmer(width: double.infinity, height: 185),
       ),
       error: (_, __) => const SizedBox.shrink(),
     );

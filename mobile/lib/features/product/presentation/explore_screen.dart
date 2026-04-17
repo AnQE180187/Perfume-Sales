@@ -10,6 +10,7 @@ import '../providers/product_provider.dart';
 import '../providers/product_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
 import 'package:perfume_gpt_app/l10n/app_localizations.dart';
+import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 
 class ExploreScreen extends ConsumerStatefulWidget {
   const ExploreScreen({super.key});
@@ -137,31 +138,43 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                     ),
                   ),
                 ),
-                dataBuilder: (products) => GridView.builder(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 0.52,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                  ),
-                  itemCount: products.length,
-                  itemBuilder: (context, index) {
-                    final product = products[index];
-                    final isFav = wishlistIds.contains(product.id);
-                    return ProductCard(
-                      product: product,
-                      variant: ProductCardVariant.grid,
-                      badge: (product.rating ?? 0) >= 4.9
-                          ? AppLocalizations.of(context)!.topRated
-                          : null,
-                      isFavorite: isFav,
-                      onTap: () => context.push('/product/${product.id}'),
-                      onFavoriteToggle: () {
-                        ref.read(wishlistProvider.notifier).toggle(product);
-                      },
-                    );
+                dataBuilder: (products) => LiquidPullToRefresh(
+                  onRefresh: () async {
+                    ref.invalidate(productsProvider);
+                    // Minimal delay to let animation finish fully
+                    await Future.delayed(const Duration(milliseconds: 1000));
                   },
+                  color: AppTheme.creamWhite,
+                  backgroundColor: AppTheme.accentGold,
+                  animSpeedFactor: 2,
+                  showChildOpacityTransition: false,
+                  child: GridView.builder(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 0.52,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                    ),
+                    itemCount: products.length,
+                    itemBuilder: (context, index) {
+                      final product = products[index];
+                      final isFav = wishlistIds.contains(product.id);
+                      return ProductCard(
+                        product: product,
+                        variant: ProductCardVariant.grid,
+                        badge: (product.rating ?? 0) >= 4.9
+                            ? AppLocalizations.of(context)!.topRated
+                            : null,
+                        isFavorite: isFav,
+                        heroTag: 'explore_${product.id}',
+                        onTap: () => context.push('/product/${product.id}?heroTag=explore_${product.id}'),
+                        onFavoriteToggle: () {
+                          ref.read(wishlistProvider.notifier).toggle(product);
+                        },
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
