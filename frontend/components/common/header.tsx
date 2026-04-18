@@ -118,10 +118,10 @@ export const Header = () => {
                         <div className="flex items-center justify-center">
                             <Link
                                 href="/"
-                                className="w-12 h-12 rounded-full bg-foreground text-background flex items-center justify-center font-serif text-[10px] tracking-[0.4em] font-bold uppercase shadow-sm hover:shadow-md transition-shadow"
-                                aria-label="AURA Home"
+                                className="group transition-transform hover:scale-105"
+                                aria-label="Perfume GPT Home"
                             >
-                                A
+                                <img src="/logo-dark.png" className="h-10 w-10 object-contain rounded-full border border-gold/10 shadow-sm" alt="Perfume GPT" />
                             </Link>
                         </div>
 
@@ -158,7 +158,7 @@ export const Header = () => {
                                 </Link>
 
                                 <ThemeToggle />
-                                <LanguageSwitch />
+                                {/* <LanguageSwitch /> */}
 
                                 <Link
                                     href="/cart"
@@ -252,7 +252,7 @@ export const Header = () => {
                             <div className="flex items-center justify-between pt-6 border-t border-stone-100 dark:border-white/10">
                                 <span className="text-[10px] font-bold tracking-widest uppercase text-stone-400">{t('settings')}</span>
                                 <div className="flex items-center gap-4">
-                                    <LanguageSwitch />
+                                    {/* <LanguageSwitch /> */}
                                     <ThemeToggle />
                                 </div>
                             </div>

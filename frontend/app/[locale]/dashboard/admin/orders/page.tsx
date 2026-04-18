@@ -176,7 +176,7 @@ export default function AdminOrders() {
                 <body>
                     <div class="label">
                         <div class="header">
-                            <div class="brand">AURA AI</div>
+                            <div class="brand">PERFUME GPT AI</div>
                             <div style="text-align: right; font-size: 12px">
                                 ${selectedOrder?.code}<br/>
                                 ${format.dateTime(new Date())}
