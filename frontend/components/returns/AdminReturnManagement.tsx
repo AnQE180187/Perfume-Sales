@@ -669,7 +669,7 @@ export const AdminReturnManagement = ({
                           <Search className="w-3.5 h-3.5 mr-1" /> Chi tiết
                         </Button>
                       )}
-                      
+
                       {/* ADMIN ONLY ACTIONS */}
                       {isAdmin &&
                         [
@@ -1021,7 +1021,7 @@ export const AdminReturnManagement = ({
                     {item.variant?.product?.images?.[0]?.url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
-                        src={item.variant.product.images[0].url}
+                        src={item.variant?.product?.images?.[0]?.url}
                         alt="Product"
                         className="w-10 h-10 object-cover rounded-md border border-border/50"
                       />

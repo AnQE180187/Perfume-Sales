@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslations, useLocale, useFormatter } from 'next-intl';
 import { Link, useRouter } from '@/lib/i18n';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import QRCode from 'qrcode';
 import {
@@ -27,6 +27,7 @@ import { cn } from '@/lib/utils';
 
 type PaymentMethod = 'COD' | 'ONLINE' | null;
 const PAYMENT_TTL_SECONDS = 10 * 60;
+const PAYMENT_STATUS_POLL_MS = 3000;
 
 // QR Code Canvas Component
 function QRCodeCanvas({ qrCodeValue }: { qrCodeValue: string }) {
@@ -74,6 +75,7 @@ export default function CheckoutPage() {
     const t = useTranslations('checkout');
     const locale = useLocale();
     const router = useRouter();
+    const searchParams = useSearchParams();
     const format = useFormatter();
     const tFeatured = useTranslations('featured');
     const { isAuthenticated } = useAuth();
@@ -90,6 +92,7 @@ export default function CheckoutPage() {
     const [paymentData, setPaymentData] = useState<PayOSPaymentResponse | null>(null);
     const [paymentExpiresAt, setPaymentExpiresAt] = useState<number | null>(null);
     const [secondsLeft, setSecondsLeft] = useState<number>(PAYMENT_TTL_SECONDS);
+    const [paymentDetected, setPaymentDetected] = useState(false);
 
     // GHN shipping
     const [ghnEnabled, setGhnEnabled] = useState(false);
@@ -123,7 +126,13 @@ export default function CheckoutPage() {
             return;
         }
         cartService.getCart().then((c) => {
-            setCartItems(c.items);
+            const itemsParam = searchParams.get('items');
+            if (itemsParam) {
+                const selectedIds = itemsParam.split(',').map(id => parseInt(id));
+                setCartItems(c.items.filter(item => selectedIds.includes(item.id)));
+            } else {
+                setCartItems(c.items);
+            }
             setLoading(false);
         }).catch(() => setLoading(false));
 
@@ -203,6 +212,23 @@ export default function CheckoutPage() {
     const isPaymentExpired = paymentExpiresAt ? Date.now() >= paymentExpiresAt : false;
     const countdownLabel = `${String(Math.floor(secondsLeft / 60)).padStart(2, '0')}:${String(secondsLeft % 60).padStart(2, '0')}`;
 
+    useEffect(() => {
+        if (step !== 3 || !orderId || paymentDetected) return;
+        const timer = window.setInterval(async () => {
+            try {
+                const payment = await paymentService.getPaymentByOrder(orderId);
+                if (payment?.status === 'PAID') {
+                    setPaymentDetected(true);
+                    window.clearInterval(timer);
+                    router.push(`/checkout/success?orderId=${orderId}`);
+                }
+            } catch {
+                // keep polling; backend may be syncing webhook/fallback
+            }
+        }, PAYMENT_STATUS_POLL_MS);
+        return () => window.clearInterval(timer);
+    }, [step, orderId, paymentDetected, router]);
+
     const handleApplyCoupon = async () => {
         if (!couponCode.trim()) return;
         setIsApplyingCoupon(true);
@@ -248,6 +274,7 @@ export default function CheckoutPage() {
                         shippingFee,
                     }
                     : {}),
+                cartItemIds: cartItems.map(i => i.id),
             });
             setOrderId(order.id);
             return order.id;
@@ -472,6 +499,11 @@ export default function CheckoutPage() {
                                             <p className={`text-[10px] font-bold uppercase tracking-widest ${isPaymentExpired ? 'text-red-500' : 'text-amber-500'}`}>
                                                 Đơn thanh toán QR chỉ tồn tại trong 10 phút - còn lại {countdownLabel}
                                             </p>
+                                            {paymentDetected && (
+                                                <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">
+                                                    Đã nhận thanh toán, đang chuyển sang trang thành công...
+                                                </p>
+                                            )}
                                         </div>
 
                                         <div className="flex flex-col items-center gap-8 p-12 bg-white dark:bg-zinc-900 rounded-[3rem] border border-stone-100 dark:border-white/5 shadow-2xl">
