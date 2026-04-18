@@ -363,6 +363,7 @@
   "ingredientsDictionary": "Ingredients Dictionary",
   "giftService": "Gift Service",
   "brandStory": "Brand Story",
+  "brand": "Brand",
   "supportConcierge": "Support Concierge",
   "logout": "Logout",
   "searchHint": "Search fragrance...",
@@ -730,6 +731,19 @@
   "redeemedDiscount": "Redeemed for discount",
   "returnedRefundPoints": "Refund points (Order cancelled)",
   "redeemNow": "REDEEM NOW",
+  "claimNow": "CLAIM NOW",
+  "claimVoucherConfirm": "Do you want to claim this {code} voucher?",
+  "@claimVoucherConfirm": {
+    "placeholders": {
+      "code": { "type": "String" }
+    }
+  },
+  "claimSuccess": "Claimed successfully! Code {code} is now in your wallet.",
+  "@claimSuccess": {
+    "placeholders": {
+      "code": { "type": "String" }
+    }
+  },
   "voucherDiscount": "VOUCHER DISCOUNT",
   "paymentVnpayDesc": "Pay with VNPay wallet",
   "paymentMomoDesc": "Pay with MoMo wallet",

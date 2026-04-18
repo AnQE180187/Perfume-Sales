@@ -2150,6 +2150,12 @@ abstract class AppLocalizations {
   /// **'Brand Story'**
   String get brandStory;
 
+  /// No description provided for @brand.
+  ///
+  /// In en, this message translates to:
+  /// **'Brand'**
+  String get brand;
+
   /// No description provided for @supportConcierge.
   ///
   /// In en, this message translates to:
@@ -4165,6 +4171,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'REDEEM NOW'**
   String get redeemNow;
+
+  /// No description provided for @claimNow.
+  ///
+  /// In en, this message translates to:
+  /// **'CLAIM NOW'**
+  String get claimNow;
+
+  /// No description provided for @claimVoucherConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you want to claim this {code} voucher?'**
+  String claimVoucherConfirm(String code);
+
+  /// No description provided for @claimSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Claimed successfully! Code {code} is now in your wallet.'**
+  String claimSuccess(String code);
 
   /// No description provided for @voucherDiscount.
   ///

@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:dio/dio.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/widgets/app_input.dart';
@@ -97,6 +99,19 @@ class _ProfileEditFormState extends ConsumerState<_ProfileEditForm> {
     );
   }
 
+  void _updateControllers(UserProfile profile) {
+    _nameController.text = profile.name;
+    _phoneController.text = profile.phone ?? '';
+    _selectedGender = profile.gender;
+    _selectedDob = profile.dateOfBirth;
+    if (_selectedDob != null) {
+      _dobController.text = DateFormat('dd/MM/yyyy').format(_selectedDob!);
+    } else {
+      _dobController.text = '';
+    }
+    setState(() {});
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -125,20 +140,56 @@ class _ProfileEditFormState extends ConsumerState<_ProfileEditForm> {
     }
   }
 
+  Future<void> _changeAvatar() async {
+    final picker = ImagePicker();
+    final image = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 70,
+    );
+
+    if (image != null) {
+      try {
+        final updatedData = await ref.read(profileEditProvider.notifier).uploadAvatar(image.path);
+        if (mounted && updatedData != null) {
+          final updatedProfile = UserProfile.fromJson(updatedData);
+          _updateControllers(updatedProfile);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Cập nhật ảnh đại diện thành công')),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          String message = 'Upload thất bại';
+          if (e is DioException) {
+            final data = e.response?.data;
+            if (data is Map && data['message'] != null) {
+              message = data['message'].toString();
+            }
+          }
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(message)),
+          );
+        }
+      }
+    }
+  }
+
   Future<void> _save() async {
     final l10n = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) return;
 
     try {
-      await ref
-          .read(profileEditProvider.notifier)
-          .save(
+      final updatedData = await ref.read(profileEditProvider.notifier).save(
             fullName: _nameController.text,
             phone: _phoneController.text,
             gender: _selectedGender,
             dateOfBirth: _selectedDob?.toIso8601String(),
           );
-      if (mounted) {
+      
+      if (mounted && updatedData != null) {
+        final updatedProfile = UserProfile.fromJson(updatedData);
+        _updateControllers(updatedProfile);
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -150,18 +201,30 @@ class _ProfileEditFormState extends ConsumerState<_ProfileEditForm> {
             shape: RoundedRectangleBorder(borderRadius: AppRadius.cardBorder),
           ),
         );
-        Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
+        String message = 'Cập nhật thất bại';
+        if (e is DioException) {
+          final data = e.response?.data;
+          if (data is Map && data['message'] != null) {
+            if (data['message'] is List) {
+              message = (data['message'] as List).join(', ');
+            } else {
+              message = data['message'].toString();
+            }
+          }
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              '${l10n.updateFailed}: $e',
+              message,
               style: GoogleFonts.montserrat(color: Colors.white),
             ),
-            backgroundColor: Colors.red.shade600,
+            backgroundColor: Colors.redAccent,
             behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: AppRadius.cardBorder),
           ),
         );
       }
@@ -209,7 +272,23 @@ class _ProfileEditFormState extends ConsumerState<_ProfileEditForm> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _AvatarSection(avatarUrl: widget.profile.avatarUrl),
+              // Watch current profile for updates if any parent changes
+              Consumer(
+                builder: (context, ref, _) {
+                  final profileAsync = ref.watch(profileProvider);
+                  final profile = profileAsync.value ?? widget.profile;
+                  
+                  return Column(
+                    children: [
+                      _AvatarSection(
+                        avatarUrl: profile.avatarUrl,
+                        onTap: isLoading ? null : _changeAvatar,
+                        isLoading: isLoading,
+                      ),
+                    ],
+                  );
+                },
+              ),
               const SizedBox(height: 48),
               
               _SectionLabel(l10n.basicInfo),
@@ -231,7 +310,7 @@ class _ProfileEditFormState extends ConsumerState<_ProfileEditForm> {
               ),
               const SizedBox(height: 20),
               AppInput(
-                label: l10n.phoneHint,
+                label: l10n.phone,
                 hint: l10n.phoneHint,
                 controller: _phoneController,
                 prefixIcon: _GoldIcon(Icons.phone_iphone_rounded),
@@ -286,70 +365,83 @@ class _GoldIcon extends StatelessWidget {
   }
 }
 
-class _AvatarSection extends StatelessWidget {
+ class _AvatarSection extends StatelessWidget {
   final String? avatarUrl;
+  final VoidCallback? onTap;
+  final bool isLoading;
 
-  const _AvatarSection({this.avatarUrl});
+  const _AvatarSection({this.avatarUrl, this.onTap, this.isLoading = false});
 
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Stack(
-        alignment: Alignment.bottomRight,
-        children: [
-          Container(
-            width: 110,
-            height: 110,
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: AppTheme.accentGold.withValues(alpha: 0.3),
-                width: 1,
-              ),
-            ),
-            child: Container(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Stack(
+          alignment: Alignment.bottomRight,
+          children: [
+            Container(
+              width: 110,
+              height: 110,
+              padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.deepCharcoal.withValues(alpha: 0.1),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: ClipOval(
-                child: avatarUrl != null
-                    ? Image.network(
-                        avatarUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _buildPlaceholder(),
-                      )
-                    : _buildPlaceholder(),
-              ),
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppTheme.deepCharcoal,
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 2),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.2),
-                  blurRadius: 8,
+                border: Border.all(
+                  color: AppTheme.accentGold.withValues(alpha: 0.3),
+                  width: 1,
                 ),
-              ],
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.deepCharcoal.withValues(alpha: 0.1),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: ClipOval(
+                  child: isLoading
+                      ? const Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppTheme.accentGold,
+                          ),
+                        )
+                      : avatarUrl != null
+                          ? Image.network(
+                              avatarUrl!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => _buildPlaceholder(),
+                            )
+                          : _buildPlaceholder(),
+                ),
+              ),
             ),
-            child: const Icon(
-              Icons.camera_alt_outlined,
-              size: 16,
-              color: AppTheme.accentGold,
-            ),
-          ),
-        ],
+            if (!isLoading)
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppTheme.deepCharcoal,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 8,
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.camera_alt_outlined,
+                  size: 16,
+                  color: AppTheme.accentGold,
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

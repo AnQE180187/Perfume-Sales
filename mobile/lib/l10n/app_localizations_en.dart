@@ -1069,6 +1069,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get brandStory => 'Brand Story';
 
   @override
+  String get brand => 'Brand';
+
+  @override
   String get supportConcierge => 'Support Concierge';
 
   @override
@@ -2129,6 +2132,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get redeemNow => 'REDEEM NOW';
+
+  @override
+  String get claimNow => 'CLAIM NOW';
+
+  @override
+  String claimVoucherConfirm(String code) {
+    return 'Do you want to claim this $code voucher?';
+  }
+
+  @override
+  String claimSuccess(String code) {
+    return 'Claimed successfully! Code $code is now in your wallet.';
+  }
 
   @override
   String get voucherDiscount => 'VOUCHER DISCOUNT';

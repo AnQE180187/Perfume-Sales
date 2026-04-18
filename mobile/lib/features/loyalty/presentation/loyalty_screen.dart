@@ -65,22 +65,74 @@ class _LoyaltyBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      onRefresh: () async => onRefresh(),
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-        children: [
-          _PointsHeroCard(status: status),
-          const SizedBox(height: 24),
-          _RedeemRewardsSection(userPoints: status.points),
-          const SizedBox(height: 24),
-          _TiersCard(status: status),
-          const SizedBox(height: 24),
-          _HowItWorksCard(),
-          const SizedBox(height: 24),
-          _TransactionHistory(history: status.history),
-        ],
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            AppTheme.ivoryBackground,
+            AppTheme.creamWhite,
+            AppTheme.ivoryBackground,
+          ],
+        ),
       ),
+      child: RefreshIndicator(
+        onRefresh: () async => onRefresh(),
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+          children: [
+            _PointsHeroCard(status: status),
+            const SizedBox(height: 32),
+            _SectionHeader(title: AppLocalizations.of(context)!.redeemRewardsTitle),
+            const SizedBox(height: 16),
+            _RedeemRewardsSection(userPoints: status.points),
+            const SizedBox(height: 32),
+            _SectionHeader(title: AppLocalizations.of(context)!.membershipTiersTitle),
+            const SizedBox(height: 16),
+            _TiersCard(status: status),
+            const SizedBox(height: 32),
+            _SectionHeader(title: AppLocalizations.of(context)!.howToEarnTitle),
+            const SizedBox(height: 16),
+            _HowItWorksCard(),
+            const SizedBox(height: 32),
+            _SectionHeader(title: AppLocalizations.of(context)!.transactionHistoryTitle),
+            const SizedBox(height: 16),
+            _TransactionHistory(history: status.history),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  final String title;
+  const _SectionHeader({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 4,
+          height: 14,
+          decoration: BoxDecoration(
+            color: AppTheme.accentGold,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Text(
+          title.toUpperCase(),
+          style: GoogleFonts.montserrat(
+            fontSize: 11,
+            fontWeight: FontWeight.w800,
+            color: AppTheme.deepCharcoal,
+            letterSpacing: 2,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -98,50 +150,56 @@ class _PointsHeroCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Container(
+      height: 280,
       decoration: BoxDecoration(
-        color: AppTheme.deepCharcoal,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(32),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF1A1A1A),
+            AppTheme.deepCharcoal.withValues(alpha: 0.95),
+            const Color(0xFF0D0D0D),
+          ],
+        ),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.deepCharcoal.withValues(alpha: 0.4),
-            blurRadius: 25,
-            offset: const Offset(0, 12),
+            color: Colors.black.withValues(alpha: 0.4),
+            blurRadius: 30,
+            offset: const Offset(0, 15),
+          ),
+          BoxShadow(
+            color: AppTheme.accentGold.withValues(alpha: 0.1),
+            blurRadius: 50,
+            spreadRadius: -10,
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(32),
         child: Stack(
           children: [
-            // Marble-like subtle texture pattern
-            Positioned.fill(
-              child: Opacity(
-                opacity: 0.05,
-                child: Image.network(
-                  'https://www.transparenttextures.com/patterns/dark-matter.png', // Subtle dark texture
-                  repeat: ImageRepeat.repeat,
-                ),
-              ),
-            ),
-            // Diagonal shine
+            // Abstract Luxury Lines
             Positioned(
-              top: -100,
-              right: -100,
+              top: -50,
+              right: -50,
               child: Container(
-                width: 300,
-                height: 300,
+                width: 200,
+                height: 200,
                 decoration: BoxDecoration(
+                  shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      Colors.white.withValues(alpha: 0.05),
+                      AppTheme.accentGold.withValues(alpha: 0.1),
                       Colors.transparent,
                     ],
                   ),
                 ),
               ),
             ),
+            _GoldFoilTexture(),
             Padding(
-              padding: const EdgeInsets.all(30),
+              padding: const EdgeInsets.all(32),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -152,23 +210,23 @@ class _PointsHeroCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            l10n.memberLabel,
+                            l10n.memberLabel.toUpperCase(),
                             style: GoogleFonts.montserrat(
                               fontSize: 10,
                               fontWeight: FontWeight.w800,
                               color: AppTheme.accentGold,
-                              letterSpacing: 3,
+                              letterSpacing: 4,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 6),
                           Text(
                             (l10n.localeName == 'vi' ? status.tierNameVi : status.tierName).toUpperCase(),
                             style: GoogleFonts.playfairDisplay(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
                               fontStyle: FontStyle.italic,
                               color: Colors.white,
-                              letterSpacing: 1,
+                              letterSpacing: 2,
                             ),
                           ),
                         ],
@@ -176,24 +234,31 @@ class _PointsHeroCard extends StatelessWidget {
                       const _MembershipLevelBadge(),
                     ],
                   ),
-                  const SizedBox(height: 36),
+                  const Spacer(),
                   Text(
                     '${status.points}',
                     style: GoogleFonts.playfairDisplay(
-                      fontSize: 64,
-                      fontWeight: FontWeight.w800,
+                      fontSize: 72,
+                      fontWeight: FontWeight.w900,
                       color: Colors.white,
-                      height: 0.9,
+                      height: 1,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          offset: const Offset(0, 4),
+                          blurRadius: 10,
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 8),
                   Text(
-                    l10n.accumulatedPoints,
+                    l10n.loyaltyPoints.toUpperCase(),
                     style: GoogleFonts.montserrat(
                       fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.accentGold.withValues(alpha: 0.8),
-                      letterSpacing: 4,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.accentGold.withValues(alpha: 0.6),
+                      letterSpacing: 2,
                     ),
                   ),
                   const SizedBox(height: 32),
@@ -215,7 +280,7 @@ class _PointsHeroCard extends StatelessWidget {
                           l10n.pointsToNextTier(status.nextTierPoints - status.points),
                           style: GoogleFonts.montserrat(
                             fontSize: 10,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w700,
                             color: AppTheme.accentGold,
                           ),
                         ),
@@ -332,24 +397,36 @@ class _TiersCard extends StatelessWidget {
     ];
 
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.softTaupe.withValues(alpha: 0.3)),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
+        alignment: Alignment.center,
         children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 4, bottom: 20),
-            child: Text(
-              l10n.membershipTiersTitle,
-              style: GoogleFonts.montserrat(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: AppTheme.deepCharcoal,
-                letterSpacing: 2,
+          // Connection Line
+          Positioned(
+            top: 26,
+            left: 40,
+            right: 40,
+            child: Container(
+              height: 2,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppTheme.softTaupe.withValues(alpha: 0.2),
+                    AppTheme.accentGold.withValues(alpha: 0.2),
+                    AppTheme.softTaupe.withValues(alpha: 0.2),
+                  ],
+                ),
               ),
             ),
           ),
@@ -487,26 +564,10 @@ class _HowItWorksCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            l10n.howToEarnTitle,
-            style: GoogleFonts.montserrat(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: AppTheme.deepCharcoal,
-              letterSpacing: 2,
-            ),
-          ),
-          const SizedBox(height: 24),
           _infoRow(
             Icons.shopping_bag_outlined,
             l10n.shoppingEarnTitle,
             l10n.shoppingEarnDesc,
-          ),
-          const SizedBox(height: 20),
-          _infoRow(
-            Icons.account_balance_wallet_outlined,
-            l10n.redeemEarnTitle,
-            l10n.redeemEarnDesc,
           ),
           const SizedBox(height: 20),
           _infoRow(
@@ -577,18 +638,6 @@ class _TransactionHistory extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
-            child: Text(
-              l10n.transactionHistoryTitle,
-              style: GoogleFonts.montserrat(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: AppTheme.deepCharcoal,
-                letterSpacing: 2,
-              ),
-            ),
-          ),
           if (history.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 48),
@@ -702,34 +751,18 @@ class _CoinIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 32,
-      height: 32,
+      width: 44,
+      height: 44,
       decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: isEarn
-              ? AppTheme.accentGold.withValues(alpha: 0.3)
-              : AppTheme.mutedSilver.withValues(alpha: 0.2),
-          width: 1,
-        ),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isEarn
-              ? [
-                  AppTheme.accentGold.withValues(alpha: 0.2),
-                  AppTheme.accentGold.withValues(alpha: 0.05),
-                ]
-              : [
-                  AppTheme.mutedSilver.withValues(alpha: 0.1),
-                  Colors.transparent,
-                ],
-        ),
+        color: isEarn 
+          ? AppTheme.accentGold.withValues(alpha: 0.1)
+          : AppTheme.softTaupe.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Center(
         child: Icon(
-          Icons.lens_blur_rounded,
-          size: 14,
+          isEarn ? Icons.add_circle_outline_rounded : Icons.remove_circle_outline_rounded,
+          size: 18,
           color: isEarn ? AppTheme.accentGold : AppTheme.mutedSilver,
         ),
       ),
@@ -753,24 +786,6 @@ class _RedeemRewardsSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 4, bottom: 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                l10n.redeemRewardsTitle,
-                style: GoogleFonts.montserrat(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.deepCharcoal,
-                  letterSpacing: 2,
-                ),
-              ),
-              const Icon(Icons.auto_awesome, color: AppTheme.accentGold, size: 16),
-            ],
-          ),
-        ),
         redeemableAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (_, __) => const SizedBox.shrink(),
@@ -798,14 +813,16 @@ class _RedeemRewardsSection extends ConsumerWidget {
             }
 
             return SizedBox(
-              height: 180,
+              height: 240,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.only(bottom: 24),
                 physics: const BouncingScrollPhysics(),
                 itemCount: rewards.length,
                 itemBuilder: (context, index) => _RedeemPromoCard(
                   promo: rewards[index],
-                  canAfford: userPoints >= (rewards[index]['pointsCost'] ?? 0),
+                  canAfford: rewards[index]['isPublic'] == true ||
+                      userPoints >= (rewards[index]['pointsCost'] ?? 0),
                 ),
               ),
             );
@@ -833,42 +850,88 @@ class _RedeemPromoCard extends ConsumerWidget {
         ? '$discountValue%'
         : formatVND(discountValue.toDouble()).replaceAll('đ', '');
 
+    final bool isPublic = promo['isPublic'] ?? false;
+    
     return GestureDetector(
-      onTap: canAfford ? () => _handleRedeem(context, ref) : null,
+      onTap: (isPublic || canAfford) ? () => _handleRedeem(context, ref) : null,
       child: Container(
-        width: 160,
+        width: 170,
         margin: const EdgeInsets.only(right: 20),
         child: Stack(
           children: [
-            // Main Ticket Body
+            // Elevation Shadow for Ticket
+            Positioned(
+              bottom: 4,
+              left: 8,
+              right: 8,
+              top: 20,
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: (isPublic ? AppTheme.accentGold : Colors.black)
+                          .withValues(alpha: 0.1),
+                      blurRadius: 20,
+                      spreadRadius: -2,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            
             ClipPath(
               clipper: _TicketClipper(),
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 15,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
+                  border: isPublic
+                      ? Border.all(color: AppTheme.accentGold.withValues(alpha: 0.3), width: 1.5)
+                      : null,
                 ),
                 child: Column(
                   children: [
-                    // Top Section (Discount Info)
+                    // Top Section
                     Expanded(
-                      flex: 3,
+                      flex: 6,
                       child: Container(
                         width: double.infinity,
+                        decoration: BoxDecoration(
+                          gradient: isPublic ? LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              AppTheme.accentGold.withValues(alpha: 0.05),
+                              Colors.white,
+                            ],
+                          ) : null,
+                        ),
                         padding: const EdgeInsets.all(16),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
+                            if (isPublic)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                margin: const EdgeInsets.only(bottom: 12),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.accentGold,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  l10n.free.toUpperCase(),
+                                  style: GoogleFonts.montserrat(
+                                    fontSize: 8,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.white,
+                                    letterSpacing: 1,
+                                  ),
+                                ),
+                              ),
                             Text(
-                              l10n.voucherDiscount,
+                              l10n.voucherDiscount.toUpperCase(),
                               style: GoogleFonts.montserrat(
-                                fontSize: 8,
+                                fontSize: 9,
                                 fontWeight: FontWeight.w800,
                                 color: AppTheme.accentGold,
                                 letterSpacing: 1.5,
@@ -877,75 +940,58 @@ class _RedeemPromoCard extends ConsumerWidget {
                             const SizedBox(height: 8),
                             FittedBox(
                               fit: BoxFit.scaleDown,
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    valueText,
-                                    style: GoogleFonts.playfairDisplay(
-                                      fontSize: 32,
-                                      fontWeight: FontWeight.w900,
-                                      color: AppTheme.deepCharcoal,
-                                      height: 1,
-                                    ),
-                                  ),
-                                  if (discountType != 'PERCENTAGE')
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 4, left: 2),
-                                      child: Text(
-                                        'đ',
-                                        style: GoogleFonts.montserrat(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w700,
-                                          color: AppTheme.deepCharcoal,
-                                        ),
-                                      ),
-                                    ),
-                                ],
+                              child: Text(
+                                valueText,
+                                style: GoogleFonts.playfairDisplay(
+                                  fontSize: 36,
+                                  fontWeight: FontWeight.w900,
+                                  color: AppTheme.deepCharcoal,
+                                  height: 1,
+                                ),
                               ),
                             ),
+                            if (discountType != 'PERCENTAGE')
+                              Text(
+                                'VND',
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppTheme.mutedSilver,
+                                  letterSpacing: 2,
+                                ),
+                              ),
                           ],
                         ),
                       ),
                     ),
                     
-                    // Divider Line
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: Row(
-                        children: List.generate(
-                          15,
-                          (index) => Expanded(
-                            child: Container(
-                              height: 1,
-                              color: index % 2 == 0 
-                                ? AppTheme.softTaupe.withValues(alpha: 0.2) 
-                                : Colors.transparent,
-                            ),
+                    // Dash Line
+                    Row(
+                      children: List.generate(
+                        20,
+                        (index) => Expanded(
+                          child: Container(
+                            height: 1,
+                            color: index % 2 == 0 
+                              ? AppTheme.softTaupe.withValues(alpha: 0.2) 
+                              : Colors.white,
                           ),
                         ),
                       ),
                     ),
 
-                    // Bottom Section (Points & CTA)
+                    // Bottom Section
                     Expanded(
-                      flex: 2,
+                      flex: 4,
                       child: Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: canAfford 
-                                  ? AppTheme.accentGold.withValues(alpha: 0.1)
-                                  : AppTheme.softTaupe.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
+                            if (!isPublic)
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Icon(
                                     Icons.auto_awesome_rounded,
@@ -956,22 +1002,33 @@ class _RedeemPromoCard extends ConsumerWidget {
                                   Text(
                                     '$pointsCost PTS',
                                     style: GoogleFonts.montserrat(
-                                      fontSize: 9,
+                                      fontSize: 10,
                                       fontWeight: FontWeight.w800,
                                       color: canAfford ? AppTheme.accentGold : AppTheme.mutedSilver,
                                     ),
                                   ),
                                 ],
                               ),
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              l10n.redeemNow,
-                              style: GoogleFonts.montserrat(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w900,
-                                color: canAfford ? AppTheme.deepCharcoal : AppTheme.mutedSilver.withValues(alpha: 0.5),
-                                letterSpacing: 1.2,
+                            const Spacer(),
+                            Container(
+                              width: double.infinity,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: (isPublic || canAfford) 
+                                  ? AppTheme.deepCharcoal 
+                                  : AppTheme.softTaupe.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  (isPublic ? l10n.claimNow : l10n.redeemNow).toUpperCase(),
+                                  style: GoogleFonts.montserrat(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w800,
+                                    color: (isPublic || canAfford) ? Colors.white : AppTheme.mutedSilver,
+                                    letterSpacing: 1,
+                                  ),
+                                ),
                               ),
                             ),
                           ],
@@ -982,17 +1039,6 @@ class _RedeemPromoCard extends ConsumerWidget {
                 ),
               ),
             ),
-            
-            // Status Overlay (if not enough points)
-            if (!canAfford)
-              Positioned.fill(
-                child: ClipPath(
-                  clipper: _TicketClipper(),
-                  child: Container(
-                    color: Colors.white.withValues(alpha: 0.4),
-                  ),
-                ),
-              ),
           ],
         ),
       ),
@@ -1001,6 +1047,8 @@ class _RedeemPromoCard extends ConsumerWidget {
 
   void _handleRedeem(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context)!;
+    final bool isPublic = promo['isPublic'] ?? false;
+    
     final confirmed = await showModalBottomSheet<bool>(
       context: context,
       backgroundColor: Colors.transparent,
@@ -1033,7 +1081,9 @@ class _RedeemPromoCard extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              l10n.redeemVoucherConfirm(promo['pointsCost'] ?? 0),
+              isPublic 
+                ? l10n.claimVoucherConfirm(promo['code'] ?? '')
+                : l10n.redeemVoucherConfirm(promo['pointsCost'] ?? 0),
               textAlign: TextAlign.center,
               style: GoogleFonts.montserrat(
                 fontSize: 15,
@@ -1077,11 +1127,19 @@ class _RedeemPromoCard extends ConsumerWidget {
 
     if (confirmed == true) {
       try {
-        await ref.read(loyaltyServiceProvider).redeemPromotion(promo['id']);
+        if (isPublic) {
+          await ref.read(loyaltyServiceProvider).claimPromotion(promo['id']);
+        } else {
+          await ref.read(loyaltyServiceProvider).redeemPromotion(promo['id']);
+        }
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(l10n.redeemSuccess(promo['code'] ?? '')),
+              content: Text(
+                isPublic 
+                  ? l10n.claimSuccess(promo['code'] ?? '')
+                  : l10n.redeemSuccess(promo['code'] ?? '')
+              ),
               backgroundColor: AppTheme.deepCharcoal,
             ),
           );
@@ -1099,28 +1157,56 @@ class _RedeemPromoCard extends ConsumerWidget {
   }
 }
 
+class _GoldFoilTexture extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Positioned.fill(
+      child: Opacity(
+        opacity: 0.07,
+        child: Image.network(
+          'https://www.transparenttextures.com/patterns/carbon-fibre.png',
+          repeat: ImageRepeat.repeat,
+          color: AppTheme.accentGold,
+        ),
+      ),
+    );
+  }
+}
+
 class _TicketClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
-    const double radius = 10.0;
+    const double radius = 12.0;
+    const double notchPos = 0.6; // Position of the dash line
     final path = Path();
     
-    path.lineTo(0.0, size.height / 2 + radius);
+    // Top-left
+    path.moveTo(0, 0);
+    path.lineTo(0, size.height * notchPos - radius);
+    
+    // Left notch
     path.arcToPoint(
-      Offset(0.0, size.height / 2 - radius),
+      Offset(0, size.height * notchPos + radius),
       radius: const Radius.circular(radius),
       clockwise: true,
     );
-    path.lineTo(0.0, 0.0);
-    path.lineTo(size.width, 0.0);
-    path.lineTo(size.width, size.height / 2 - radius);
-    path.arcToPoint(
-      Offset(size.width, size.height / 2 + radius),
-      radius: const Radius.circular(radius),
-      clockwise: true,
-    );
+    
+    // Bottom-left
+    path.lineTo(0, size.height);
     path.lineTo(size.width, size.height);
-    path.lineTo(0.0, size.height);
+    
+    // Bottom-right
+    path.lineTo(size.width, size.height * notchPos + radius);
+    
+    // Right notch
+    path.arcToPoint(
+      Offset(size.width, size.height * notchPos - radius),
+      radius: const Radius.circular(radius),
+      clockwise: true,
+    );
+    
+    // Top-right
+    path.lineTo(size.width, 0);
     path.close();
     
     return path;

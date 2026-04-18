@@ -1,4 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
+import 'package:http_parser/http_parser.dart';
+import 'package:path/path.dart' as p;
 import '../../../core/api/api_client.dart';
 
 /// Service layer for PATCH /users/me and GET /users/me
@@ -32,6 +35,26 @@ class ProfileService {
     final response = await _apiClient.patch<Map<String, dynamic>>(
       '/users/me',
       data: body,
+    );
+    return response.data!;
+  }
+
+  /// Upload avatar file.
+  Future<Map<String, dynamic>> uploadAvatar(String filePath) async {
+    final fileName = p.basename(filePath);
+    final ext = p.extension(filePath).replaceAll('.', '');
+    
+    final formData = FormData.fromMap({
+      'file': await MultipartFile.fromFile(
+        filePath,
+        filename: fileName,
+        contentType: MediaType('image', ext.isEmpty ? 'jpeg' : ext),
+      ),
+    });
+
+    final response = await _apiClient.post<Map<String, dynamic>>(
+      '/users/me/avatar',
+      data: formData,
     );
     return response.data!;
   }
