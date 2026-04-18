@@ -60,6 +60,13 @@ class LoyaltyStatus {
     return 'Bronze';
   }
 
+  String get tierNameVi {
+    if (points >= 5000) return 'Bạch Kim';
+    if (points >= 2000) return 'Vàng';
+    if (points >= 500) return 'Bạc';
+    return 'Đồng';
+  }
+
   int get nextTierPoints {
     if (points < 500) return 500;
     if (points < 2000) return 2000;

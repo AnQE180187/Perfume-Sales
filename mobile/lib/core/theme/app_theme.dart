@@ -140,6 +140,14 @@ class AppTheme {
         outline: glassBorderColor,
       ),
 
+      // Custom Page Transitions for a premium feel
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: <TargetPlatform, PageTransitionsBuilder>{
+          TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+        },
+      ),
+
       // --- TYPOGRAPHY ---
       textTheme: TextTheme(
         displayLarge: GoogleFonts.playfairDisplay(
@@ -154,24 +162,24 @@ class AppTheme {
           letterSpacing: 0,
           color: champagneGold,
         ),
-        headlineMedium: GoogleFonts.montserrat(
+        headlineMedium: GoogleFonts.inter(
           fontSize: 20,
           fontWeight: FontWeight.w300,
           letterSpacing: 2,
           color: textColor,
         ),
-        bodyLarge: GoogleFonts.montserrat(
+        bodyLarge: GoogleFonts.inter(
           fontSize: 16,
           fontWeight: FontWeight.w300,
           letterSpacing: 0.5,
           color: textColor,
         ),
-        bodyMedium: GoogleFonts.montserrat(
+        bodyMedium: GoogleFonts.inter(
           fontSize: 14,
           fontWeight: FontWeight.w300,
           color: subTextColor,
         ),
-        labelLarge: GoogleFonts.montserrat(
+        labelLarge: GoogleFonts.inter(
           fontSize: 12,
           fontWeight: FontWeight.w500,
           letterSpacing: 1.5,

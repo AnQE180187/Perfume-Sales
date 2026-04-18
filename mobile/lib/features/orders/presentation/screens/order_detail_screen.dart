@@ -5,12 +5,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/routing/app_routes.dart';
-import '../../../../core/theme/app_text_style.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/theme/app_text_style.dart';
 import '../../../../core/utils/currency_utils.dart';
+import '../../../../core/widgets/luxury_button.dart';
 import '../../models/order.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../services/payment_service.dart';
 import '../../providers/order_provider.dart';
 import '../../providers/order_realtime_provider.dart';
 import '../widgets/order_status_badge.dart';
@@ -176,21 +176,7 @@ class OrderDetailScreen extends ConsumerWidget {
                       ],
                       
                       _SupportButton(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                l10n.supportContactMessage,
-                                style: GoogleFonts.montserrat(fontSize: 13),
-                              ),
-                              backgroundColor: AppTheme.deepCharcoal,
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                          );
-                        },
+                        onPressed: () => context.push(AppRoutes.contactUs),
                       ),
                       const SizedBox(height: 12),
 
@@ -425,7 +411,9 @@ class _ProductList extends StatelessWidget {
                               item.productName,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
-                              style: AppTextStyle.titleMd(
+                              style: GoogleFonts.montserrat(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
                                 color: AppTheme.deepCharcoal,
                               ),
                             ),

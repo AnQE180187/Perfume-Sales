@@ -18,9 +18,9 @@ class EnvConfig {
     // Fallback based on environment
     switch (environment) {
       case Environment.development:
-        return 'http://10.0.2.2:3000'; // Android emulator → localhost
+        return 'http://10.0.2.2:3000'; // Local backend for testing
       case Environment.production:
-        return 'https://your-production-api.com';
+        return 'https://api.perfumegpt.site'; // Deployed server
     }
   }
 

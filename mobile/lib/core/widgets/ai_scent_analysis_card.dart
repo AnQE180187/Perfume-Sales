@@ -25,13 +25,14 @@ class AIScentAnalysisCard extends StatelessWidget {
 
     return Transform.translate(
       offset: const Offset(0, -30),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-        child: GestureDetector(
-          onTap: onToggle,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onToggle,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.easeOutCubic,
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeInOutCubic,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: AppTheme.accentGold.withValues(alpha: 0.06),
@@ -62,8 +63,8 @@ class AIScentAnalysisCard extends StatelessWidget {
                     ),
                     AnimatedRotation(
                       turns: isExpanded ? 0.5 : 0,
-                      duration: const Duration(milliseconds: 250),
-                      curve: Curves.easeOutCubic,
+                      duration: const Duration(milliseconds: 400),
+                      curve: Curves.easeInOutCubic,
                       child: const Icon(
                         Icons.keyboard_arrow_down,
                         size: 20,
@@ -105,7 +106,7 @@ class AIScentAnalysisCard extends StatelessWidget {
                   crossFadeState: isExpanded
                       ? CrossFadeState.showSecond
                       : CrossFadeState.showFirst,
-                  duration: const Duration(milliseconds: 280),
+                  duration: const Duration(milliseconds: 400),
                 ),
               ],
             ),

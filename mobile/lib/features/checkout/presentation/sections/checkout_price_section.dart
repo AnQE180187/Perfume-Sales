@@ -91,45 +91,51 @@ class CheckoutPriceSection extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'TỔNG THANH TOÁN',
-                    style: GoogleFonts.montserrat(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1.2,
-                      color: AppTheme.mutedSilver,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'TỔNG THANH TOÁN',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.2,
+                        color: AppTheme.mutedSilver,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Đã bao gồm các loại thuế',
-                    style: GoogleFonts.montserrat(
-                      fontSize: 9,
-                      fontWeight: FontWeight.w500,
-                      color: AppTheme.mutedSilver.withValues(alpha: 0.6),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Đã bao gồm các loại thuế',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w500,
+                        color: AppTheme.mutedSilver.withValues(alpha: 0.6),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 4),
               Text(
-                formatVND(totalAmount).replaceAll('₫', ''),
+                formatVND(totalAmount)
+                    .replaceAll(RegExp(r'[^0-9.,]'), '')
+                    .trim(),
+                maxLines: 1,
                 style: GoogleFonts.montserrat(
-                  fontSize: 24,
+                  fontSize: 22, // Slightly smaller to avoid overflow
                   fontWeight: FontWeight.w800,
                   height: 1,
                   color: AppTheme.deepCharcoal,
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.only(bottom: 4, left: 2),
+                padding: const EdgeInsets.only(bottom: 4, left: 1),
                 child: Text(
-                  '₫',
+                  'đ',
                   style: GoogleFonts.montserrat(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
                     color: AppTheme.deepCharcoal,
                   ),
                 ),
@@ -158,14 +164,17 @@ class _PriceRow extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: GoogleFonts.montserrat(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: AppTheme.mutedSilver,
+        Expanded(
+          child: Text(
+            label,
+            style: GoogleFonts.montserrat(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: AppTheme.mutedSilver,
+            ),
           ),
         ),
+        const SizedBox(width: 8),
         Text(
           value,
           style: GoogleFonts.montserrat(

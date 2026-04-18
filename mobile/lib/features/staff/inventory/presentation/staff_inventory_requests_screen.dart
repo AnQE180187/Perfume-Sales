@@ -7,6 +7,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_error_widget.dart';
 import '../models/inventory_models.dart';
 import '../providers/inventory_provider.dart';
+import '../../../../core/utils/responsive.dart';
 
 class StaffInventoryRequestsScreen extends ConsumerWidget {
   final String? storeId;
@@ -17,48 +18,46 @@ class StaffInventoryRequestsScreen extends ConsumerWidget {
     final requestsAsync = ref.watch(myInventoryRequestsProvider(storeId));
     final dateFmt = DateFormat('dd/MM HH:mm');
 
+    final isMobile = Responsive.isMobile(context);
     return Scaffold(
-      backgroundColor: const Color(0xFF0D0D0D),
+      backgroundColor: const Color(0xFF030303),
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: const Color(0xFF0A0A0A),
         elevation: 0,
-        title: Text(
-          "YÊU CẦU CỦA TÔI",
-          style: GoogleFonts.montserrat(
-            fontSize: 10,
-            color: AppTheme.accentGold,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 4,
-          ),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.close_rounded, color: Colors.white24),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
-        child: Column(
+        centerTitle: false,
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "DỰ THẢO & PHÊ DUYỆT",
-              style: GoogleFonts.playfairDisplay(
-                fontSize: 32,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-              ),
+              "QUẢN LÝ KHO",
+              style: GoogleFonts.montserrat(fontSize: 10, color: AppTheme.accentGold, fontWeight: FontWeight.w800, letterSpacing: 4),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 2),
             Text(
-              "DANH SÁCH CÁC PHIẾU NHẬP KHO VÀ ĐIỀU CHỈNH ĐANG CHỜ XỬ LÝ",
-              style: GoogleFonts.montserrat(
-                fontSize: 10,
-                color: Colors.white24,
-                letterSpacing: 2,
-              ),
+              "Dự thảo & Phê duyệt",
+              style: GoogleFonts.playfairDisplay(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
             ),
-            const SizedBox(height: 48),
+          ],
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white70, size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: Container(
+        padding: EdgeInsets.symmetric(horizontal: isMobile ? 20 : 32, vertical: 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (!isMobile) ...[
+              Text(
+                "Danh sách yêu cầu chờ duyệt".toUpperCase(),
+                style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white38, fontWeight: FontWeight.bold, letterSpacing: 2),
+              ),
+              const SizedBox(height: 8),
+              const Divider(color: Colors.white10),
+            ],
+            const SizedBox(height: 16),
             Expanded(
               child: requestsAsync.when(
                 loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.accentGold)),
@@ -112,96 +111,97 @@ class _RequestItem extends StatelessWidget {
     final statusColor = _getStatusColor(request.status);
     final statusText = _getStatusText(request.status);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 24),
-      child: Row(
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.02),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildVariantImage(),
-          const SizedBox(width: 24),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: (request.type == 'IMPORT' ? AppTheme.accentGold : Colors.blueAccent).withOpacity(0.1),
-                        border: Border.all(color: (request.type == 'IMPORT' ? AppTheme.accentGold : Colors.blueAccent).withOpacity(0.3)),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                      child: Text(
-                        request.type == 'IMPORT' ? "NHẬP KHO" : "ĐIỀU CHỈNH",
-                        style: GoogleFonts.montserrat(
-                          fontSize: 8,
-                          fontWeight: FontWeight.w900,
-                          color: request.type == 'IMPORT' ? AppTheme.accentGold : Colors.blueAccent,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      dateFmt.format(request.createdAt),
-                      style: GoogleFonts.robotoMono(fontSize: 10, color: Colors.white24),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  request.product?.toUpperCase() ?? "SẢN PHẨM KHÔNG XÁC ĐỊNH",
-                  style: GoogleFonts.montserrat(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                Text(
-                  "${request.variantName ?? ''} • ${request.reason ?? 'Không có lý do'}",
-                  style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white38),
-                ),
-                if (request.status != InventoryRequestStatus.pending && request.reviewNote != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: Text(
-                      "GHI CHÚ DUYỆT: ${request.reviewNote}",
-                      style: GoogleFonts.montserrat(fontSize: 9, color: statusColor.withOpacity(0.5), fontStyle: FontStyle.italic),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+          Row(
             children: [
-              Text(
-                "${request.quantity > 0 ? '+' : ''}${request.quantity}",
-                style: GoogleFonts.robotoMono(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w300,
-                  color: request.quantity > 0 ? Colors.greenAccent : Colors.orangeAccent,
-                ),
-              ),
-              const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  border: Border.all(color: statusColor.withOpacity(0.3)),
-                  borderRadius: BorderRadius.circular(20),
+                  color: (request.type == 'IMPORT' ? AppTheme.accentGold : Colors.blueAccent).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
-                  statusText,
-                  style: GoogleFonts.montserrat(
-                    fontSize: 8,
-                    fontWeight: FontWeight.w800,
-                    color: statusColor,
-                    letterSpacing: 1,
-                  ),
+                  request.type == 'IMPORT' ? "NHẬP KHO" : "ĐIỀU CHỈNH",
+                  style: GoogleFonts.montserrat(fontSize: 9, fontWeight: FontWeight.w900, color: request.type == 'IMPORT' ? AppTheme.accentGold : Colors.blueAccent),
                 ),
+              ),
+              const Spacer(),
+              Text(
+                dateFmt.format(request.createdAt),
+                style: GoogleFonts.robotoMono(fontSize: 10, color: Colors.white24),
               ),
             ],
           ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              _buildVariantImage(),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      request.product?.toUpperCase() ?? "SẢN PHẨM KHÔNG XÁC ĐỊNH",
+                      style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 0.5),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      "${request.variantName ?? ''} • ${request.reason ?? 'Không có lý do'}",
+                      style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white38),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    "${request.quantity > 0 ? '+' : ''}${request.quantity}",
+                    style: GoogleFonts.robotoMono(fontSize: 20, fontWeight: FontWeight.w900, color: request.quantity > 0 ? Colors.greenAccent : Colors.orangeAccent),
+                  ),
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: statusColor.withOpacity(0.4)),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      statusText,
+                      style: GoogleFonts.montserrat(fontSize: 8, fontWeight: FontWeight.w900, color: statusColor, letterSpacing: 1),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          if (request.status != InventoryRequestStatus.pending && request.reviewNote != null) ...[
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: statusColor.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                "GHI CHÚ DUYỆT: ${request.reviewNote}",
+                style: GoogleFonts.montserrat(fontSize: 10, color: statusColor.withOpacity(0.8), fontStyle: FontStyle.italic),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -209,19 +209,23 @@ class _RequestItem extends StatelessWidget {
 
   Widget _buildVariantImage() {
     return Container(
-      width: 56,
-      height: 56,
+      width: 44,
+      height: 44,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.02),
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.white.withOpacity(0.1)),
       ),
       child: request.imageUrl != null
           ? ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: Image.network(request.imageUrl!, fit: BoxFit.cover),
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                request.imageUrl!.startsWith('http') ? request.imageUrl! : 'https://api.perfume.vn${request.imageUrl}', 
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const Icon(Icons.inventory_2_rounded, color: Colors.white12, size: 20),
+              ),
             )
-          : const Icon(Icons.inventory_2_rounded, color: Colors.white10, size: 24),
+          : const Icon(Icons.inventory_2_rounded, color: Colors.white12, size: 20),
     );
   }
 

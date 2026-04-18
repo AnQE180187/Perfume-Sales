@@ -372,7 +372,7 @@ class _CompactOrderHeader extends StatelessWidget {
                       child: Text(
                         '${l10n.estDelivery}: ${AppDateUtils.getEstimatedDeliveryRange(2, 4, l10n.localeName)}',
                         style: GoogleFonts.montserrat(
-                          fontSize: 11,
+                          fontSize: 10,
                           fontWeight: FontWeight.w500,
                           fontStyle: FontStyle.italic,
                           color: AppTheme.mutedSilver,
@@ -384,6 +384,7 @@ class _CompactOrderHeader extends StatelessWidget {
               ],
             ),
           ),
+          const SizedBox(width: 16),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
@@ -396,7 +397,7 @@ class _CompactOrderHeader extends StatelessWidget {
                 ),
               ),
               Text(
-                formatVND(totalAmount),
+                formatVND(totalAmount).replaceAll(RegExp(r'[^0-9.,]'), '').trim(),
                 style: GoogleFonts.playfairDisplay(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,

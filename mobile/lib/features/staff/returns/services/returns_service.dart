@@ -6,13 +6,21 @@ class StaffReturnsService {
   final ApiClient _client;
   StaffReturnsService(this._client);
 
-  Future<List<dynamic>> listAll({String? status, int skip = 0, int take = 50}) async {
+  Future<List<dynamic>> listAll({
+    String? status,
+    int skip = 0,
+    int take = 50,
+    String? startDate,
+    String? endDate,
+  }) async {
     final response = await _client.get(
       '/returns/admin/all',
       queryParameters: {
         if (status != null && status != 'ALL') 'status': status,
         'skip': skip,
         'take': take,
+        if (startDate != null) 'startDate': startDate,
+        if (endDate != null) 'endDate': endDate,
       },
     );
     final data = response.data;

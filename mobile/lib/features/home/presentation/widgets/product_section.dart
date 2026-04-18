@@ -64,9 +64,10 @@ class ProductSection extends ConsumerWidget {
                 return ProductCard(
                   product: product,
                   variant: ProductCardVariant.grid,
-                  badge: AppLocalizations.of(context)!.aiSelection,
-                  isFavorite: isFav,
-                  onTap: () => context.push('/product/${product.id}'),
+                  heroTag: '${title.replaceAll(' ', '_')}_${product.id}',
+                  onTap: () => context.push(
+                    '/product/${product.id}?heroTag=${title.replaceAll(' ', '_')}_${product.id}',
+                  ),
                   onFavoriteToggle: () {
                     ref.read(wishlistProvider.notifier).toggle(product);
                   },

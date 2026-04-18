@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/returns_service.dart';
 
@@ -7,10 +8,18 @@ class StaffReturnNotifier extends StateNotifier<AsyncValue<List<dynamic>>> {
     loadReturns();
   }
 
-  Future<void> loadReturns({String? status}) async {
+  Future<void> loadReturns({
+    String? status,
+    String? startDate,
+    String? endDate,
+  }) async {
     state = const AsyncValue.loading();
     try {
-      final list = await _service.listAll(status: status);
+      final list = await _service.listAll(
+        status: status,
+        startDate: startDate,
+        endDate: endDate,
+      );
       state = AsyncValue.data(list);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -50,6 +59,7 @@ final staffReturnsProvider = StateNotifierProvider<StaffReturnNotifier, AsyncVal
 });
 
 final returnStatusFilterProvider = StateProvider<String>((ref) => 'ALL');
+final returnsDateRangeProvider = StateProvider<DateTimeRange?>((ref) => null);
 
 final returnDetailsProvider = FutureProvider.family<Map<String, dynamic>, String>((ref, id) async {
   return ref.watch(staffReturnsServiceProvider).getDetails(id);

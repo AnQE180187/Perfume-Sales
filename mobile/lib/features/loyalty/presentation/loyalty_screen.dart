@@ -162,7 +162,7 @@ class _PointsHeroCard extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            status.tierName.toUpperCase(),
+                            (l10n.localeName == 'vi' ? status.tierNameVi : status.tierName).toUpperCase(),
                             style: GoogleFonts.playfairDisplay(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
@@ -325,10 +325,10 @@ class _TiersCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final tiers = [
-      _TierInfo('Bronze', 0, Icons.shield_rounded, const Color(0xFFCD7F32)),
-      _TierInfo('Silver', 500, Icons.shield_rounded, const Color(0xFFA8A9AD)),
-      _TierInfo('Gold', 2000, Icons.workspace_premium_rounded, AppTheme.accentGold),
-      _TierInfo('Platinum', 5000, Icons.diamond_rounded, const Color(0xFFAEC6CF)),
+      _TierInfo(l10n.localeName == 'vi' ? 'Đồng' : 'Bronze', 0, Icons.shield_rounded, const Color(0xFFCD7F32)),
+      _TierInfo(l10n.localeName == 'vi' ? 'Bạc' : 'Silver', 500, Icons.shield_rounded, const Color(0xFFA8A9AD)),
+      _TierInfo(l10n.localeName == 'vi' ? 'Vàng' : 'Gold', 2000, Icons.workspace_premium_rounded, AppTheme.accentGold),
+      _TierInfo(l10n.localeName == 'vi' ? 'Bạch Kim' : 'Platinum', 5000, Icons.diamond_rounded, const Color(0xFFAEC6CF)),
     ];
 
     return Container(
@@ -355,7 +355,8 @@ class _TiersCard extends StatelessWidget {
           ),
           Row(
             children: tiers.map((tier) {
-              final isActive = status.tierName == tier.name;
+              final currentTierName = l10n.localeName == 'vi' ? status.tierNameVi : status.tierName;
+              final isActive = currentTierName == tier.name;
               final isUnlocked = status.points >= tier.minPoints;
               
               return Expanded(

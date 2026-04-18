@@ -6,13 +6,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/theme/app_spacing.dart';
-import '../../../../core/theme/app_radius.dart';
-import '../../../../core/widgets/shimmer_loading.dart';
-import 'package:perfume_gpt_app/l10n/app_localizations.dart';
 import '../../pos/providers/pos_provider.dart';
 import '../../pos/models/pos_models.dart';
-import '../../pos/presentation/pos_barcode_sheet.dart';
+import 'package:perfume_gpt_app/l10n/app_localizations.dart';
+import '../../../../core/utils/responsive.dart';
 
 class TabletPosGallery extends ConsumerStatefulWidget {
   const TabletPosGallery({super.key});
@@ -23,17 +20,6 @@ class TabletPosGallery extends ConsumerStatefulWidget {
 
 class _TabletPosGalleryState extends ConsumerState<TabletPosGallery> {
   final _searchController = TextEditingController();
-  String _selectedFamily = 'All';
-
-  final List<String> _families = [
-    'Tất cả',
-    'Gỗ',
-    'Hoa cỏ',
-    'Cam chanh',
-    'Gia vị',
-    'Xạ hương',
-    'Phương đông'
-  ];
 
   @override
   void dispose() {
@@ -72,8 +58,9 @@ class _TabletPosGalleryState extends ConsumerState<TabletPosGallery> {
     String selectedFamily,
     AppLocalizations l10n,
   ) {
+    final isMobile = Responsive.isMobile(context);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 24, vertical: 20),
       child: Row(
         children: [
           Expanded(
@@ -88,9 +75,9 @@ class _TabletPosGalleryState extends ConsumerState<TabletPosGallery> {
                 controller: _searchController,
                 onChanged: (v) =>
                     ref.read(posSearchQueryProvider.notifier).state = v,
-                style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 15),
+                style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 13),
                 decoration: InputDecoration(
-                  hintText: "Tìm tên sản phẩm, SKU, nhóm mùi hương, thương hiệu",
+                  hintText: isMobile ? "Tìm kiếm..." : "Tìm tên sản phẩm, SKU, nhóm mùi hương, thương hiệu",
                   hintStyle: GoogleFonts.montserrat(
                       color: Colors.white30, fontSize: 11, letterSpacing: 0.5),
                   prefixIcon: const Icon(Icons.search_rounded,
@@ -101,67 +88,71 @@ class _TabletPosGalleryState extends ConsumerState<TabletPosGallery> {
               ),
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
           IconButton(
             onPressed: () => _showBarcodeScanner(context, ref, selectedStoreId),
             icon: const Icon(Icons.qr_code_scanner_rounded,
                 color: AppTheme.accentGold, size: 24),
             padding: EdgeInsets.zero,
           ),
-          const SizedBox(width: 24),
         ],
       ),
     );
   }
 
   Widget _buildLuxuryStorePicker(AsyncValue<List<dynamic>> stores) {
+    final isMobile = Responsive.isMobile(context);
     return stores.when(
       loading: () => const Center(
           child: CircularProgressIndicator(color: AppTheme.accentGold)),
       error: (e, _) => Center(child: Text("Lỗi: $e", style: const TextStyle(color: Colors.redAccent))),
       data: (storeList) => Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              "LUMINA ATELIER",
-              style: GoogleFonts.playfairDisplay(
-                fontSize: 48,
-                fontWeight: FontWeight.w700,
-                color: AppTheme.accentGold,
-                letterSpacing: 8,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "LUMINA ATELIER",
+                style: GoogleFonts.playfairDisplay(
+                  fontSize: isMobile ? 32 : 48,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.accentGold,
+                  letterSpacing: isMobile ? 4 : 8,
+                ),
               ),
-            ),
-            const SizedBox(height: 60),
-            Wrap(
-              spacing: 32,
-              runSpacing: 32,
-              children: storeList.map((s) {
-                return InkWell(
-                  onTap: () =>
-                      ref.read(posSelectedStoreIdProvider.notifier).state = s.id,
-                  child: Container(
-                    width: 240,
-                    padding: const EdgeInsets.symmetric(vertical: 40),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.white10),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Center(
-                      child: Text(
-                        s.name.toUpperCase(),
-                        style: GoogleFonts.montserrat(
-                          fontSize: 12,
-                          color: Colors.white70,
-                          letterSpacing: 4,
+              SizedBox(height: isMobile ? 32 : 60),
+              Wrap(
+                spacing: 16,
+                runSpacing: 16,
+                alignment: WrapAlignment.center,
+                children: storeList.map((s) {
+                  return InkWell(
+                    onTap: () =>
+                        ref.read(posSelectedStoreIdProvider.notifier).state = s.id,
+                    child: Container(
+                      width: isMobile ? double.infinity : 240,
+                      padding: const EdgeInsets.symmetric(vertical: 32),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.white10),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Center(
+                        child: Text(
+                          s.name.toUpperCase(),
+                          style: GoogleFonts.montserrat(
+                            fontSize: 12,
+                            color: Colors.white70,
+                            letterSpacing: 4,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ],
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -175,6 +166,7 @@ class _TabletPosGalleryState extends ConsumerState<TabletPosGallery> {
   ) {
     final productsAsync = ref.watch(posProductsProvider);
 
+    final isMobile = Responsive.isMobile(context);
     return productsAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(child: Text("Lỗi: $e", style: const TextStyle(color: Colors.redAccent))),
@@ -187,12 +179,12 @@ class _TabletPosGalleryState extends ConsumerState<TabletPosGallery> {
         }
 
         return GridView.builder(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 5, // High density
-            childAspectRatio: 0.62,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
+          padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24, vertical: 8),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: isMobile ? 2 : 5, // High density
+            childAspectRatio: isMobile ? 0.7 : 0.62,
+            crossAxisSpacing: isMobile ? 12 : 16,
+            mainAxisSpacing: isMobile ? 12 : 16,
           ),
           itemCount: allVariants.length,
           itemBuilder: (ctx, i) {
@@ -507,6 +499,7 @@ class _AiConsultationPanelState extends ConsumerState<_AiConsultationPanel> {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = Responsive.isMobile(context);
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
@@ -545,18 +538,24 @@ class _AiConsultationPanelState extends ConsumerState<_AiConsultationPanel> {
             ),
           ),
           if (_isExpanded)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _MinimalField(
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: isMobile ? MediaQuery.of(context).size.height * 0.5 : double.infinity,
+              ),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    isMobile 
+                    ? Column(
+                      children: [
+                        _MinimalField(
                           label: "GIỚI TÍNH",
                           child: DropdownButtonHideUnderline(
                             child: DropdownButton<String>(
                               value: _gender,
+                              isExpanded: true,
                               dropdownColor: const Color(0xFF151515),
                               hint: Text("CHỌN...", style: GoogleFonts.robotoMono(color: Colors.white24, fontSize: 11)),
                               style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 13),
@@ -565,14 +564,13 @@ class _AiConsultationPanelState extends ConsumerState<_AiConsultationPanel> {
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _MinimalField(
+                        const SizedBox(height: 16),
+                        _MinimalField(
                           label: "DỊP SỬ DỤNG",
                           child: DropdownButtonHideUnderline(
                             child: DropdownButton<String>(
                               value: _occasion,
+                              isExpanded: true,
                               dropdownColor: const Color(0xFF151515),
                               hint: Text("CHỌN...", style: GoogleFonts.robotoMono(color: Colors.white24, fontSize: 11)),
                               style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 13),
@@ -581,10 +579,8 @@ class _AiConsultationPanelState extends ConsumerState<_AiConsultationPanel> {
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _MinimalField(
+                        const SizedBox(height: 16),
+                        _MinimalField(
                           label: "NGÂN SÁCH",
                           child: TextField(
                             controller: _budgetController,
@@ -594,13 +590,64 @@ class _AiConsultationPanelState extends ConsumerState<_AiConsultationPanel> {
                               border: InputBorder.none, 
                               hintText: "TỐI ĐA VND", 
                               hintStyle: GoogleFonts.montserrat(color: Colors.white12, fontSize: 11),
-                              filled: false, // Don't use theme fill in this boxed container
+                              filled: false,
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        Expanded(
+                          child: _MinimalField(
+                            label: "GIỚI TÍNH",
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                value: _gender,
+                                dropdownColor: const Color(0xFF151515),
+                                hint: Text("CHỌN...", style: GoogleFonts.robotoMono(color: Colors.white24, fontSize: 11)),
+                                style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 13),
+                                items: _genders.map((g) => DropdownMenuItem(value: g, child: Text(g.toUpperCase()))).toList(),
+                                onChanged: (v) => setState(() => _gender = v),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _MinimalField(
+                            label: "DỊP SỬ DỤNG",
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                value: _occasion,
+                                dropdownColor: const Color(0xFF151515),
+                                hint: Text("CHỌN...", style: GoogleFonts.robotoMono(color: Colors.white24, fontSize: 11)),
+                                style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 13),
+                                items: _occasions.map((o) => DropdownMenuItem(value: o, child: Text(o.toUpperCase()))).toList(),
+                                onChanged: (v) => setState(() => _occasion = v),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _MinimalField(
+                            label: "NGÂN SÁCH",
+                            child: TextField(
+                              controller: _budgetController,
+                              keyboardType: TextInputType.number,
+                              style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 13),
+                              decoration: InputDecoration(
+                                border: InputBorder.none, 
+                                hintText: "TỐI ĐA VND", 
+                                hintStyle: GoogleFonts.montserrat(color: Colors.white12, fontSize: 11),
+                                filled: false, // Don't use theme fill in this boxed container
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   const SizedBox(height: 16),
                   _MinimalField(
                     label: "STAFF NOTES (PREFERENCES / ALLERGIES)",
@@ -642,6 +689,7 @@ class _AiConsultationPanelState extends ConsumerState<_AiConsultationPanel> {
                 ],
               ),
             ),
+          ),
         ],
       ),
     );

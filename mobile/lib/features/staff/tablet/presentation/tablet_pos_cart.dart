@@ -13,6 +13,7 @@ import '../../pos/providers/pos_provider.dart';
 import '../../pos/models/pos_models.dart';
 import 'boutique_success_overlay.dart';
 import 'dart:ui';
+import '../../../../core/utils/responsive.dart';
 
 class TabletPosCart extends ConsumerWidget {
   const TabletPosCart({super.key});
@@ -23,8 +24,10 @@ class TabletPosCart extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final currencyFmt = NumberFormat('#,###', 'vi_VN');
 
+    final isMobile = MediaQuery.of(context).size.width < 600;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+      padding: EdgeInsets.symmetric(horizontal: 24, vertical: isMobile ? 12 : 32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -44,11 +47,11 @@ class TabletPosCart extends ConsumerWidget {
               const Icon(Icons.receipt_outlined, color: Colors.white60, size: 18),
             ],
           ),
-          const SizedBox(height: 32),
+          SizedBox(height: isMobile ? 16 : 32),
           
           // Member Search
-          _buildMinimalMemberSearch(ref, l10n, posState),
-          const SizedBox(height: 32),
+          _buildMemberSearchCompact(ref, l10n, posState, isMobile),
+          SizedBox(height: isMobile ? 16 : 32),
 
           // Items Bar
           const Divider(color: Colors.white10),
@@ -76,7 +79,7 @@ class TabletPosCart extends ConsumerWidget {
     );
   }
 
-  Widget _buildMinimalMemberSearch(WidgetRef ref, AppLocalizations l10n, PosState state) {
+  Widget _buildMemberSearchCompact(WidgetRef ref, AppLocalizations l10n, PosState state, bool isMobile) {
     return Column(
       children: [
         Container(
@@ -236,7 +239,7 @@ class TabletPosCart extends ConsumerWidget {
         const SizedBox(height: 16),
         _PriceLine(label: l10n.subtotal.toUpperCase(), value: "${fmt.format(subtotal)}đ"),
         if (discount > 0) _PriceLine(label: l10n.memberDiscount.toUpperCase(), value: "-${fmt.format(discount)}đ", isGold: true),
-        const SizedBox(height: 24),
+        const SizedBox(height: 16),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -257,7 +260,7 @@ class TabletPosCart extends ConsumerWidget {
             ),
           ],
         ),
-        const SizedBox(height: 40),
+        SizedBox(height: Responsive.isMobile(context) ? 16 : 40),
         Row(
           children: [
             Expanded(

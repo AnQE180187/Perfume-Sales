@@ -583,8 +583,10 @@
         "total_orders": "Total Orders",
         "avg_order_value": "Avg Order Value",
         "completion_rate": "Completion Rate",
+        "cancel_rate": "Cancellation Rate",
+        "refund_amount": "Refund Amount",
         "completed_suffix": "completed",
-        "successful": "Successful",
+        "successful": "Fufilled",
         "cancelled": "Cancelled",
         "refunded": "Refunded"
       },

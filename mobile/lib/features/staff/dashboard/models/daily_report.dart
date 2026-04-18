@@ -1,13 +1,14 @@
-/// Daily KPI report returned by `GET /staff/reports/daily`.
 class DailyReport {
   final String date;
   final double totalRevenue;
   final int totalOrders;
   final int completedOrders;
-  final double avgOrderValue;
   final int cancelledOrders;
   final int refundedOrders;
+  final double totalRefundedAmount;
   final double completionRate;
+  final double cancelRate;
+  final double avgOrderValue;
   final List<HourlySales> hourlySales;
   final List<TopProduct> topProducts;
 
@@ -18,7 +19,9 @@ class DailyReport {
     required this.completedOrders,
     required this.cancelledOrders,
     required this.refundedOrders,
+    required this.totalRefundedAmount,
     required this.completionRate,
+    required this.cancelRate,
     required this.avgOrderValue,
     required this.hourlySales,
     required this.topProducts,
@@ -32,7 +35,9 @@ class DailyReport {
       completedOrders: (json['completedOrders'] as num).toInt(),
       cancelledOrders: (json['cancelledOrders'] as num? ?? 0).toInt(),
       refundedOrders: (json['refundedOrders'] as num? ?? 0).toInt(),
+      totalRefundedAmount: (json['totalRefundedAmount'] as num? ?? 0).toDouble(),
       completionRate: (json['completionRate'] as num? ?? 0).toDouble(),
+      cancelRate: (json['cancelRate'] as num? ?? 0).toDouble(),
       avgOrderValue: (json['avgOrderValue'] as num).toDouble(),
       hourlySales: (json['hourlySales'] as List<dynamic>? ?? [])
           .map((e) => HourlySales.fromJson(e as Map<String, dynamic>))
@@ -47,12 +52,14 @@ class DailyReport {
 class TopProduct {
   final String productName;
   final String variantName;
+  final String? imageUrl;
   final int totalQuantity;
   final double totalRevenue;
 
   const TopProduct({
     required this.productName,
     required this.variantName,
+    this.imageUrl,
     required this.totalQuantity,
     required this.totalRevenue,
   });
@@ -61,6 +68,7 @@ class TopProduct {
     return TopProduct(
       productName: json['productName'] as String,
       variantName: json['variantName'] as String,
+      imageUrl: json['imageUrl'] as String?,
       totalQuantity: (json['totalQuantity'] as num).toInt(),
       totalRevenue: (json['totalRevenue'] as num).toDouble(),
     );

@@ -108,7 +108,7 @@ class _TabletInventoryAdjustDialogState extends State<TabletInventoryAdjustDialo
       child: Row(
         children: [
           Text(
-            "STOCK ADJUSTMENT",
+            "ĐIỀU CHỈNH KHO",
             style: GoogleFonts.playfairDisplay(
               fontSize: 18,
               fontWeight: FontWeight.w700,
@@ -144,7 +144,7 @@ class _TabletInventoryAdjustDialogState extends State<TabletInventoryAdjustDialo
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text("CURRENT STOCK", style: GoogleFonts.montserrat(fontSize: 8, color: Colors.white24, fontWeight: FontWeight.bold)),
+              Text("TỒN KHO HIỆN TẠI", style: GoogleFonts.montserrat(fontSize: 8, color: Colors.white24, fontWeight: FontWeight.bold)),
               Text("${widget.variant.stock}", style: GoogleFonts.robotoMono(fontSize: 12, color: AppTheme.accentGold, fontWeight: FontWeight.bold)),
             ],
           ),
@@ -202,7 +202,7 @@ class _TabletInventoryAdjustDialogState extends State<TabletInventoryAdjustDialo
           controller: _reasonController,
           style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 11),
           decoration: InputDecoration(
-            hintText: "ENTER ADJUSTMENT REASON...",
+            hintText: "NHẬP LÝ DO ĐIỀU CHỈNH...",
             hintStyle: GoogleFonts.montserrat(color: Colors.white12, fontSize: 9, letterSpacing: 1),
             border: InputBorder.none,
             filled: false,
@@ -233,7 +233,7 @@ class _TabletInventoryAdjustDialogState extends State<TabletInventoryAdjustDialo
             shadowColor: AppTheme.accentGold.withOpacity(0.3),
           ),
           child: Text(
-            "SUBMIT TRANSACTIONS",
+            "XÁC NHẬN GIAO DỊCH",
             style: GoogleFonts.montserrat(fontWeight: FontWeight.w800, fontSize: 12, letterSpacing: 2),
           ),
         ),

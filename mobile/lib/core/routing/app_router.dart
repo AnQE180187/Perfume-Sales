@@ -227,7 +227,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/product/:id',
         builder: (context, state) {
           final productId = state.pathParameters['id']!;
-          return ProductDetailScreen(productId: productId);
+          final heroTag = state.uri.queryParameters['heroTag'];
+          return ProductDetailScreen(productId: productId, heroTag: heroTag);
         },
       ),
       GoRoute(

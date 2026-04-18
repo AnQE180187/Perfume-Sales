@@ -1,27 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:palette_generator/palette_generator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/routing/app_routes.dart';
 import '../../../core/widgets/product_size_selector.dart';
 import '../../../core/widgets/ai_scent_analysis_card.dart';
-import '../../../core/widgets/scent_structure_section.dart';
-import '../../../core/widgets/product_story_section.dart';
 import '../../../core/widgets/product_bottom_cta.dart';
+import '../../../core/widgets/luxury_button.dart';
 import 'package:perfume_gpt_app/l10n/app_localizations.dart';
 import '../../cart/providers/cart_provider.dart';
 import '../../cart/providers/cart_selection_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
-import 'scent_structure_detail_screen.dart';
 import '../providers/product_provider.dart';
 import '../models/product.dart';
 import '../../../core/widgets/product_price_section.dart';
+import '../../../core/widgets/scent_structure_section.dart';
+import 'scent_structure_detail_screen.dart';
 
 class ProductDetailScreen extends ConsumerStatefulWidget {
   final String productId;
+  final String? heroTag;
 
-  const ProductDetailScreen({super.key, required this.productId});
+  const ProductDetailScreen({
+    super.key,
+    required this.productId,
+    this.heroTag,
+  });
 
   @override
   ConsumerState<ProductDetailScreen> createState() =>
@@ -31,11 +37,14 @@ class ProductDetailScreen extends ConsumerStatefulWidget {
 class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
     with SingleTickerProviderStateMixin {
   bool _isAIAnalysisExpanded = false;
+  bool _isStoryExpanded = false;
   String _selectedSize = '100ml';
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   final PageController _pageController = PageController();
   int _currentImagePage = 0;
+  Color? _dominantColor;
+  String? _loadedImageUrl;
 
   // Size pricing map
   final Map<String, double> _sizePricing = {
@@ -80,6 +89,22 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
       curve: Curves.easeOut,
     );
     _animationController.forward();
+  }
+
+  Future<void> _extractColor(String imageUrl) async {
+    if (_loadedImageUrl == imageUrl) return;
+    _loadedImageUrl = imageUrl;
+    try {
+      final palette = await PaletteGenerator.fromImageProvider(
+        NetworkImage(imageUrl),
+        size: const Size(100, 100),
+      );
+      if (mounted) {
+        setState(() {
+          _dominantColor = palette.dominantColor?.color ?? palette.lightMutedColor?.color;
+        });
+      }
+    } catch (_) {}
   }
 
   @override
@@ -128,6 +153,10 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                     ? backendVariantSizes.first
                     : _selectedSize);
           final currentPrice = _priceFor(product, selectedSize);
+
+          if (_dominantColor == null && _loadedImageUrl != images.first) {
+            _extractColor(images.first);
+          }
 
           return Stack(
             children: [
@@ -178,7 +207,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                       background: FadeTransition(
                         opacity: _fadeAnimation,
                         child: Hero(
-                          tag: 'product-${product.id}',
+                          tag: widget.heroTag ?? 'product-${product.id}',
                           child: ClipRRect(
                             borderRadius: const BorderRadius.only(
                               bottomLeft: Radius.circular(32),
@@ -189,13 +218,13 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                               children: [
                                 // gradient background
                                 Container(
-                                  decoration: const BoxDecoration(
+                                  decoration: BoxDecoration(
                                     gradient: LinearGradient(
                                       begin: Alignment.topCenter,
                                       end: Alignment.bottomCenter,
                                       colors: [
-                                        Color(0xFFE8D5B7),
-                                        Color(0xFFF5F1ED),
+                                        _dominantColor?.withValues(alpha: 0.15) ?? const Color(0xFFE8D5B7),
+                                        _dominantColor?.withValues(alpha: 0.5) ?? const Color(0xFFF5F1ED),
                                       ],
                                     ),
                                   ),
@@ -508,14 +537,20 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                     ),
                   ),
 
-                  // ================= THE STORY =================
-                  const SliverToBoxAdapter(child: SizedBox(height: 64)),
+                  // ================= TECHNICAL SPECS =================
                   SliverToBoxAdapter(
-                    child: ProductStorySection(
-                      description: product.description,
-                      productId: product.id,
-                      productName: product.name,
-                      imageUrl: product.imageUrl,
+                    child: _TechnicalSpecsSection(
+                      longevity: product.longevity,
+                      concentration: product.concentration,
+                    ),
+                  ),
+
+                  // ================= PRODUCT STORY =================
+                  SliverToBoxAdapter(
+                    child: _ProductStorySection(
+                      product: product,
+                      isExpanded: _isStoryExpanded,
+                      onToggle: () => setState(() => _isStoryExpanded = !_isStoryExpanded),
                     ),
                   ),
 
@@ -679,6 +714,151 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+class _TechnicalSpecsSection extends StatelessWidget {
+  final String? longevity;
+  final String? concentration;
+
+  const _TechnicalSpecsSection({this.longevity, this.concentration});
+
+  @override
+  Widget build(BuildContext context) {
+    if (longevity == null && concentration == null) return const SizedBox.shrink();
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppTheme.creamWhite.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.accentGold.withOpacity(0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'THÔNG SỐ KỸ THUẬT',
+            style: GoogleFonts.montserrat(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.5,
+              color: AppTheme.accentGold,
+            ),
+          ),
+          const SizedBox(height: 16),
+          _specRow(Icons.timer_outlined, 'Độ lưu hương', longevity ?? 'Đang cập nhật'),
+          const Divider(height: 24, color: AppTheme.softTaupe),
+          _specRow(Icons.water_drop_outlined, 'Nồng độ', concentration ?? 'Đang cập nhật'),
+        ],
+      ),
+    );
+  }
+
+  Widget _specRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: AppTheme.mutedSilver),
+        const SizedBox(width: 12),
+        Text(
+          label,
+          style: GoogleFonts.montserrat(
+            fontSize: 13,
+            color: AppTheme.deepCharcoal.withOpacity(0.6),
+          ),
+        ),
+        const Spacer(),
+        Text(
+          value,
+          style: GoogleFonts.montserrat(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: AppTheme.deepCharcoal,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ProductStorySection extends StatelessWidget {
+  final Product product;
+  final bool isExpanded;
+  final VoidCallback onToggle;
+
+  const _ProductStorySection({
+    required this.product,
+    required this.isExpanded,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final story = product.story ?? product.description ?? '';
+    if (story.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 24,
+                height: 1,
+                color: AppTheme.accentGold,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                l10n.theStory.toUpperCase(),
+                style: GoogleFonts.montserrat(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 2,
+                  color: AppTheme.accentGold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            story,
+            maxLines: isExpanded ? null : 4,
+            overflow: isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
+            style: GoogleFonts.montserrat(
+              fontSize: 14,
+              height: 1.7,
+              color: AppTheme.deepCharcoal.withValues(alpha: 0.7),
+            ),
+          ),
+          const SizedBox(height: 8),
+          GestureDetector(
+            onTap: onToggle,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  isExpanded ? 'Thu gọn' : 'Xem thêm',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.accentGold,
+                  ),
+                ),
+                Icon(
+                  isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                  size: 20,
+                  color: AppTheme.accentGold,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

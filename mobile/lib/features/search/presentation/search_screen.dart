@@ -6,6 +6,7 @@ import 'package:perfume_gpt_app/l10n/app_localizations.dart';
 import '../../../core/widgets/product_card.dart';
 import 'package:go_router/go_router.dart';
 import '../../product/models/product.dart';
+import '../../scent/data/scent_repository.dart';
 import '../providers/search_provider.dart';
 import 'widgets/search_header.dart';
 
@@ -51,16 +52,15 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     super.initState();
     // Initialize filter from widget if provided
     if (widget.initialScent != null) {
-      // Normalize: find match in options (case-insensitive)
-      final match = _scentOptions.firstWhere(
-        (o) => o.toLowerCase() == widget.initialScent!.toLowerCase(),
-        orElse: () => widget.initialScent!,
-      );
-      Future.microtask(() => ref.read(searchProvider.notifier).setScentFamily(match));
+      // In dynamic mode, we just set whatever comes in.
+      // The search notifier will fetch matching products.
+      Future.microtask(() => ref.read(searchProvider.notifier).setScentFamily(widget.initialScent));
     }
 
     // Load initial products through the provider
     Future.microtask(() => ref.read(searchProvider.notifier).loadInitial());
+    // Also ensure scent families are loaded
+    Future.microtask(() => ref.read(scentFamiliesProvider.future));
   }
 
   @override
@@ -75,11 +75,19 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final searchState = ref.watch(searchProvider);
+    final scentFamiliesAsync = ref.watch(scentFamiliesProvider);
+    
     final filteredResults = searchState.results;
 
     final selectedScent = searchState.scentFamily;
     final selectedOccasion = searchState.occasion;
     final selectedPrice = searchState.priceRange;
+
+    // Dynamically get scent options
+    final dynamicScentOptions = scentFamiliesAsync.maybeWhen(
+      data: (families) => families.map((f) => f.name).toList(),
+      orElse: () => _scentOptions,
+    );
 
     return Scaffold(
       backgroundColor: AppTheme.ivoryBackground,
@@ -119,9 +127,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 children: [
                   _FilterSection(
                     title: l10n.scentFamily,
-                    options: _scentOptions,
+                    options: dynamicScentOptions,
                     selected: selectedScent,
                     onSelect: (v) => ref.read(searchProvider.notifier).setScentFamily(v),
+                    isLoading: scentFamiliesAsync.isLoading,
                   ),
                   _buildDivider(),
                   _FilterSection(
@@ -295,12 +304,14 @@ class _FilterSection extends StatelessWidget {
   final List<String> options;
   final String? selected;
   final ValueChanged<String> onSelect;
+  final bool isLoading;
 
   const _FilterSection({
     required this.title,
     required this.options,
     required this.selected,
     required this.onSelect,
+    this.isLoading = false,
   });
 
   @override
@@ -322,54 +333,86 @@ class _FilterSection extends StatelessWidget {
         ),
         SizedBox(
           height: 32,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            itemCount: options.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 10),
-            itemBuilder: (_, index) {
-              final option = options[index];
-              final isSelected = option == selected;
-              return GestureDetector(
-                onTap: () => onSelect(option),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 250),
-                  curve: Curves.easeOutCubic,
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: isSelected ? AppTheme.accentGold : Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: isSelected
-                          ? AppTheme.accentGold
-                          : AppTheme.softTaupe.withValues(alpha: 0.3),
-                      width: 0.6,
+          child: isLoading 
+            ? ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                itemCount: 4,
+                separatorBuilder: (_, __) => const SizedBox(width: 10),
+                itemBuilder: (_, __) => _buildLoadingChip(),
+              )
+            : ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                itemCount: options.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 10),
+                itemBuilder: (_, index) {
+                  final option = options[index];
+                  final isSelected = option == selected;
+                  return GestureDetector(
+                    onTap: () => onSelect(option),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeOutCubic,
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: isSelected ? AppTheme.accentGold : Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: isSelected
+                              ? AppTheme.accentGold
+                              : AppTheme.softTaupe.withValues(alpha: 0.3),
+                          width: 0.6,
+                        ),
+                        boxShadow: isSelected
+                            ? [
+                                BoxShadow(
+                                  color: AppTheme.accentGold.withValues(alpha: 0.25),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ]
+                            : [],
+                      ),
+                      child: Text(
+                        option,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 12,
+                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                          color: isSelected ? Colors.white : AppTheme.deepCharcoal,
+                        ),
+                      ),
                     ),
-                    boxShadow: isSelected
-                        ? [
-                            BoxShadow(
-                              color: AppTheme.accentGold.withValues(alpha: 0.25),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ]
-                        : [],
-                  ),
-                  child: Text(
-                    option,
-                    style: GoogleFonts.montserrat(
-                      fontSize: 12,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                      color: isSelected ? Colors.white : AppTheme.deepCharcoal,
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
+                  );
+                },
+              ),
         ),
       ],
+    );
+  }
+
+  Widget _buildLoadingChip() {
+    return Container(
+      width: 80,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: AppTheme.softTaupe.withValues(alpha: 0.1),
+          width: 0.6,
+        ),
+      ),
+      child: Center(
+        child: SizedBox(
+          width: 40,
+          height: 4,
+          child: LinearProgressIndicator(
+            backgroundColor: AppTheme.softTaupe.withValues(alpha: 0.05),
+            color: AppTheme.softTaupe.withValues(alpha: 0.1),
+          ),
+        ),
+      ),
     );
   }
 }

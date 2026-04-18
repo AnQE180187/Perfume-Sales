@@ -609,8 +609,10 @@
         "total_orders": "Tổng Đơn Hàng",
         "avg_order_value": "Giá Trị Đơn Trung Bình",
         "completion_rate": "Tỉ Lệ Hoàn Tất",
+        "cancel_rate": "Tỉ Lệ Hủy",
+        "refund_amount": "Lượng hoàn tiền",
         "completed_suffix": "Hoàn tất",
-        "successful": "Thành công",
+        "successful": "Hoàn tất",
         "cancelled": "Đã hủy",
         "refunded": "Hoàn tiền"
       },

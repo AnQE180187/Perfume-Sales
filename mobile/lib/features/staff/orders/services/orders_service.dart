@@ -11,6 +11,8 @@ class StaffOrdersService {
     int skip = 0,
     int take = 20,
     String? search,
+    String? startDate,
+    String? endDate,
   }) async {
     final response = await _client.get(
       ApiEndpoints.staffOrders,
@@ -18,6 +20,8 @@ class StaffOrdersService {
         'skip': skip,
         'take': take,
         if (search != null && search.isNotEmpty) 'search': search,
+        if (startDate != null) 'startDate': startDate,
+        if (endDate != null) 'endDate': endDate,
       },
     );
     return OrdersPage.fromJson(response.data as Map<String, dynamic>);

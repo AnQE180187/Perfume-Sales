@@ -1,9 +1,12 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_utils.dart';
 import '../../features/product/models/product.dart';
 import 'luxury_button.dart';
+import 'tappable_card.dart';
+import 'custom_shimmer.dart';
 
 enum ProductCardVariant { featured, grid, list }
 
@@ -16,6 +19,7 @@ class ProductCard extends StatelessWidget {
   final VoidCallback? onAdd;
   final bool isFavorite;
   final VoidCallback? onFavoriteToggle;
+  final String? heroTag;
 
   const ProductCard({
     super.key,
@@ -27,6 +31,7 @@ class ProductCard extends StatelessWidget {
     this.onAdd,
     this.isFavorite = false,
     this.onFavoriteToggle,
+    this.heroTag,
   });
 
   @override
@@ -39,6 +44,7 @@ class ProductCard extends StatelessWidget {
           isFavorite: isFavorite,
           onTap: onTap,
           onFavoriteToggle: onFavoriteToggle,
+          heroTag: heroTag,
         );
       case ProductCardVariant.grid:
         return _GridCard(
@@ -48,6 +54,7 @@ class ProductCard extends StatelessWidget {
           isFavorite: isFavorite,
           onTap: onTap,
           onFavoriteToggle: onFavoriteToggle,
+          heroTag: heroTag,
         );
       case ProductCardVariant.list:
         return _ListCard(
@@ -57,6 +64,7 @@ class ProductCard extends StatelessWidget {
           onTap: onTap,
           onAdd: onAdd,
           onFavoriteToggle: onFavoriteToggle,
+          heroTag: heroTag,
         );
     }
   }
@@ -68,6 +76,7 @@ class _FeaturedCard extends StatelessWidget {
   final bool isFavorite;
   final VoidCallback? onTap;
   final VoidCallback? onFavoriteToggle;
+  final String? heroTag;
 
   const _FeaturedCard({
     required this.product,
@@ -75,33 +84,34 @@ class _FeaturedCard extends StatelessWidget {
     required this.isFavorite,
     this.onTap,
     this.onFavoriteToggle,
+    this.heroTag,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return TappableCard(
       onTap: onTap,
-      child: Container(
-        width: 200,
-        margin: const EdgeInsets.only(right: 16),
-        decoration: BoxDecoration(
-          color: AppTheme.creamWhite,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: AppTheme.deepCharcoal.withValues(alpha: 0.06),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
+      margin: const EdgeInsets.only(right: 16),
+      useGlassmorphism: true,
+      glassOpacity: 0.95,
+      backgroundColor: AppTheme.creamWhite,
+      borderRadius: BorderRadius.circular(20),
+      boxShadow: [
+        BoxShadow(
+          color: AppTheme.deepCharcoal.withValues(alpha: 0.05),
+          blurRadius: 16,
+          offset: const Offset(0, 8),
         ),
+      ],
+      child: SizedBox(
+        width: 200,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ClipRRect(
               borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(24),
+                top: Radius.circular(20),
               ),
               child: AspectRatio(
                 aspectRatio: 1,
@@ -109,10 +119,17 @@ class _FeaturedCard extends StatelessWidget {
                   fit: StackFit.expand,
                   children: [
                     Hero(
-                      tag: 'product-${product.id}',
+                      tag: heroTag ?? 'product-${product.id}',
                       child: Image.network(
                         product.imageUrl,
                         fit: BoxFit.cover,
+                        loadingBuilder: (context, child, progress) {
+                          if (progress == null) return child;
+                          return const CustomShimmer(
+                            width: double.infinity,
+                            height: double.infinity,
+                          );
+                        },
                         errorBuilder: (_, __, ___) => Container(
                           color: const Color(0xFFF5F1ED),
                           child: const Icon(
@@ -161,35 +178,47 @@ class _FeaturedCard extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    product.brand.toUpperCase(),
-                    style: GoogleFonts.playfairDisplay(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.5,
-                      color: AppTheme.deepCharcoal,
+                    Text(
+                      product.brand.toUpperCase(),
+                      style: GoogleFonts.playfairDisplay(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.5,
+                        color: AppTheme.deepCharcoal,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
+                    if (product.scentFamily != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        product.scentFamily!,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w500,
+                          color: AppTheme.accentGold,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  const SizedBox(height: 6),
                   Text(
                     product.name,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.montserrat(
                       fontSize: 13,
-                      fontWeight: FontWeight.w400,
+                      fontWeight: FontWeight.w500,
                       height: 1.25,
                       color: AppTheme.deepCharcoal,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Row(
                     children: [
                       Flexible(
@@ -244,6 +273,7 @@ class _GridCard extends StatelessWidget {
   final bool isFavorite;
   final VoidCallback? onTap;
   final VoidCallback? onFavoriteToggle;
+  final String? heroTag;
 
   const _GridCard({
     required this.product,
@@ -252,195 +282,219 @@ class _GridCard extends StatelessWidget {
     required this.isFavorite,
     this.onTap,
     this.onFavoriteToggle,
+    this.heroTag,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return TappableCard(
       onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppTheme.creamWhite,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: AppTheme.deepCharcoal.withValues(alpha: 0.04),
-              blurRadius: 16,
-              offset: const Offset(0, 6),
-            ),
-          ],
+      backgroundColor: AppTheme.creamWhite,
+      borderRadius: BorderRadius.circular(24),
+      useGlassmorphism: true,
+      glassOpacity: 0.95,
+      boxShadow: [
+        BoxShadow(
+          color: AppTheme.deepCharcoal.withValues(alpha: 0.05),
+          blurRadius: 16,
+          offset: const Offset(0, 8),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AspectRatio(
-              aspectRatio: 1.0,
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(24),
-                ),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    Hero(
-                      tag: 'product-${product.id}',
-                      child: Image.network(
-                        product.imageUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
-                          color: const Color(0xFFF5F1ED),
-                          child: const Icon(
-                            Icons.image_outlined,
-                            size: 40,
+      ],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AspectRatio(
+            aspectRatio: 1.0,
+            child: ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
+              ),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Hero(
+                    tag: heroTag ?? 'product-${product.id}',
+                    child: Image.network(
+                      product.imageUrl,
+                      fit: BoxFit.cover,
+                      loadingBuilder: (context, child, progress) {
+                        if (progress == null) return child;
+                        return const CustomShimmer(
+                          width: double.infinity,
+                          height: double.infinity,
+                        );
+                      },
+                      errorBuilder: (_, __, ___) => Container(
+                        color: const Color(0xFFF5F1ED),
+                        child: const Icon(
+                          Icons.image_outlined,
+                          size: 40,
+                          color: AppTheme.mutedSilver,
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Gradient overlay for better icon visibility
+                  Positioned(
+                    top: 0,
+                    right: 0,
+                    child: Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topRight,
+                          end: Alignment.bottomLeft,
+                          colors: [
+                            AppTheme.deepCharcoal.withValues(alpha: 0.15),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (badge != null)
+                    Positioned(
+                      left: 10,
+                      bottom: 10,
+                      child: _LuxuryBadge(text: badge!),
+                    ),
+                  if (matchPercent != null)
+                    Positioned(
+                      left: 10,
+                      top: 10,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppTheme.accentGold.withValues(alpha: 0.8),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.white.withOpacity(0.3)),
+                            ),
+                            child: Text(
+                              '$matchPercent%',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: _FavoriteButton(
+                      isFavorite: isFavorite,
+                      onTap: onFavoriteToggle,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    product.brand.toUpperCase(),
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.4,
+                      color: AppTheme.deepCharcoal,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (product.scentFamily != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      product.scentFamily!,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.accentGold,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 6),
+                  Text(
+                    product.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      height: 1.25,
+                      color: AppTheme.deepCharcoal,
+                    ),
+                  ),
+                  if (product.notes.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    SizedBox(
+                      height: 20,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: product.notes.length > 3
+                            ? 3
+                            : product.notes.length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 4),
+                        itemBuilder: (_, i) => _ScentTag(text: product.notes[i]),
+                      ),
+                    ),
+                  ],
+                  const Spacer(),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          formatVND(product.price),
+                          style: GoogleFonts.montserrat(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.deepCharcoal,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (product.rating != null) ...[
+                        const SizedBox(width: 6),
+                        const Icon(
+                          Icons.star,
+                          size: 11,
+                          color: AppTheme.accentGold,
+                        ),
+                        const SizedBox(width: 2),
+                        Text(
+                          product.rating!.toStringAsFixed(1),
+                          style: GoogleFonts.montserrat(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
                             color: AppTheme.mutedSilver,
                           ),
                         ),
-                      ),
-                    ),
-                    // Gradient overlay for better icon visibility
-                    Positioned(
-                      top: 0,
-                      right: 0,
-                      child: Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topRight,
-                            end: Alignment.bottomLeft,
-                            colors: [
-                              AppTheme.deepCharcoal.withValues(alpha: 0.15),
-                              Colors.transparent,
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    if (badge != null)
-                      Positioned(
-                        left: 10,
-                        bottom: 10,
-                        child: _LuxuryBadge(text: badge!),
-                      ),
-                    if (matchPercent != null)
-                      Positioned(
-                        left: 10,
-                        top: 10,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppTheme.accentGold.withValues(alpha: 0.9),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            '$matchPercent%',
-                            style: GoogleFonts.montserrat(
-                              fontSize: 9,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: _FavoriteButton(
-                        isFavorite: isFavorite,
-                        onTap: onFavoriteToggle,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      product.brand.toUpperCase(),
-                      style: GoogleFonts.playfairDisplay(
-                        fontSize: 9,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1.4,
-                        color: AppTheme.deepCharcoal,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      product.name,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.montserrat(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w400,
-                        height: 1.2,
-                        color: AppTheme.deepCharcoal,
-                      ),
-                    ),
-                    if (product.notes.isNotEmpty) ...[
-                      const SizedBox(height: 5),
-                      SizedBox(
-                        height: 20,
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: product.notes.length > 3
-                              ? 3
-                              : product.notes.length,
-                          separatorBuilder: (_, __) => const SizedBox(width: 4),
-                          itemBuilder: (_, i) =>
-                              _ScentTag(text: product.notes[i]),
-                        ),
-                      ),
-                    ],
-                    const Spacer(),
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            formatVND(product.price),
-                            style: GoogleFonts.montserrat(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: AppTheme.deepCharcoal,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        if (product.rating != null) ...[
-                          const SizedBox(width: 6),
-                          const Icon(
-                            Icons.star,
-                            size: 11,
-                            color: AppTheme.accentGold,
-                          ),
-                          const SizedBox(width: 2),
-                          Text(
-                            product.rating!.toStringAsFixed(1),
-                            style: GoogleFonts.montserrat(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w500,
-                              color: AppTheme.mutedSilver,
-                            ),
-                          ),
-                        ],
                       ],
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -453,6 +507,7 @@ class _ListCard extends StatelessWidget {
   final VoidCallback? onTap;
   final VoidCallback? onAdd;
   final VoidCallback? onFavoriteToggle;
+  final String? heroTag;
 
   const _ListCard({
     required this.product,
@@ -461,143 +516,147 @@ class _ListCard extends StatelessWidget {
     this.onTap,
     this.onAdd,
     this.onFavoriteToggle,
+    this.heroTag,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return TappableCard(
       onTap: onTap,
+      padding: const EdgeInsets.all(12),
+      backgroundColor: AppTheme.creamWhite,
+      borderRadius: BorderRadius.circular(16),
+      useGlassmorphism: true,
+      glassOpacity: 0.95,
+      boxShadow: [
+        BoxShadow(
+          color: AppTheme.deepCharcoal.withValues(alpha: 0.04),
+          blurRadius: 8,
+          offset: const Offset(0, 4),
+        ),
+      ],
       child: SizedBox(
-        height: 130,
-        child: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: AppTheme.creamWhite,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: AppTheme.deepCharcoal.withValues(alpha: 0.04),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Hero(
-                  tag: 'product-${product.id}',
-                  child: Image.network(
-                    product.imageUrl,
+        height: 106, // Height adjusts via constraints
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Hero(
+                tag: heroTag ?? 'product-${product.id}',
+                child: Image.network(
+                  product.imageUrl,
+                  width: 90,
+                  height: 90,
+                  fit: BoxFit.cover,
+                  loadingBuilder: (context, child, progress) {
+                    if (progress == null) return child;
+                    return const CustomShimmer(width: 90, height: 90);
+                  },
+                  errorBuilder: (_, __, ___) => Container(
                     width: 90,
                     height: 90,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      width: 90,
-                      height: 90,
-                      color: const Color(0xFFF5F1ED),
-                      child: const Icon(
-                        Icons.image_outlined,
-                        size: 32,
-                        color: AppTheme.mutedSilver,
-                      ),
+                    color: const Color(0xFFF5F1ED),
+                    child: const Icon(
+                      Icons.image_outlined,
+                      size: 32,
+                      color: AppTheme.mutedSilver,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      product.brand.toUpperCase(),
-                      style: GoogleFonts.playfairDisplay(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1.4,
-                        color: AppTheme.deepCharcoal,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    product.brand.toUpperCase(),
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.4,
+                      color: AppTheme.deepCharcoal,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    product.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      height: 1.2,
+                      color: AppTheme.deepCharcoal,
+                    ),
+                  ),
+                  if (product.description != null && product.description!.isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Text(
-                      product.name,
+                      product.description!,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.montserrat(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
-                        height: 1.2,
-                        color: AppTheme.deepCharcoal,
+                        fontSize: 11,
+                        color: AppTheme.mutedSilver,
                       ),
-                    ),
-                    if (product.description != null) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        product.description!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.montserrat(
-                          fontSize: 11,
-                          color: AppTheme.mutedSilver,
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 6),
-                    Wrap(
-                      spacing: 8,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        Text(
-                          formatVND(product.price),
-                          style: GoogleFonts.montserrat(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.deepCharcoal,
-                          ),
-                        ),
-                        if (matchPercent != null)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppTheme.accentGold.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              '$matchPercent% Match',
-                              style: GoogleFonts.montserrat(
-                                fontSize: 9,
-                                fontWeight: FontWeight.w600,
-                                color: AppTheme.accentGold,
-                              ),
-                            ),
-                          ),
-                      ],
                     ),
                   ],
-                ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Text(
+                        formatVND(product.price),
+                        style: GoogleFonts.montserrat(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.deepCharcoal,
+                        ),
+                      ),
+                      if (matchPercent != null)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppTheme.accentGold.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: AppTheme.accentGold.withOpacity(0.2)),
+                          ),
+                          child: Text(
+                            '$matchPercent% Match',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.accentGold,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              SizedBox(
-                width: 85,
+            ),
+            const SizedBox(width: 8),
+            SizedBox(
+              width: 85,
+              height: 38,
+              child: LuxuryButton(
+                text: 'ADD',
                 height: 38,
-                child: LuxuryButton(
-                  text: 'ADD',
-                  height: 38,
-                  onPressed: onAdd,
-                  trailingIcon: Icons.arrow_forward,
-                ),
+                onPressed: onAdd,
+                trailingIcon: Icons.arrow_forward,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -610,41 +669,19 @@ class _ScentTag extends StatelessWidget {
 
   Color _getTagColor(String scent) {
     final s = scent.toLowerCase();
-    if (s.contains('bergamot') || s.contains('lemon') || s.contains('citrus')) {
-      return const Color(0xFFFDF7E7); // Citrus Pastel
-    }
-    if (s.contains('jasmine') ||
-        s.contains('rose') ||
-        s.contains('floral') ||
-        s.contains('lavender')) {
-      return const Color(0xFFF5EEFD); // Floral Pastel
-    }
-    if (s.contains('wood') || s.contains('cedar') || s.contains('sandalwood')) {
-      return const Color(0xFFEFEBE9); // Woody Pastel
-    }
-    if (s.contains('vanilla') || s.contains('amber') || s.contains('musk')) {
-      return const Color(0xFFFDF2F0); // Warm Pastel
-    }
-    return const Color(0xFFE8F5E9); // Green/Fresh Pastel
+    if (s.contains('bergamot') || s.contains('lemon') || s.contains('citrus')) return const Color(0xFFFDF7E7);
+    if (s.contains('jasmine') || s.contains('rose') || s.contains('floral') || s.contains('lavender')) return const Color(0xFFF5EEFD);
+    if (s.contains('wood') || s.contains('cedar') || s.contains('sandalwood')) return const Color(0xFFEFEBE9);
+    if (s.contains('vanilla') || s.contains('amber') || s.contains('musk')) return const Color(0xFFFDF2F0);
+    return const Color(0xFFE8F5E9);
   }
 
   Color _getTextColor(String scent) {
     final s = scent.toLowerCase();
-    if (s.contains('bergamot') || s.contains('lemon') || s.contains('citrus')) {
-      return const Color(0xFF8B7310);
-    }
-    if (s.contains('jasmine') ||
-        s.contains('rose') ||
-        s.contains('floral') ||
-        s.contains('lavender')) {
-      return const Color(0xFF6A1B9A);
-    }
-    if (s.contains('wood') || s.contains('cedar') || s.contains('sandalwood')) {
-      return const Color(0xFF5D4037);
-    }
-    if (s.contains('vanilla') || s.contains('amber') || s.contains('musk')) {
-      return const Color(0xFFC62828);
-    }
+    if (s.contains('bergamot') || s.contains('lemon') || s.contains('citrus')) return const Color(0xFF8B7310);
+    if (s.contains('jasmine') || s.contains('rose') || s.contains('floral') || s.contains('lavender')) return const Color(0xFF6A1B9A);
+    if (s.contains('wood') || s.contains('cedar') || s.contains('sandalwood')) return const Color(0xFF5D4037);
+    if (s.contains('vanilla') || s.contains('amber') || s.contains('musk')) return const Color(0xFFC62828);
     return const Color(0xFF2E7D32);
   }
 
@@ -654,10 +691,11 @@ class _ScentTag extends StatelessWidget {
     final textColor = _getTextColor(text);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: bgColor,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: textColor.withOpacity(0.1)),
       ),
       child: Text(
         text,
@@ -680,55 +718,30 @@ class _LuxuryBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: AppTheme.creamWhite.withValues(alpha: 0.9),
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.accentGold.withValues(alpha: 0.3),
-            blurRadius: 8,
-            spreadRadius: 1,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+        child: Container(
+          padding: const EdgeInsets.all(5),
+          decoration: BoxDecoration(
+            color: AppTheme.creamWhite.withOpacity(0.6),
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.accentGold.withValues(alpha: 0.3),
+                blurRadius: 8,
+                spreadRadius: 1,
+              ),
+            ],
+            border: Border.all(color: Colors.white.withOpacity(0.5), width: 1.2),
           ),
-        ],
-      ),
-      child: const Icon(
-        Icons.auto_awesome,
-        size: 14,
-        color: AppTheme.accentGold,
-      ),
-    );
-  }
-}
-
-class _Badge extends StatelessWidget {
-  final String text;
-  const _Badge({required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.auto_awesome, size: 10, color: AppTheme.accentGold),
-          const SizedBox(width: 4),
-          Text(
-            text.toUpperCase(),
-            style: GoogleFonts.montserrat(
-              fontSize: 8,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.8,
-              color: AppTheme.accentGold,
-            ),
+          child: const Icon(
+            Icons.auto_awesome,
+            size: 14,
+            color: AppTheme.accentGold,
           ),
-        ],
+        ),
       ),
     );
   }
@@ -744,12 +757,23 @@ class _FavoriteButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.all(4.0),
-        child: Icon(
-          isFavorite ? Icons.favorite : Icons.favorite_border,
-          size: 22,
-          color: isFavorite ? const Color(0xFFD32F2F) : AppTheme.creamWhite,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+          child: Container(
+            padding: const EdgeInsets.all(6.0),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.15),
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white.withOpacity(0.2)),
+            ),
+            child: Icon(
+              isFavorite ? Icons.favorite : Icons.favorite_border,
+              size: 18,
+              color: isFavorite ? const Color(0xFFD32F2F) : AppTheme.creamWhite,
+            ),
+          ),
         ),
       ),
     );
