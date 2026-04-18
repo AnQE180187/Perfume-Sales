@@ -7,12 +7,16 @@ import '../../../core/widgets/product_card.dart';
 import 'package:go_router/go_router.dart';
 import '../../product/models/product.dart';
 import '../../scent/data/scent_repository.dart';
+import '../../product/data/product_repository.dart';
+import '../../scent/models/scent_family.dart';
+import '../../product/models/brand.dart';
 import '../providers/search_provider.dart';
 import 'widgets/search_header.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
   final String? initialScent;
-  const SearchScreen({super.key, this.initialScent});
+  final int? initialScentId;
+  const SearchScreen({super.key, this.initialScent, this.initialScentId});
 
   @override
   ConsumerState<SearchScreen> createState() => _SearchScreenState();
@@ -52,9 +56,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     super.initState();
     // Initialize filter from widget if provided
     if (widget.initialScent != null) {
-      // In dynamic mode, we just set whatever comes in.
-      // The search notifier will fetch matching products.
-      Future.microtask(() => ref.read(searchProvider.notifier).setScentFamily(widget.initialScent));
+      _selectedScent = widget.initialScent;
+      _searchController.text = widget.initialScent!;
+      Future.microtask(() => ref.read(searchProvider.notifier).setScentFamily(
+            widget.initialScent,
+            id: widget.initialScentId,
+          ));
     }
 
     // Load initial products through the provider
@@ -76,18 +83,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final l10n = AppLocalizations.of(context)!;
     final searchState = ref.watch(searchProvider);
     final scentFamiliesAsync = ref.watch(scentFamiliesProvider);
+    final brandsAsync = ref.watch(brandsProvider);
     
     final filteredResults = searchState.results;
 
+    final selectedBrand = searchState.brandName;
     final selectedScent = searchState.scentFamily;
     final selectedOccasion = searchState.occasion;
     final selectedPrice = searchState.priceRange;
-
-    // Dynamically get scent options
-    final dynamicScentOptions = scentFamiliesAsync.maybeWhen(
-      data: (families) => families.map((f) => f.name).toList(),
-      orElse: () => _scentOptions,
-    );
 
     return Scaffold(
       backgroundColor: AppTheme.ivoryBackground,
@@ -120,33 +123,88 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               ),
             ),
 
-            // Compact Filter Sections
             SliverToBoxAdapter(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _FilterSection(
-                    title: l10n.scentFamily,
-                    options: dynamicScentOptions,
-                    selected: selectedScent,
-                    onSelect: (v) => ref.read(searchProvider.notifier).setScentFamily(v),
-                    isLoading: scentFamiliesAsync.isLoading,
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    child: Row(
+                      children: [
+                        _DropdownChip(
+                          label: selectedBrand ?? l10n.brand,
+                          isSelected: selectedBrand != null,
+                          onTap: () {
+                            final brands = brandsAsync.maybeWhen(
+                              data: (data) => data,
+                              orElse: () => <Brand>[],
+                            );
+                            _showFilterPicker(
+                              context,
+                              title: l10n.brand,
+                              options: brands.map((b) => b.name).toList(),
+                              selected: selectedBrand,
+                              onSelect: (name) {
+                                final b = brands.firstWhere((b) => b.name == name);
+                                ref.read(searchProvider.notifier).setBrand(b.name, id: b.id);
+                              },
+                              isLoading: brandsAsync.isLoading,
+                            );
+                          },
+                        ),
+                        const SizedBox(width: 10),
+                        _DropdownChip(
+                          label: selectedScent ?? l10n.scentFamily,
+                          isSelected: selectedScent != null,
+                          onTap: () {
+                            final dynamicScentOptions = scentFamiliesAsync.maybeWhen(
+                              data: (families) => families,
+                              orElse: () => _scentOptions.map((name) => ScentFamily(id: -1, name: name)).toList(),
+                            );
+                            _showFilterPicker(
+                              context,
+                              title: l10n.scentFamily,
+                              options: dynamicScentOptions.map((f) => f.name).toList(),
+                              selected: selectedScent,
+                              onSelect: (name) {
+                                final family = dynamicScentOptions.firstWhere((f) => f.name == name);
+                                ref.read(searchProvider.notifier).setScentFamily(
+                                      family.name,
+                                      id: family.id == -1 ? null : family.id,
+                                    );
+                              },
+                              isLoading: scentFamiliesAsync.isLoading,
+                            );
+                          },
+                        ),
+                        const SizedBox(width: 10),
+                        _DropdownChip(
+                          label: selectedOccasion ?? l10n.usageOccasion,
+                          isSelected: selectedOccasion != null,
+                          onTap: () => _showFilterPicker(
+                            context,
+                            title: l10n.usageOccasion,
+                            options: _occasionOptions,
+                            selected: selectedOccasion,
+                            onSelect: (v) => ref.read(searchProvider.notifier).setOccasion(v),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        _DropdownChip(
+                          label: selectedPrice ?? l10n.priceRange,
+                          isSelected: selectedPrice != null,
+                          onTap: () => _showFilterPicker(
+                            context,
+                            title: l10n.priceRange,
+                            options: _priceOptions,
+                            selected: selectedPrice,
+                            onSelect: (v) => ref.read(searchProvider.notifier).setPriceRange(v),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  _buildDivider(),
-                  _FilterSection(
-                    title: l10n.usageOccasion,
-                    options: _occasionOptions,
-                    selected: selectedOccasion,
-                    onSelect: (v) => ref.read(searchProvider.notifier).setOccasion(v),
-                  ),
-                  _buildDivider(),
-                  _FilterSection(
-                    title: l10n.priceRange,
-                    options: _priceOptions,
-                    selected: selectedPrice,
-                    onSelect: (v) => ref.read(searchProvider.notifier).setPriceRange(v),
-                  ),
-                  const SizedBox(height: 12),
                   
                   // Results Title & Summary
                   Padding(
@@ -155,39 +213,31 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Expanded(
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  _searchController.text.isEmpty
-                                      ? l10n.featuredScents
-                                      : l10n.searchResults,
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                  style: GoogleFonts.playfairDisplay(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppTheme.deepCharcoal,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              if (!searchState.isLoading)
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 3),
-                                  child: Text(
-                                    '(${filteredResults.length} ${l10n.productsFound})',
-                                    style: GoogleFonts.montserrat(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w500,
-                                      color: AppTheme.mutedSilver,
-                                    ),
-                                  ),
-                                ),
-                            ],
+                          child: Text(
+                            _searchController.text.isEmpty
+                                ? l10n.featuredScents
+                                : l10n.searchResults,
+                            style: GoogleFonts.playfairDisplay(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.deepCharcoal,
+                            ),
                           ),
                         ),
+                        if (!searchState.isLoading) ...[
+                          const SizedBox(width: 10),
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 3),
+                            child: Text(
+                              '(${filteredResults.length} ${l10n.productsFound})',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: AppTheme.mutedSilver,
+                              ),
+                            ),
+                          ),
+                        ],
                         if (_hasActiveFilters) ...[
                           const SizedBox(width: 12),
                           GestureDetector(
@@ -256,13 +306,98 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     );
   }
 
-  Widget _buildDivider() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Divider(
-        color: AppTheme.softTaupe.withValues(alpha: 0.2),
-        thickness: 0.8,
-        height: 1,
+  void _showFilterPicker(
+    BuildContext context, {
+    required String title,
+    required List<String> options,
+    required String? selected,
+    required ValueChanged<String> onSelect,
+    bool isLoading = false,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppTheme.softTaupe.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Text(
+                  title.toUpperCase(),
+                  style: GoogleFonts.montserrat(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.5,
+                    color: AppTheme.deepCharcoal.withOpacity(0.6),
+                  ),
+                ),
+              ),
+              if (isLoading)
+                const Padding(
+                  padding: EdgeInsets.all(40.0),
+                  child: CircularProgressIndicator(color: AppTheme.accentGold),
+                )
+              else
+                Flexible(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(context).size.height * 0.5,
+                    ),
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      itemCount: options.length,
+                      separatorBuilder: (_, __) => Divider(
+                        color: AppTheme.softTaupe.withOpacity(0.1),
+                        height: 1,
+                      ),
+                      itemBuilder: (context, index) {
+                        final option = options[index];
+                        final isSelected = option == selected;
+                        return ListTile(
+                          onTap: () {
+                            onSelect(option);
+                            Navigator.pop(context);
+                          },
+                          title: Text(
+                            option,
+                            style: GoogleFonts.montserrat(
+                              fontSize: 14,
+                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                              color: isSelected ? AppTheme.accentGold : AppTheme.deepCharcoal,
+                            ),
+                          ),
+                          trailing: isSelected
+                              ? const Icon(Icons.check_circle, color: AppTheme.accentGold, size: 20)
+                              : null,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 12),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -299,118 +434,59 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   }
 }
 
-class _FilterSection extends StatelessWidget {
-  final String title;
-  final List<String> options;
-  final String? selected;
-  final ValueChanged<String> onSelect;
-  final bool isLoading;
+class _DropdownChip extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
 
-  const _FilterSection({
-    required this.title,
-    required this.options,
-    required this.selected,
-    required this.onSelect,
-    this.isLoading = false,
+  const _DropdownChip({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 10),
-          child: Text(
-            title.toUpperCase(),
-            style: GoogleFonts.montserrat(
-              fontSize: 8,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.2,
-              color: AppTheme.deepCharcoal.withValues(alpha: 0.4),
-            ),
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? AppTheme.accentGold.withOpacity(0.1) : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? AppTheme.accentGold : AppTheme.softTaupe.withOpacity(0.5),
+            width: 1,
           ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppTheme.accentGold.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : [],
         ),
-        SizedBox(
-          height: 32,
-          child: isLoading 
-            ? ListView.separated(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                itemCount: 4,
-                separatorBuilder: (_, __) => const SizedBox(width: 10),
-                itemBuilder: (_, __) => _buildLoadingChip(),
-              )
-            : ListView.separated(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                itemCount: options.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 10),
-                itemBuilder: (_, index) {
-                  final option = options[index];
-                  final isSelected = option == selected;
-                  return GestureDetector(
-                    onTap: () => onSelect(option),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 250),
-                      curve: Curves.easeOutCubic,
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: isSelected ? AppTheme.accentGold : Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: isSelected
-                              ? AppTheme.accentGold
-                              : AppTheme.softTaupe.withValues(alpha: 0.3),
-                          width: 0.6,
-                        ),
-                        boxShadow: isSelected
-                            ? [
-                                BoxShadow(
-                                  color: AppTheme.accentGold.withValues(alpha: 0.25),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ]
-                            : [],
-                      ),
-                      child: Text(
-                        option,
-                        style: GoogleFonts.montserrat(
-                          fontSize: 12,
-                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                          color: isSelected ? Colors.white : AppTheme.deepCharcoal,
-                        ),
-                      ),
-                    ),
-                  );
-                },
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: GoogleFonts.montserrat(
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                color: isSelected ? AppTheme.accentGold : AppTheme.deepCharcoal,
               ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLoadingChip() {
-    return Container(
-      width: 80,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: AppTheme.softTaupe.withValues(alpha: 0.1),
-          width: 0.6,
-        ),
-      ),
-      child: Center(
-        child: SizedBox(
-          width: 40,
-          height: 4,
-          child: LinearProgressIndicator(
-            backgroundColor: AppTheme.softTaupe.withValues(alpha: 0.05),
-            color: AppTheme.softTaupe.withValues(alpha: 0.1),
-          ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              Icons.keyboard_arrow_down_rounded,
+              size: 16,
+              color: isSelected ? AppTheme.accentGold : AppTheme.mutedSilver,
+            ),
+          ],
         ),
       ),
     );

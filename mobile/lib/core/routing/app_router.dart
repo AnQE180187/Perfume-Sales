@@ -204,7 +204,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/search',
         builder: (context, state) {
           final scent = state.uri.queryParameters['scent'];
-          return SearchScreen(initialScent: scent);
+          final scentIdStr = state.uri.queryParameters['scentId'];
+          final scentId = scentIdStr != null ? int.tryParse(scentIdStr) : null;
+          return SearchScreen(initialScent: scent, initialScentId: scentId);
         },
       ),
       GoRoute(

@@ -363,6 +363,7 @@
   "ingredientsDictionary": "Từ điển thành phần",
   "giftService": "Dịch vụ quà tặng",
   "brandStory": "Câu chuyện thương hiệu",
+  "brand": "Thương hiệu",
   "supportConcierge": "Hỗ trợ tư vấn",
   "logout": "Đăng xuất",
   "searchHint": "Tìm kiếm mùi hương...",
@@ -730,6 +731,20 @@
   "redeemedDiscount": "Khấu trừ khi thanh toán",
   "returnedRefundPoints": "Hoàn trả điểm (Từ chối đơn)",
   "redeemNow": "ĐỔI NGAY",
+  "claimNow": "NHẬN NGAY",
+  "claimVoucherConfirm": "Bạn có muốn nhận mã giảm giá {code} này không?",
+  "@claimVoucherConfirm": {
+    "placeholders": {
+      "code": { "type": "String" }
+    }
+  },
+  "free": "Miễn phí",
+  "claimSuccess": "Nhận thành công! Mã {code} đã có trong ví của bạn.",
+  "@claimSuccess": {
+    "placeholders": {
+      "code": { "type": "String" }
+    }
+  },
   "voucherDiscount": "VOUCHER GIẢM",
   "paymentVnpayDesc": "Thanh toán bằng ví điện tử VNPay",
   "paymentMomoDesc": "Thanh toán bằng ví điện tử MoMo",

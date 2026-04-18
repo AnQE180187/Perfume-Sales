@@ -53,10 +53,6 @@ class LuxuryDrawer extends ConsumerWidget {
         label: l10n.brandStory,
         route: AppRoutes.brandStory,
       ),
-      _MenuItem(
-        icon: Icons.support_agent_outlined,
-        label: l10n.supportConcierge,
-      ),
     ];
   }
 

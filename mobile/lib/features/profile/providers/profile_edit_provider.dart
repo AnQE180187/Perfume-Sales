@@ -11,7 +11,7 @@ class ProfileEditNotifier extends AsyncNotifier<void> {
   @override
   Future<void> build() async {}
 
-  Future<void> save({
+  Future<Map<String, dynamic>> save({
     required String fullName,
     required String phone,
     String? gender,
@@ -32,6 +32,24 @@ class ProfileEditNotifier extends AsyncNotifier<void> {
       ref.read(authStateProvider.notifier).markAuthenticated(profile: updated);
 
       state = const AsyncData(null);
+      return updated;
+    } catch (e, st) {
+      state = AsyncError(e, st);
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> uploadAvatar(String filePath) async {
+    state = const AsyncLoading();
+    try {
+      final service = ref.read(profileServiceProvider);
+      final updated = await service.uploadAvatar(filePath);
+
+      // Refresh auth cache
+      ref.read(authStateProvider.notifier).markAuthenticated(profile: updated);
+
+      state = const AsyncData(null);
+      return updated;
     } catch (e, st) {
       state = AsyncError(e, st);
       rethrow;

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/api/api_client.dart';
 import '../models/product.dart';
+import '../models/brand.dart';
 import 'product_api_service.dart';
 
 /// Repository that maps raw API data to domain [Product] objects.
@@ -18,6 +19,7 @@ class ProductRepository {
     int? skip,
     int? take,
     int? categoryId,
+    int? scentFamilyId,
     int? brandId,
     String? search,
     String? notes,
@@ -29,6 +31,7 @@ class ProductRepository {
       skip: skip,
       take: take,
       categoryId: categoryId,
+      scentFamilyId: scentFamilyId,
       brandId: brandId,
       search: search,
       notes: notes,
@@ -46,6 +49,12 @@ class ProductRepository {
     final json = await _apiService.getProductById(id);
     return Product.fromJson(json);
   }
+
+  /// Fetch all brands.
+  Future<List<Brand>> getBrands() async {
+    final rawList = await _apiService.getBrands();
+    return rawList.map((j) => Brand.fromJson(j as Map<String, dynamic>)).toList();
+  }
 }
 
 // ── Riverpod Providers ────────────────────────────────────────────────
@@ -57,4 +66,8 @@ final productApiServiceProvider = Provider<ProductApiService>((ref) {
 
 final productRepositoryProvider = Provider<ProductRepository>((ref) {
   return ProductRepository(apiService: ref.watch(productApiServiceProvider));
+});
+
+final brandsProvider = FutureProvider<List<Brand>>((ref) {
+  return ref.watch(productRepositoryProvider).getBrands();
 });

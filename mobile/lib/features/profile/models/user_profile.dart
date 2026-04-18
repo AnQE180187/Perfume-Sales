@@ -37,9 +37,9 @@ class UserProfile {
         (json['full_name'] ?? json['fullName'] ?? json['name'] ?? 'Người dùng')
             as String;
     final email = (json['email'] ?? '') as String;
-    final phone = (json['phone']) as String?;
-    final gender = (json['gender']) as String?;
-    final dobStr = (json['date_of_birth'] ?? json['dateOfBirth']) as String?;
+    final phone = (json['phone'] ?? json['phone_number']) as String?;
+    final gender = (json['gender'] ?? json['user_gender']) as String?;
+    final dobStr = (json['date_of_birth'] ?? json['dateOfBirth'] ?? json['dob']) as String?;
     final dateOfBirth = dobStr != null ? DateTime.tryParse(dobStr) : null;
     final avatarUrl = (json['avatar_url'] ?? json['avatarUrl']) as String?;
     final createdAtStr = (json['created_at'] ?? json['createdAt']) as String?;

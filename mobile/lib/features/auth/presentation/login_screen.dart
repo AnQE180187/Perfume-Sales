@@ -263,37 +263,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
 
   Widget _buildGlassLogo() {
     return Container(
-      width: 80,
-      height: 80,
+      width: 120,
+      height: 120,
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A1A).withOpacity(0.85),
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFD4AF37).withOpacity(0.4),
-            blurRadius: 20,
-            spreadRadius: 2,
-          ),
-          BoxShadow(
-             color: Colors.black.withOpacity(0.3),
-             blurRadius: 10,
-             offset: const Offset(0, 5),
+            color: const Color(0xFFD4AF37).withOpacity(0.2),
+            blurRadius: 30,
+            spreadRadius: 5,
           ),
         ],
-        border: Border.all(
-          color: const Color(0xFFD4AF37).withOpacity(0.8),
-          width: 1.5,
-        ),
       ),
-      child: Center(
-        child: Text(
-          'L',
-          style: GoogleFonts.playfairDisplay(
-            fontSize: 40,
-            fontWeight: FontWeight.w700,
-            fontStyle: FontStyle.italic,
-            color: const Color(0xFFF5F1ED),
-          ),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Image.asset(
+          'assets/images/logo.png',
+          fit: BoxFit.contain,
         ),
       ),
     );

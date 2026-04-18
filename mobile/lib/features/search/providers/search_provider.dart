@@ -5,6 +5,9 @@ import '../../product/models/product.dart';
 class SearchState {
   final String query;
   final int? categoryId;
+  final int? scentFamilyId;
+  final int? brandId;
+  final String? brandName;
   final String? scentFamily;
   final String? occasion;
   final String? priceRange;
@@ -15,6 +18,9 @@ class SearchState {
   const SearchState({
     this.query = '',
     this.categoryId,
+    this.scentFamilyId,
+    this.brandId,
+    this.brandName,
     this.scentFamily,
     this.occasion,
     this.priceRange,
@@ -27,8 +33,12 @@ class SearchState {
     String? query,
     int? categoryId,
     bool clearCategory = false,
-    String? scentFamily,
+    int? scentFamilyId,
     bool clearScentFamily = false,
+    String? scentFamily,
+    int? brandId,
+    String? brandName,
+    bool clearBrand = false,
     String? occasion,
     bool clearOccasion = false,
     String? priceRange,
@@ -41,8 +51,11 @@ class SearchState {
     return SearchState(
       query: query ?? this.query,
       categoryId: clearCategory ? null : (categoryId ?? this.categoryId),
-      scentFamily:
-          clearScentFamily ? null : (scentFamily ?? this.scentFamily),
+      scentFamilyId:
+          clearScentFamily ? null : (scentFamilyId ?? this.scentFamilyId),
+      scentFamily: clearScentFamily ? null : (scentFamily ?? this.scentFamily),
+      brandId: clearBrand ? null : (brandId ?? this.brandId),
+      brandName: clearBrand ? null : (brandName ?? this.brandName),
       occasion: clearOccasion ? null : (occasion ?? this.occasion),
       priceRange: clearPriceRange ? null : (priceRange ?? this.priceRange),
       results: results ?? this.results,
@@ -79,6 +92,8 @@ class SearchNotifier extends StateNotifier<SearchState> {
       final results = await _repository.getProducts(
         search: state.query.isEmpty ? null : state.query,
         categoryId: state.categoryId,
+        scentFamilyId: state.scentFamilyId,
+        brandId: state.brandId,
         notes: state.scentFamily,
         occasion: state.occasion,
         minPrice: minPrice,
@@ -99,11 +114,20 @@ class SearchNotifier extends StateNotifier<SearchState> {
     await _fetch();
   }
 
-  void setScentFamily(String? scent) {
+  void setScentFamily(String? scent, {int? id}) {
     if (scent == state.scentFamily) {
       state = state.copyWith(clearScentFamily: true);
     } else {
-      state = state.copyWith(scentFamily: scent);
+      state = state.copyWith(scentFamily: scent, scentFamilyId: id);
+    }
+    _fetch();
+  }
+
+  void setBrand(String? brand, {int? id}) {
+    if (id == state.brandId) {
+      state = state.copyWith(clearBrand: true);
+    } else {
+      state = state.copyWith(brandId: id, brandName: brand);
     }
     _fetch();
   }

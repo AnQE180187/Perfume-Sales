@@ -16,21 +16,9 @@ final profileProvider = FutureProvider<UserProfile?>((ref) async {
 
   // Merge user and profile data
   return UserProfile.fromJson({
+    ...profileData,
     'id': user.id,
-    'email': user.email ?? '',
-    'full_name':
-        profileData['full_name'] ??
-        profileData['fullName'] ??
-        profileData['name'],
-    'avatar_url': profileData['avatar_url'] ?? profileData['avatarUrl'],
-    'created_at':
-        profileData['created_at'] ?? profileData['createdAt'] ?? user.createdAt,
-    'olfactory_tags':
-        profileData['olfactory_tags'] ??
-        profileData['olfactoryTags'] ??
-        ['Woody', 'Citrus', 'Bergamot'],
-    'has_ai_profile':
-        profileData['has_ai_profile'] ?? profileData['hasAiProfile'] ?? true,
+    'email': user.email ?? profileData['email'] ?? '',
   });
 });
 

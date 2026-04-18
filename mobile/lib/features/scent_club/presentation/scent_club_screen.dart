@@ -292,7 +292,7 @@ class _ScentGroupCard extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () => context.push('/search?scent=${group.title}'),
+        onTap: () => context.push('/search?scent=${group.title}&scentId=${group.id}'),
         borderRadius: BorderRadius.circular(22),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(22),

@@ -514,7 +514,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get shippingFee => 'Phí vận chuyển';
 
   @override
-  String get free => 'MIỄN PHÍ';
+  String get free => 'Miễn phí';
 
   @override
   String get reorder => 'ĐẶT LẠI';
@@ -1066,6 +1066,9 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get brandStory => 'Câu chuyện thương hiệu';
+
+  @override
+  String get brand => 'Thương hiệu';
 
   @override
   String get supportConcierge => 'Hỗ trợ tư vấn';
@@ -2131,6 +2134,19 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get redeemNow => 'ĐỔI NGAY';
+
+  @override
+  String get claimNow => 'NHẬN NGAY';
+
+  @override
+  String claimVoucherConfirm(String code) {
+    return 'Bạn có muốn nhận mã giảm giá $code này không?';
+  }
+
+  @override
+  String claimSuccess(String code) {
+    return 'Nhận thành công! Mã $code đã có trong ví của bạn.';
+  }
 
   @override
   String get voucherDiscount => 'VOUCHER GIẢM';

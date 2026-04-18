@@ -99,8 +99,19 @@ class LoyaltyService {
     return response.data!;
   }
 
+  Future<List<dynamic>> getPublicPromotions() async {
+    final response = await _apiClient.get<List<dynamic>>(
+      '/promotions/public',
+    );
+    return response.data!;
+  }
+
   Future<void> redeemPromotion(String promoId) async {
     await _apiClient.post('/promotions/redeem/$promoId');
+  }
+
+  Future<void> claimPromotion(String promoId) async {
+    await _apiClient.post('/promotions/claim/$promoId');
   }
 }
 
@@ -125,6 +136,13 @@ final loyaltyStatusProvider = FutureProvider.autoDispose<LoyaltyStatus>((ref) {
 });
 
 final redeemablePromotionsProvider =
-    FutureProvider.autoDispose<List<dynamic>>((ref) {
-  return ref.read(loyaltyServiceProvider).getRedeemablePromotions();
+    FutureProvider.autoDispose<List<dynamic>>((ref) async {
+  final service = ref.read(loyaltyServiceProvider);
+  final results = await Future.wait([
+    service.getPublicPromotions(),
+    service.getRedeemablePromotions(),
+  ]);
+  
+  // Combine lists: public first, then redeemable
+  return [...results[0], ...results[1]];
 });
