@@ -118,10 +118,10 @@ export const Header = () => {
                         <div className="flex items-center justify-center">
                             <Link
                                 href="/"
-                                className="group transition-transform hover:scale-105"
+                                className="w-12 h-12 rounded-full bg-foreground text-background flex items-center justify-center font-serif text-[10px] tracking-[0.4em] font-bold uppercase shadow-sm hover:shadow-md transition-shadow"
                                 aria-label="Perfume GPT Home"
                             >
-                                <img src="/logo-dark.png" className="h-10 w-10 object-contain rounded-full border border-gold/10 shadow-sm" alt="Perfume GPT" />
+                                <img src="/logo-light.png" className="h-10 w-10 object-contain rounded-full border border-gold/10 shadow-sm" alt="Perfume GPT" />
                             </Link>
                         </div>
 
