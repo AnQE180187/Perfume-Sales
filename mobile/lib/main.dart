@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:perfume_gpt_app/l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -30,18 +29,8 @@ Future<void> main() async {
   // DEVELOPMENT MODE - Mock Authentication
   // ============================================
   // Khi AppConfig.useMockAuth = true, app sẽ:
-  // - Không cần Supabase connection
   // - Sử dụng mock user data
   // - Cho phép phát triển UI mà không cần backend
-
-  if (!AppConfig.useMockAuth) {
-    // Optional: keep Supabase bootstrap for features still relying on it.
-    // Dotenv is already loaded above.
-    await Supabase.initialize(
-      url: dotenv.env['SUPABASE_URL']!,
-      anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
-    );
-  }
 
   runApp(
     ProviderScope(

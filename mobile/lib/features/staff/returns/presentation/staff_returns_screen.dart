@@ -11,6 +11,7 @@ import '../../pos/providers/pos_provider.dart';
 import '../providers/returns_provider.dart';
 import '../../tablet/presentation/tablet_return_details_dialog.dart';
 import 'package:perfume_gpt_app/l10n/app_localizations.dart';
+import '../../../../core/utils/responsive.dart';
 
 class StaffReturnsScreen extends ConsumerWidget {
   const StaffReturnsScreen({super.key});
@@ -21,36 +22,45 @@ class StaffReturnsScreen extends ConsumerWidget {
     final returnsAsync = ref.watch(staffReturnsProvider);
     final dateFmt = DateFormat('dd/MM/yyyy');
 
+    final isMobile = Responsive.isMobile(context);
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
+        padding: EdgeInsets.symmetric(horizontal: isMobile ? 20 : 32, vertical: 40),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.reverseLogistics,
-                      style: GoogleFonts.montserrat(fontSize: 10, color: AppTheme.accentGold, fontWeight: FontWeight.w800, letterSpacing: 4),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      "Quản lý Đổi trả",
-                      style: GoogleFonts.playfairDisplay(fontSize: 28, fontWeight: FontWeight.w700, color: Colors.white),
-                    ),
-                  ],
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  onPressed: () => Scaffold.of(context).openDrawer(),
+                  icon: const Icon(Icons.menu_rounded, color: AppTheme.accentGold, size: 24),
                 ),
-                const Spacer(),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Hoàn trả",
+                        style: GoogleFonts.playfairDisplay(fontSize: isMobile ? 18 : 28, fontWeight: FontWeight.w700, color: Colors.white),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
                 _DateFilterButton(),
               ],
             ),
-            const SizedBox(height: 32),
-            _buildTableHeader(),
-            const SizedBox(height: 8),
+            SizedBox(height: isMobile ? 20 : 32),
+            if (!isMobile) ...[
+              _buildTableHeader(),
+              const SizedBox(height: 8),
+            ],
             Expanded(
               child: returnsAsync.when(
                 loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.accentGold)),
@@ -166,6 +176,7 @@ class _ReturnCardState extends State<_ReturnCard> {
     final origin = (widget.data['origin'] as String?) ?? 'ONLINE';
     final reason = (widget.data['reason'] as String?) ?? '';
 
+    final isMobile = Responsive.isMobile(context);
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
@@ -182,25 +193,61 @@ class _ReturnCardState extends State<_ReturnCard> {
           ),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Row(
-          children: [
-            Expanded(flex: 1, child: _buildOriginBadge(origin)),
-            Expanded(flex: 2, child: Text((widget.data['id']?.toString() ?? '').substring(0, (widget.data['id']?.toString().length ?? 0) > 8 ? 8 : (widget.data['id']?.toString().length ?? 0)).toUpperCase(), style: GoogleFonts.robotoMono(fontSize: 12, color: _isHovered ? AppTheme.accentGold : Colors.white70))),
-            Expanded(flex: 2, child: Text((widget.data['orderId']?.toString() ?? '').substring(0, (widget.data['orderId']?.toString().length ?? 0) > 8 ? 8 : (widget.data['orderId']?.toString().length ?? 0)).toUpperCase(), style: GoogleFonts.robotoMono(fontSize: 12, color: Colors.white70))),
-            Expanded(flex: 2, child: Text(widget.dateFmt.format(DateTime.parse(widget.data['createdAt']).toLocal()), style: GoogleFonts.montserrat(fontSize: 12, color: Colors.white70))),
-            Expanded(flex: 3, child: Text(reason.isEmpty ? "Không có lý do" : reason, style: GoogleFonts.montserrat(fontSize: 12, color: reason.isEmpty ? Colors.white38 : Colors.white70, fontStyle: reason.isEmpty ? FontStyle.italic : FontStyle.normal), maxLines: 1, overflow: TextOverflow.ellipsis)),
-            Expanded(flex: 2, child: Align(alignment: Alignment.centerLeft, child: _StatusBadge(status: status))),
-            SizedBox(
-              width: 48,
-              child: Center(
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  child: Icon(Icons.search_rounded, size: 20, color: _isHovered ? AppTheme.accentGold.withOpacity(0.8) : Colors.white38),
+        child: isMobile 
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    _buildOriginBadge(origin),
+                    const SizedBox(width: 8),
+                    Text(
+                      "RQ-${(widget.data['id']?.toString() ?? '').substring(0, 8).toUpperCase()}",
+                      style: GoogleFonts.robotoMono(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.accentGold),
+                    ),
+                    const Spacer(),
+                    _StatusBadge(status: status),
+                  ],
                 ),
-              ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("Mã Đơn: ${(widget.data['orderId']?.toString() ?? '').substring(0, 8).toUpperCase()}", style: GoogleFonts.robotoMono(fontSize: 11, color: Colors.white70)),
+                        Text(widget.dateFmt.format(DateTime.parse(widget.data['createdAt']).toLocal()), style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white38)),
+                      ],
+                    ),
+                    const Icon(Icons.chevron_right_rounded, color: Colors.white24),
+                  ],
+                ),
+                if (reason.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text(reason, style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white60), maxLines: 2, overflow: TextOverflow.ellipsis),
+                ],
+              ],
+            )
+          : Row(
+              children: [
+                Expanded(flex: 1, child: _buildOriginBadge(origin)),
+                Expanded(flex: 2, child: Text((widget.data['id']?.toString() ?? '').substring(0, (widget.data['id']?.toString().length ?? 0) > 8 ? 8 : (widget.data['id']?.toString().length ?? 0)).toUpperCase(), style: GoogleFonts.robotoMono(fontSize: 12, color: _isHovered ? AppTheme.accentGold : Colors.white70))),
+                Expanded(flex: 2, child: Text((widget.data['orderId']?.toString() ?? '').substring(0, (widget.data['orderId']?.toString().length ?? 0) > 8 ? 8 : (widget.data['orderId']?.toString().length ?? 0)).toUpperCase(), style: GoogleFonts.robotoMono(fontSize: 12, color: Colors.white70))),
+                Expanded(flex: 2, child: Text(widget.dateFmt.format(DateTime.parse(widget.data['createdAt']).toLocal()), style: GoogleFonts.montserrat(fontSize: 12, color: Colors.white70))),
+                Expanded(flex: 3, child: Text(reason.isEmpty ? "Không có lý do" : reason, style: GoogleFonts.montserrat(fontSize: 12, color: reason.isEmpty ? Colors.white38 : Colors.white70, fontStyle: reason.isEmpty ? FontStyle.italic : FontStyle.normal), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                Expanded(flex: 2, child: Align(alignment: Alignment.centerLeft, child: _StatusBadge(status: status))),
+                SizedBox(
+                  width: 48,
+                  child: Center(
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      child: Icon(Icons.search_rounded, size: 20, color: _isHovered ? AppTheme.accentGold.withOpacity(0.8) : Colors.white38),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
       ),
     );
   }
@@ -370,10 +417,10 @@ class _DateFilterButton extends ConsumerWidget {
               ),
               label: Text(
                 hasRange
-                    ? "${DateFormat('dd/MM').format(range.start)}${range.start.day == range.end.day ? '' : ' - ${DateFormat('dd/MM').format(range.end)}'}"
-                    : "Lọc theo ngày",
+                    ? "${DateFormat('dd/MM').format(range.start)}${range.start.day == range.end.day ? '' : '-${DateFormat('dd/MM').format(range.end)}'}"
+                    : "Lọc",
                 style: GoogleFonts.montserrat(
-                  fontSize: 12,
+                  fontSize: 11,
                   color: hasRange ? AppTheme.accentGold : Colors.white24,
                   fontWeight: hasRange ? FontWeight.w600 : FontWeight.w400,
                 ),

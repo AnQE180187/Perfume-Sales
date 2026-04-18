@@ -7,17 +7,17 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/routing/app_routes.dart';
 import '../../../core/widgets/product_size_selector.dart';
 import '../../../core/widgets/ai_scent_analysis_card.dart';
-import '../../../core/widgets/scent_structure_section.dart';
 import '../../../core/widgets/product_bottom_cta.dart';
 import '../../../core/widgets/luxury_button.dart';
 import 'package:perfume_gpt_app/l10n/app_localizations.dart';
 import '../../cart/providers/cart_provider.dart';
 import '../../cart/providers/cart_selection_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
-import 'scent_structure_detail_screen.dart';
 import '../providers/product_provider.dart';
 import '../models/product.dart';
 import '../../../core/widgets/product_price_section.dart';
+import '../../../core/widgets/scent_structure_section.dart';
+import 'scent_structure_detail_screen.dart';
 
 class ProductDetailScreen extends ConsumerStatefulWidget {
   final String productId;
@@ -37,6 +37,7 @@ class ProductDetailScreen extends ConsumerStatefulWidget {
 class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
     with SingleTickerProviderStateMixin {
   bool _isAIAnalysisExpanded = false;
+  bool _isStoryExpanded = false;
   String _selectedSize = '100ml';
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -536,9 +537,21 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                     ),
                   ),
 
+                  // ================= TECHNICAL SPECS =================
+                  SliverToBoxAdapter(
+                    child: _TechnicalSpecsSection(
+                      longevity: product.longevity,
+                      concentration: product.concentration,
+                    ),
+                  ),
+
                   // ================= PRODUCT STORY =================
                   SliverToBoxAdapter(
-                    child: _ProductStorySection(product: product),
+                    child: _ProductStorySection(
+                      product: product,
+                      isExpanded: _isStoryExpanded,
+                      onToggle: () => setState(() => _isStoryExpanded = !_isStoryExpanded),
+                    ),
                   ),
 
                   // Bottom padding — space reserved for the sticky CTA overlay
@@ -706,10 +719,81 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
   }
 }
 
+class _TechnicalSpecsSection extends StatelessWidget {
+  final String? longevity;
+  final String? concentration;
+
+  const _TechnicalSpecsSection({this.longevity, this.concentration});
+
+  @override
+  Widget build(BuildContext context) {
+    if (longevity == null && concentration == null) return const SizedBox.shrink();
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppTheme.creamWhite.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.accentGold.withOpacity(0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'THÔNG SỐ KỸ THUẬT',
+            style: GoogleFonts.montserrat(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.5,
+              color: AppTheme.accentGold,
+            ),
+          ),
+          const SizedBox(height: 16),
+          _specRow(Icons.timer_outlined, 'Độ lưu hương', longevity ?? 'Đang cập nhật'),
+          const Divider(height: 24, color: AppTheme.softTaupe),
+          _specRow(Icons.water_drop_outlined, 'Nồng độ', concentration ?? 'Đang cập nhật'),
+        ],
+      ),
+    );
+  }
+
+  Widget _specRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: AppTheme.mutedSilver),
+        const SizedBox(width: 12),
+        Text(
+          label,
+          style: GoogleFonts.montserrat(
+            fontSize: 13,
+            color: AppTheme.deepCharcoal.withOpacity(0.6),
+          ),
+        ),
+        const Spacer(),
+        Text(
+          value,
+          style: GoogleFonts.montserrat(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: AppTheme.deepCharcoal,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _ProductStorySection extends StatelessWidget {
   final Product product;
+  final bool isExpanded;
+  final VoidCallback onToggle;
 
-  const _ProductStorySection({required this.product});
+  const _ProductStorySection({
+    required this.product,
+    required this.isExpanded,
+    required this.onToggle,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -742,15 +826,36 @@ class _ProductStorySection extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-
           Text(
-             story,
-            maxLines: 4,
-            overflow: TextOverflow.ellipsis,
+            story,
+            maxLines: isExpanded ? null : 4,
+            overflow: isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
             style: GoogleFonts.montserrat(
               fontSize: 14,
               height: 1.7,
               color: AppTheme.deepCharcoal.withValues(alpha: 0.7),
+            ),
+          ),
+          const SizedBox(height: 8),
+          GestureDetector(
+            onTap: onToggle,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  isExpanded ? 'Thu gọn' : 'Xem thêm',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.accentGold,
+                  ),
+                ),
+                Icon(
+                  isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                  size: 20,
+                  color: AppTheme.accentGold,
+                ),
+              ],
             ),
           ),
         ],

@@ -281,53 +281,78 @@ class _BannerCarouselState extends ConsumerState<BannerCarousel> {
                               ),
                             ),
 
-                            // Glassmorphism overlay + title/subtitle
+                            // Gradient overlay + title/subtitle
                             Positioned(
                               left: 0,
                               right: 0,
                               bottom: 0,
-                              child: ClipRRect(
-                                borderRadius: const BorderRadius.vertical(
-                                  bottom: Radius.circular(24),
-                                ),
-                                child: BackdropFilter(
-                                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 14,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.black.withOpacity(0.35),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        if (b.title != null && b.title!.isNotEmpty)
-                                          Text(
-                                            b.title!,
-                                            style: GoogleFonts.montserrat(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w700,
-                                              color: Colors.white,
-                                              letterSpacing: 0.5,
-                                            ),
-                                          ),
-                                        if (b.subtitle != null && b.subtitle!.isNotEmpty) ...[
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            b.subtitle!,
-                                            style: GoogleFonts.montserrat(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w400,
-                                              color: Colors.white.withOpacity(0.9),
-                                            ),
-                                          ),
-                                        ],
-                                      ],
-                                    ),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      Colors.transparent,
+                                      Colors.black.withValues(alpha: 0.2),
+                                      Colors.black.withValues(alpha: 0.7),
+                                    ],
+                                    stops: const [0.0, 0.4, 1.0],
                                   ),
+                                ),
+                                padding: const EdgeInsets.fromLTRB(16, 40, 16, 16),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          if (b.title != null && b.title!.isNotEmpty)
+                                            Text(
+                                              b.title!,
+                                              style: GoogleFonts.montserrat(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w700,
+                                                color: Colors.white,
+                                                letterSpacing: 0.5,
+                                              ),
+                                            ),
+                                          if (b.subtitle != null && b.subtitle!.isNotEmpty) ...[
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              b.subtitle!,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: GoogleFonts.montserrat(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w400,
+                                                color: Colors.white.withValues(alpha: 0.9),
+                                                height: 1.4,
+                                              ),
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                    ),
+                                    if (b.linkUrl != null && b.linkUrl!.isNotEmpty)
+                                      Container(
+                                        margin: const EdgeInsets.only(left: 12),
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withValues(alpha: 0.2),
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: Colors.white.withValues(alpha: 0.4),
+                                          ),
+                                        ),
+                                        child: const Icon(
+                                          Icons.arrow_forward_rounded,
+                                          color: Colors.white,
+                                          size: 16,
+                                        ),
+                                      ),
+                                  ],
                                 ),
                               ),
                             ),

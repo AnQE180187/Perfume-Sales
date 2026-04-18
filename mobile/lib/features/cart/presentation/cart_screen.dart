@@ -55,6 +55,15 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     final selection = ref.watch(cartSelectionProvider);
 
     ref.listen<CartState>(cartProvider, (previous, next) {
+      if (next.error != null && next.error != previous?.error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.error!),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
       if (next.items.isNotEmpty) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
@@ -69,8 +78,19 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     final selectedSubtotal = cartState.items
         .where((item) => selection.selectedIds.contains(item.id))
         .fold(0.0, (sum, item) => sum + item.subtotal);
-    final selectedDiscount = selectedSubtotal * cartState.promoDiscount;
-    final total = selectedSubtotal - selectedDiscount;
+    
+    // Calculate discount based on selected items percentage or full fixed amount
+    double selectedDiscount = 0.0;
+    if (cartState.promoCode != null) {
+      if (cartState.promoDiscountType == 'FIXED_AMOUNT') {
+         // Apply fixed amount only if items are selected (prorated or full depending on business logic, here full)
+         selectedDiscount = selectedSubtotal > 0 ? cartState.promoDiscountRaw : 0.0;
+      } else {
+         selectedDiscount = selectedSubtotal * cartState.promoDiscount;
+      }
+    }
+    
+    final total = (selectedSubtotal - selectedDiscount).clamp(0.0, double.infinity);
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAF7F2),

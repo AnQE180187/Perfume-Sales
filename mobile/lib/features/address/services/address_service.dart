@@ -158,12 +158,23 @@ Map<String, dynamic> _asMap(dynamic value) {
 }
 
 List<dynamic> _asList(dynamic value) {
+  if (value == null) return const <dynamic>[];
   if (value is List) return value;
-  if (value is Map<String, dynamic> && value['data'] is List) {
-    return value['data'] as List<dynamic>;
-  }
-  if (value is Map && value['data'] is List) {
-    return value['data'] as List<dynamic>;
+  if (value is Map) {
+    // 1. Try standard wrapping keys
+    final data = value['data'] ?? value['items'] ?? value['results'];
+    if (data is List) return data;
+
+    // 2. Try nested data (some GHN proxies do { data: { data: [] } })
+    if (value['data'] is Map) {
+      final innerData = value['data']['data'] ?? value['data']['provinces'] ?? value['data']['districts'] ?? value['data']['wards'];
+      if (innerData is List) return innerData;
+    }
+
+    // 3. Fallback: find any value that is a list
+    for (final v in value.values) {
+      if (v is List) return v;
+    }
   }
   return const <dynamic>[];
 }

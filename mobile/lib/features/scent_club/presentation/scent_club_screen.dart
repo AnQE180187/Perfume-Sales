@@ -4,15 +4,19 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:perfume_gpt_app/core/theme/app_theme.dart';
 import 'package:perfume_gpt_app/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:perfume_gpt_app/features/scent/models/scent_family.dart';
+import 'package:perfume_gpt_app/features/scent/data/scent_repository.dart';
+import 'package:perfume_gpt_app/features/scent/data/scent_api_service.dart';
 
-class ScentClubScreen extends StatefulWidget {
+class ScentClubScreen extends ConsumerStatefulWidget {
   const ScentClubScreen({super.key});
 
   @override
-  State<ScentClubScreen> createState() => _ScentClubScreenState();
+  ConsumerState<ScentClubScreen> createState() => _ScentClubScreenState();
 }
 
-class _ScentClubScreenState extends State<ScentClubScreen> {
+class _ScentClubScreenState extends ConsumerState<ScentClubScreen> {
   final TextEditingController _search = TextEditingController();
   String _query = '';
 
@@ -25,18 +29,8 @@ class _ScentClubScreenState extends State<ScentClubScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final lang = Localizations.localeOf(context).languageCode.toLowerCase();
-    final isVi = lang == 'vi';
-
-    final groups = _groups(isVi: isVi);
-    final q = _query.trim().toLowerCase();
-    final filtered = q.isEmpty
-        ? groups
-        : groups.where((g) {
-            return g.title.toLowerCase().contains(q) ||
-                g.subtitle.toLowerCase().contains(q) ||
-                g.keywords.any((k) => k.toLowerCase().contains(q));
-          }).toList(growable: false);
+    final scentFamiliesAsync = ref.watch(scentFamiliesProvider);
+    final repo = ref.watch(scentRepositoryProvider);
 
     return Scaffold(
       backgroundColor: AppTheme.ivoryBackground,
@@ -59,102 +53,144 @@ class _ScentClubScreenState extends State<ScentClubScreen> {
         ),
       ),
       body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 10),
-                child: _SearchField(
-                  controller: _search,
-                  hintText: l10n.searchHint,
-                  onChanged: (v) => setState(() => _query = v),
-                  onClear: () {
-                    _search.clear();
-                    setState(() => _query = '');
-                  },
+        child: scentFamiliesAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.accentGold)),
+          error: (err, _) => Center(child: Text('Lỗi: $err')),
+          data: (families) {
+            final groups = families.map((f) {
+              final visuals = repo.getVisuals(f.name);
+              // Try to find a hardcoded match for chips/keywords, otherwise generic
+              final match = _groups(isVi: true).firstWhere(
+                (g) => g.title.toLowerCase() == f.name.toLowerCase() || f.name.toLowerCase().contains(g.id),
+                orElse: () => _ScentGroup(
+                  id: f.id.toString(),
+                  title: f.name,
+                  subtitle: f.description ?? '',
+                  tint: visuals['color'],
+                  icon: visuals['icon'],
+                  chips: [],
+                  keywords: [f.name.toLowerCase()],
                 ),
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      l10n.scentFamily,
-                      style: GoogleFonts.playfairDisplay(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.deepCharcoal,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 3),
-                      child: Text(
-                        '(${filtered.length})',
-                        style: GoogleFonts.montserrat(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                          color: AppTheme.mutedSilver,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            if (filtered.isEmpty)
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: Center(
+              );
+              
+              return _ScentGroup(
+                id: f.id.toString(),
+                title: f.name,
+                subtitle: f.description ?? match.subtitle,
+                tint: visuals['color'],
+                icon: visuals['icon'],
+                chips: match.chips,
+                keywords: [f.name.toLowerCase(), ...match.keywords],
+              );
+            }).toList();
+
+            final q = _query.trim().toLowerCase();
+            final filtered = q.isEmpty
+                ? groups
+                : groups.where((g) {
+                    return g.title.toLowerCase().contains(q) ||
+                        g.subtitle.toLowerCase().contains(q) ||
+                        g.keywords.any((k) => k.toLowerCase().contains(q));
+                  }).toList(growable: false);
+
+            return CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 80),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 10),
+                    child: _SearchField(
+                      controller: _search,
+                      hintText: l10n.searchHint,
+                      onChanged: (v) => setState(() => _query = v),
+                      onClear: () {
+                        _search.clear();
+                        setState(() => _query = '');
+                      },
+                    ),
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Icon(
-                          Icons.search_off_rounded,
-                          size: 64,
-                          color:
-                              AppTheme.mutedSilver.withValues(alpha: 0.35),
-                        ),
-                        const SizedBox(height: 14),
                         Text(
-                          l10n.noProductsFound,
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.montserrat(
-                            fontSize: 13,
-                            color: AppTheme.mutedSilver,
+                          l10n.scentFamily,
+                          style: GoogleFonts.playfairDisplay(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.deepCharcoal,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 3),
+                          child: Text(
+                            '(${filtered.length})',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                              color: AppTheme.mutedSilver,
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
                 ),
-              )
-            else
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
-                sliver: SliverGrid(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisExtent: 230,
-                    childAspectRatio: 0.92,
-                    crossAxisSpacing: 14,
-                    mainAxisSpacing: 14,
+                if (filtered.isEmpty)
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(24, 0, 24, 80),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.search_off_rounded,
+                              size: 64,
+                              color:
+                                  AppTheme.mutedSilver.withValues(alpha: 0.35),
+                            ),
+                            const SizedBox(height: 14),
+                            Text(
+                              l10n.noProductsFound,
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.montserrat(
+                                fontSize: 13,
+                                color: AppTheme.mutedSilver,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+                    sliver: SliverGrid(
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        mainAxisExtent: 230,
+                        childAspectRatio: 0.92,
+                        crossAxisSpacing: 14,
+                        mainAxisSpacing: 14,
+                      ),
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          final g = filtered[index];
+                          return _ScentGroupCard(group: g);
+                        },
+                        childCount: filtered.length,
+                      ),
+                    ),
                   ),
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final g = filtered[index];
-                      return _ScentGroupCard(group: g);
-                    },
-                    childCount: filtered.length,
-                  ),
-                ),
-              ),
-          ],
+              ],
+            );
+          },
         ),
       ),
     );
@@ -256,7 +292,7 @@ class _ScentGroupCard extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () => context.push('/search?scent=${group.id}'),
+        onTap: () => context.push('/search?scent=${group.title}'),
         borderRadius: BorderRadius.circular(22),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(22),
@@ -429,75 +465,66 @@ List<_ScentGroup> _groups({required bool isVi}) {
   return [
     _ScentGroup(
       id: 'floral',
-      title: isVi ? 'Hương Hoa' : 'Floral',
+      title: 'Floral',
       subtitle: isVi ? 'Mềm mại, nữ tính, thanh lịch.' : 'Soft, elegant, romantic.',
-      tint: const Color(0xFF8A7BD6), // muted lavender
+      tint: const Color(0xFF8A7BD6),
       icon: Icons.local_florist_outlined,
-      chips: isVi ? const ['Rose', 'Jasmine', 'Iris'] : const ['Rose', 'Jasmine', 'Iris'],
-      keywords: const ['floral', 'rose', 'jasmine', 'iris', 'hoa', 'hương hoa'],
+      chips: const ['Rose', 'Jasmine', 'Iris'],
+      keywords: const ['floral', 'rose', 'jasmine', 'iris', 'hoa'],
+    ),
+    _ScentGroup(
+      id: 'oriental',
+      title: 'Oriental',
+      subtitle: isVi ? 'Hương đông phương quyến rũ, huyền bí.' : 'Exotic, sensual, mysterious.',
+      tint: const Color(0xFFC98B7E),
+      icon: Icons.auto_awesome_outlined,
+      chips: const ['Amber', 'Vanilla', 'Spices'],
+      keywords: const ['oriental', 'amber', 'vanilla', 'spices'],
     ),
     _ScentGroup(
       id: 'woody',
-      title: isVi ? 'Hương Gỗ' : 'Woody',
-      subtitle: isVi ? 'Ấm áp, sang, vững chãi.' : 'Warm, refined, grounded.',
-      tint: const Color(0xFFB07A5A), // softened terracotta-wood
+      title: 'Woody',
+      subtitle: isVi ? 'Ấm áp, sang trọng, vững chãi.' : 'Warm, refined, grounded.',
+      tint: const Color(0xFFB07A5A),
       icon: Icons.park_outlined,
-      chips: isVi ? const ['Cedar', 'Sandalwood', 'Oud'] : const ['Cedar', 'Sandalwood', 'Oud'],
-      keywords: const ['woody', 'cedar', 'sandalwood', 'oud', 'gỗ', 'huong go'],
-    ),
-    _ScentGroup(
-      id: 'fresh',
-      title: isVi ? 'Hương Tươi Mát' : 'Fresh',
-      subtitle: isVi ? 'Sạch, mát, dễ dùng hằng ngày.' : 'Clean, airy, everyday.',
-      tint: const Color(0xFF6FA6A0), // muted sage-teal
-      icon: Icons.water_drop_outlined,
-      chips: isVi ? const ['Citrus', 'Green', 'Aqua'] : const ['Citrus', 'Green', 'Aqua'],
-      keywords: const ['fresh', 'citrus', 'green', 'aqua', 'tươi mát', 'tuoi mat'],
-    ),
-    _ScentGroup(
-      id: 'gourmand',
-      title: isVi ? 'Hương Ngọt' : 'Gourmand',
-      subtitle: isVi ? 'Ngọt ấm, “kẹo” và quyến rũ.' : 'Sweet, cozy, addictive.',
-      tint: const Color(0xFFC98B7E), // muted terracotta
-      icon: Icons.icecream_outlined,
-      chips: isVi ? const ['Vanilla', 'Caramel', 'Honey'] : const ['Vanilla', 'Caramel', 'Honey'],
-      keywords: const ['sweet', 'gourmand', 'vanilla', 'caramel', 'honey', 'ngọt', 'huong ngot'],
-    ),
-    _ScentGroup(
-      id: 'spicy',
-      title: isVi ? 'Hương Cay Nồng' : 'Spicy',
-      subtitle: isVi ? 'Cá tính, nổi bật, ấn tượng.' : 'Bold, vibrant, statement.',
-      tint: const Color(0xFFB96D63), // muted warm spice
-      icon: Icons.local_fire_department_outlined,
-      chips: isVi ? const ['Pepper', 'Cardamom', 'Cinnamon'] : const ['Pepper', 'Cardamom', 'Cinnamon'],
-      keywords: const ['spicy', 'pepper', 'cardamom', 'cinnamon', 'cay', 'nồng'],
+      chips: const ['Cedar', 'Sandalwood', 'Oud'],
+      keywords: const ['woody', 'cedar', 'sandalwood', 'oud', 'gỗ'],
     ),
     _ScentGroup(
       id: 'citrus',
-      title: isVi ? 'Hương Cam Chanh' : 'Citrus',
-      subtitle: isVi ? 'Sảng khoái, sáng bừng, năng động.' : 'Sparkling, bright, uplifting.',
-      tint: const Color(0xFFC7A86A), // muted gold-citrus
+      title: 'Citrus',
+      subtitle: isVi ? 'Sảng khoái, năng động, tươi mới.' : 'Sparkling, bright, uplifting.',
+      tint: const Color(0xFFC7A86A),
       icon: Icons.wb_sunny_outlined,
-      chips: isVi ? const ['Bergamot', 'Lemon', 'Orange'] : const ['Bergamot', 'Lemon', 'Orange'],
+      chips: const ['Bergamot', 'Lemon', 'Orange'],
       keywords: const ['citrus', 'bergamot', 'lemon', 'orange', 'cam', 'chanh'],
     ),
     _ScentGroup(
-      id: 'musk',
-      title: isVi ? 'Xạ Hương' : 'Musk',
-      subtitle: isVi ? 'Mịn, sạch, “skin scent” tinh tế.' : 'Soft, clean, skin-like.',
-      tint: const Color(0xFF6C7A89),
-      icon: Icons.blur_on_outlined,
-      chips: isVi ? const ['White musk', 'Clean', 'Powder'] : const ['White musk', 'Clean', 'Powder'],
-      keywords: const ['musk', 'xạ', 'xa huong', 'powder', 'clean'],
+      id: 'leather',
+      title: 'Leather',
+      subtitle: isVi ? 'Mạnh mẽ, cá tính, đẳng cấp.' : 'Bold, smoky, sophisticated.',
+      tint: const Color(0xFF6C4F3D),
+      icon: Icons.work_outline_rounded,
+      chips: const ['Leather', 'Suede', 'Birch'],
+      keywords: const ['leather', 'suede', 'birch', 'da thuộc'],
     ),
     _ScentGroup(
-      id: 'amber',
-      title: isVi ? 'Hổ Phách' : 'Amber',
-      subtitle: isVi ? 'Ngọt ấm, sâu, giàu cảm xúc.' : 'Warm, deep, sensual.',
-      tint: const Color(0xFF8E5E2A),
-      icon: Icons.auto_awesome_outlined,
-      chips: isVi ? const ['Amber', 'Resin', 'Balsamic'] : const ['Amber', 'Resin', 'Balsamic'],
-      keywords: const ['amber', 'resin', 'balsamic', 'hổ phách', 'ho phach'],
+      id: 'fougere',
+      title: 'Fougere',
+      subtitle: isVi ? 'Thảo mộc, nam tính, cổ điển.' : 'Aromatic, masculine, classic.',
+      tint: const Color(0xFF4A6741),
+      icon: Icons.grass_rounded,
+      chips: const ['Lavender', 'Oakmoss', 'Coumarin'],
+      keywords: const ['fougere', 'lavender', 'oakmoss', 'dương xỉ'],
+    ),
+    _ScentGroup(
+      id: 'aquatic',
+      title: 'Aquatic',
+      subtitle: isVi ? 'Tươi mát như hơi thở đại dương.' : 'Fresh, watery, oceanic.',
+      tint: const Color(0xFF6FA6A0),
+      icon: Icons.water_drop_outlined,
+      chips: const ['Sea water', 'Salt', 'Algae'],
+      keywords: const ['aquatic', 'sea', 'ocean', 'nước'],
     ),
   ];
 }

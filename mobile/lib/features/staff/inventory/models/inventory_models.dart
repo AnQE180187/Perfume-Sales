@@ -133,12 +133,14 @@ class InventoryLogVariant {
   final String id;
   final String name;
   final InventoryLogProduct? product;
-  InventoryLogVariant({required this.id, required this.name, this.product});
+  final String? imageUrl;
+  InventoryLogVariant({required this.id, required this.name, this.product, this.imageUrl});
   factory InventoryLogVariant.fromJson(Map<String, dynamic> json) {
     return InventoryLogVariant(
       id: json['id'] as String,
       name: json['name'] as String,
       product: json['product'] != null ? InventoryLogProduct.fromJson(json['product'] as Map<String, dynamic>) : null,
+      imageUrl: json['imageUrl'] ?? json['product']?['imageUrl'] as String?,
     );
   }
 }
@@ -146,11 +148,13 @@ class InventoryLogVariant {
 class InventoryLogProduct {
   final String id;
   final String name;
-  InventoryLogProduct({required this.id, required this.name});
+  final String? imageUrl;
+  InventoryLogProduct({required this.id, required this.name, this.imageUrl});
   factory InventoryLogProduct.fromJson(Map<String, dynamic> json) {
     return InventoryLogProduct(
       id: json['id'] as String,
       name: json['name'] as String,
+      imageUrl: json['imageUrl'] as String?,
     );
   }
 }

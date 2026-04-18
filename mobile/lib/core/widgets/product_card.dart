@@ -183,17 +183,29 @@ class _FeaturedCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    product.brand.toUpperCase(),
-                    style: GoogleFonts.playfairDisplay(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.5,
-                      color: AppTheme.deepCharcoal,
+                    Text(
+                      product.brand.toUpperCase(),
+                      style: GoogleFonts.playfairDisplay(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.5,
+                        color: AppTheme.deepCharcoal,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                    if (product.scentFamily != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        product.scentFamily!,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w500,
+                          color: AppTheme.accentGold,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
                   const SizedBox(height: 6),
                   Text(
                     product.name,
@@ -406,6 +418,18 @@ class _GridCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
+                  if (product.scentFamily != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      product.scentFamily!,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.accentGold,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 6),
                   Text(
                     product.name,

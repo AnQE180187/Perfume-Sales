@@ -72,39 +72,6 @@ class _StaffOrdersScreenState extends ConsumerState<StaffOrdersScreen> {
     );
   }
 
-  Future<void> _selectDateRange() async {
-    final currentRange = ref.read(ordersDateRangeProvider);
-    final newRange = await showDateRangePicker(
-      context: context,
-      initialDateRange: currentRange,
-      firstDate: DateTime(2023),
-      lastDate: DateTime.now(),
-      builder: (context, child) {
-        return Theme(
-          data: ThemeData.dark().copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: AppTheme.accentGold,
-              onPrimary: Colors.black,
-              surface: Color(0xFF1A1A1A),
-              onSurface: Colors.white,
-            ),
-            dialogBackgroundColor: const Color(0xFF121212),
-          ),
-          child: child!,
-        );
-      },
-    );
-
-    if (newRange != null) {
-      ref.read(ordersDateRangeProvider.notifier).state = newRange;
-      final q = ref.read(ordersSearchQueryProvider);
-      ref.read(ordersProvider.notifier).loadOrders(
-        search: q.isEmpty ? null : q,
-        startDate: newRange.start.toUtc().toIso8601String(),
-        endDate: newRange.end.add(const Duration(hours: 23, minutes: 59, seconds: 59)).toUtc().toIso8601String(),
-      );
-    }
-  }
 
   void _clearDateRange() {
     ref.read(ordersDateRangeProvider.notifier).state = null;

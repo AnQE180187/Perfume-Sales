@@ -148,10 +148,20 @@ class AuthApiService {
     required String code,
     required int amount,
   }) async {
-    final response = await _client.post(
-      ApiEndpoints.promotionsValidate,
-      data: {'code': code, 'amount': amount},
-    );
-    return response.data as Map<String, dynamic>;
+    try {
+      final response = await _client.post(
+        ApiEndpoints.promotionsValidate,
+        data: {'code': code, 'amount': amount},
+      );
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      if (e.response?.data is Map) {
+        final data = e.response?.data;
+        final msg = data['message'];
+        if (msg is String) throw Exception(msg);
+        if (msg is List) throw Exception(msg.join(', '));
+      }
+      throw Exception('Mã giảm giá đã hết hạn hoặc không đủ điều kiện áp dụng.');
+    }
   }
 }

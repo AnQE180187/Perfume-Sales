@@ -74,6 +74,7 @@ class ApiEndpoints {
   static const String catalog = '/catalog';
   static const String categories = '/catalog/categories';
   static const String brands = '/catalog/brands';
+  static const String scentFamilies = '/catalog/scent-families';
 
   // ── Reviews ───────────────────────────────────────────────────────
   static const String createReview = '/reviews';

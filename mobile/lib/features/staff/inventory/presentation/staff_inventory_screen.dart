@@ -17,6 +17,7 @@ import '../../tablet/presentation/tablet_inventory_import_dialog.dart';
 import '../../../../core/widgets/app_error_widget.dart';
 import 'staff_inventory_history_screen.dart';
 import 'staff_inventory_requests_screen.dart';
+import '../../../../core/utils/responsive.dart';
 
 class StaffInventoryScreen extends ConsumerStatefulWidget {
   const StaffInventoryScreen({super.key});
@@ -86,8 +87,115 @@ class _StaffInventoryScreenState extends ConsumerState<StaffInventoryScreen> {
       ),
     );
   }
-
   Widget _buildBoutiqueHeader(BuildContext context, AsyncValue<List<dynamic>> stores, String? selectedStoreId) {
+    final isMobile = Responsive.isMobile(context);
+    
+    if (isMobile) {
+      return Container(
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      onPressed: () => Scaffold.of(context).openDrawer(),
+                      icon: const Icon(Icons.menu_rounded, color: AppTheme.accentGold, size: 24),
+                    ),
+                    const SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Quản lý kho",
+                          style: GoogleFonts.playfairDisplay(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                if (selectedStoreId != null)
+                  Row(
+                    children: [
+                      IconButton(
+                        onPressed: () => showGeneralDialog(
+                          context: context,
+                          pageBuilder: (ctx, _, __) => StaffInventoryHistoryScreen(storeId: selectedStoreId),
+                        ),
+                        icon: const Icon(Icons.history_rounded, color: AppTheme.accentGold, size: 20),
+                      ),
+                      IconButton(
+                        onPressed: () => showGeneralDialog(
+                          context: context,
+                          pageBuilder: (ctx, _, __) => StaffInventoryRequestsScreen(storeId: selectedStoreId),
+                        ),
+                        icon: const Icon(Icons.assignment_rounded, color: AppTheme.accentGold, size: 20),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            stores.when(
+              loading: () => const SizedBox.shrink(),
+              error: (_, __) => const SizedBox.shrink(),
+              data: (list) => Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.05),
+                  border: Border.all(color: Colors.white10),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: selectedStoreId,
+                    isExpanded: true,
+                    dropdownColor: const Color(0xFF141414),
+                    icon: const Icon(Icons.expand_more_rounded, color: AppTheme.accentGold, size: 18),
+                    hint: Text(
+                      "CHỌN QUẦY",
+                      style: GoogleFonts.montserrat(
+                        fontSize: 10,
+                        color: Colors.white24,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                    items: list.map((s) => DropdownMenuItem(
+                      value: s.id as String,
+                      child: Text(
+                        s.name.toUpperCase(),
+                        style: GoogleFonts.montserrat(
+                          fontSize: 10,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                    )).toList(),
+                    onChanged: (val) {
+                      if (val != null) {
+                        ref.read(selectedStoreIdProvider.notifier).state = val;
+                        ref.read(inventoryProvider.notifier).loadOverview(val);
+                      }
+                    },
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Container(
       padding: const EdgeInsets.fromLTRB(32, 40, 32, 24),
       child: Row(
@@ -97,7 +205,12 @@ class _StaffInventoryScreenState extends ConsumerState<StaffInventoryScreen> {
             children: [
               Text(
                 "QUẢN LÝ KHO",
-                style: GoogleFonts.montserrat(fontSize: 10, color: AppTheme.accentGold, fontWeight: FontWeight.w800, letterSpacing: 4),
+                style: GoogleFonts.montserrat(
+                  fontSize: 10,
+                  color: AppTheme.accentGold,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 4,
+                ),
               ),
               const SizedBox(height: 4),
               Text(
@@ -155,24 +268,27 @@ class _StaffInventoryScreenState extends ConsumerState<StaffInventoryScreen> {
                     child: DropdownButton<String>(
                       value: selectedStoreId,
                       dropdownColor: const Color(0xFF141414),
-                      icon: const Icon(Icons.expand_more_rounded,
-                          color: AppTheme.accentGold, size: 18),
-                      hint: Text("CHỌN QUẦY",
+                      icon: const Icon(Icons.expand_more_rounded, color: AppTheme.accentGold, size: 18),
+                      hint: Text(
+                        "CHỌN QUẦY",
+                        style: GoogleFonts.montserrat(
+                          fontSize: 10,
+                          color: Colors.white24,
+                          letterSpacing: 2,
+                        ),
+                      ),
+                      items: list.map((s) => DropdownMenuItem(
+                        value: s.id as String,
+                        child: Text(
+                          s.name.toUpperCase(),
                           style: GoogleFonts.montserrat(
-                              fontSize: 10,
-                              color: Colors.white24,
-                              letterSpacing: 2)),
-                      items: list
-                          .map((s) => DropdownMenuItem(
-                                value: s.id as String,
-                                child: Text(s.name.toUpperCase(),
-                                    style: GoogleFonts.montserrat(
-                                        fontSize: 10,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w600,
-                                        letterSpacing: 1.5)),
-                              ))
-                          .toList(),
+                            fontSize: 10,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                      )).toList(),
                       onChanged: (val) {
                         if (val != null) {
                           ref.read(selectedStoreIdProvider.notifier).state = val;
@@ -191,36 +307,72 @@ class _StaffInventoryScreenState extends ConsumerState<StaffInventoryScreen> {
   }
 
   Widget _buildGlassDashboard(InventoryOverview overview) {
+    final isMobile = Responsive.isMobile(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
-      child: Row(
-        children: [
-          _GlassStatCard(
-            label: "TỔNG SẢN PHẨM",
-            value: "${overview.stats.totalUnits}",
-            icon: Icons.layers_outlined,
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 20 : 32),
+      child: isMobile 
+        ? Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: _GlassStatCard(
+                      label: "TỔNG SẢN PHẨM",
+                      value: "${overview.stats.totalUnits}",
+                      icon: Icons.layers_outlined,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _GlassStatCard(
+                      label: "TỔNG SKU",
+                      value: "${overview.variants.length}",
+                      icon: Icons.science_outlined,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: _GlassStatCard(
+                  label: "SẮP HẾT HÀNG",
+                  value: "${overview.stats.lowStockCount}",
+                  icon: Icons.emergency_outlined,
+                  isAlert: overview.stats.lowStockCount > 0,
+                ),
+              ),
+            ],
+          )
+        : Row(
+            children: [
+              _GlassStatCard(
+                label: "TỔNG SẢN PHẨM",
+                value: "${overview.stats.totalUnits}",
+                icon: Icons.layers_outlined,
+              ),
+              const SizedBox(width: 24),
+              _GlassStatCard(
+                label: "TỔNG SKU",
+                value: "${overview.variants.length}",
+                icon: Icons.science_outlined,
+              ),
+              const SizedBox(width: 24),
+              _GlassStatCard(
+                label: "SẮP HẾT HÀNG",
+                value: "${overview.stats.lowStockCount}",
+                icon: Icons.emergency_outlined,
+                isAlert: overview.stats.lowStockCount > 0,
+              ),
+            ],
           ),
-          const SizedBox(width: 24),
-          _GlassStatCard(
-            label: "TỔNG SKU",
-            value: "${overview.variants.length}",
-            icon: Icons.science_outlined,
-          ),
-          const SizedBox(width: 24),
-          _GlassStatCard(
-            label: "SẮP HẾT HÀNG",
-            value: "${overview.stats.lowStockCount}",
-            icon: Icons.emergency_outlined,
-            isAlert: overview.stats.lowStockCount > 0,
-          ),
-        ],
-      ),
     );
   }
 
   Widget _buildRefinedSearchBar() {
+    final isMobile = Responsive.isMobile(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(32, 32, 32, 24),
+      padding: EdgeInsets.fromLTRB(isMobile ? 20 : 32, isMobile ? 8 : 24, isMobile ? 20 : 32, isMobile ? 12 : 24),
       child: Container(
         height: 56,
         decoration: BoxDecoration(
@@ -242,7 +394,7 @@ class _StaffInventoryScreenState extends ConsumerState<StaffInventoryScreen> {
                 onChanged: (v) => setState(() => _searchQuery = v.toLowerCase()),
                 style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 13),
                 decoration: InputDecoration(
-                  hintText: "Tìm tên sản phẩm, SKU, nhóm mùi hương, thương hiệu",
+                  hintText: isMobile ? "Tìm kiếm..." : "Tìm tên sản phẩm, SKU, nhóm mùi hương, thương hiệu",
                   hintStyle: GoogleFonts.montserrat(color: Colors.white24, fontSize: 11, letterSpacing: 0.5),
                   border: InputBorder.none,
                   filled: false,
@@ -279,8 +431,9 @@ class _StaffInventoryScreenState extends ConsumerState<StaffInventoryScreen> {
       }).toList();
     }
 
+    final isMobile = Responsive.isMobile(context);
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(32, 0, 32, 40),
+      padding: EdgeInsets.fromLTRB(isMobile ? 20 : 32, 0, isMobile ? 20 : 32, 40),
       child: Container(
         decoration: BoxDecoration(
           color: const Color(0xFF0A0A0A),
@@ -289,20 +442,22 @@ class _StaffInventoryScreenState extends ConsumerState<StaffInventoryScreen> {
         child: Column(
           children: [
             // Header Row
-            Container(
-              color: const Color(0xFF0F0F0F),
-              height: 56,
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Row(
-                children: [
-                  _TableHeaderText("CHI TIẾT BỘ SƯU TẬP", flex: 4),
-                  _TableHeaderText("MÃ SKU / ĐƠN VỊ", flex: 2),
-                  _TableHeaderText("TRẠNG THÁI", flex: 2),
-                  _TableHeaderText("THAO TÁC", flex: 1),
-                ],
+            if (!Responsive.isMobile(context)) ...[
+              Container(
+                color: const Color(0xFF0F0F0F),
+                height: 56,
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Row(
+                  children: [
+                    _TableHeaderText("CHI TIẾT BỘ SƯU TẬP", flex: 4),
+                    _TableHeaderText("MÃ SKU / ĐƠN VỊ", flex: 2),
+                    _TableHeaderText("TRẠNG THÁI", flex: 2),
+                    _TableHeaderText("THAO TÁC", flex: 1),
+                  ],
+                ),
               ),
-            ),
-            const Divider(color: AppTheme.accentGold, height: 1, thickness: 0.5),
+              const Divider(color: AppTheme.accentGold, height: 1, thickness: 0.5),
+            ],
             
             // List of items
             ...variants.map((v) => _InventoryRow(variant: v, onAdjust: () => _showAdjustSheet(context, v))),
@@ -363,8 +518,8 @@ class _GlassStatCardState extends State<_GlassStatCard> {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: MouseRegion(
+    final isMobile = Responsive.isMobile(context);
+    final content = MouseRegion(
         onEnter: (_) => setState(() => _isHovered = true),
         onExit: (_) => setState(() => _isHovered = false),
         cursor: SystemMouseCursors.click,
@@ -373,7 +528,7 @@ class _GlassStatCardState extends State<_GlassStatCard> {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 250),
             curve: Curves.easeOutCubic,
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.all(isMobile ? 12 : 24),
             transform: Matrix4.identity()..translate(0.0, _isHovered ? -3.0 : 0.0),
             decoration: BoxDecoration(
               color: _isHovered ? Colors.white.withOpacity(0.06) : Colors.white.withOpacity(0.03),
@@ -399,18 +554,18 @@ class _GlassStatCardState extends State<_GlassStatCard> {
               children: [
                 Row(
                   children: [
-                    Icon(widget.icon, color: widget.isAlert ? Colors.redAccent : AppTheme.accentGold, size: 18),
+                    Icon(widget.icon, color: widget.isAlert ? Colors.redAccent : AppTheme.accentGold, size: isMobile ? 14 : 18),
                     const Spacer(),
-                    Text(widget.label, style: GoogleFonts.montserrat(fontSize: 9, color: Colors.white54, fontWeight: FontWeight.w800, letterSpacing: 2)),
+                    Text(widget.label, style: GoogleFonts.montserrat(fontSize: isMobile ? 8 : 9, color: Colors.white54, fontWeight: FontWeight.w800, letterSpacing: isMobile ? 1 : 2)),
                   ],
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: isMobile ? 8 : 16),
                 ShaderMask(
                   shaderCallback: (bounds) => AppTheme.getGoldGradient().createShader(bounds),
                   child: Text(
                     widget.value,
                     style: GoogleFonts.playfairDisplay(
-                      fontSize: 32,
+                      fontSize: isMobile ? 24 : 32,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
@@ -420,8 +575,9 @@ class _GlassStatCardState extends State<_GlassStatCard> {
             ),
           ),
         ),
-      ),
-    );
+      );
+    
+    return content;
   }
 }
 
@@ -499,7 +655,7 @@ class _InventoryRowState extends State<_InventoryRow> {
   Widget build(BuildContext context) {
     final isLow = widget.variant.stock < 10;
     final imageUrl = _normalizeImageUrl(widget.variant.imageUrl);
-
+    final isMobile = Responsive.isMobile(context);
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
@@ -509,102 +665,143 @@ class _InventoryRowState extends State<_InventoryRow> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeOutCubic,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+          padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 24, vertical: 20),
           decoration: BoxDecoration(
             color: _isHovered ? Colors.white.withOpacity(0.03) : Colors.transparent,
             border: Border(bottom: BorderSide(color: Colors.white.withOpacity(0.05))),
           ),
-          child: Row(
-            children: [
-              // Product Thumbnail + Info
-              Expanded(
-                flex: 4,
-                child: Row(
-                  children: [
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.03),
-                        borderRadius: BorderRadius.circular(4),
-                        border: Border.all(
-                          color: _isHovered ? AppTheme.accentGold.withOpacity(0.3) : Colors.transparent,
+          child: isMobile 
+            ? Column(
+                children: [
+                  Row(
+                    children: [
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.03),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(
+                            color: _isHovered ? AppTheme.accentGold.withOpacity(0.3) : Colors.transparent,
+                          ),
+                          image: imageUrl.isNotEmpty ? DecorationImage(image: NetworkImage(imageUrl), fit: BoxFit.cover) : null,
                         ),
-                        image: imageUrl.isNotEmpty ? DecorationImage(image: NetworkImage(imageUrl), fit: BoxFit.cover) : null,
+                        child: imageUrl.isEmpty ? const Icon(Icons.science_outlined, color: Colors.white12, size: 16) : null,
                       ),
-                      child: imageUrl.isEmpty ? const Icon(Icons.science_outlined, color: Colors.white12, size: 20) : null,
-                    ),
-                    const SizedBox(width: 20),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(widget.variant.name.toUpperCase(), style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.bold, color: _isHovered ? Colors.white : Colors.white.withOpacity(0.9), letterSpacing: 1)),
+                            Text("${widget.variant.brand?.toUpperCase() ?? 'GENERIC'}", style: GoogleFonts.montserrat(fontSize: 9, color: AppTheme.accentGold, letterSpacing: 1.5)),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.edit_outlined, color: AppTheme.accentGold, size: 16),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "SKU-${widget.variant.id.substring(0,8)}".toUpperCase(),
+                        style: GoogleFonts.robotoMono(fontSize: 10, color: Colors.white24),
+                      ),
+                      Row(
                         children: [
-                          Text(widget.variant.name.toUpperCase(), style: GoogleFonts.montserrat(fontSize: 14, fontWeight: FontWeight.bold, color: _isHovered ? Colors.white : Colors.white.withOpacity(0.9), letterSpacing: 1)),
-                          Text("${widget.variant.brand?.toUpperCase() ?? 'GENERIC'}", style: GoogleFonts.montserrat(fontSize: 10, color: AppTheme.accentGold, letterSpacing: 1.5)),
+                          Icon(isLow ? Icons.warning_amber_rounded : Icons.check_circle_outline_rounded, size: 10, color: isLow ? Colors.redAccent : Colors.greenAccent),
+                          const SizedBox(width: 4),
+                          Text(
+                            "${widget.variant.stock} ĐƠN VỊ",
+                            style: GoogleFonts.robotoMono(fontSize: 11, fontWeight: FontWeight.bold, color: isLow ? Colors.redAccent : Colors.white70),
+                          ),
                         ],
                       ),
+                    ],
+                  ),
+                ],
+              )
+            : Row(
+                children: [
+                  Expanded(
+                    flex: 4,
+                    child: Row(
+                      children: [
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.03),
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(
+                              color: _isHovered ? AppTheme.accentGold.withOpacity(0.3) : Colors.transparent,
+                            ),
+                            image: imageUrl.isNotEmpty ? DecorationImage(image: NetworkImage(imageUrl), fit: BoxFit.cover) : null,
+                          ),
+                          child: imageUrl.isEmpty ? const Icon(Icons.science_outlined, color: Colors.white12, size: 18) : null,
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(widget.variant.name.toUpperCase(), style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.bold, color: _isHovered ? Colors.white : Colors.white.withOpacity(0.9), letterSpacing: 1)),
+                              Text("${widget.variant.brand?.toUpperCase() ?? 'GENERIC'}", style: GoogleFonts.montserrat(fontSize: 9, color: AppTheme.accentGold, letterSpacing: 1.5)),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-              
-              // SKU
-              Expanded(
-                flex: 2,
-                child: Text(
-                  "SKU-${widget.variant.id.substring(0,8)}".toUpperCase(),
-                  style: GoogleFonts.robotoMono(fontSize: 11, color: Colors.white24),
-                ),
-              ),
-
-              // Stock Status
-              Expanded(
-                flex: 2,
-                child: Row(
-                  children: [
-                    Container(
-                      width: 6,
-                      height: 6,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: isLow ? Colors.redAccent : Colors.greenAccent,
-                        boxShadow: [
-                          BoxShadow(color: (isLow ? Colors.redAccent : Colors.greenAccent).withOpacity(0.5), blurRadius: 4, spreadRadius: 1),
-                        ],
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "SKU-${widget.variant.id.substring(0,8)}".toUpperCase(),
+                          style: GoogleFonts.robotoMono(fontSize: 10, color: Colors.white24, fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          "${widget.variant.variantName} UNIT",
+                          style: GoogleFonts.robotoMono(fontSize: 9, color: Colors.white60),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Row(
+                      children: [
+                        Icon(isLow ? Icons.warning_amber_rounded : Icons.check_circle_outline_rounded, size: 12, color: isLow ? Colors.redAccent : Colors.greenAccent),
+                        const SizedBox(width: 8),
+                        Text(
+                          "${widget.variant.stock} ĐƠN VỊ",
+                          style: GoogleFonts.robotoMono(fontSize: 12, fontWeight: FontWeight.bold, color: isLow ? Colors.redAccent : Colors.white70),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppTheme.accentGold.withOpacity(_isHovered ? 0.2 : 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(Icons.edit_outlined, size: 16, color: _isHovered ? AppTheme.accentGold : AppTheme.accentGold.withOpacity(0.7)),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Text(
-                      "${widget.variant.stock} sản phẩm",
-                      style: GoogleFonts.robotoMono(fontSize: 14, color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-
-              // Action
-              Expanded(
-                flex: 1,
-                child: Row(
-                  children: [
-                    const Spacer(),
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: _isHovered ? AppTheme.accentGold.withOpacity(0.1) : Colors.transparent,
-                      ),
-                      child: IconButton(
-                        icon: Icon(Icons.edit_outlined, color: _isHovered ? AppTheme.accentGold : AppTheme.accentGold.withOpacity(0.6), size: 18),
-                        onPressed: widget.onAdjust,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );

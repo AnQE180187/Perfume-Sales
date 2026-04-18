@@ -16,6 +16,7 @@ import '../providers/dashboard_provider.dart';
 import '../../../../core/widgets/app_error_widget.dart';
 import '../../../../core/config/env.dart';
 import '../../pos/providers/pos_provider.dart';
+import '../../../../core/utils/responsive.dart';
 
 class StaffDashboardScreen extends ConsumerWidget {
   const StaffDashboardScreen({super.key});
@@ -50,7 +51,7 @@ class StaffDashboardScreen extends ConsumerWidget {
                     const SizedBox(height: 32),
                     
                     // KPI Grid
-                    _buildHighPerformanceKpis(state.report!, currencyFmt, l10n),
+                    _buildHighPerformanceKpis(context, state.report!, currencyFmt, l10n),
                     const SizedBox(height: 32),
                     
                     // Top Products Table
@@ -72,8 +73,9 @@ class StaffDashboardScreen extends ConsumerWidget {
   }
 
   Widget _buildObsidianHeader(BuildContext context, WidgetRef ref, DashboardState state, AsyncValue<List<dynamic>> stores, String? selectedStoreId, AppLocalizations l10n) {
+    final isMobile = Responsive.isMobile(context);
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
+      padding: EdgeInsets.fromLTRB(isMobile ? 16 : 24, isMobile ? 32 : 48, isMobile ? 16 : 24, 24),
       decoration: const BoxDecoration(
         color: Color(0xFF0F0F0F),
         border: Border(bottom: BorderSide(color: Colors.white10)),
@@ -82,26 +84,36 @@ class StaffDashboardScreen extends ConsumerWidget {
         children: [
           Row(
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.analyticsCommand,
-                    style: GoogleFonts.montserrat(fontSize: 10, color: AppTheme.accentGold, fontWeight: FontWeight.w800, letterSpacing: 4),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "QUẢN LÝ DOANH THU",
-                    style: GoogleFonts.playfairDisplay(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                      letterSpacing: 2,
-                    ),
-                  ),
-                ],
+              IconButton(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                onPressed: () => Scaffold.of(context).openDrawer(),
+                icon: const Icon(Icons.menu_rounded, color: AppTheme.accentGold, size: 24),
               ),
-              const Spacer(),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.analyticsCommand,
+                      style: GoogleFonts.montserrat(fontSize: 9, color: AppTheme.accentGold, fontWeight: FontWeight.w800, letterSpacing: isMobile ? 2 : 4),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      "QUẢN LÝ DOANH THU",
+                      style: GoogleFonts.playfairDisplay(
+                        fontSize: isMobile ? 18 : 24,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        letterSpacing: isMobile ? 0.5 : 2,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.visible,
+                    ),
+                  ],
+                ),
+              ),
               _DateFilter(date: state.selectedDate),
             ],
           ),
@@ -200,7 +212,37 @@ class StaffDashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildHighPerformanceKpis(DailyReport report, NumberFormat fmt, AppLocalizations l10n) {
+  Widget _buildHighPerformanceKpis(BuildContext context, DailyReport report, NumberFormat fmt, AppLocalizations l10n) {
+    if (Responsive.isMobile(context)) {
+      return Column(
+        children: [
+          Row(
+            children: [
+              Expanded(child: _ObsidianKpi(label: l10n.grossRevenue, value: "${fmt.format(report.totalRevenue)}đ", icon: Icons.insights_rounded)),
+              const SizedBox(width: 12),
+              Expanded(child: _ObsidianKpi(label: l10n.transCount, value: "${report.totalOrders}", icon: Icons.shutter_speed_rounded)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(child: _ObsidianKpi(label: l10n.aovEfficiency, value: "${fmt.format(report.avgOrderValue)}đ", icon: Icons.precision_manufacturing_rounded)),
+              const SizedBox(width: 12),
+              Expanded(child: _ObsidianKpi(label: l10n.conversionRate, value: "${report.completionRate.toStringAsFixed(1)}%", icon: Icons.troubleshoot_rounded, isGold: true)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(child: _ObsidianKpi(label: l10n.cancelRate, value: "${report.cancelRate.toStringAsFixed(1)}%", icon: Icons.cancel_outlined)),
+              const SizedBox(width: 12),
+              Expanded(child: _ObsidianKpi(label: l10n.refundVolume, value: "${fmt.format(report.totalRefundedAmount)}đ", icon: Icons.replay_circle_filled_rounded)),
+            ],
+          ),
+        ],
+      );
+    }
+
     return Column(
       children: [
         Row(
@@ -328,13 +370,14 @@ class _HoverableProductRowState extends State<_HoverableProductRow> {
     final p = widget.product;
     final imageUrl = _normalizeImageUrl(p.imageUrl as String?);
 
+    final isMobile = Responsive.isMobile(context);
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       cursor: SystemMouseCursors.click,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(isMobile ? 12 : 16),
         decoration: BoxDecoration(
           color: _isHovered ? Colors.white.withOpacity(0.03) : Colors.transparent,
           border: Border(bottom: BorderSide(color: Colors.white.withOpacity(0.05))),
@@ -342,7 +385,7 @@ class _HoverableProductRowState extends State<_HoverableProductRow> {
         child: Row(
           children: [
             Text("0${widget.index + 1}", style: GoogleFonts.robotoMono(fontSize: 10, color: AppTheme.accentGold)),
-            const SizedBox(width: 24),
+            SizedBox(width: isMobile ? 12 : 24),
             Container(
               width: 32,
               height: 32,
@@ -356,17 +399,18 @@ class _HoverableProductRowState extends State<_HoverableProductRow> {
               ),
               child: imageUrl.isEmpty ? const Icon(Icons.science_outlined, color: Colors.white24, size: 14) : null,
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: isMobile ? 12 : 16),
             Expanded(child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(p.productName.toUpperCase(), style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.bold, color: _isHovered ? Colors.white : Colors.white70)),
+                Text(p.productName.toUpperCase(), style: GoogleFonts.montserrat(fontSize: isMobile ? 10 : 11, fontWeight: FontWeight.bold, color: _isHovered ? Colors.white : Colors.white70), maxLines: 1, overflow: TextOverflow.ellipsis),
                 Text(p.variantName, style: GoogleFonts.robotoMono(fontSize: 9, color: Colors.white60)),
               ],
             )),
-            Text("x${p.totalQuantity}", style: GoogleFonts.robotoMono(fontSize: 12, color: Colors.white, fontWeight: FontWeight.bold)),
-            const SizedBox(width: 40),
-            Text("${widget.fmt.format(p.totalRevenue)}đ", style: GoogleFonts.robotoMono(fontSize: 11, color: AppTheme.accentGold)),
+            const SizedBox(width: 8),
+            Text("x${p.totalQuantity}", style: GoogleFonts.robotoMono(fontSize: isMobile ? 11 : 12, color: Colors.white, fontWeight: FontWeight.bold)),
+            SizedBox(width: isMobile ? 12 : 40),
+            Text("${widget.fmt.format(p.totalRevenue)}đ", style: GoogleFonts.robotoMono(fontSize: isMobile ? 10 : 11, color: AppTheme.accentGold)),
           ],
         ),
       ),
@@ -393,9 +437,9 @@ class _DateFilterState extends State<_DateFilter> {
       cursor: SystemMouseCursors.click,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: Responsive.isMobile(context) ? 8 : 16, vertical: 10),
         decoration: BoxDecoration(
-          color: _isHovered ? Colors.white.withOpacity(0.03) : Colors.transparent,
+          color: _isHovered ? Colors.white.withOpacity(0.03) : const Color(0xFF141414),
           border: Border.all(color: _isHovered ? AppTheme.accentGold.withOpacity(0.5) : AppTheme.accentGold.withOpacity(0.2)),
         ),
         child: Row(
