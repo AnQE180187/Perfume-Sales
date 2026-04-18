@@ -38,7 +38,18 @@ export class OrdersService {
       throw new BadRequestException('Cart is empty');
     }
 
-    const totalAmount = cart.items.reduce(
+    const { cartItemIds } = dto;
+
+    // Filter items if cartItemIds provided
+    const itemsToProcess = cartItemIds
+      ? cart.items.filter((item) => cartItemIds.includes(item.id))
+      : cart.items;
+
+    if (itemsToProcess.length === 0 && cartItemIds) {
+      throw new BadRequestException('Selected items not found in cart');
+    }
+
+    const totalAmount = itemsToProcess.reduce(
       (sum, item) => sum + item.quantity * item.variant.price,
       0,
     );
@@ -93,7 +104,7 @@ export class OrdersService {
           recipientName: dto.recipientName,
           phone: dto.phone,
           items: {
-            create: cart.items.map((item) => ({
+            create: itemsToProcess.map((item) => ({
               variantId: item.variantId,
               unitPrice: item.variant.price,
               quantity: item.quantity,
@@ -133,7 +144,8 @@ export class OrdersService {
         );
       }
 
-      await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
+      const itemIdsToRemove = itemsToProcess.map((i) => i.id);
+      await tx.cartItem.deleteMany({ where: { id: { in: itemIdsToRemove } } });
 
       return created;
     });
@@ -411,14 +423,7 @@ export class OrdersService {
       },
     });
 
-    // Create GHN shipment automatically when order is CONFIRMED
-    if (status === "CONFIRMED") {
-      try {
-        await this.shippingService.createGhnShipment(updated.id);
-      } catch (e) {
-        console.warn("GHN shipment creation failed on confirmation:", e?.message);
-      }
-    }
+    // GHN shipment creation is now triggered manually via admin interface
 
     if (status === 'COMPLETED' && updated.userId) {
       await this.loyaltyService.earnPoints(
