@@ -70,6 +70,7 @@ export const orderService = {
     promotionCode?: string;
     redeemPoints?: number;
     paymentMethod?: "COD" | "ONLINE";
+    cartItemIds?: number[];
   }) {
     return api.post<Order>("/orders", dto).then((r) => r.data);
   },
