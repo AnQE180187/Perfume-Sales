@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Standardized border radius tokens for the Lumina design system.
+/// Standardized border radius tokens for the Perfume GPT design system.
 ///
 /// Usage:
 /// ```dart

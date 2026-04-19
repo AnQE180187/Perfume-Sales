@@ -37,9 +37,14 @@ class LuxuryDrawer extends ConsumerWidget {
         route: AppRoutes.scentClub,
       ),
       _MenuItem(
-        icon: Icons.location_on_outlined,
-        label: l10n.boutiques,
-        route: '/boutiques',
+        icon: Icons.auto_awesome_mosaic_outlined,
+        label: l10n.brand,
+        route: AppRoutes.brands,
+      ),
+      _MenuItem(
+        icon: Icons.menu_book_outlined,
+        label: l10n.journal,
+        route: AppRoutes.journal,
       ),
       // removed scent quiz menu item per UX request
     ];

@@ -5,20 +5,7 @@ import '../theme/app_theme.dart';
 /// Empty State Widget
 /// 
 /// Reusable component for displaying empty states across the app.
-/// Replaces duplicated empty state implementations.
-/// 
-/// Usage:
-/// ```dart
-/// EmptyStateWidget(
-///   icon: Icons.shopping_cart_outlined,
-///   title: 'Your cart is empty',
-///   subtitle: 'Add items to get started',
-///   action: LuxuryButton(
-///     text: 'Start Shopping',
-///     onPressed: () => context.push(AppRoutes.explore),
-///   ),
-/// )
-/// ```
+/// Replaces duplicated empty state implementations with a luxury aesthetic.
 class EmptyStateWidget extends StatelessWidget {
   /// Icon to display at the top
   final IconData icon;
@@ -32,11 +19,11 @@ class EmptyStateWidget extends StatelessWidget {
   /// Optional action button
   final Widget? action;
   
-  /// Icon size (default: 64)
+  /// Icon size (default: 42)
   final double iconSize;
   
-  /// Icon color (default: muted gold)
-  final Color? iconColor;
+  /// Optional background color for the icon container
+  final Color? containerColor;
 
   const EmptyStateWidget({
     super.key,
@@ -44,8 +31,8 @@ class EmptyStateWidget extends StatelessWidget {
     required this.title,
     required this.subtitle,
     this.action,
-    this.iconSize = 64.0,
-    this.iconColor,
+    this.iconSize = 42.0,
+    this.containerColor,
   });
 
   @override
@@ -57,43 +44,66 @@ class EmptyStateWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Icon
-            Icon(
-              icon,
-              size: iconSize,
-              color: iconColor ?? AppTheme.accentGold.withValues(alpha: 0.3),
+            // Luxury Icon Container
+            Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppTheme.accentGold.withValues(alpha: 0.15),
+                    AppTheme.accentGold.withValues(alpha: 0.05),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(35),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.accentGold.withValues(alpha: 0.05),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Icon(
+                icon,
+                size: iconSize,
+                color: AppTheme.accentGold,
+              ),
             ),
             
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
             
-            // Title
+            // Title - Premium Playfair Display
             Text(
               title,
               style: GoogleFonts.playfairDisplay(
-                fontSize: 22,
-                fontWeight: FontWeight.w600,
+                fontSize: 24,
+                fontWeight: FontWeight.w700,
                 color: AppTheme.deepCharcoal,
+                letterSpacing: -0.5,
               ),
               textAlign: TextAlign.center,
             ),
             
             const SizedBox(height: 12),
             
-            // Subtitle
+            // Subtitle - Accessible Montserrat
             Text(
               subtitle,
               style: GoogleFonts.montserrat(
                 fontSize: 14,
+                height: 1.6,
                 fontWeight: FontWeight.w400,
-                color: AppTheme.mutedSilver,
-                height: 1.5,
+                color: AppTheme.deepCharcoal.withValues(alpha: 0.7),
               ),
               textAlign: TextAlign.center,
             ),
             
             // Optional action button
             if (action != null) ...[
-              const SizedBox(height: 32),
+              const SizedBox(height: 40),
               action!,
             ],
           ],

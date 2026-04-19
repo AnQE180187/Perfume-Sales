@@ -725,34 +725,8 @@ class _AddNoteSheetState extends ConsumerState<_AddNoteSheet> {
             onChanged: (v) => setState(() => _search = v),
             decoration: InputDecoration(hintText: widget.l10n.searchNotesHint, prefixIcon: const Icon(Icons.search_rounded), filled: true, fillColor: Colors.white, border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none)),
           ),
-          const SizedBox(height: 24),
-          Text(widget.l10n.currentTrends.toUpperCase(), style: GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.w800, color: AppTheme.accentGold)),
-          const SizedBox(height: 12),
-          _buildTrendingNotes(),
-          const SizedBox(height: 24),
           Expanded(child: _buildSearchList()),
         ],
-      ),
-    );
-  }
-
-  Widget _buildTrendingNotes() {
-    final trendingRaw = ['Oud Oil', 'Pink Pepper', 'White Musk', 'Sea Salt', 'Bergamot', 'Amber', 'Tobacco'];
-    final trending = trendingRaw.where((t) => !widget.existingNotes.contains(t)).toList();
-    if (trending.isEmpty) return const SizedBox.shrink();
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      physics: const BouncingScrollPhysics(),
-      child: Row(
-        children: trending.map((t) => Padding(
-          padding: const EdgeInsets.only(right: 10),
-          child: ActionChip(
-            label: Text(t, style: GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.w600, color: AppTheme.accentGold)),
-            backgroundColor: Colors.white,
-            shape: StadiumBorder(side: BorderSide(color: AppTheme.accentGold.withValues(alpha: 0.15))),
-            onPressed: () { widget.onAdd(t); Navigator.pop(context); },
-          ),
-        )).toList(),
       ),
     );
   }

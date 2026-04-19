@@ -14,6 +14,10 @@ class ScentRepository {
     return rawList.map((j) => ScentFamily.fromJson(j as Map<String, dynamic>)).toList();
   }
 
+  Future<List<String>> getScentNotes() async {
+    return _apiService.getScentNotes();
+  }
+
   // Helper to get visual info based on name
   Map<String, dynamic> getVisuals(String name) {
     final n = name.toLowerCase();
@@ -65,4 +69,8 @@ final scentRepositoryProvider = Provider<ScentRepository>((ref) {
 
 final scentFamiliesProvider = FutureProvider<List<ScentFamily>>((ref) {
   return ref.watch(scentRepositoryProvider).getScentFamilies();
+});
+
+final scentNotesProvider = FutureProvider<List<String>>((ref) {
+  return ref.watch(scentRepositoryProvider).getScentNotes();
 });

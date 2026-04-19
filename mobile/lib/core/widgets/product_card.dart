@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import '../utils/currency_utils.dart';
@@ -443,21 +444,26 @@ class _GridCard extends StatelessWidget {
                     ),
                   ),
                   if (product.notes.isNotEmpty) ...[
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 4),
                     SizedBox(
-                      height: 20,
+                      height: 22,
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
-                        itemCount: product.notes.length > 3
-                            ? 3
+                        itemCount: product.notes.length > 2
+                            ? 2
                             : product.notes.length,
                         separatorBuilder: (_, __) => const SizedBox(width: 4),
-                        itemBuilder: (_, i) => _ScentTag(text: product.notes[i]),
+                        itemBuilder: (_, i) => GestureDetector(
+                          onTap: () => context.push('/search?note=${product.notes[i]}'),
+                          child: _ScentTag(text: product.notes[i]),
+                        ),
                       ),
                     ),
                   ],
-                  const Spacer(),
+                  const SizedBox(height: 8),
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Flexible(
                         child: Text(
@@ -691,21 +697,23 @@ class _ScentTag extends StatelessWidget {
     final textColor = _getTextColor(text);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: textColor.withOpacity(0.1)),
       ),
+      alignment: Alignment.center,
       child: Text(
         text,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: GoogleFonts.montserrat(
-          fontSize: 9,
+          fontSize: 9.5,
           fontWeight: FontWeight.w600,
           color: textColor,
           letterSpacing: 0.1,
+          height: 1.1,
         ),
       ),
     );

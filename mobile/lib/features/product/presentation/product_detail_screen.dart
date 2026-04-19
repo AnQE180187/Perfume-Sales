@@ -729,6 +729,7 @@ class _TechnicalSpecsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     if (longevity == null && concentration == null) return const SizedBox.shrink();
 
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
       padding: const EdgeInsets.all(20),
@@ -741,7 +742,7 @@ class _TechnicalSpecsSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'THÔNG SỐ KỸ THUẬT',
+            l10n.technicalSpecs.toUpperCase(),
             style: GoogleFonts.montserrat(
               fontSize: 10,
               fontWeight: FontWeight.w700,
@@ -750,9 +751,9 @@ class _TechnicalSpecsSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          _specRow(Icons.timer_outlined, 'Độ lưu hương', longevity ?? 'Đang cập nhật'),
+          _specRow(Icons.timer_outlined, l10n.longevityLabel, longevity ?? l10n.updating),
           const Divider(height: 24, color: AppTheme.softTaupe),
-          _specRow(Icons.water_drop_outlined, 'Nồng độ', concentration ?? 'Đang cập nhật'),
+          _specRow(Icons.water_drop_outlined, l10n.concentrationLabel, concentration ?? l10n.updating),
         ],
       ),
     );
@@ -770,13 +771,18 @@ class _TechnicalSpecsSection extends StatelessWidget {
             color: AppTheme.deepCharcoal.withOpacity(0.6),
           ),
         ),
-        const Spacer(),
-        Text(
-          value,
-          style: GoogleFonts.montserrat(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: AppTheme.deepCharcoal,
+        const SizedBox(width: 16),
+        Expanded(
+          child: Text(
+            value,
+            textAlign: TextAlign.end,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.montserrat(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: AppTheme.deepCharcoal,
+            ),
           ),
         ),
       ],
@@ -843,7 +849,7 @@ class _ProductStorySection extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  isExpanded ? 'Thu gọn' : 'Xem thêm',
+                  isExpanded ? l10n.seeLess : l10n.seeMore,
                   style: GoogleFonts.montserrat(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,

@@ -16,7 +16,17 @@ import 'widgets/search_header.dart';
 class SearchScreen extends ConsumerStatefulWidget {
   final String? initialScent;
   final int? initialScentId;
-  const SearchScreen({super.key, this.initialScent, this.initialScentId});
+  final String? initialBrand;
+  final int? initialBrandId;
+  final String? initialNote;
+  const SearchScreen({
+    super.key,
+    this.initialScent,
+    this.initialScentId,
+    this.initialBrand,
+    this.initialBrandId,
+    this.initialNote,
+  });
 
   @override
   ConsumerState<SearchScreen> createState() => _SearchScreenState();
@@ -47,6 +57,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   bool get _hasActiveFilters {
     final state = ref.read(searchProvider);
     return state.scentFamily != null ||
+        state.selectedNote != null ||
+        state.brandId != null ||
         state.occasion != null ||
         state.priceRange != null;
   }
@@ -62,6 +74,20 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             widget.initialScent,
             id: widget.initialScentId,
           ));
+    }
+
+    if (widget.initialBrand != null) {
+      Future.microtask(() => ref.read(searchProvider.notifier).setBrand(
+            widget.initialBrand!,
+            id: widget.initialBrandId,
+          ));
+    }
+
+    if (widget.initialNote != null) {
+      _searchController.text = widget.initialNote!;
+      Future.microtask(
+        () => ref.read(searchProvider.notifier).setNote(widget.initialNote),
+      );
     }
 
     // Load initial products through the provider
@@ -84,11 +110,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final searchState = ref.watch(searchProvider);
     final scentFamiliesAsync = ref.watch(scentFamiliesProvider);
     final brandsAsync = ref.watch(brandsProvider);
+    final scentNotesAsync = ref.watch(scentNotesProvider);
     
     final filteredResults = searchState.results;
 
     final selectedBrand = searchState.brandName;
     final selectedScent = searchState.scentFamily;
+    final selectedNote = searchState.selectedNote;
     final selectedOccasion = searchState.occasion;
     final selectedPrice = searchState.priceRange;
 
@@ -175,6 +203,25 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                                     );
                               },
                               isLoading: scentFamiliesAsync.isLoading,
+                            );
+                          },
+                        ),
+                        const SizedBox(width: 10),
+                        _DropdownChip(
+                          label: selectedNote ?? l10n.scentNotes,
+                          isSelected: selectedNote != null,
+                          onTap: () {
+                            final notes = scentNotesAsync.maybeWhen(
+                              data: (data) => data,
+                              orElse: () => <String>[],
+                            );
+                            _showFilterPicker(
+                              context,
+                              title: l10n.scentNotes,
+                              options: notes,
+                              selected: selectedNote,
+                              onSelect: (v) => ref.read(searchProvider.notifier).setNote(v),
+                              isLoading: scentNotesAsync.isLoading,
                             );
                           },
                         ),
@@ -284,7 +331,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 sliver: SliverGrid(
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    childAspectRatio: 0.52,
+                    childAspectRatio: 0.49,
                     crossAxisSpacing: 18,
                     mainAxisSpacing: 20,
                   ),

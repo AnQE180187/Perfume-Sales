@@ -76,6 +76,7 @@ class ApiEndpoints {
   static const String categories = '/catalog/categories';
   static const String brands = '/catalog/brands';
   static const String scentFamilies = '/catalog/scent-families';
+  static const String scentNotes = '/catalog/scent-notes';
 
   // ── Reviews ───────────────────────────────────────────────────────
   static const String createReview = '/reviews';
@@ -133,4 +134,8 @@ class ApiEndpoints {
   // ── Quiz ──────────────────────────────────────────────────────────
   static const String quizSubmit = '/quiz/submit';
   static String quizResult(String id) => '/quiz/$id';
+
+  // ── Journals ──────────────────────────────────────────────────────
+  static const String journals = '/journals';
+  static String journalById(String id) => '/journals/$id';
 }

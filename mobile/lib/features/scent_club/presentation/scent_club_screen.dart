@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:perfume_gpt_app/features/scent/models/scent_family.dart';
 import 'package:perfume_gpt_app/features/scent/data/scent_repository.dart';
 import 'package:perfume_gpt_app/features/scent/data/scent_api_service.dart';
+import 'package:perfume_gpt_app/core/widgets/empty_state_widget.dart';
 
 class ScentClubScreen extends ConsumerStatefulWidget {
   const ScentClubScreen({super.key});
@@ -29,7 +30,8 @@ class _ScentClubScreenState extends ConsumerState<ScentClubScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final scentFamiliesAsync = ref.watch(scentFamiliesProvider);
+    final familiesAsync = ref.watch(scentFamiliesProvider);
+    final notesAsync = ref.watch(scentNotesProvider);
     final repo = ref.watch(scentRepositoryProvider);
 
     return Scaffold(
@@ -53,13 +55,17 @@ class _ScentClubScreenState extends ConsumerState<ScentClubScreen> {
         ),
       ),
       body: SafeArea(
-        child: scentFamiliesAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.accentGold)),
-          error: (err, _) => Center(child: Text('Lỗi: $err')),
-          data: (families) {
+        child: Builder(
+          builder: (context) {
+            if (familiesAsync.isLoading || notesAsync.isLoading) {
+              return const Center(child: CircularProgressIndicator(color: AppTheme.accentGold));
+            }
+
+            final families = familiesAsync.value ?? [];
+            final notes = notesAsync.value ?? [];
+
             final groups = families.map((f) {
               final visuals = repo.getVisuals(f.name);
-              // Try to find a hardcoded match for chips/keywords, otherwise generic
               final match = _groups(isVi: true).firstWhere(
                 (g) => g.title.toLowerCase() == f.name.toLowerCase() || f.name.toLowerCase().contains(g.id),
                 orElse: () => _ScentGroup(
@@ -85,13 +91,42 @@ class _ScentClubScreenState extends ConsumerState<ScentClubScreen> {
             }).toList();
 
             final q = _query.trim().toLowerCase();
-            final filtered = q.isEmpty
-                ? groups
-                : groups.where((g) {
-                    return g.title.toLowerCase().contains(q) ||
-                        g.subtitle.toLowerCase().contains(q) ||
-                        g.keywords.any((k) => k.toLowerCase().contains(q));
-                  }).toList(growable: false);
+            final filteredFamilies = groups.where((g) {
+              return q.isEmpty ||
+                  g.title.toLowerCase().contains(q) ||
+                  g.subtitle.toLowerCase().contains(q) ||
+                  g.keywords.any((k) => k.toLowerCase().contains(q));
+            }).toList();
+
+            final filteredNotes = q.isEmpty
+                ? notes
+                : notes.where((n) => n.toLowerCase().contains(q)).toList();
+
+            if (filteredFamilies.isEmpty && filteredNotes.isEmpty) {
+              return Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 10),
+                    child: _SearchField(
+                      controller: _search,
+                      hintText: l10n.searchHint,
+                      onChanged: (v) => setState(() => _query = v),
+                      onClear: () {
+                        _search.clear();
+                        setState(() => _query = '');
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    child: EmptyStateWidget(
+                      icon: Icons.search_off_rounded,
+                      title: l10n.noProductsFound,
+                      subtitle: l10n.searchHint,
+                    ),
+                  ),
+                ],
+              );
+            }
 
             return CustomScrollView(
               slivers: [
@@ -109,68 +144,41 @@ class _ScentClubScreenState extends ConsumerState<ScentClubScreen> {
                     ),
                   ),
                 ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          l10n.scentFamily,
-                          style: GoogleFonts.playfairDisplay(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.deepCharcoal,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 3),
-                          child: Text(
-                            '(${filtered.length})',
-                            style: GoogleFonts.montserrat(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
-                              color: AppTheme.mutedSilver,
+                
+                // FRAGRANCE FAMILIES SECTION
+                if (filteredFamilies.isNotEmpty) ...[
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            l10n.scentFamily,
+                            style: GoogleFonts.playfairDisplay(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.deepCharcoal,
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                if (filtered.isEmpty)
-                  SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Center(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(24, 0, 24, 80),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.search_off_rounded,
-                              size: 64,
-                              color:
-                                  AppTheme.mutedSilver.withValues(alpha: 0.35),
-                            ),
-                            const SizedBox(height: 14),
-                            Text(
-                              l10n.noProductsFound,
-                              textAlign: TextAlign.center,
+                          const SizedBox(width: 10),
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 3),
+                            child: Text(
+                              '(${filteredFamilies.length})',
                               style: GoogleFonts.montserrat(
-                                fontSize: 13,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
                                 color: AppTheme.mutedSilver,
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
-                  )
-                else
+                  ),
                   SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                     sliver: SliverGrid(
                       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,
@@ -181,16 +189,113 @@ class _ScentClubScreenState extends ConsumerState<ScentClubScreen> {
                       ),
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
-                          final g = filtered[index];
+                          final g = filteredFamilies[index];
                           return _ScentGroupCard(group: g);
                         },
-                        childCount: filtered.length,
+                        childCount: filteredFamilies.length,
                       ),
                     ),
                   ),
+                ],
+
+                // SCENT NOTES SECTION
+                if (filteredNotes.isNotEmpty) ...[
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            l10n.scentNotes,
+                            style: GoogleFonts.playfairDisplay(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.deepCharcoal,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 3),
+                            child: Text(
+                              '(${filteredNotes.length})',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: AppTheme.mutedSilver,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 40),
+                    sliver: SliverToBoxAdapter(
+                      child: Wrap(
+                        spacing: 10,
+                        runSpacing: 12,
+                        children: filteredNotes.map((note) => _NoteChip(
+                          note: note, 
+                          isSelected: false,
+                          onTap: () => context.push('/search?note=$note'),
+                        )).toList(),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             );
           },
+        ),
+      ),
+    );
+  }
+}
+
+class _NoteChip extends StatelessWidget {
+  final String note;
+  final bool isSelected;
+  final VoidCallback onTap;
+  const _NoteChip({
+    required this.note,
+    this.isSelected = false,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? AppTheme.accentGold : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? AppTheme.accentGold : AppTheme.accentGold.withValues(alpha: 0.15),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: isSelected 
+                  ? AppTheme.accentGold.withValues(alpha: 0.2)
+                  : AppTheme.deepCharcoal.withValues(alpha: 0.03),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Text(
+          note,
+          style: GoogleFonts.montserrat(
+            fontSize: 13,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+            color: isSelected ? Colors.white : AppTheme.deepCharcoal.withValues(alpha: 0.8),
+          ),
         ),
       ),
     );

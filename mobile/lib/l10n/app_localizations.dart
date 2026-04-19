@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// No description provided for @appName.
   ///
   /// In en, this message translates to:
-  /// **'Lumina'**
+  /// **'Perfume GPT'**
   String get appName;
 
   /// No description provided for @atelierDeParfum.
@@ -767,7 +767,7 @@ abstract class AppLocalizations {
   /// No description provided for @luminaAtelier.
   ///
   /// In en, this message translates to:
-  /// **'LUMINA ATELIER'**
+  /// **'PERFUME GPT'**
   String get luminaAtelier;
 
   /// No description provided for @intensity.
@@ -1190,6 +1190,30 @@ abstract class AppLocalizations {
   /// **'Cancelled'**
   String get orderStatusCancelled;
 
+  /// No description provided for @wishlistTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Wishlist'**
+  String get wishlistTitle;
+
+  /// No description provided for @wishlistEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR WISHLIST IS EMPTY'**
+  String get wishlistEmptyTitle;
+
+  /// No description provided for @wishlistEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your favorites list is waiting for the scents you truly love.'**
+  String get wishlistEmptySubtitle;
+
+  /// No description provided for @exploreFragrances.
+  ///
+  /// In en, this message translates to:
+  /// **'EXPLORE FRAGRANCES'**
+  String get exploreFragrances;
+
   /// No description provided for @orderStatusRefunded.
   ///
   /// In en, this message translates to:
@@ -1304,6 +1328,156 @@ abstract class AppLocalizations {
   /// **'Payment Cancelled'**
   String get paymentCancelled;
 
+  /// No description provided for @paymentMethodPayos.
+  ///
+  /// In en, this message translates to:
+  /// **'PayOS Gateway'**
+  String get paymentMethodPayos;
+
+  /// No description provided for @paymentMethodPayosDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan QR code or instant bank transfer'**
+  String get paymentMethodPayosDesc;
+
+  /// No description provided for @paymentMethodCod.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash On Delivery (COD)'**
+  String get paymentMethodCod;
+
+  /// No description provided for @paymentMethodCodDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay when you receive the product'**
+  String get paymentMethodCodDesc;
+
+  /// No description provided for @paymentMethodVnpay.
+  ///
+  /// In en, this message translates to:
+  /// **'VNPay Wallet'**
+  String get paymentMethodVnpay;
+
+  /// No description provided for @paymentMethodMomo.
+  ///
+  /// In en, this message translates to:
+  /// **'MoMo Wallet'**
+  String get paymentMethodMomo;
+
+  /// No description provided for @paymentStatusPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Pending'**
+  String get paymentStatusPending;
+
+  /// No description provided for @paymentStatusProcessing.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing'**
+  String get paymentStatusProcessing;
+
+  /// No description provided for @paymentStatusSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Success'**
+  String get paymentStatusSuccess;
+
+  /// No description provided for @paymentStatusFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Failed'**
+  String get paymentStatusFailed;
+
+  /// No description provided for @paymentStatusCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get paymentStatusCancelled;
+
+  /// No description provided for @paymentStatusRefunded.
+  ///
+  /// In en, this message translates to:
+  /// **'Refunded'**
+  String get paymentStatusRefunded;
+
+  /// No description provided for @notSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Not selected'**
+  String get notSelected;
+
+  /// No description provided for @exclusiveOffer.
+  ///
+  /// In en, this message translates to:
+  /// **'EXCLUSIVE OFFER'**
+  String get exclusiveOffer;
+
+  /// No description provided for @taxVat.
+  ///
+  /// In en, this message translates to:
+  /// **'Tax (VAT)'**
+  String get taxVat;
+
+  /// No description provided for @incTaxLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Inclusive of all taxes'**
+  String get incTaxLabel;
+
+  /// No description provided for @totalAmountUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'TOTAL AMOUNT'**
+  String get totalAmountUpper;
+
+  /// No description provided for @productValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Product Value'**
+  String get productValue;
+
+  /// No description provided for @addShippingAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Shipping Address'**
+  String get addShippingAddress;
+
+  /// No description provided for @defaultLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get defaultLabel;
+
+  /// No description provided for @selectShippingAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Shipping Address'**
+  String get selectShippingAddress;
+
+  /// No description provided for @syncAccountDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'This list is synced directly from your account.'**
+  String get syncAccountDesc;
+
+  /// No description provided for @noAddressFound.
+  ///
+  /// In en, this message translates to:
+  /// **'You don\'t have any addresses. Please add one before ordering.'**
+  String get noAddressFound;
+
+  /// No description provided for @manageAddresses.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Addresses'**
+  String get manageAddresses;
+
+  /// No description provided for @openAddressManager.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Address Manager'**
+  String get openAddressManager;
+
   /// No description provided for @searchFragrance.
   ///
   /// In en, this message translates to:
@@ -1325,7 +1499,7 @@ abstract class AppLocalizations {
   /// No description provided for @viewCollection.
   ///
   /// In en, this message translates to:
-  /// **'Xem tất cả'**
+  /// **'View all'**
   String get viewCollection;
 
   /// No description provided for @eauDeParfum.
@@ -1478,6 +1652,12 @@ abstract class AppLocalizations {
   /// **'All'**
   String get filterAll;
 
+  /// No description provided for @all.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get all;
+
   /// No description provided for @filterUnread.
   ///
   /// In en, this message translates to:
@@ -1615,48 +1795,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Payment Completed'**
   String get paymentStatusPaid;
-
-  /// No description provided for @paymentStatusPending.
-  ///
-  /// In en, this message translates to:
-  /// **'Payment Pending'**
-  String get paymentStatusPending;
-
-  /// No description provided for @paymentStatusFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Payment Failed'**
-  String get paymentStatusFailed;
-
-  /// No description provided for @paymentStatusRefunded.
-  ///
-  /// In en, this message translates to:
-  /// **'Refunded'**
-  String get paymentStatusRefunded;
-
-  /// No description provided for @paymentMethodPayos.
-  ///
-  /// In en, this message translates to:
-  /// **'PayOS Gateway'**
-  String get paymentMethodPayos;
-
-  /// No description provided for @paymentMethodCod.
-  ///
-  /// In en, this message translates to:
-  /// **'Cash On Delivery (COD)'**
-  String get paymentMethodCod;
-
-  /// No description provided for @paymentMethodVnpay.
-  ///
-  /// In en, this message translates to:
-  /// **'VNPay Wallet'**
-  String get paymentMethodVnpay;
-
-  /// No description provided for @paymentMethodMomo.
-  ///
-  /// In en, this message translates to:
-  /// **'MoMo Wallet'**
-  String get paymentMethodMomo;
 
   /// No description provided for @returnRequestTitle.
   ///
@@ -2552,11 +2690,23 @@ abstract class AppLocalizations {
   /// **'Read more'**
   String get readMore;
 
+  /// No description provided for @readMoreUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'READ MORE'**
+  String get readMoreUpper;
+
   /// No description provided for @readLess.
   ///
   /// In en, this message translates to:
   /// **'Read less'**
   String get readLess;
+
+  /// No description provided for @readTime.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} MIN READ'**
+  String readTime(int count);
 
   /// No description provided for @aiScentAnalysisDesc1.
   ///
@@ -3884,12 +4034,6 @@ abstract class AppLocalizations {
   /// **'Current priority: {method}.'**
   String currentPriority(Object method);
 
-  /// No description provided for @defaultLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Default'**
-  String get defaultLabel;
-
   /// No description provided for @activateMethod.
   ///
   /// In en, this message translates to:
@@ -4615,6 +4759,198 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'DISCOVER MY SCENT'**
   String get ctaStoryBtn;
+
+  /// No description provided for @manageDeliveryPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Delivery Points'**
+  String get manageDeliveryPoints;
+
+  /// No description provided for @shippingAddressDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a default address for future orders, or save separate gift/office addresses for faster checkouts.'**
+  String get shippingAddressDesc;
+
+  /// No description provided for @savedAddressesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} saved addresses'**
+  String savedAddressesCount(int count);
+
+  /// No description provided for @currentDefaultIs.
+  ///
+  /// In en, this message translates to:
+  /// **'Current default is {label}.'**
+  String currentDefaultIs(Object label);
+
+  /// No description provided for @priorityRecipient.
+  ///
+  /// In en, this message translates to:
+  /// **'Priority recipient: {name}.'**
+  String priorityRecipient(Object name);
+
+  /// No description provided for @canChangeBeforeCheckout.
+  ///
+  /// In en, this message translates to:
+  /// **'You can quickly change delivery destination before final checkout.'**
+  String get canChangeBeforeCheckout;
+
+  /// No description provided for @savedAddressesUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'SAVED ADDRESSES'**
+  String get savedAddressesUpper;
+
+  /// No description provided for @readyForDeliveryScenario.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready for any delivery scenario'**
+  String get readyForDeliveryScenario;
+
+  /// No description provided for @deliveryTipsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery Tips'**
+  String get deliveryTipsTitle;
+
+  /// No description provided for @deliveryTipNoAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your first address so checkout can automatically fill your recipient info.'**
+  String get deliveryTipNoAddress;
+
+  /// No description provided for @deliveryTipWithAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Current default is {label}. If this is an office, always include floor and company name for smoother delivery.'**
+  String deliveryTipWithAddress(Object label);
+
+  /// No description provided for @addressFormTitleAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Shipping Address'**
+  String get addressFormTitleAdd;
+
+  /// No description provided for @addressFormTitleEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Shipping Address'**
+  String get addressFormTitleEdit;
+
+  /// No description provided for @addressFormSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Save delivery info for faster and more accurate checkout.'**
+  String get addressFormSubtitle;
+
+  /// No description provided for @setAsDefaultAddressDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'This address will be prioritized and pre-filled during checkout.'**
+  String get setAsDefaultAddressDesc;
+
+  /// No description provided for @errorRequiredFields.
+  ///
+  /// In en, this message translates to:
+  /// **'Please fill all required fields'**
+  String get errorRequiredFields;
+
+  /// No description provided for @defaultAddressUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Default address updated'**
+  String get defaultAddressUpdated;
+
+  /// No description provided for @addressAddedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'New shipping address added'**
+  String get addressAddedSuccess;
+
+  /// No description provided for @addressUpdatedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Shipping address updated'**
+  String get addressUpdatedSuccess;
+
+  /// No description provided for @addressDeletedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Address {label} deleted'**
+  String addressDeletedSuccess(Object label);
+
+  /// No description provided for @notSetLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Not set'**
+  String get notSetLabel;
+
+  /// No description provided for @noDefaultAddressYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No default address yet'**
+  String get noDefaultAddressYet;
+
+  /// No description provided for @payosNoteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'PayOS Note'**
+  String get payosNoteTitle;
+
+  /// No description provided for @paymentMethodsComboTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'PayOS & COD'**
+  String get paymentMethodsComboTitle;
+
+  /// No description provided for @scentNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Scent Notes'**
+  String get scentNotes;
+
+  /// No description provided for @noNotesFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No scent notes found'**
+  String get noNotesFound;
+
+  /// No description provided for @technicalSpecs.
+  ///
+  /// In en, this message translates to:
+  /// **'TECHNICAL SPECIFICATIONS'**
+  String get technicalSpecs;
+
+  /// No description provided for @longevityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Longevity'**
+  String get longevityLabel;
+
+  /// No description provided for @concentrationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Concentration'**
+  String get concentrationLabel;
+
+  /// No description provided for @updating.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating...'**
+  String get updating;
+
+  /// No description provided for @seeMore.
+  ///
+  /// In en, this message translates to:
+  /// **'See more'**
+  String get seeMore;
+
+  /// No description provided for @seeLess.
+  ///
+  /// In en, this message translates to:
+  /// **'See less'**
+  String get seeLess;
 }
 
 class _AppLocalizationsDelegate

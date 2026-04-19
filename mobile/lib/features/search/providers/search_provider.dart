@@ -9,6 +9,7 @@ class SearchState {
   final int? brandId;
   final String? brandName;
   final String? scentFamily;
+  final String? selectedNote;
   final String? occasion;
   final String? priceRange;
   final List<Product> results;
@@ -22,6 +23,7 @@ class SearchState {
     this.brandId,
     this.brandName,
     this.scentFamily,
+    this.selectedNote,
     this.occasion,
     this.priceRange,
     this.results = const [],
@@ -36,6 +38,8 @@ class SearchState {
     int? scentFamilyId,
     bool clearScentFamily = false,
     String? scentFamily,
+    String? selectedNote,
+    bool clearNote = false,
     int? brandId,
     String? brandName,
     bool clearBrand = false,
@@ -54,6 +58,7 @@ class SearchState {
       scentFamilyId:
           clearScentFamily ? null : (scentFamilyId ?? this.scentFamilyId),
       scentFamily: clearScentFamily ? null : (scentFamily ?? this.scentFamily),
+      selectedNote: clearNote ? null : (selectedNote ?? this.selectedNote),
       brandId: clearBrand ? null : (brandId ?? this.brandId),
       brandName: clearBrand ? null : (brandName ?? this.brandName),
       occasion: clearOccasion ? null : (occasion ?? this.occasion),
@@ -94,7 +99,7 @@ class SearchNotifier extends StateNotifier<SearchState> {
         categoryId: state.categoryId,
         scentFamilyId: state.scentFamilyId,
         brandId: state.brandId,
-        notes: state.scentFamily,
+        notes: state.selectedNote,
         occasion: state.occasion,
         minPrice: minPrice,
         maxPrice: maxPrice,
@@ -119,6 +124,15 @@ class SearchNotifier extends StateNotifier<SearchState> {
       state = state.copyWith(clearScentFamily: true);
     } else {
       state = state.copyWith(scentFamily: scent, scentFamilyId: id);
+    }
+    _fetch();
+  }
+
+  void setNote(String? note) {
+    if (note == state.selectedNote) {
+      state = state.copyWith(clearNote: true);
+    } else {
+      state = state.copyWith(selectedNote: note);
     }
     _fetch();
   }

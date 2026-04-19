@@ -61,7 +61,7 @@ class TabletPosCart extends ConsumerWidget {
               children: [
                 Text("MÔ TẢ", style: GoogleFonts.montserrat(fontSize: 9, color: Colors.white60, fontWeight: FontWeight.w700, letterSpacing: 1)),
                 const Spacer(),
-                Text("TÀM TÍNH", style: GoogleFonts.montserrat(fontSize: 9, color: Colors.white60, fontWeight: FontWeight.w700, letterSpacing: 1)),
+                Text("TẠM TÍNH", style: GoogleFonts.montserrat(fontSize: 9, color: Colors.white60, fontWeight: FontWeight.w700, letterSpacing: 1)),
               ],
             ),
           ),
@@ -204,7 +204,7 @@ class TabletPosCart extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(item.productName.toUpperCase(), style: GoogleFonts.playfairDisplay(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
-                        Text("${item.variantName}ml @ ${fmt.format(item.price)}đ", style: GoogleFonts.robotoMono(fontSize: 12, color: Colors.white60)),
+                        Text("${item.variantName} @ ${fmt.format(item.price)}đ", style: GoogleFonts.robotoMono(fontSize: 12, color: Colors.white60)),
                       ],
                     ),
                   ),

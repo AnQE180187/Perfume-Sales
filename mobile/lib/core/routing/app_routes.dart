@@ -56,6 +56,9 @@ class AppRoutes {
   // ============================================
   static const String search = '/search';
   static const String scentClub = '/scent-club';
+  static const String brands = '/brands';
+  static const String journal = '/journal';
+  static const String journalDetail = '/journal/:id';
 
   // ============================================
   // PAYMENT ROUTES
@@ -78,6 +81,8 @@ class AppRoutes {
   static const String termsOfService = '/terms-of-service';
   static const String helpCenter = '/help-center';
   static const String contactUs = '/contact-us';
+  static const String liveChat = '/live-chat/:id';
+  static const String helpArticle = '/help-article/:id';
 
   // ============================================
   // STAFF ROUTES
@@ -116,6 +121,12 @@ class AppRoutes {
     return '/returns/$returnId';
   }
 
+  /// Build live chat route with ID
+  static String liveChatWithId(String conversationId, {String? title}) {
+    final query = title != null ? '?title=${Uri.encodeComponent(title)}' : '';
+    return '/live-chat/$conversationId$query';
+  }
+
   /// Build product story route with ID
   static String productStoryWithId(
     String productId, {
@@ -139,5 +150,15 @@ class AppRoutes {
         ? ''
         : '?name=${Uri.encodeComponent(productName)}';
     return '/product/$productId/reviews$encodedName';
+  }
+
+  /// Build help article detail route with ID
+  static String helpArticleWithId(String articleId) {
+    return '/help-article/$articleId';
+  }
+
+  /// Build journal detail route with ID
+  static String journalDetailWithId(String journalId) {
+    return '/journal/$journalId';
   }
 }

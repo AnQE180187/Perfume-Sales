@@ -10,6 +10,8 @@ import 'widgets/cart_summary_section.dart';
 import 'widgets/clear_cart_modal.dart';
 import 'widgets/price_summary.dart';
 import 'widgets/promo_code_section.dart';
+import '../../../core/widgets/empty_state_widget.dart';
+import '../../../core/widgets/luxury_button.dart';
 
 class CartScreen extends ConsumerStatefulWidget {
   const CartScreen({super.key});
@@ -234,61 +236,13 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   }
 
   Widget _buildEmptyCart(AppLocalizations l10n) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.shopping_bag_outlined,
-              size: 72,
-              color: AppTheme.mutedSilver.withValues(alpha: 0.4),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              l10n.yourCartEmpty,
-              style: GoogleFonts.playfairDisplay(
-                fontSize: 22,
-                fontWeight: FontWeight.w600,
-                color: AppTheme.deepCharcoal,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              l10n.discoverCollection,
-              style: GoogleFonts.montserrat(
-                fontSize: 13,
-                color: AppTheme.mutedSilver,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.accentGold,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                ),
-                child: Text(
-                  l10n.exploreCollection,
-                  style: GoogleFonts.montserrat(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+    return EmptyStateWidget(
+      icon: Icons.shopping_bag_outlined,
+      title: l10n.yourCartEmpty,
+      subtitle: l10n.discoverCollection,
+      action: LuxuryButton(
+        text: l10n.exploreCollection,
+        onPressed: () => Navigator.pop(context),
       ),
     );
   }

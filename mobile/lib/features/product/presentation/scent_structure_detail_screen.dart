@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
@@ -277,7 +278,7 @@ class _ScentLayerTimelineItem extends StatelessWidget {
                   Wrap(
                     spacing: 8,
                     runSpacing: 10,
-                    children: notes.map((note) => _buildTag(note)).toList(),
+                    children: notes.map((note) => _buildTag(context, note)).toList(),
                   ),
               ],
             ),
@@ -287,24 +288,28 @@ class _ScentLayerTimelineItem extends StatelessWidget {
     );
   }
 
-  Widget _buildTag(String note) {
+  Widget _buildTag(BuildContext context, String note) {
     final bgColor = _getTagColor(note);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.black.withValues(alpha: 0.03),
-          width: 1,
+    return InkWell(
+      onTap: () => context.push('/search?note=$note'),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: Colors.black.withValues(alpha: 0.03),
+            width: 1,
+          ),
         ),
-      ),
-      child: Text(
-        note,
-        style: GoogleFonts.montserrat(
-          fontSize: 11,
-          fontWeight: FontWeight.w500,
-          color: AppTheme.deepCharcoal.withValues(alpha: 0.9),
+        child: Text(
+          note,
+          style: GoogleFonts.montserrat(
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+            color: AppTheme.deepCharcoal.withValues(alpha: 0.9),
+          ),
         ),
       ),
     );

@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/luxury_button.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class ShippingAddressesScreen extends StatefulWidget {
   const ShippingAddressesScreen({super.key});
@@ -68,7 +69,7 @@ class _ShippingAddressesScreenState extends State<ShippingAddressesScreen> {
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Đã cập nhật địa chỉ mặc định')),
+      SnackBar(content: Text(AppLocalizations.of(context)!.defaultAddressUpdated)),
     );
   }
 
@@ -86,7 +87,7 @@ class _ShippingAddressesScreenState extends State<ShippingAddressesScreen> {
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Đã xóa địa chỉ ${address.label.toLowerCase()}')),
+      SnackBar(content: Text(AppLocalizations.of(context)!.addressDeletedSuccess(address.label.toLowerCase()))),
     );
   }
 
@@ -95,7 +96,10 @@ class _ShippingAddressesScreenState extends State<ShippingAddressesScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _AddressFormSheet(address: initialAddress),
+      builder: (context) => _AddressFormSheet(
+        address: initialAddress,
+        l10n: AppLocalizations.of(context)!,
+      ),
     );
 
     if (result == null || !mounted) return;
@@ -118,12 +122,13 @@ class _ShippingAddressesScreenState extends State<ShippingAddressesScreen> {
       }
     });
 
+    final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
           initialAddress == null
-              ? 'Đã thêm địa chỉ giao hàng mới'
-              : 'Đã cập nhật địa chỉ giao hàng',
+              ? l10n.addressAddedSuccess
+              : l10n.addressUpdatedSuccess,
         ),
       ),
     );
@@ -131,12 +136,12 @@ class _ShippingAddressesScreenState extends State<ShippingAddressesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final defaultAddress = _defaultAddress;
 
     return Scaffold(
       backgroundColor: AppTheme.ivoryBackground,
       body: SafeArea(
-        bottom: false,
         child: CustomScrollView(
           slivers: [
             SliverToBoxAdapter(
@@ -158,7 +163,7 @@ class _ShippingAddressesScreenState extends State<ShippingAddressesScreen> {
                           child: Column(
                             children: [
                               Text(
-                                'ĐỊA CHỈ GIAO HÀNG',
+                                l10n.shippingAddressUpper,
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.montserrat(
                                   fontSize: 11,
@@ -169,7 +174,7 @@ class _ShippingAddressesScreenState extends State<ShippingAddressesScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Quản lý điểm nhận hàng',
+                                l10n.manageDeliveryPoints,
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.playfairDisplay(
                                   fontSize: 28,
@@ -185,7 +190,7 @@ class _ShippingAddressesScreenState extends State<ShippingAddressesScreen> {
                     ),
                     const SizedBox(height: 14),
                     Text(
-                      'Chọn địa chỉ mặc định cho các đơn hàng tiếp theo, đồng thời lưu riêng địa chỉ quà tặng hoặc văn phòng để thanh toán nhanh hơn.',
+                      l10n.shippingAddressDesc,
                       style: GoogleFonts.montserrat(
                         fontSize: 13,
                         height: 1.6,
@@ -196,15 +201,16 @@ class _ShippingAddressesScreenState extends State<ShippingAddressesScreen> {
                     const SizedBox(height: 18),
                     _AddressHeroCard(
                       totalCount: _addresses.length,
-                      defaultLabel: defaultAddress?.label ?? 'Chưa thiết lập',
+                      defaultLabel: defaultAddress?.label ?? l10n.notSetLabel,
                       recipientName:
                           defaultAddress?.recipientName ??
-                          'Chưa có địa chỉ mặc định',
+                          l10n.noDefaultAddressYet,
+                      l10n: l10n,
                     ),
                     const SizedBox(height: 18),
-                    const _SectionTitle(
-                      eyebrow: 'ĐỊA CHỈ ĐÃ LƯU',
-                      title: 'Sẵn sàng cho mọi kịch bản giao hàng',
+                    _SectionTitle(
+                      eyebrow: l10n.savedAddressesUpper,
+                      title: l10n.readyForDeliveryScenario,
                     ),
                     const SizedBox(height: 14),
                   ],
@@ -233,6 +239,7 @@ class _ShippingAddressesScreenState extends State<ShippingAddressesScreen> {
                           : () => _setDefaultAddress(address.id),
                       onEdit: () => _showAddressForm(initialAddress: address),
                       onDelete: () => _deleteAddress(address.id),
+                      l10n: l10n,
                     ),
                   );
                 },
@@ -246,9 +253,9 @@ class _ShippingAddressesScreenState extends State<ShippingAddressesScreen> {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 10, 20, 18),
           child: LuxuryButton(
-            text: 'Thêm địa chỉ mới',
+            text: l10n.addNewAddress,
             leadingIcon: Icons.add_location_alt_outlined,
-            onPressed: _showAddressForm,
+            onPressed: () => _showAddressForm(),
           ),
         ),
       ),
@@ -260,11 +267,13 @@ class _AddressHeroCard extends StatelessWidget {
   final int totalCount;
   final String defaultLabel;
   final String recipientName;
+  final AppLocalizations l10n;
 
   const _AddressHeroCard({
     required this.totalCount,
     required this.defaultLabel,
     required this.recipientName,
+    required this.l10n,
   });
 
   @override
@@ -301,7 +310,7 @@ class _AddressHeroCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  '$totalCount địa chỉ đã lưu',
+                  l10n.savedAddressesCount(totalCount),
                   style: GoogleFonts.montserrat(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
@@ -318,7 +327,7 @@ class _AddressHeroCard extends StatelessWidget {
           ),
           const SizedBox(height: 18),
           Text(
-            'Địa chỉ mặc định hiện tại là $defaultLabel.',
+            l10n.currentDefaultIs(defaultLabel),
             style: GoogleFonts.playfairDisplay(
               fontSize: 28,
               height: 1.05,
@@ -328,7 +337,7 @@ class _AddressHeroCard extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            'Người nhận ưu tiên: $recipientName. Bạn có thể đổi nhanh địa chỉ nhận ngay trước khi thanh toán.',
+            '${l10n.priorityRecipient(recipientName)} ${l10n.canChangeBeforeCheckout}',
             style: GoogleFonts.montserrat(
               fontSize: 12,
               height: 1.6,
@@ -381,12 +390,14 @@ class _ShippingAddressCard extends StatelessWidget {
   final VoidCallback? onMakeDefault;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final AppLocalizations l10n;
 
   const _ShippingAddressCard({
     required this.address,
     required this.onMakeDefault,
     required this.onEdit,
     required this.onDelete,
+    required this.l10n,
   });
 
   @override
@@ -447,7 +458,7 @@ class _ShippingAddressCard extends StatelessWidget {
                         ),
                         if (address.isDefault)
                           _StatusChip(
-                            label: 'Mặc định',
+                            label: l10n.defaultLabel,
                             color: address.accentColor,
                           ),
                       ],
@@ -516,7 +527,7 @@ class _ShippingAddressCard extends StatelessWidget {
                 OutlinedButton.icon(
                   onPressed: onMakeDefault,
                   icon: const Icon(Icons.check_circle_outline, size: 16),
-                  label: const Text('Đặt mặc định'),
+                  label: Text(l10n.setDefault),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: address.accentColor,
                     side: BorderSide(color: address.accentColor),
@@ -528,7 +539,7 @@ class _ShippingAddressCard extends StatelessWidget {
               TextButton.icon(
                 onPressed: onEdit,
                 icon: const Icon(Icons.edit_outlined, size: 16),
-                label: const Text('Chỉnh sửa'),
+                label: Text(l10n.edit),
                 style: TextButton.styleFrom(
                   foregroundColor: AppTheme.deepCharcoal,
                 ),
@@ -536,7 +547,7 @@ class _ShippingAddressCard extends StatelessWidget {
               TextButton.icon(
                 onPressed: onDelete,
                 icon: const Icon(Icons.delete_outline, size: 16),
-                label: const Text('Xóa'),
+                label: Text(l10n.delete),
                 style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
               ),
             ],
@@ -590,7 +601,7 @@ class _DeliveryTipsCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Gợi ý giao hàng mượt hơn',
+            l10n.deliveryTipsTitle,
             style: GoogleFonts.playfairDisplay(
               fontSize: 20,
               fontWeight: FontWeight.w600,
@@ -600,8 +611,8 @@ class _DeliveryTipsCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             defaultAddress == null
-                ? 'Hãy tạo địa chỉ đầu tiên để checkout có thể tự động điền thông tin nhận hàng.'
-                : 'Địa chỉ mặc định hiện tại là ${defaultAddress!.label.toLowerCase()}. Nếu đây là địa chỉ công ty, hãy luôn điền người nhận và ghi chú quầy lễ tân để shipper giao thuận lợi hơn.',
+                ? l10n.deliveryTipNoAddress
+                : l10n.deliveryTipWithAddress(defaultAddress!.label.toLowerCase()),
             style: GoogleFonts.montserrat(
               fontSize: 12,
               height: 1.6,
@@ -617,8 +628,9 @@ class _DeliveryTipsCard extends StatelessWidget {
 
 class _AddressFormSheet extends StatefulWidget {
   final _ShippingAddressItem? address;
+  final AppLocalizations l10n;
 
-  const _AddressFormSheet({this.address});
+  const _AddressFormSheet({this.address, required this.l10n});
 
   @override
   State<_AddressFormSheet> createState() => _AddressFormSheetState();
@@ -665,7 +677,7 @@ class _AddressFormSheetState extends State<_AddressFormSheet> {
 
     if (label.isEmpty || name.isEmpty || phone.isEmpty || addressLine.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng điền đủ thông tin bắt buộc')),
+        SnackBar(content: Text(widget.l10n.errorRequiredFields)),
       );
       return;
     }
@@ -679,7 +691,7 @@ class _AddressFormSheetState extends State<_AddressFormSheet> {
         recipientName: name,
         phoneNumber: phone,
         addressLine: addressLine,
-        note: note.isEmpty ? 'Không có ghi chú giao hàng.' : note,
+        note: note.isEmpty ? '' : note,
         isDefault: _isDefault,
         accentColor: widget.address?.accentColor ?? const Color(0xFFD4AF37),
       ),
@@ -717,8 +729,8 @@ class _AddressFormSheetState extends State<_AddressFormSheet> {
                 const SizedBox(height: 18),
                 Text(
                   widget.address == null
-                      ? 'Thêm địa chỉ giao hàng'
-                      : 'Chỉnh sửa địa chỉ',
+                      ? widget.l10n.addressFormTitleAdd
+                      : widget.l10n.addressFormTitleEdit,
                   style: GoogleFonts.playfairDisplay(
                     fontSize: 26,
                     fontWeight: FontWeight.w600,
@@ -727,7 +739,7 @@ class _AddressFormSheetState extends State<_AddressFormSheet> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Lưu thông tin nhận hàng để checkout nhanh và chính xác hơn.',
+                  widget.l10n.addressFormSubtitle,
                   style: GoogleFonts.montserrat(
                     fontSize: 12,
                     height: 1.5,
@@ -738,41 +750,41 @@ class _AddressFormSheetState extends State<_AddressFormSheet> {
                 const SizedBox(height: 18),
                 _AddressField(
                   controller: _labelController,
-                  label: 'Nhãn địa chỉ',
-                  hint: 'Ví dụ: Nhà riêng, Văn phòng',
+                  label: widget.l10n.addressLabel,
+                  hint: 'Ví dụ: ${widget.l10n.homeLabel}, ${widget.l10n.officeLabel}',
                 ),
                 const SizedBox(height: 12),
                 _AddressField(
                   controller: _nameController,
-                  label: 'Người nhận',
-                  hint: 'Tên người nhận hàng',
+                  label: widget.l10n.recipientName,
+                  hint: widget.l10n.recipientNameHint,
                 ),
                 const SizedBox(height: 12),
                 _AddressField(
                   controller: _phoneController,
-                  label: 'Số điện thoại',
+                  label: widget.l10n.phone,
                   hint: '09xx xxx xxx',
                   keyboardType: TextInputType.phone,
                 ),
                 const SizedBox(height: 12),
                 _AddressField(
                   controller: _addressController,
-                  label: 'Địa chỉ đầy đủ',
-                  hint: 'Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành',
+                  label: widget.l10n.specificAddress,
+                  hint: widget.l10n.specificAddressHint,
                   maxLines: 3,
                 ),
                 const SizedBox(height: 12),
                 _AddressField(
                   controller: _noteController,
-                  label: 'Ghi chú giao hàng',
-                  hint: 'Ví dụ: Gọi trước khi giao, nhận ở lễ tân...',
+                  label: widget.l10n.deliveryNote,
+                  hint: widget.l10n.noteHint,
                   maxLines: 2,
                 ),
                 const SizedBox(height: 12),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   title: Text(
-                    'Đặt làm địa chỉ mặc định',
+                    widget.l10n.setDefaultAddress,
                     style: GoogleFonts.montserrat(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
@@ -780,7 +792,7 @@ class _AddressFormSheetState extends State<_AddressFormSheet> {
                     ),
                   ),
                   subtitle: Text(
-                    'Địa chỉ này sẽ được ưu tiên điền sẵn ở bước thanh toán.',
+                    widget.l10n.setAsDefaultAddressDesc,
                     style: GoogleFonts.montserrat(
                       fontSize: 11,
                       height: 1.5,

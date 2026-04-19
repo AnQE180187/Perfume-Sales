@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../../l10n/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../payment/models/payment_method.dart';
 
@@ -47,7 +48,9 @@ class CheckoutPaymentSection extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  m?.label ?? 'Chưa chọn',
+                  m != null
+                      ? m.type.getLocalizedTitle(AppLocalizations.of(context)!)
+                      : AppLocalizations.of(context)!.notSelected,
                   style: GoogleFonts.montserrat(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,

@@ -660,6 +660,7 @@ enum SenderType {
 
 enum MessageType {
   TEXT
+  IMAGE
   PRODUCT_CARD
   SYSTEM
   AI_RECOMMENDATION

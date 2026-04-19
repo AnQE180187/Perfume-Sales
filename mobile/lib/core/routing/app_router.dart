@@ -24,7 +24,6 @@ import '../../features/profile/presentation/screens/profile_edit_screen.dart';
 import '../../features/profile/presentation/screens/ai_preferences_screen.dart';
 import '../../features/profile/presentation/screens/settings_screen.dart';
 import '../../features/search/presentation/search_screen.dart';
-import '../../features/stores/presentation/boutiques_screen.dart';
 import '../../features/wishlist/presentation/wishlist_screen.dart';
 import '../../features/product/presentation/explore_screen.dart';
 import '../../features/product/presentation/product_detail_screen.dart';
@@ -38,7 +37,12 @@ import '../../features/staff/staff_shell.dart';
 import '../../features/legal/presentation/screens/privacy_policy_screen.dart';
 import '../../features/legal/presentation/screens/terms_of_service_screen.dart';
 import '../../features/support/presentation/screens/help_center_screen.dart';
+import '../../features/support/presentation/screens/help_article_detail_screen.dart';
 import '../../features/support/presentation/screens/contact_us_screen.dart';
+import '../../features/chat/presentation/screens/live_chat_screen.dart';
+import '../../features/product/presentation/screens/brands_screen.dart';
+import '../../features/journals/presentation/screens/journal_list_screen.dart';
+import '../../features/journals/presentation/screens/journal_detail_screen.dart';
 import '../widgets/main_shell.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -206,12 +210,21 @@ final routerProvider = Provider<GoRouter>((ref) {
           final scent = state.uri.queryParameters['scent'];
           final scentIdStr = state.uri.queryParameters['scentId'];
           final scentId = scentIdStr != null ? int.tryParse(scentIdStr) : null;
-          return SearchScreen(initialScent: scent, initialScentId: scentId);
+
+          final brand = state.uri.queryParameters['brand'];
+          final brandIdStr = state.uri.queryParameters['brandId'];
+          final brandId = brandIdStr != null ? int.tryParse(brandIdStr) : null;
+
+          final note = state.uri.queryParameters['note'];
+
+          return SearchScreen(
+            initialScent: scent,
+            initialScentId: scentId,
+            initialBrand: brand,
+            initialBrandId: brandId,
+            initialNote: note,
+          );
         },
-      ),
-      GoRoute(
-        path: '/boutiques',
-        builder: (context, state) => const BoutiquesScreen(),
       ),
       GoRoute(
         path: '/wishlist',
@@ -220,6 +233,21 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/scent-club',
         builder: (context, state) => const ScentClubScreen(),
+      ),
+      GoRoute(
+        path: '/brands',
+        builder: (context, state) => const BrandsScreen(),
+      ),
+      GoRoute(
+        path: '/journal',
+        builder: (context, state) => const JournalListScreen(),
+      ),
+      GoRoute(
+        path: '/journal/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return JournalDetailScreen(journalId: id);
+        },
       ),
       GoRoute(
         path: '/explore',
@@ -294,6 +322,21 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/contact-us',
         builder: (context, state) => const ContactUsScreen(),
+      ),
+      GoRoute(
+        path: '/help-article/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return HelpArticleDetailScreen(articleId: id);
+        },
+      ),
+      GoRoute(
+        path: '/live-chat/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          final title = state.uri.queryParameters['title'] ?? 'CONCIERGE CHAT';
+          return LiveChatScreen(conversationId: id, title: title);
+        },
       ),
 
       // ── Staff Routes ────────────────────────────────────────────────

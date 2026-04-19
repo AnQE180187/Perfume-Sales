@@ -40,7 +40,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
           children: [
             _buildSection(
               '1. Thu thập thông tin',
-              'Lumina Atelier thu thập thông tin cá nhân của bạn khi bạn đăng ký tài khoản, thực hiện giao dịch hoặc tham gia trắc nghiệm mùi hương AI. Thông tin này bao gồm tên, email, số điện thoại, địa chỉ và sở thích cá nhân.',
+              'Perfume GPT thu thập thông tin cá nhân của bạn khi bạn đăng ký tài khoản, thực hiện giao dịch hoặc tham gia trắc nghiệm mùi hương AI. Thông tin này bao gồm tên, email, số điện thoại, địa chỉ và sở thích cá nhân.',
             ),
             _buildSection(
               '2. Sử dụng thông tin',

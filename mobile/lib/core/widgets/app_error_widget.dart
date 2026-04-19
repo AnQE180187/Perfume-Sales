@@ -4,7 +4,7 @@ import '../theme/app_theme.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_style.dart';
 
-/// Standardized error state widget for the Lumina design system.
+/// Standardized error state widget for the Perfume GPT design system.
 ///
 /// Displays a user-friendly error message with an optional retry action.
 /// Replaces inline error handling across screens to ensure consistent UX.

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'app_theme.dart';
 
-/// Standardized elevation & shadow tokens for the Lumina design system.
+/// Standardized elevation & shadow tokens for the Perfume GPT design system.
 ///
 /// Usage:
 /// ```dart

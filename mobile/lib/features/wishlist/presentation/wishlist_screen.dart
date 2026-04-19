@@ -6,6 +6,9 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_async_widget.dart';
 import '../../../core/widgets/product_card.dart';
 import '../../../core/widgets/shimmer_loading.dart';
+import '../../../core/widgets/empty_state_widget.dart';
+import '../../../core/widgets/luxury_button.dart';
+import '../../../l10n/app_localizations.dart';
 import '../providers/wishlist_provider.dart';
 
 class WishlistScreen extends ConsumerWidget {
@@ -13,6 +16,8 @@ class WishlistScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Scaffold(
       backgroundColor: AppTheme.ivoryBackground,
       appBar: AppBar(
@@ -20,7 +25,7 @@ class WishlistScreen extends ConsumerWidget {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          'Yêu thích',
+          l10n.wishlistTitle,
           style: GoogleFonts.playfairDisplay(
             fontSize: 20,
             fontWeight: FontWeight.w600,
@@ -45,7 +50,7 @@ class WishlistScreen extends ConsumerWidget {
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  childAspectRatio: 0.54,
+                  childAspectRatio: 0.49, // Updated for consistency with other grids
                   crossAxisSpacing: 16,
                   mainAxisSpacing: 16,
                 ),
@@ -63,61 +68,15 @@ class WishlistScreen extends ConsumerWidget {
                   );
                 },
               )
-            : _buildEmptyState(context),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 40),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.favorite_border,
-              size: 64,
-              color: AppTheme.mutedSilver.withValues(alpha: 0.3),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Danh sách yêu thích đang chờ\nmùi hương bạn thật sự yêu.',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.playfairDisplay(
-                fontSize: 20,
-                fontWeight: FontWeight.w400,
-                height: 1.4,
-                color: AppTheme.deepCharcoal,
-              ),
-            ),
-            const SizedBox(height: 40),
-            OutlinedButton(
-              onPressed: () => context.go('/explore'),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 32,
-                  vertical: 14,
-                ),
-                side: BorderSide(
-                  color: AppTheme.accentGold.withValues(alpha: 0.5),
-                  width: 1,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24),
+            : EmptyStateWidget(
+                icon: Icons.favorite_border,
+                title: l10n.wishlistEmptyTitle,
+                subtitle: l10n.wishlistEmptySubtitle,
+                action: LuxuryButton(
+                  text: l10n.exploreFragrances,
+                  onPressed: () => context.go('/explore'),
                 ),
               ),
-              child: Text(
-                'Khám phá nước hoa',
-                style: GoogleFonts.montserrat(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.accentGold,
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
