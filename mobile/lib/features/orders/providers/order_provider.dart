@@ -105,6 +105,25 @@ class OrderNotifier extends AsyncNotifier<OrderListState> {
     await refresh();
     ref.invalidate(orderDetailProvider(orderId));
   }
+
+  Future<void> submitRefundBankInfo({
+    required String orderId,
+    required String bankName,
+    required String accountNumber,
+    required String accountHolder,
+    String? note,
+  }) async {
+    final service = ref.read(orderServiceProvider);
+    await service.submitRefundBankInfo(
+      orderId: orderId,
+      bankName: bankName,
+      accountNumber: accountNumber,
+      accountHolder: accountHolder,
+      note: note,
+    );
+    await refresh();
+    ref.invalidate(orderDetailProvider(orderId));
+  }
 }
 
 final orderProvider = AsyncNotifierProvider<OrderNotifier, OrderListState>(

@@ -254,6 +254,11 @@ class OrderDetailScreen extends ConsumerWidget {
   Future<void> _handleCancel(
       BuildContext context, WidgetRef ref, Order order) async {
     final l10n = AppLocalizations.of(context)!;
+    
+    // Check if it's a paid order that needs refund info
+    final needsRefundInfo = order.paymentStatus == PaymentStatus.paid && 
+        (order.status == OrderStatus.confirmed || order.status == OrderStatus.processing);
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => _LuxuryConfirmDialog(
@@ -265,40 +270,78 @@ class OrderDetailScreen extends ConsumerWidget {
     );
 
     if (confirmed == true) {
-      try {
-        // Show loading dialog
-        if (!context.mounted) return;
-        showDialog(
+      if (needsRefundInfo) {
+        final refundData = await showDialog<Map<String, String>>(
           context: context,
-          barrierDismissible: false,
-          builder: (context) => const Center(
-            child: CircularProgressIndicator(color: AppTheme.accentGold),
-          ),
+          builder: (context) => _RefundInfoDialog(orderCode: order.code),
         );
 
-        await ref.read(orderProvider.notifier).cancelOrder(order.id);
+        if (refundData != null) {
+          try {
+            if (!context.mounted) return;
+            _showLoading(context);
 
-        if (context.mounted) {
-          Navigator.of(context).pop(); // Close loading
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(l10n.cancelOrderSuccess(order.code)),
-              backgroundColor: Colors.green,
-            ),
-          );
+            await ref.read(orderProvider.notifier).cancelOrder(order.id);
+            await ref.read(orderProvider.notifier).submitRefundBankInfo(
+              orderId: order.id,
+              bankName: refundData['bankName']!,
+              accountNumber: refundData['accountNumber']!,
+              accountHolder: refundData['accountHolder']!,
+              note: refundData['reason'],
+            );
+
+            if (context.mounted) {
+              Navigator.of(context).pop(); // Close loading
+              _showSuccess(context, l10n.cancelOrderSuccess(order.code));
+            }
+          } catch (e) {
+            if (context.mounted) {
+              Navigator.of(context).pop(); // Close loading
+              _showError(context, l10n.cancelOrderError);
+            }
+          }
         }
-      } catch (e) {
-        if (context.mounted) {
-          Navigator.of(context).pop(); // Close loading
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(l10n.cancelOrderError),
-              backgroundColor: Colors.red,
-            ),
-          );
+      } else {
+        try {
+          if (!context.mounted) return;
+          _showLoading(context);
+
+          await ref.read(orderProvider.notifier).cancelOrder(order.id);
+
+          if (context.mounted) {
+            Navigator.of(context).pop(); // Close loading
+            _showSuccess(context, l10n.cancelOrderSuccess(order.code));
+          }
+        } catch (e) {
+          if (context.mounted) {
+            Navigator.of(context).pop(); // Close loading
+            _showError(context, l10n.cancelOrderError);
+          }
         }
       }
     }
+  }
+
+  void _showLoading(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(color: AppTheme.accentGold),
+      ),
+    );
+  }
+
+  void _showSuccess(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.green),
+    );
+  }
+
+  void _showError(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
   }
 }
 
@@ -807,30 +850,6 @@ class _SubtleReturnButton extends StatelessWidget {
   }
 }
 
-class _CancelOrderButton extends StatelessWidget {
-  final VoidCallback onPressed;
-  const _CancelOrderButton({required this.onPressed});
-
-  @override
-  Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: onPressed,
-      style: TextButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-      ),
-      child: Text(
-        AppLocalizations.of(context)!.cancelOrder,
-        style: GoogleFonts.montserrat(
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
-          color: Colors.red[700],
-          decoration: TextDecoration.underline,
-          decorationColor: Colors.red[700],
-        ),
-      ),
-    );
-  }
-}
 
 class _LuxuryConfirmDialog extends StatelessWidget {
   final String title;
@@ -992,4 +1011,173 @@ class _OrderDetailLifecycleWrapperState extends ConsumerState<_OrderDetailLifecy
 
   @override
   Widget build(BuildContext context) => widget.child;
+}
+
+class _CancelOrderButton extends StatelessWidget {
+  final VoidCallback onPressed;
+  const _CancelOrderButton({required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      onPressed: onPressed,
+      style: TextButton.styleFrom(
+        foregroundColor: Colors.red.shade700,
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: Colors.red.shade100, width: 1.5),
+        ),
+      ),
+      child: Text(
+        AppLocalizations.of(context)!.cancelOrder.toUpperCase(),
+        style: GoogleFonts.montserrat(
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1.5,
+        ),
+      ),
+    );
+  }
+}
+
+class _RefundInfoDialog extends StatefulWidget {
+  final String orderCode;
+  const _RefundInfoDialog({required this.orderCode});
+
+  @override
+  State<_RefundInfoDialog> createState() => _RefundInfoDialogState();
+}
+
+class _RefundInfoDialogState extends State<_RefundInfoDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _bankController = TextEditingController();
+  final _accountNumberController = TextEditingController();
+  final _accountHolderController = TextEditingController();
+  final _reasonController = TextEditingController();
+
+  @override
+  void dispose() {
+    _bankController.dispose();
+    _accountNumberController.dispose();
+    _accountHolderController.dispose();
+    _reasonController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      backgroundColor: Colors.white,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: AppTheme.accentGold.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.account_balance_rounded, color: AppTheme.accentGold, size: 18),
+                  ),
+                  const SizedBox(width: 10),
+                  const Text(
+                    'HOÀN TIỀN',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Vui lòng nhập thông tin ngân hàng để nhận lại tiền đã thanh toán cho đơn ${widget.orderCode}.',
+                style: GoogleFonts.montserrat(fontSize: 12, color: AppTheme.mutedSilver),
+              ),
+              const SizedBox(height: 20),
+              _buildField(l10n.bankName, _bankController, l10n.bankNameHint),
+              const SizedBox(height: 12),
+              _buildField(l10n.accountNumber, _accountNumberController, 'Số tài khoản'),
+              const SizedBox(height: 12),
+              _buildField(l10n.accountName, _accountHolderController, l10n.accountNameHint),
+              const SizedBox(height: 12),
+              _buildField('Lý do hủy đơn', _reasonController, 'VD: Đổi ý...', maxLines: 2),
+              const SizedBox(height: 24),
+              LuxuryButton(
+                text: 'XÁC NHẬN HỦY ĐƠN',
+                onPressed: () {
+                  if (_formKey.currentState?.validate() ?? false) {
+                    Navigator.of(context).pop({
+                      'bankName': _bankController.text,
+                      'accountNumber': _accountNumberController.text,
+                      'accountHolder': _accountHolderController.text,
+                      'reason': _reasonController.text,
+                    });
+                  }
+                },
+              ),
+              const SizedBox(height: 4),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(
+                  l10n.cancel,
+                  style: GoogleFonts.montserrat(color: AppTheme.mutedSilver, fontWeight: FontWeight.w600, fontSize: 13),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildField(String label, TextEditingController controller, String hint, {int maxLines = 1}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label.toUpperCase(),
+          style: GoogleFonts.montserrat(
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1,
+            color: AppTheme.deepCharcoal.withValues(alpha: 0.6),
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          maxLines: maxLines,
+          style: GoogleFonts.montserrat(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: AppTheme.deepCharcoal,
+          ),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: GoogleFonts.montserrat(
+              fontSize: 13,
+              color: AppTheme.mutedSilver,
+            ),
+            filled: true,
+            fillColor: AppTheme.ivoryBackground,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          ),
+          validator: (v) => v == null || v.isEmpty ? 'Vui lòng điền thông tin' : null,
+        ),
+      ],
+    );
+  }
 }

@@ -12,6 +12,9 @@ import '../../../core/widgets/luxury_button.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../address/providers/address_providers.dart';
 import '../../orders/providers/order_provider.dart';
+import '../../cart/providers/cart_provider.dart';
+import '../../cart/providers/cart_selection_provider.dart';
+import '../../cart/providers/promotions_provider.dart';
 import '../models/checkout_state.dart';
 import '../providers/checkout_provider.dart';
 import 'sections/checkout_address_section.dart';
@@ -31,6 +34,9 @@ class CheckoutScreen extends ConsumerWidget {
     ref.listen<CheckoutState>(checkoutProvider, (previous, next) {
       if (next.isPaymentSuccessful && !(previous?.isPaymentSuccessful ?? false)) {
         ref.invalidate(orderProvider);
+        ref.invalidate(cartProvider);
+        ref.invalidate(cartSelectionProvider);
+        ref.invalidate(activePromotionsProvider);
         context.go(AppRoutes.orderSuccess);
       }
     });
@@ -188,6 +194,9 @@ class CheckoutScreen extends ConsumerWidget {
       if (isPaid) {
         // Handled by ref.listen but adding here for safety/immediacy
         ref.invalidate(orderProvider);
+        ref.invalidate(cartProvider);
+        ref.invalidate(cartSelectionProvider);
+        ref.invalidate(activePromotionsProvider);
         context.go(AppRoutes.orderSuccess);
         return;
       }
@@ -270,6 +279,9 @@ class CheckoutScreen extends ConsumerWidget {
     }
 
     ref.invalidate(orderProvider);
+    ref.invalidate(cartProvider);
+    ref.invalidate(cartSelectionProvider);
+    ref.invalidate(activePromotionsProvider);
     context.go(AppRoutes.orderSuccess);
   }
 }
