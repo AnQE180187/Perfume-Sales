@@ -7,6 +7,7 @@ class InventoryVariant {
   final int stock;
   final DateTime updatedAt;
   final String? imageUrl;
+  final String? barcode;
 
   const InventoryVariant({
     required this.id,
@@ -16,6 +17,7 @@ class InventoryVariant {
     required this.stock,
     required this.updatedAt,
     this.imageUrl,
+    this.barcode,
   });
 
   bool get isLowStock => stock > 0 && stock <= 5;
@@ -30,6 +32,7 @@ class InventoryVariant {
       stock: (json['stock'] as num).toInt(),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
       imageUrl: json['imageUrl'] as String?,
+      barcode: json['barcode'] as String?,
     );
   }
 }
@@ -252,6 +255,7 @@ class SystemVariant {
   final String? sku;
   final double? price;
   final String? imageUrl;
+  final String? barcode;
 
   const SystemVariant({
     required this.variantId,
@@ -261,6 +265,7 @@ class SystemVariant {
     this.sku,
     this.price,
     this.imageUrl,
+    this.barcode,
   });
 
   factory SystemVariant.fromJson(Map<String, dynamic> json) {
@@ -272,6 +277,7 @@ class SystemVariant {
       sku: json['sku'] as String?,
       price: (json['price'] as num?)?.toDouble(),
       imageUrl: json['imageUrl'] as String?,
+      barcode: json['barcode'] as String?,
     );
   }
 }

@@ -32,13 +32,6 @@ class StaffReturnsScreen extends ConsumerWidget {
           children: [
             Row(
               children: [
-                IconButton(
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  onPressed: () => Scaffold.of(context).openDrawer(),
-                  icon: const Icon(Icons.menu_rounded, color: AppTheme.accentGold, size: 24),
-                ),
-                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

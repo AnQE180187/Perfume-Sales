@@ -2307,4 +2307,68 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get allAteliers => 'ALL ATELIERS';
+
+  @override
+  String get chatStatusActive => 'ACTIVE';
+
+  @override
+  String get addToBagInvite => 'Invite to Bag';
+
+  @override
+  String get chatHistoryTitle => 'Archives';
+
+  @override
+  String get newConsultationBtn => 'NEW CONSULTATION';
+
+  @override
+  String get recentJourneysTitle => 'RECENT JOURNEYS';
+
+  @override
+  String get sinceLabel => 'SINCE 2026';
+
+  @override
+  String get storyHeroSub => 'The Intersection of';
+
+  @override
+  String get storyHeroTitle => 'Nature & Intellect';
+
+  @override
+  String get philosophyLabel => 'OUR PHILOSOPHY';
+
+  @override
+  String get philosophyQuote => 'Scent is the most intense form of memory.';
+
+  @override
+  String get philosophyDesc =>
+      'AURA was founded on a simple yet radical idea: that the ancient art of perfumery should be personal, precise, and profoundly intelligent.\n\nWe combined the sensitivity of world-class \"noses\" with the analytical power of advanced AI to bridge the gap between human emotion and chemical composition.';
+
+  @override
+  String get methodLabel => 'THE AURA METHOD';
+
+  @override
+  String get methodSourcingTitle => 'Sourcing';
+
+  @override
+  String get methodSourcingDesc =>
+      'We travel the globe to source the highest quality raw materials from sustainable estates.';
+
+  @override
+  String get methodAnalysisTitle => 'Analysis';
+
+  @override
+  String get methodAnalysisDesc =>
+      'Our AI engine analyzes millions of sensory data points to understand human olfactory resonance.';
+
+  @override
+  String get methodCraftingTitle => 'Crafting';
+
+  @override
+  String get methodCraftingDesc =>
+      'Each bottle is finished by hand in our atelier, ensuring the human touch remains at our core.';
+
+  @override
+  String get ctaStoryTitle => 'Experience the Future\nof Fragrance.';
+
+  @override
+  String get ctaStoryBtn => 'DISCOVER MY SCENT';
 }

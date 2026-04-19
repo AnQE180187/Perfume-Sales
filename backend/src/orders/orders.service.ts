@@ -423,7 +423,14 @@ export class OrdersService {
       },
     });
 
-    // GHN shipment creation is now triggered manually via admin interface
+    // GHN shipment creation for ONLINE orders when confirmed
+    if (status === 'CONFIRMED' && updated.channel === 'ONLINE') {
+      try {
+        await this.shippingService.createGhnShipment(id);
+      } catch (e) {
+        console.warn(`Auto GHN shipment creation failed for order ${id}:`, e.message);
+      }
+    }
 
     if (status === 'COMPLETED' && updated.userId) {
       await this.loyaltyService.earnPoints(

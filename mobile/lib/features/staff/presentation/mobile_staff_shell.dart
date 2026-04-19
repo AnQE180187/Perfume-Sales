@@ -90,7 +90,8 @@ class MobileStaffShell extends ConsumerWidget {
               child: const Icon(Icons.shopping_cart_rounded, color: Colors.black),
             )
           : null,
-      drawer: _MobileStaffDrawer(l10n: l10n, ref: ref),
+      drawer: null,
+      drawerEnableOpenDragGesture: false,
     );
   }
 
@@ -140,22 +141,7 @@ class _MobileStaffDrawer extends StatelessWidget {
       backgroundColor: const Color(0xFF080808),
       child: Column(
         children: [
-          DrawerHeader(
-            decoration: const BoxDecoration(
-              border: Border(bottom: BorderSide(color: Colors.white10)),
-            ),
-            child: Center(
-              child: Text(
-                'LUXURY STAFF',
-                style: GoogleFonts.playfairDisplay(
-                  color: AppTheme.accentGold,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                  letterSpacing: 2,
-                ),
-              ),
-            ),
-          ),
+          const SizedBox(height: 60),
           ListTile(
             leading: const Icon(Icons.settings_rounded, color: Colors.white70),
             title: Text(l10n.profileLabel, style: GoogleFonts.montserrat(color: Colors.white)),

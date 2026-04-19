@@ -2309,4 +2309,68 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get allAteliers => 'TẤT CẢ CỨA HÀNG';
+
+  @override
+  String get chatStatusActive => 'ĐANG HOẠT ĐỘNG';
+
+  @override
+  String get addToBagInvite => 'Thêm vào giỏ';
+
+  @override
+  String get chatHistoryTitle => 'Lịch sử';
+
+  @override
+  String get newConsultationBtn => 'ĐOẠN CHAT MỚI';
+
+  @override
+  String get recentJourneysTitle => 'GẦN ĐÂY';
+
+  @override
+  String get sinceLabel => 'TỪ NĂM 2026';
+
+  @override
+  String get storyHeroSub => 'Sự Giao Thoa Giữa';
+
+  @override
+  String get storyHeroTitle => 'Tự Nhiên & Trí Tuệ';
+
+  @override
+  String get philosophyLabel => 'TRIẾT LÝ CỦA CHÚNG TÔI';
+
+  @override
+  String get philosophyQuote => 'Mùi hương là dạng ký ức mãnh liệt nhất.';
+
+  @override
+  String get philosophyDesc =>
+      'AURA được thành lập dựa trên một ý tưởng đơn giản nhưng mang tính cách mạng: nghệ thuật chế tác nước hoa cổ xưa nên mang tính cá nhân, chính xác và thông minh sâu sắc.\n\nChúng tôi kết hợp sự nhạy bén của các chuyên gia điều hương hàng đầu thế giới với sức mạnh phân tích của AI tiên tiến để thu hẹp khoảng cách giữa cảm xúc con người và thành phần hóa học.';
+
+  @override
+  String get methodLabel => 'PHƯƠNG PHÁP AURA';
+
+  @override
+  String get methodSourcingTitle => 'Nguồn cung ứng';
+
+  @override
+  String get methodSourcingDesc =>
+      'Chúng tôi đi khắp thế giới để tìm nguồn nguyên liệu thô chất lượng cao nhất từ các trang trại bền vững.';
+
+  @override
+  String get methodAnalysisTitle => 'Phân tích';
+
+  @override
+  String get methodAnalysisDesc =>
+      'Công cụ AI của chúng tôi phân tích hàng triệu điểm dữ liệu cảm giác để thấu hiểu sự cộng hưởng khứu giác của con người.';
+
+  @override
+  String get methodCraftingTitle => 'Chế tác';
+
+  @override
+  String get methodCraftingDesc =>
+      'Mỗi chai nước hoa đều được hoàn thiện thủ công tại xưởng, đảm bảo giá trị con người luôn là cốt lõi của chúng tôi.';
+
+  @override
+  String get ctaStoryTitle => 'Trải Nghiệm Tương Lai\nCủa Nước Hoa.';
+
+  @override
+  String get ctaStoryBtn => 'KHÁM PHÁ MÙI HƯƠNG CỦA TÔI';
 }

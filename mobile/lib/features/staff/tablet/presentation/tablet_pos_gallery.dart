@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../pos/providers/pos_provider.dart';
@@ -202,64 +203,111 @@ class _TabletPosGalleryState extends ConsumerState<TabletPosGallery> {
 
   void _showBarcodeScanner(BuildContext context, WidgetRef ref, String? storeId) {
     if (storeId == null) return;
+    
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.black,
+      backgroundColor: const Color(0xFF0A0A0A),
       isScrollControlled: true,
-      builder: (ctx) => SizedBox(
-        height: MediaQuery.of(context).size.height * 0.7,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => Container(
+        height: MediaQuery.of(context).size.height * 0.75,
+        padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text("QUÉT MÃ VẠCH / SKU", style: GoogleFonts.montserrat(color: AppTheme.accentGold, fontWeight: FontWeight.bold, letterSpacing: 2)),
+            const SizedBox(height: 12),
+            Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(2))),
+            const SizedBox(height: 24),
+            Text(
+              "QUÉT MÃ VẠCH / SKU",
+              style: GoogleFonts.montserrat(
+                color: AppTheme.accentGold,
+                fontWeight: FontWeight.w900,
+                fontSize: 16,
+                letterSpacing: 3,
+              ),
             ),
+            const SizedBox(height: 32),
             Expanded(
-              child: mobileScannerPlaceholder(context, (code) async {
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: Stack(
+                  children: [
+                    MobileScanner(
+                      controller: MobileScannerController(
+                        facing: CameraFacing.back,
+                        torchEnabled: false,
+                      ),
+                      onDetect: (capture) async {
+                        final List<Barcode> barcodes = capture.barcodes;
+                        for (final barcode in barcodes) {
+                          final code = barcode.rawValue;
+                          if (code != null) {
+                            final success = await ref.read(posProvider.notifier).applyBarcode(code, storeId);
+                            if (success && ctx.mounted) {
+                              Navigator.pop(ctx);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text("Sản phẩm [$code] đã được thêm vào giỏ"),
+                                  backgroundColor: Colors.green.shade900,
+                                ),
+                              );
+                            }
+                          }
+                        }
+                      },
+                    ),
+                    // Scanner Overlay UI
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: AppTheme.accentGold.withOpacity(0.2), width: 2),
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: Center(
+                        child: Container(
+                          width: 200,
+                          height: 200,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: AppTheme.accentGold, width: 2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 32),
+            // Simulation field for emulator or if camera fails
+            TextField(
+              style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 13),
+              textAlign: TextAlign.center,
+              decoration: InputDecoration(
+                hintText: "Nhập mã để giả lập quét",
+                hintStyle: GoogleFonts.montserrat(color: Colors.white24, fontSize: 11),
+                filled: true,
+                fillColor: Colors.white.withOpacity(0.05),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white10)),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white10)),
+                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppTheme.accentGold)),
+                prefixIcon: const Icon(Icons.keyboard_rounded, color: AppTheme.accentGold, size: 18),
+              ),
+              onSubmitted: (code) async {
                 final success = await ref.read(posProvider.notifier).applyBarcode(code, storeId);
                 if (success && ctx.mounted) {
                   Navigator.pop(ctx);
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Sản phẩm đã được thêm vào giỏ")));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("Sản phẩm [$code] đã được thêm vào giỏ"),
+                      backgroundColor: Colors.green.shade900,
+                    ),
+                  );
                 }
-              }),
+              },
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget mobileScannerPlaceholder(BuildContext context, Function(String) onDetect) {
-    // Note: Since I can't guarantee camera availability in all environments, 
-    // I'll provide a text input fallback for testing if needed, but the primary logic is there.
-    return Container(
-      color: Colors.black,
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.camera_alt_outlined, color: Colors.white24, size: 64),
-            const SizedBox(height: 24),
-            Text("CAMERA SCANNER ACTIVE", style: GoogleFonts.robotoMono(color: Colors.white60)),
-            const SizedBox(height: 40),
-            // Mock input for testing
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 40),
-              child: TextField(
-                style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 13),
-                textAlign: TextAlign.center,
-                decoration: InputDecoration(
-                  hintText: "Nhập SKU/Barcode để giả lập quét",
-                  hintStyle: GoogleFonts.montserrat(color: Colors.white54, fontSize: 11),
-                  filled: true,
-                  fillColor: Colors.white.withOpacity(0.05),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: BorderSide(color: Colors.white10)),
-                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: BorderSide(color: Colors.white10)),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: BorderSide(color: AppTheme.accentGold)),
-                ),
-                onSubmitted: onDetect,
-              ),
-            ),
+            const SizedBox(height: 32),
           ],
         ),
       ),
@@ -435,6 +483,17 @@ class _ScientificProductCardState extends ConsumerState<_ScientificProductCard> 
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
+                    if (widget.variant.barcode != null)
+                      Text(
+                        "BC: ${widget.variant.barcode}",
+                        style: GoogleFonts.robotoMono(
+                          fontSize: 8,
+                          color: AppTheme.accentGold.withOpacity(0.4),
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     const SizedBox(height: 8),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,

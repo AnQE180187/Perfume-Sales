@@ -3,12 +3,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class BrandStoryScreen extends StatelessWidget {
   const BrandStoryScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppTheme.ivoryBackground,
       extendBodyBehindAppBar: true,
@@ -28,16 +30,16 @@ class BrandStoryScreen extends StatelessWidget {
         child: Column(
           children: [
             // 1. Cinematic Hero Section
-            _buildHeroSection(),
-
+            _buildHeroSection(l10n),
+ 
             // 2. Philosophy Section
-            _buildPhilosophySection(),
-
+            _buildPhilosophySection(l10n),
+ 
             // 3. The Aura Method Section
-            _buildMethodSection(),
-
+            _buildMethodSection(l10n),
+ 
             // 4. CTA Section
-            _buildCtaSection(context),
+            _buildCtaSection(context, l10n),
 
             // Bottom Spacing
             const SizedBox(height: 60),
@@ -47,7 +49,7 @@ class BrandStoryScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeroSection() {
+  Widget _buildHeroSection(AppLocalizations l10n) {
     return Container(
       height: 600,
       width: double.infinity,
@@ -105,7 +107,7 @@ class BrandStoryScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
-                      'SINCE 2026',
+                      l10n.sinceLabel,
                       style: GoogleFonts.montserrat(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
@@ -116,7 +118,7 @@ class BrandStoryScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 32),
                   Text(
-                    'The Intersection of',
+                    l10n.storyHeroSub,
                     style: GoogleFonts.playfairDisplay(
                       fontSize: 32,
                       fontWeight: FontWeight.w400,
@@ -126,7 +128,7 @@ class BrandStoryScreen extends StatelessWidget {
                     textAlign: TextAlign.center,
                   ),
                   Text(
-                    'Nature & Intellect',
+                    l10n.storyHeroTitle,
                     style: GoogleFonts.playfairDisplay(
                       fontSize: 48,
                       fontWeight: FontWeight.w700,
@@ -160,14 +162,14 @@ class BrandStoryScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPhilosophySection() {
+  Widget _buildPhilosophySection(AppLocalizations l10n) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 80, 24, 80),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'OUR PHILOSOPHY',
+            l10n.philosophyLabel,
             style: GoogleFonts.montserrat(
               fontSize: 11,
               fontWeight: FontWeight.w800,
@@ -177,7 +179,7 @@ class BrandStoryScreen extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           Text(
-            '"Scent is the most intense form of memory."',
+            '"${l10n.philosophyQuote}"',
             style: GoogleFonts.playfairDisplay(
               fontSize: 32,
               fontWeight: FontWeight.w600,
@@ -188,7 +190,7 @@ class BrandStoryScreen extends StatelessWidget {
           ),
           const SizedBox(height: 40),
           Text(
-            'AURA was founded on a simple yet radical idea: that the ancient art of perfumery should be personal, precise, and profoundly intelligent.\n\nWe combined the sensitivity of world-class "noses" with the analytical power of advanced AI to bridge the gap between human emotion and chemical composition.',
+            l10n.philosophyDesc,
             style: GoogleFonts.montserrat(
               fontSize: 15,
               fontWeight: FontWeight.w300,
@@ -223,14 +225,14 @@ class BrandStoryScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMethodSection() {
+  Widget _buildMethodSection(AppLocalizations l10n) {
     return Container(
       color: AppTheme.creamWhite,
       padding: const EdgeInsets.symmetric(vertical: 80, horizontal: 24),
       child: Column(
         children: [
           Text(
-            'THE AURA METHOD',
+            l10n.methodLabel,
             style: GoogleFonts.playfairDisplay(
               fontSize: 32,
               fontWeight: FontWeight.w700,
@@ -240,30 +242,27 @@ class BrandStoryScreen extends StatelessWidget {
           const SizedBox(height: 60),
           _MethodStep(
             icon: Icons.wind_power_outlined,
-            title: 'Sourcing',
-            description:
-                'We travel the globe to source the highest quality raw materials from sustainable estates.',
+            title: l10n.methodSourcingTitle,
+            description: l10n.methodSourcingDesc,
           ),
           const SizedBox(height: 48),
           _MethodStep(
             icon: Icons.auto_awesome_outlined,
-            title: 'Analysis',
-            description:
-                'Our AI engine analyzes millions of sensory data points to understand human olfactory resonance.',
+            title: l10n.methodAnalysisTitle,
+            description: l10n.methodAnalysisDesc,
           ),
           const SizedBox(height: 48),
           _MethodStep(
             icon: Icons.favorite_outline_rounded,
-            title: 'Crafting',
-            description:
-                'Each bottle is finished by hand in our atelier, ensuring the human touch remains at our core.',
+            title: l10n.methodCraftingTitle,
+            description: l10n.methodCraftingDesc,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCtaSection(BuildContext context) {
+  Widget _buildCtaSection(BuildContext context, AppLocalizations l10n) {
     return Container(
       height: 500,
       width: double.infinity,
@@ -297,7 +296,7 @@ class BrandStoryScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'Experience the Future\nof Fragrance.',
+                    l10n.ctaStoryTitle,
                     style: GoogleFonts.playfairDisplay(
                       fontSize: 36,
                       fontWeight: FontWeight.w600,
@@ -323,7 +322,7 @@ class BrandStoryScreen extends StatelessWidget {
                       shadowColor: AppTheme.accentGold.withValues(alpha: 0.4),
                     ),
                     child: Text(
-                      'DISCOVER MY SCENT',
+                      l10n.ctaStoryBtn,
                       style: GoogleFonts.montserrat(
                         fontSize: 12,
                         fontWeight: FontWeight.w800,
