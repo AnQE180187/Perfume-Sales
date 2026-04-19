@@ -7,12 +7,14 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreatePromotionDto, ValidatePromotionDto } from './dto/promotion.dto';
 import { PromotionCode, UserPromotionStatus } from '@prisma/client';
 import { LoyaltyService } from '../loyalty/loyalty.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class PromotionsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly loyaltyService: LoyaltyService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async create(dto: CreatePromotionDto) {
@@ -122,13 +124,25 @@ export class PromotionsService {
       throw new BadRequestException('Bạn đã lưu mã giảm giá này rồi');
     }
 
-    return this.prisma.userPromotion.create({
+    const userPromotion = await this.prisma.userPromotion.create({
       data: {
         userId,
         promotionId: promoId,
         status: UserPromotionStatus.UNUSED,
       },
     });
+
+    // Notify user
+    this.notificationsService.create({
+      userId,
+      type: 'PROMOTION',
+      title: 'Mã giảm giá mới',
+      content: `Bạn đã lưu mã giảm giá ${promo.code} thành công.`,
+      data: { promoCode: promo.code, description: promo.description },
+      sendEmail: true,
+    }).catch(() => {});
+
+    return userPromotion;
   }
 
   async redeem(userId: string, promoId: string) {
@@ -159,13 +173,25 @@ export class PromotionsService {
       );
 
       // Create UserPromotion
-      return tx.userPromotion.create({
+      const userPromotion = await tx.userPromotion.create({
         data: {
           userId,
           promotionId: promoId,
           status: UserPromotionStatus.UNUSED,
         },
       });
+
+      // Notify user
+      this.notificationsService.create({
+        userId,
+        type: 'PROMOTION',
+        title: 'Quy đổi mã giảm giá thành công',
+        content: `Bạn đã đổi ${promo.pointsCost} điểm lấy mã giảm giá ${promo.code}.`,
+        data: { promoCode: promo.code, description: promo.description },
+        sendEmail: true,
+      }).catch(() => {});
+
+      return userPromotion;
     });
   }
 

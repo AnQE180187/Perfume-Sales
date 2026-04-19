@@ -173,7 +173,12 @@ export class OrdersService {
           type: 'ORDER',
           title: 'Đặt hàng thành công',
           content: `Đơn hàng ${order.code} đã được tạo thành công.`,
-          data: { orderId: order.id, orderCode: order.code },
+          data: { 
+            orderId: order.id, 
+            orderCode: order.code,
+            totalAmount: order.finalAmount 
+          },
+          sendEmail: true,
         })
         .catch(() => {});
     }
@@ -463,6 +468,7 @@ export class OrdersService {
           title: 'Cập nhật đơn hàng',
           content: `Đơn hàng ${updated.code} ${label}.`,
           data: { orderId: updated.id, orderCode: updated.code, status },
+          sendEmail: ['SHIPPED', 'CANCELLED', 'COMPLETED'].includes(status),
         })
         .catch(() => {});
 
@@ -528,6 +534,7 @@ export class OrdersService {
           orderCode: updated.code,
           status: 'CANCELLED',
         },
+        sendEmail: true,
       })
       .catch(() => {});
 
