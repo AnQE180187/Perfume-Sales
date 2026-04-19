@@ -198,6 +198,32 @@ html[lang="vi"] .text-\[10px\] {
     @apply bg-gold/40;
   }
 
+/* Print Styles for Receipt */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  .receipt-modal {
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 !important;
+    max-width: none !important;
+    width: 100% !important;
+    position: static !important;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .receipt-modal * {
+    color: black !important;
+  }
+  /* Adjust layout for printing - remove sidebar padding */
+  .pl-72 {
+    padding-left: 0 !important;
+  }
+}
+
   /* Hide scrollbar utility */
   .scrollbar-hide::-webkit-scrollbar {
     display: none;

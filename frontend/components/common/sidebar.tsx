@@ -79,7 +79,7 @@ export const Sidebar = () => {
     const items = getMenuItems();
 
     return (
-        <aside className="w-72 h-screen glass border-r border-border flex flex-col px-4 py-8 fixed left-0 top-0 z-50 overflow-y-auto overflow-x-hidden custom-scrollbar">
+        <aside className="w-72 h-screen glass border-r border-border flex flex-col px-4 py-8 fixed left-0 top-0 z-50 overflow-y-auto overflow-x-hidden custom-scrollbar no-print">
             <Link href="/" className="flex items-center justify-center mb-10 px-4 group cursor-pointer">
                 <img src="/logo-dark.png" className="h-14 w-14 object-contain rounded-full border border-gold/10 shadow-lg group-hover:scale-110 transition-transform" alt="Perfume GPT" />
             </Link>
