@@ -154,11 +154,11 @@ html[lang="vi"] .text-\[10px\] {
 
 @layer utilities {
   .glass {
-    @apply bg-white/40 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_0_rgba(0, 0, 0, 0.05)];
+    @apply bg-white/40 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_0_rgba(0,0,0,0.05)];
   }
 
   .dark .glass {
-    @apply bg-black/40 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_0_rgba(0, 0, 0, 0.2)];
+    @apply bg-black/40 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.2)];
   }
 
   .gold-gradient {
