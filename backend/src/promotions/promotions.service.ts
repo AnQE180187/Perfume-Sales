@@ -199,10 +199,10 @@ export class PromotionsService {
       throw new BadRequestException('Promotion code usage limit reached');
     }
 
-    // Check if user owns the promotion (if it's not a global/general public code)
-    // Actually, for this system, we force users to "claim" or "redeem" first to pick from list
+    // Check if user owns the promotion
+    let userPromo: any = null;
     if (userId) {
-      const userPromo = await this.prisma.userPromotion.findFirst({
+      userPromo = await this.prisma.userPromotion.findFirst({
         where: {
           userId,
           promotionId: promo.id,
@@ -211,7 +211,9 @@ export class PromotionsService {
       });
 
       if (!userPromo) {
-        throw new BadRequestException('Bạn không sở hữu mã giảm giá này hoặc mã đã được sử dụng');
+        throw new BadRequestException(
+          'Bạn không sở hữu mã giảm giá này hoặc mã đã được sử dụng',
+        );
       }
     }
 
@@ -241,6 +243,7 @@ export class PromotionsService {
       discountAmount: discount,
       discountType: promo.discountType,
       discountValue: promo.discountValue,
+      userPromoId: userPromo?.id,
     };
   }
 

@@ -39,6 +39,7 @@ class ApiEndpoints {
   static const String orders = '/orders';
   static String orderById(String id) => '/orders/$id';
   static String cancelOrder(String id) => '/orders/$id/cancel';
+  static String refundBankInfo(String id) => '/orders/$id/refund-bank-info';
   static String shipmentsByOrderId(String orderId) =>
       '/shipping/orders/$orderId';
 
