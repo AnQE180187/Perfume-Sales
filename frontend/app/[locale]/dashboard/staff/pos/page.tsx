@@ -490,7 +490,10 @@ export default function PosPage() {
                                             </div>
                                             <h3 className="font-heading text-sm mb-1 line-clamp-1 uppercase tracking-tight">{p.name}</h3>
                                             <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mb-1">{p.brand?.name ?? '—'}</p>
-                                            <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mb-2">{v.name}</p>
+                                            <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mb-1">
+                                                {v.name}
+                                                {v.barcode && <span className="ml-2 text-gold/40">• BC: {v.barcode}</span>}
+                                            </p>
                                             <div className="flex justify-between items-center mt-4">
                                                 <span className="font-heading text-gold text-lg">{formatVND(v.price)}</span>
                                                 <button

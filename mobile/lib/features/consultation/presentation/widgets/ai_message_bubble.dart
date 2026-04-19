@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/currency_utils.dart';
 import '../../../cart/providers/cart_provider.dart';
@@ -232,6 +233,7 @@ class _RecommendationCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       width: 200,
       margin: const EdgeInsets.only(right: 16),
@@ -358,7 +360,7 @@ class _RecommendationCard extends ConsumerWidget {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              'Invite to Bag',
+                              l10n.addToBagInvite,
                               style: GoogleFonts.montserrat(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,

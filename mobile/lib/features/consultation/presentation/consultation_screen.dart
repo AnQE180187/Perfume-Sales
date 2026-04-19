@@ -2,6 +2,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../providers/chat_provider.dart';
 import 'widgets/ai_message_bubble.dart';
@@ -102,6 +103,7 @@ class _ConsultationScreenState extends ConsumerState<ConsultationScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final chatState = ref.watch(chatProvider);
 
     // Scroll to bottom when new message arrives
@@ -111,10 +113,12 @@ class _ConsultationScreenState extends ConsumerState<ConsultationScreen>
       }
     });
 
-    return Container(
-      height: MediaQuery.of(context).size.height,
-      decoration: const BoxDecoration(color: AppTheme.ivoryBackground),
-      child: Stack(
+    return Scaffold(
+      resizeToAvoidBottomInset: true,
+      backgroundColor: AppTheme.ivoryBackground,
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Stack(
         children: [
           // Main chat column
           Column(
@@ -198,7 +202,12 @@ class _ConsultationScreenState extends ConsumerState<ConsultationScreen>
 
                 //  Input Area
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                  padding: EdgeInsets.fromLTRB(
+                    16,
+                    8,
+                    16,
+                    MediaQuery.of(context).viewInsets.bottom > 0 ? 8 : 24,
+                  ),
                   child: SafeArea(
                     top: false,
                     child: AnimatedContainer(
@@ -364,8 +373,9 @@ class _ConsultationScreenState extends ConsumerState<ConsultationScreen>
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 }
 
 // ---------------------------------------------------------------------------
@@ -387,6 +397,7 @@ class _ChatHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -484,7 +495,7 @@ class _ChatHeader extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'ACTIVE',
+                  l10n.chatStatusActive,
                   style: GoogleFonts.montserrat(
                     fontSize: 9,
                     fontWeight: FontWeight.w700,
@@ -787,6 +798,7 @@ class _ConversationDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Material(
       elevation: 20,
       shadowColor: Colors.black.withValues(alpha: 0.5),
@@ -801,7 +813,7 @@ class _ConversationDrawer extends StatelessWidget {
                 child: Row(
                   children: [
                     Text(
-                      'Archives',
+                      l10n.chatHistoryTitle,
                       style: GoogleFonts.playfairDisplay(
                         fontSize: 24,
                         fontWeight: FontWeight.w700,
@@ -853,7 +865,7 @@ class _ConversationDrawer extends StatelessWidget {
                         ),
                         const SizedBox(width: 12),
                         Text(
-                          'NEW CONSULTATION',
+                          l10n.newConsultationBtn,
                           style: GoogleFonts.montserrat(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
@@ -875,7 +887,7 @@ class _ConversationDrawer extends StatelessWidget {
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    'RECENT JOURNEYS',
+                    l10n.recentJourneysTitle,
                     style: GoogleFonts.montserrat(
                       fontSize: 10,
                       fontWeight: FontWeight.w700,

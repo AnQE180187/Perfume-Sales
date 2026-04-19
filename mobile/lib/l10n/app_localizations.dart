@@ -4495,6 +4495,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'ALL ATELIERS'**
   String get allAteliers;
+
+  /// No description provided for @chatStatusActive.
+  ///
+  /// In en, this message translates to:
+  /// **'ACTIVE'**
+  String get chatStatusActive;
+
+  /// No description provided for @addToBagInvite.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite to Bag'**
+  String get addToBagInvite;
+
+  /// No description provided for @chatHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Archives'**
+  String get chatHistoryTitle;
+
+  /// No description provided for @newConsultationBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'NEW CONSULTATION'**
+  String get newConsultationBtn;
+
+  /// No description provided for @recentJourneysTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'RECENT JOURNEYS'**
+  String get recentJourneysTitle;
+
+  /// No description provided for @sinceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'SINCE 2026'**
+  String get sinceLabel;
+
+  /// No description provided for @storyHeroSub.
+  ///
+  /// In en, this message translates to:
+  /// **'The Intersection of'**
+  String get storyHeroSub;
+
+  /// No description provided for @storyHeroTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nature & Intellect'**
+  String get storyHeroTitle;
+
+  /// No description provided for @philosophyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'OUR PHILOSOPHY'**
+  String get philosophyLabel;
+
+  /// No description provided for @philosophyQuote.
+  ///
+  /// In en, this message translates to:
+  /// **'Scent is the most intense form of memory.'**
+  String get philosophyQuote;
+
+  /// No description provided for @philosophyDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'AURA was founded on a simple yet radical idea: that the ancient art of perfumery should be personal, precise, and profoundly intelligent.\n\nWe combined the sensitivity of world-class \"noses\" with the analytical power of advanced AI to bridge the gap between human emotion and chemical composition.'**
+  String get philosophyDesc;
+
+  /// No description provided for @methodLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'THE AURA METHOD'**
+  String get methodLabel;
+
+  /// No description provided for @methodSourcingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sourcing'**
+  String get methodSourcingTitle;
+
+  /// No description provided for @methodSourcingDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'We travel the globe to source the highest quality raw materials from sustainable estates.'**
+  String get methodSourcingDesc;
+
+  /// No description provided for @methodAnalysisTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Analysis'**
+  String get methodAnalysisTitle;
+
+  /// No description provided for @methodAnalysisDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Our AI engine analyzes millions of sensory data points to understand human olfactory resonance.'**
+  String get methodAnalysisDesc;
+
+  /// No description provided for @methodCraftingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Crafting'**
+  String get methodCraftingTitle;
+
+  /// No description provided for @methodCraftingDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Each bottle is finished by hand in our atelier, ensuring the human touch remains at our core.'**
+  String get methodCraftingDesc;
+
+  /// No description provided for @ctaStoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Experience the Future\nof Fragrance.'**
+  String get ctaStoryTitle;
+
+  /// No description provided for @ctaStoryBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'DISCOVER MY SCENT'**
+  String get ctaStoryBtn;
 }
 
 class _AppLocalizationsDelegate

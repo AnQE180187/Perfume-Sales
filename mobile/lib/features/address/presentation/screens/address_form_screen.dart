@@ -256,6 +256,7 @@ class AddressFormScreen extends ConsumerWidget {
             onPressed: state.canSubmit && !state.isSubmitting ? onSubmit : null,
             style: FilledButton.styleFrom(
               backgroundColor: AppTheme.deepCharcoal,
+              foregroundColor: Colors.white,
               disabledBackgroundColor: AppTheme.softTaupe,
               disabledForegroundColor: AppTheme.mutedSilver,
               minimumSize: const Size.fromHeight(56),

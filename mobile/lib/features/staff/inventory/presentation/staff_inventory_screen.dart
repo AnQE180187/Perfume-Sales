@@ -101,13 +101,6 @@ class _StaffInventoryScreenState extends ConsumerState<StaffInventoryScreen> {
               children: [
                 Row(
                   children: [
-                    IconButton(
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                      onPressed: () => Scaffold.of(context).openDrawer(),
-                      icon: const Icon(Icons.menu_rounded, color: AppTheme.accentGold, size: 24),
-                    ),
-                    const SizedBox(width: 12),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -706,9 +699,19 @@ class _InventoryRowState extends State<_InventoryRow> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        "SKU-${widget.variant.id.substring(0,8)}".toUpperCase(),
-                        style: GoogleFonts.robotoMono(fontSize: 10, color: Colors.white24),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "SKU: ${widget.variant.id.substring(0,8)}".toUpperCase(),
+                            style: GoogleFonts.robotoMono(fontSize: 9, color: Colors.white10),
+                          ),
+                          if (widget.variant.barcode != null)
+                            Text(
+                              "BARCODE: ${widget.variant.barcode}",
+                              style: GoogleFonts.robotoMono(fontSize: 10, color: AppTheme.accentGold.withOpacity(0.5), fontWeight: FontWeight.bold),
+                            ),
+                        ],
                       ),
                       Row(
                         children: [
@@ -763,12 +766,17 @@ class _InventoryRowState extends State<_InventoryRow> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "SKU-${widget.variant.id.substring(0,8)}".toUpperCase(),
-                          style: GoogleFonts.robotoMono(fontSize: 10, color: Colors.white24, fontWeight: FontWeight.bold),
+                          "SKU: ${widget.variant.id.substring(0,8)}".toUpperCase(),
+                          style: GoogleFonts.robotoMono(fontSize: 9, color: Colors.white10),
                         ),
+                        if (widget.variant.barcode != null)
+                          Text(
+                            "BC: ${widget.variant.barcode}",
+                            style: GoogleFonts.robotoMono(fontSize: 10, color: AppTheme.accentGold.withOpacity(0.5), fontWeight: FontWeight.bold),
+                          ),
                         Text(
                           "${widget.variant.variantName} UNIT",
-                          style: GoogleFonts.robotoMono(fontSize: 9, color: Colors.white60),
+                          style: GoogleFonts.robotoMono(fontSize: 9, color: Colors.white38),
                         ),
                       ],
                     ),
