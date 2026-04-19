@@ -218,6 +218,10 @@ export const filteredProductsState = atom(async (get) => {
 export const cartState = atom<Cart>([]);
 
 export const selectedCartItemIdsState = atom<number[]>([]);
+export const appliedPromotionCodeState = atom<string>("");
+export const appliedPromotionDiscountState = atom<number>(0);
+export const redeemPointsState = atom<number>(0);
+export const redeemPointsDiscountState = atom<number>(0);
 
 export const checkoutItemsState = atom((get) => {
   const ids = get(selectedCartItemIdsState);
@@ -227,12 +231,19 @@ export const checkoutItemsState = atom((get) => {
 
 export const cartTotalState = atom((get) => {
   const items = get(checkoutItemsState);
+  const promotionDiscount = get(appliedPromotionDiscountState);
+  const pointsDiscount = get(redeemPointsDiscountState);
+  const subtotal = items.reduce(
+    (total, item) => total + item.product.price * item.quantity,
+    0
+  );
+  const finalAmount = Math.max(0, subtotal - promotionDiscount - pointsDiscount);
   return {
     totalItems: items.length,
-    totalAmount: items.reduce(
-      (total, item) => total + item.product.price * item.quantity,
-      0
-    ),
+    subtotal,
+    promotionDiscount,
+    pointsDiscount,
+    totalAmount: finalAmount,
   };
 });
 

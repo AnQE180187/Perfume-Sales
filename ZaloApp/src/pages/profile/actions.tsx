@@ -4,11 +4,9 @@ import {
   ProfileIcon,
   VoucherIcon,
 } from "@/components/vectors";
-import { useToBeImplemented } from "@/hooks";
 import { useNavigate } from "react-router-dom";
 
 export default function ProfileActions() {
-  const toBeImplemented = useToBeImplemented();
   const navigate = useNavigate();
 
   return (
@@ -25,6 +23,11 @@ export default function ProfileActions() {
           onClick: () => navigate("/profile/vouchers"),
         },
         {
+          label: "Yêu thích",
+          icon: VoucherIcon,
+          onClick: () => navigate("/profile/favorites"),
+        },
+        {
           label: "Địa chỉ nhận hàng",
           icon: PackageIcon,
           onClick: () => navigate("/profile/addresses"),
@@ -33,6 +36,11 @@ export default function ProfileActions() {
           label: "Theo dõi đơn hàng",
           icon: PackageIcon,
           onClick: () => navigate("/orders"),
+        },
+        {
+          label: "Trả hàng",
+          icon: PackageIcon,
+          onClick: () => navigate("/returns"),
         },
         {
           label: "Lịch sử mua hàng",

@@ -1,5 +1,6 @@
 import Layout from "@/components/layout";
 import CartPage from "@/pages/cart";
+import PaymentResultPage from "@/pages/cart/payment-result";
 import ProductListPage from "@/pages/catalog/product-list";
 import CategoryListPage from "@/pages/catalog/category-list";
 import ProductDetailPage from "@/pages/catalog/product-detail";
@@ -9,9 +10,14 @@ import SearchPage from "@/pages/search";
 import AiChatPage from "@/pages/ai-chat";
 import AiQuizPage from "@/pages/ai-quiz";
 import OrdersPage from "@/pages/profile/orders";
+import OrderDetailPage from "@/pages/profile/order-detail";
 import EditProfilePage from "@/pages/profile/edit";
 import AddressesPage from "@/pages/profile/addresses";
 import VouchersPage from "@/pages/profile/vouchers";
+import FavoritesPage from "@/pages/profile/favorites";
+import ReturnsPage from "@/pages/profile/returns";
+import ReturnDetailPage from "@/pages/profile/return-detail";
+import CreateReturnPage from "@/pages/profile/create-return";
 import LoginPage from "@/pages/login";
 import { createBrowserRouter } from "react-router-dom";
 import { getBasePath } from "@/utils/zma";
@@ -46,6 +52,27 @@ const router = createBrowserRouter(
           element: <CartPage />,
           handle: {
             title: "Giỏ hàng",
+          },
+        },
+        {
+          path: "/payment/result",
+          element: <PaymentResultPage />,
+          handle: {
+            title: "Kết quả thanh toán",
+          },
+        },
+        {
+          path: "/payment/payos/return",
+          element: <PaymentResultPage />,
+          handle: {
+            title: "Kết quả thanh toán",
+          },
+        },
+        {
+          path: "/payment/payos/cancel",
+          element: <PaymentResultPage />,
+          handle: {
+            title: "Kết quả thanh toán",
           },
         },
         {
@@ -106,6 +133,34 @@ const router = createBrowserRouter(
           },
         },
         {
+          path: "/orders/:id",
+          element: <OrderDetailPage />,
+          handle: {
+            title: "Chi tiết đơn hàng",
+          },
+        },
+        {
+          path: "/orders/:id/return",
+          element: <CreateReturnPage />,
+          handle: {
+            title: "Yêu cầu trả hàng",
+          },
+        },
+        {
+          path: "/returns",
+          element: <ReturnsPage />,
+          handle: {
+            title: "Đơn trả hàng",
+          },
+        },
+        {
+          path: "/returns/:id",
+          element: <ReturnDetailPage />,
+          handle: {
+            title: "Chi tiết trả hàng",
+          },
+        },
+        {
           path: "/profile/edit",
           element: <EditProfilePage />,
           handle: { title: "Chỉnh sửa hồ sơ" }
@@ -119,6 +174,11 @@ const router = createBrowserRouter(
           path: "/profile/vouchers",
           element: <VouchersPage />,
           handle: { title: "Kho Voucher" }
+        },
+        {
+          path: "/profile/favorites",
+          element: <FavoritesPage />,
+          handle: { title: "Sản phẩm yêu thích" }
         },
       ],
     },

@@ -46,6 +46,15 @@ export default function EditProfilePage() {
   };
 
   const handleSave = async () => {
+    const phoneRegex = /^(0|\+84)[0-9]{9,10}$/;
+    if (!formData.fullName.trim()) {
+      toast.error("Vui lòng nhập họ tên");
+      return;
+    }
+    if (formData.phone && !phoneRegex.test(formData.phone.trim())) {
+      toast.error("Số điện thoại không hợp lệ");
+      return;
+    }
     try {
       setLoading(true);
       const res: any = await axiosClient.patch("/users/me", {

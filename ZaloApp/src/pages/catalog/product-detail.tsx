@@ -14,6 +14,7 @@ import { useAddToCart } from "@/hooks";
 import toast from "react-hot-toast";
 import { Size } from "@/types";
 import { Heart, Star } from "lucide-react";
+import axiosClient from "@/services/axiosClient";
 
 export default function ProductDetailPage() {
   const { id } = useParams();
@@ -23,6 +24,7 @@ export default function ProductDetailPage() {
   const [selectedSize, setSelectedSize] = useState<Size>();
   const [selectedImageIdx, setSelectedImageIdx] = useState(0);
   const [wishlisted, setWishlisted] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
 
   // Derive images array (backend may send product.images[])
   const images: string[] = (product as any)?.images?.map((i: any) => i.url || i) ?? 
@@ -47,6 +49,19 @@ export default function ProductDetailPage() {
     }
     setSelectedImageIdx(0);
   }, [id]);
+
+  useEffect(() => {
+    const fetchFavoriteStatus = async () => {
+      if (!product?.id) return;
+      try {
+        const res: any = await axiosClient.get(`/favorites/${product.id}/status`);
+        setWishlisted(Boolean(res?.isFavorite));
+      } catch {
+        setWishlisted(false);
+      }
+    };
+    fetchFavoriteStatus();
+  }, [product?.id]);
 
   const { addToCart, setOptions } = useAddToCart(product || ({} as any));
 
@@ -81,7 +96,25 @@ export default function ProductDetailPage() {
           <div className="absolute top-3 right-3 flex flex-col gap-2">
             <button
               id="btn-wishlist"
-              onClick={() => setWishlisted(w => !w)}
+              onClick={async () => {
+                if (!product?.id || wishlistLoading) return;
+                try {
+                  setWishlistLoading(true);
+                  if (wishlisted) {
+                    await axiosClient.delete(`/favorites/${product.id}`);
+                    setWishlisted(false);
+                    toast.success("Đã bỏ khỏi danh sách yêu thích");
+                  } else {
+                    await axiosClient.post(`/favorites/${product.id}`);
+                    setWishlisted(true);
+                    toast.success("Đã thêm vào danh sách yêu thích");
+                  }
+                } catch {
+                  toast.error("Không thể cập nhật danh sách yêu thích");
+                } finally {
+                  setWishlistLoading(false);
+                }
+              }}
               className="w-9 h-9 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow"
             >
               <Heart

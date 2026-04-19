@@ -13,11 +13,16 @@ export default function AddressesPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
-    streetLine1: "",
-    city: "",
-    state: "",
-    postalCode: "",
-    country: "VN",
+    recipientName: "",
+    phone: "",
+    provinceId: "",
+    provinceName: "",
+    districtId: "",
+    districtName: "",
+    wardCode: "",
+    wardName: "",
+    detailAddress: "",
+    isDefault: false,
   });
 
   const fetchAddresses = async () => {
@@ -44,11 +49,16 @@ export default function AddressesPage() {
   const handleSave = async () => {
     try {
       const payload = {
-         streetLine1: formData.streetLine1,
-         city: formData.city,
-         state: formData.state,
-         postalCode: formData.postalCode || '000000',
-         country: formData.country,
+        recipientName: formData.recipientName,
+        phone: formData.phone,
+        provinceId: Number(formData.provinceId),
+        provinceName: formData.provinceName,
+        districtId: Number(formData.districtId),
+        districtName: formData.districtName,
+        wardCode: formData.wardCode,
+        wardName: formData.wardName,
+        detailAddress: formData.detailAddress,
+        isDefault: formData.isDefault,
       };
 
       if (editingId) {
@@ -60,7 +70,18 @@ export default function AddressesPage() {
       }
       setShowForm(false);
       setEditingId(null);
-      setFormData({ streetLine1: "", city: "", state: "", postalCode: "", country: "VN" });
+      setFormData({
+        recipientName: "",
+        phone: "",
+        provinceId: "",
+        provinceName: "",
+        districtId: "",
+        districtName: "",
+        wardCode: "",
+        wardName: "",
+        detailAddress: "",
+        isDefault: false,
+      });
       fetchAddresses();
     } catch (err) {
       toast.error("Có lỗi xảy ra khi lưu địa chỉ");
@@ -98,9 +119,23 @@ export default function AddressesPage() {
           <div className="text-lg font-bold">{editingId ? "Sửa địa chỉ" : "Thêm mới"}</div>
         </div>
         <div className="p-4 space-y-4">
-          <input type="text" name="streetLine1" value={formData.streetLine1} onChange={handleInputChange} placeholder="Số nhà, Tên đường" className="w-full bg-white border border-gray-200 rounded-xl py-3 px-4" />
-          <input type="text" name="city" value={formData.city} onChange={handleInputChange} placeholder="Quận / Huyện" className="w-full bg-white border border-gray-200 rounded-xl py-3 px-4" />
-          <input type="text" name="state" value={formData.state} onChange={handleInputChange} placeholder="Tỉnh / Thành phố" className="w-full bg-white border border-gray-200 rounded-xl py-3 px-4" />
+          <input type="text" name="recipientName" value={formData.recipientName} onChange={handleInputChange} placeholder="Tên người nhận" className="w-full bg-white border border-gray-200 rounded-xl py-3 px-4" />
+          <input type="text" name="phone" value={formData.phone} onChange={handleInputChange} placeholder="Số điện thoại" className="w-full bg-white border border-gray-200 rounded-xl py-3 px-4" />
+          <input type="text" name="detailAddress" value={formData.detailAddress} onChange={handleInputChange} placeholder="Số nhà, tên đường" className="w-full bg-white border border-gray-200 rounded-xl py-3 px-4" />
+          <input type="text" name="provinceName" value={formData.provinceName} onChange={handleInputChange} placeholder="Tỉnh / Thành phố" className="w-full bg-white border border-gray-200 rounded-xl py-3 px-4" />
+          <input type="text" name="provinceId" value={formData.provinceId} onChange={handleInputChange} placeholder="Mã tỉnh (VD: 201)" className="w-full bg-white border border-gray-200 rounded-xl py-3 px-4" />
+          <input type="text" name="districtName" value={formData.districtName} onChange={handleInputChange} placeholder="Quận / Huyện" className="w-full bg-white border border-gray-200 rounded-xl py-3 px-4" />
+          <input type="text" name="districtId" value={formData.districtId} onChange={handleInputChange} placeholder="Mã quận/huyện" className="w-full bg-white border border-gray-200 rounded-xl py-3 px-4" />
+          <input type="text" name="wardName" value={formData.wardName} onChange={handleInputChange} placeholder="Phường / Xã" className="w-full bg-white border border-gray-200 rounded-xl py-3 px-4" />
+          <input type="text" name="wardCode" value={formData.wardCode} onChange={handleInputChange} placeholder="Mã phường/xã" className="w-full bg-white border border-gray-200 rounded-xl py-3 px-4" />
+          <label className="flex items-center gap-2 text-sm text-gray-600">
+            <input
+              type="checkbox"
+              checked={formData.isDefault}
+              onChange={(e) => setFormData((prev) => ({ ...prev, isDefault: e.target.checked }))}
+            />
+            Đặt làm địa chỉ mặc định
+          </label>
           <button onClick={handleSave} className="w-full bg-primary text-white font-bold py-3.5 rounded-xl mt-6 active:scale-95 transition-transform">
             Lưu địa chỉ
           </button>
@@ -132,8 +167,9 @@ export default function AddressesPage() {
               <div className="flex gap-2 items-start mb-2">
                  <MapPin className="text-primary mt-0.5" size={18} />
                  <div className="flex-1">
-                    <p className="font-semibold text-gray-800">{addr.streetLine1}</p>
-                    <p className="text-sm text-gray-500">{addr.city}, {addr.state}</p>
+                    <p className="font-semibold text-gray-800">{addr.recipientName} - {addr.phone}</p>
+                    <p className="text-sm text-gray-500">{addr.detailAddress}</p>
+                    <p className="text-sm text-gray-500">{addr.wardName}, {addr.districtName}, {addr.provinceName}</p>
                  </div>
               </div>
               <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-100">
@@ -148,11 +184,16 @@ export default function AddressesPage() {
                   <button onClick={() => {
                      setEditingId(addr.id);
                      setFormData({
-                       streetLine1: addr.streetLine1 || '',
-                       city: addr.city || '',
-                       state: addr.state || '',
-                       postalCode: addr.postalCode || '',
-                       country: addr.country || 'VN'
+                       recipientName: addr.recipientName || "",
+                       phone: addr.phone || "",
+                       provinceId: String(addr.provinceId || ""),
+                       provinceName: addr.provinceName || "",
+                       districtId: String(addr.districtId || ""),
+                       districtName: addr.districtName || "",
+                       wardCode: addr.wardCode || "",
+                       wardName: addr.wardName || "",
+                       detailAddress: addr.detailAddress || "",
+                       isDefault: Boolean(addr.isDefault),
                      });
                      setShowForm(true);
                   }} className="text-blue-500 p-1"><Edit2 size={16} /></button>
@@ -164,7 +205,22 @@ export default function AddressesPage() {
         )}
 
         <button 
-          onClick={() => { setEditingId(null); setFormData({ streetLine1: "", city: "", state: "", postalCode: "", country: "VN" }); setShowForm(true); }}
+          onClick={() => {
+            setEditingId(null);
+            setFormData({
+              recipientName: "",
+              phone: "",
+              provinceId: "",
+              provinceName: "",
+              districtId: "",
+              districtName: "",
+              wardCode: "",
+              wardName: "",
+              detailAddress: "",
+              isDefault: false,
+            });
+            setShowForm(true);
+          }}
           className="w-full mt-4 flex items-center justify-center gap-2 py-3.5 border-2 border-dashed border-primary text-primary rounded-xl font-semibold bg-white"
         >
           <Plus size={20} /> Thêm địa chỉ mới

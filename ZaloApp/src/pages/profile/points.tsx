@@ -1,11 +1,22 @@
 import pointsCover from "@/static/points-cover.png";
 import Barcode from "./barcode";
-import { useAtomValue } from "jotai";
-import { systemUserState } from "@/state";
+import { useEffect, useState } from "react";
+import axiosClient from "@/services/axiosClient";
 
 export default function Points() {
-  const user = useAtomValue(systemUserState);
-  const loyaltyPoints = user?.loyaltyPoints || 0;
+  const [loyaltyPoints, setLoyaltyPoints] = useState(0);
+
+  useEffect(() => {
+    const fetchLoyalty = async () => {
+      try {
+        const res: any = await axiosClient.get("/loyalty/status");
+        setLoyaltyPoints(Number(res?.points || 0));
+      } catch {
+        setLoyaltyPoints(0);
+      }
+    };
+    fetchLoyalty();
+  }, []);
   
   return (
     <div
