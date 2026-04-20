@@ -115,7 +115,7 @@ class _FeaturedCard extends StatelessWidget {
                 top: Radius.circular(20),
               ),
               child: AspectRatio(
-                aspectRatio: 1,
+                aspectRatio: 1.1,
                 child: Stack(
                   fit: StackFit.expand,
                   children: [

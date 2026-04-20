@@ -4,13 +4,21 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/app_spacing.dart';
 
+import 'package:perfume_gpt_app/features/staff/pos/models/pos_models.dart';
+import 'package:perfume_gpt_app/core/utils/invoice_helper.dart';
+import 'package:perfume_gpt_app/features/stores/services/stores_service.dart' as stores;
+
 class BoutiqueSuccessOverlay extends StatelessWidget {
   final String title;
+  final PosOrder? order;
+  final stores.Store? store;
   final VoidCallback onDismiss;
 
   const BoutiqueSuccessOverlay({
     super.key,
     required this.title,
+    this.order,
+    this.store,
     required this.onDismiss,
   });
 
@@ -64,27 +72,65 @@ class BoutiqueSuccessOverlay extends StatelessWidget {
                 
                 const SizedBox(height: 80),
                 
-                // Fine-line Button
-                InkWell(
-                  onTap: onDismiss,
-                  child: Container(
-                    width: 200,
-                    padding: const EdgeInsets.symmetric(vertical: 20),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: AppTheme.accentGold.withOpacity(0.3)),
-                    ),
-                    child: Center(
-                      child: Text(
-                        "DISMISS",
-                        style: GoogleFonts.montserrat(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w900,
-                          color: AppTheme.accentGold,
-                          letterSpacing: 2,
+                // Action Buttons
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (order != null) ...[
+                      InkWell(
+                        onTap: () => InvoiceHelper.generateAndPrintInvoice(order!, store),
+                        child: Container(
+                          width: 180,
+                          padding: const EdgeInsets.symmetric(vertical: 20),
+                          decoration: BoxDecoration(
+                            color: AppTheme.accentGold,
+                            border: Border.all(color: AppTheme.accentGold),
+                          ),
+                          child: Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.print_rounded, color: Colors.black, size: 16),
+                                const SizedBox(width: 8),
+                                Text(
+                                  "IN HÓA ĐƠN",
+                                  style: GoogleFonts.montserrat(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.black,
+                                    letterSpacing: 1,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                    ],
+                    
+                    InkWell(
+                      onTap: onDismiss,
+                      child: Container(
+                        width: order != null ? 140 : 200,
+                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: AppTheme.accentGold.withOpacity(0.3)),
+                        ),
+                        child: Center(
+                          child: Text(
+                            "HOÀN TẤT",
+                            style: GoogleFonts.montserrat(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                              color: order != null ? Colors.white70 : AppTheme.accentGold,
+                              letterSpacing: 2,
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
               ],
             ),

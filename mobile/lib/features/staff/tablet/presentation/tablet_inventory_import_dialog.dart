@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/config/env.dart';
 import '../../inventory/models/inventory_models.dart';
 import '../../inventory/providers/inventory_provider.dart';
 
@@ -157,7 +158,7 @@ class _TabletInventoryImportDialogState extends ConsumerState<TabletInventoryImp
           const Spacer(),
           IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.close_rounded, color: Colors.white38),
+            icon: const Icon(Icons.close_rounded, color: Colors.white70),
           ),
         ],
       ),
@@ -191,7 +192,7 @@ class _TabletInventoryImportDialogState extends ConsumerState<TabletInventoryImp
                     style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 13),
                     decoration: InputDecoration(
                       hintText: "Tìm tên sản phẩm, SKU, thương hiệu...",
-                      hintStyle: GoogleFonts.montserrat(color: Colors.white24, fontSize: 11, letterSpacing: 1),
+                      hintStyle: GoogleFonts.montserrat(color: Colors.white60, fontSize: 11, letterSpacing: 1),
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.zero,
                       filled: false,
@@ -226,7 +227,7 @@ class _TabletInventoryImportDialogState extends ConsumerState<TabletInventoryImp
                             decoration: BoxDecoration(
                               color: Colors.white.withOpacity(0.03),
                               borderRadius: BorderRadius.circular(4),
-                              image: v.imageUrl != null ? DecorationImage(image: NetworkImage(v.imageUrl!), fit: BoxFit.cover) : null,
+                              image: v.imageUrl != null ? DecorationImage(image: NetworkImage(v.imageUrl!.startsWith('http') ? v.imageUrl! : '${EnvConfig.apiBaseUrl}${v.imageUrl}'), fit: BoxFit.cover) : null,
                             ),
                           ),
                           const SizedBox(width: 20),
@@ -266,7 +267,7 @@ class _TabletInventoryImportDialogState extends ConsumerState<TabletInventoryImp
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.03),
                   borderRadius: BorderRadius.circular(8),
-                  image: v.imageUrl != null ? DecorationImage(image: NetworkImage(v.imageUrl!), fit: BoxFit.cover) : null,
+                  image: v.imageUrl != null ? DecorationImage(image: NetworkImage(v.imageUrl!.startsWith('http') ? v.imageUrl! : '${EnvConfig.apiBaseUrl}${v.imageUrl}'), fit: BoxFit.cover) : null,
                 ),
               ),
               const SizedBox(width: 24),
@@ -303,7 +304,7 @@ class _TabletInventoryImportDialogState extends ConsumerState<TabletInventoryImp
               style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 12),
               decoration: InputDecoration(
                 hintText: "VÍ DỤ: NHẬP KHO ĐỊNH KỲ, HÀNG VỀ MỚI...",
-                hintStyle: GoogleFonts.montserrat(color: Colors.white10, fontSize: 10, letterSpacing: 1),
+                hintStyle: GoogleFonts.montserrat(color: Colors.white60, fontSize: 10, letterSpacing: 1),
                 border: InputBorder.none,
                 filled: false,
                 fillColor: Colors.transparent,
@@ -341,12 +342,12 @@ class _TabletInventoryImportDialogState extends ConsumerState<TabletInventoryImp
           ...["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"].map((d) {
             return InkWell(
               onTap: () => _onDigitPress(d),
-              child: Center(child: Text(d, style: GoogleFonts.robotoMono(fontSize: 24, color: Colors.white60, fontWeight: FontWeight.w300))),
+              child: Center(child: Text(d, style: GoogleFonts.robotoMono(fontSize: 24, color: Colors.white, fontWeight: FontWeight.normal))),
             );
           }),
           InkWell(
             onTap: _onClear,
-            child: Center(child: Text("C", style: GoogleFonts.robotoMono(fontSize: 24, color: Colors.redAccent.withOpacity(0.5), fontWeight: FontWeight.bold))),
+            child: Center(child: Text("C", style: GoogleFonts.robotoMono(fontSize: 24, color: Colors.redAccent, fontWeight: FontWeight.bold))),
           ),
         ],
       ),

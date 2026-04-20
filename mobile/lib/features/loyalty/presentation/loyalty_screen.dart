@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:perfume_gpt_app/l10n/app_localizations.dart';
@@ -813,7 +814,7 @@ class _RedeemRewardsSection extends ConsumerWidget {
             }
 
             return SizedBox(
-              height: 240,
+              height: 250,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.only(bottom: 24),
@@ -845,6 +846,17 @@ class _RedeemPromoCard extends ConsumerWidget {
     final int pointsCost = promo['pointsCost'] ?? 0;
     final String discountType = promo['discountType'] ?? '';
     final int discountValue = promo['discountValue'] ?? 0;
+    final String endDateStr = promo['endDate'] ?? '';
+    
+    String formattedDate = '';
+    if (endDateStr.isNotEmpty) {
+      try {
+        final date = DateTime.parse(endDateStr);
+        formattedDate = DateFormat('dd/MM/yyyy').format(date);
+      } catch (e) {
+        formattedDate = '';
+      }
+    }
 
     String valueText = discountType == 'PERCENTAGE'
         ? '$discountValue%'
@@ -906,61 +918,93 @@ class _RedeemPromoCard extends ConsumerWidget {
                             ],
                           ) : null,
                         ),
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            if (isPublic)
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                margin: const EdgeInsets.only(bottom: 12),
-                                decoration: BoxDecoration(
-                                  color: AppTheme.accentGold,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  l10n.free.toUpperCase(),
-                                  style: GoogleFonts.montserrat(
-                                    fontSize: 8,
-                                    fontWeight: FontWeight.w900,
-                                    color: Colors.white,
-                                    letterSpacing: 1,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              if (isPublic)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  margin: const EdgeInsets.only(bottom: 8),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.accentGold,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    l10n.free.toUpperCase(),
+                                    style: GoogleFonts.montserrat(
+                                      fontSize: 8,
+                                      fontWeight: FontWeight.w900,
+                                      color: Colors.white,
+                                      letterSpacing: 1,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            Text(
-                              l10n.voucherDiscount.toUpperCase(),
-                              style: GoogleFonts.montserrat(
-                                fontSize: 9,
-                                fontWeight: FontWeight.w800,
-                                color: AppTheme.accentGold,
-                                letterSpacing: 1.5,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text(
-                                valueText,
-                                style: GoogleFonts.playfairDisplay(
-                                  fontSize: 36,
-                                  fontWeight: FontWeight.w900,
-                                  color: AppTheme.deepCharcoal,
-                                  height: 1,
-                                ),
-                              ),
-                            ),
-                            if (discountType != 'PERCENTAGE')
                               Text(
-                                'VND',
+                                l10n.voucherDiscount.toUpperCase(),
                                 style: GoogleFonts.montserrat(
-                                  fontSize: 10,
+                                  fontSize: 9,
                                   fontWeight: FontWeight.w800,
-                                  color: AppTheme.mutedSilver,
-                                  letterSpacing: 2,
+                                  color: AppTheme.accentGold,
+                                  letterSpacing: 1.5,
                                 ),
                               ),
-                          ],
+                              const SizedBox(height: 4),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.baseline,
+                                textBaseline: TextBaseline.alphabetic,
+                                children: [
+                                  Text(
+                                    valueText,
+                                    style: GoogleFonts.playfairDisplay(
+                                      fontSize: 36,
+                                      fontWeight: FontWeight.w900,
+                                      color: AppTheme.deepCharcoal,
+                                      height: 1,
+                                    ),
+                                  ),
+                                  if (discountType != 'PERCENTAGE') ...[
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'VND',
+                                      style: GoogleFonts.montserrat(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w800,
+                                        color: AppTheme.mutedSilver,
+                                        letterSpacing: 1,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              if (formattedDate.isNotEmpty) ...[
+                                const SizedBox(height: 8),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.access_time_rounded,
+                                      size: 10,
+                                      color: AppTheme.mutedSilver.withValues(alpha: 0.8),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      l10n.validUntil(formattedDate),
+                                      style: GoogleFonts.montserrat(
+                                        fontSize: 8.5,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppTheme.mutedSilver.withValues(alpha: 0.9),
+                                        letterSpacing: 0.3,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -985,53 +1029,56 @@ class _RedeemPromoCard extends ConsumerWidget {
                       flex: 4,
                       child: Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            if (!isPublic)
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.auto_awesome_rounded,
-                                    size: 10,
-                                    color: canAfford ? AppTheme.accentGold : AppTheme.mutedSilver,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    '$pointsCost PTS',
-                                    style: GoogleFonts.montserrat(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w800,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              if (!isPublic)
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.auto_awesome_rounded,
+                                      size: 10,
                                       color: canAfford ? AppTheme.accentGold : AppTheme.mutedSilver,
                                     ),
-                                  ),
-                                ],
-                              ),
-                            const Spacer(),
-                            Container(
-                              width: double.infinity,
-                              height: 32,
-                              decoration: BoxDecoration(
-                                color: (isPublic || canAfford) 
-                                  ? AppTheme.deepCharcoal 
-                                  : AppTheme.softTaupe.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  (isPublic ? l10n.claimNow : l10n.redeemNow).toUpperCase(),
-                                  style: GoogleFonts.montserrat(
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w800,
-                                    color: (isPublic || canAfford) ? Colors.white : AppTheme.mutedSilver,
-                                    letterSpacing: 1,
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '$pointsCost PTS',
+                                      style: GoogleFonts.montserrat(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w800,
+                                        color: canAfford ? AppTheme.accentGold : AppTheme.mutedSilver,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              const SizedBox(height: 8),
+                              Container(
+                                width: 146, // Fixed but scaled by FittedBox
+                                height: 32,
+                                decoration: BoxDecoration(
+                                  color: (isPublic || canAfford) 
+                                    ? AppTheme.deepCharcoal 
+                                    : AppTheme.softTaupe.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    (isPublic ? l10n.claimNow : l10n.redeemNow).toUpperCase(),
+                                    style: GoogleFonts.montserrat(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w800,
+                                      color: (isPublic || canAfford) ? Colors.white : AppTheme.mutedSilver,
+                                      letterSpacing: 1,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),

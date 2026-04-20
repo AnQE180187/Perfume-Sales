@@ -28,6 +28,7 @@ class HomeScreen extends ConsumerWidget {
               child: ProductSection(
                 title: AppLocalizations.of(context)!.personalizedSelection,
                 productsAsync: personalizedProducts,
+                isHorizontal: true,
               ),
             ),
 

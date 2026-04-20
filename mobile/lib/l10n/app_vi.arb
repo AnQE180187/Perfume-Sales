@@ -789,10 +789,28 @@
     }
   },
   "voucherDiscount": "VOUCHER GIẢM",
+  "validUntil": "Hết hạn: {date}",
+  "@validUntil": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
   "paymentVnpayDesc": "Thanh toán bằng ví điện tử VNPay",
   "paymentMomoDesc": "Thanh toán bằng ví điện tử MoMo",
   "paymentCodDesc": "Thanh toán khi nhận hàng",
   "paymentPayosDesc": "Quét mã QR hoặc chuyển khoản ngân hàng",
+  "earnPoints": "Tích lũy {points} điểm khi mua sản phẩm này",
+  "@earnPoints": {
+    "placeholders": {
+      "points": { "type": "int" }
+    }
+  },
+  "dnaMatch": "ĐỘ TƯƠNG THÍCH DNA: {percent}%",
+  "@dnaMatch": {
+    "placeholders": {
+      "percent": { "type": "int" }
+    }
+  },
   "productReviewTitle": "Đánh giá sản phẩm",
   "productCountHeader": "Sản phẩm {current}/{total}",
   "@productCountHeader": {

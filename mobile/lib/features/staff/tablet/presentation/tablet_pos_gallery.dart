@@ -81,7 +81,7 @@ class _TabletPosGalleryState extends ConsumerState<TabletPosGallery> {
                 decoration: InputDecoration(
                   hintText: isMobile ? "Tìm kiếm..." : "Tìm tên sản phẩm, SKU, nhóm mùi hương, thương hiệu",
                   hintStyle: GoogleFonts.montserrat(
-                      color: Colors.white30, fontSize: 11, letterSpacing: 0.5),
+                      color: Colors.white60, fontSize: 11, letterSpacing: 0.5),
                   prefixIcon: const Icon(Icons.search_rounded,
                       color: AppTheme.accentGold, size: 18),
                   border: InputBorder.none,
@@ -144,7 +144,7 @@ class _TabletPosGalleryState extends ConsumerState<TabletPosGallery> {
                           s.name.toUpperCase(),
                           style: GoogleFonts.montserrat(
                             fontSize: 12,
-                            color: Colors.white70,
+                            color: Colors.white,
                             letterSpacing: 4,
                           ),
                         ),
@@ -286,8 +286,7 @@ class _TabletPosGalleryState extends ConsumerState<TabletPosGallery> {
               style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 13),
               textAlign: TextAlign.center,
               decoration: InputDecoration(
-                hintText: "Nhập mã để giả lập quét",
-                hintStyle: GoogleFonts.montserrat(color: Colors.white24, fontSize: 11),
+                hintStyle: GoogleFonts.montserrat(color: Colors.white60, fontSize: 11),
                 filled: true,
                 fillColor: Colors.white.withOpacity(0.05),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white10)),
@@ -467,7 +466,7 @@ class _ScientificProductCardState extends ConsumerState<_ScientificProductCard> 
                       (widget.product.brand?.name ?? widget.product.family ?? "PERFUME GPT").toUpperCase(),
                       style: GoogleFonts.montserrat(
                         fontSize: 9,
-                        color: Colors.white38,
+                        color: Colors.white70,
                         letterSpacing: 1,
                         fontWeight: FontWeight.w600,
                       ),
@@ -479,7 +478,7 @@ class _ScientificProductCardState extends ConsumerState<_ScientificProductCard> 
                       widget.variant.name.toUpperCase(),
                       style: GoogleFonts.robotoMono(
                         fontSize: 9,
-                        color: Colors.white24,
+                        color: Colors.white60,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -619,7 +618,7 @@ class _AiConsultationPanelState extends ConsumerState<_AiConsultationPanel> {
                   const Spacer(),
                   Icon(
                     _isExpanded ? Icons.expand_more_rounded : Icons.expand_less_rounded,
-                    color: Colors.white54,
+                    color: AppTheme.accentGold,
                   ),
                 ],
               ),
@@ -728,7 +727,7 @@ class _AiConsultationPanelState extends ConsumerState<_AiConsultationPanel> {
                               decoration: InputDecoration(
                                 border: InputBorder.none, 
                                 hintText: "TỐI ĐA VND", 
-                                hintStyle: GoogleFonts.montserrat(color: Colors.white12, fontSize: 11),
+                                hintStyle: GoogleFonts.montserrat(color: Colors.white60, fontSize: 11),
                                 filled: false, // Don't use theme fill in this boxed container
                               ),
                             ),
@@ -745,7 +744,7 @@ class _AiConsultationPanelState extends ConsumerState<_AiConsultationPanel> {
                       decoration: InputDecoration(
                         border: InputBorder.none, 
                         hintText: "MÔ TẢ SỞ THÍCH CỦA KHÁCH...", 
-                        hintStyle: GoogleFonts.montserrat(color: Colors.white12, fontSize: 11),
+                        hintStyle: GoogleFonts.montserrat(color: Colors.white60, fontSize: 11),
                         filled: false, // Don't use theme fill
                       ),
                     ),

@@ -7,6 +7,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_error_widget.dart';
 import '../models/inventory_models.dart';
 import '../providers/inventory_provider.dart';
+import '../../../../core/config/env.dart';
 import '../../../../core/utils/responsive.dart';
 
 class StaffInventoryRequestsScreen extends ConsumerWidget {
@@ -59,7 +60,11 @@ class StaffInventoryRequestsScreen extends ConsumerWidget {
             ],
             const SizedBox(height: 16),
             Expanded(
-              child: requestsAsync.when(
+              child: RefreshIndicator(
+                onRefresh: () async => ref.refresh(myInventoryRequestsProvider(storeId)),
+                color: AppTheme.accentGold,
+                backgroundColor: const Color(0xFF1A1A1A),
+                child: requestsAsync.when(
                 loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.accentGold)),
                 error: (e, _) => AppErrorWidget(
                   message: "Không thể tải danh sách yêu cầu.",
@@ -92,6 +97,7 @@ class StaffInventoryRequestsScreen extends ConsumerWidget {
                     itemBuilder: (ctx, i) => _RequestItem(request: requests[i], dateFmt: dateFmt),
                   );
                 },
+                ),
               ),
             ),
           ],
@@ -220,9 +226,9 @@ class _RequestItem extends StatelessWidget {
           ? ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: Image.network(
-                request.imageUrl!.startsWith('http') ? request.imageUrl! : 'https://api.perfume.vn${request.imageUrl}', 
+                request.imageUrl!.startsWith('http') ? request.imageUrl! : '${EnvConfig.apiBaseUrl}${request.imageUrl}', 
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const Icon(Icons.inventory_2_rounded, color: Colors.white12, size: 20),
+                errorBuilder: (_, __, ___) => const Icon(Icons.inventory_2_rounded, color: Colors.white60, size: 20),
               ),
             )
           : const Icon(Icons.inventory_2_rounded, color: Colors.white12, size: 20),
