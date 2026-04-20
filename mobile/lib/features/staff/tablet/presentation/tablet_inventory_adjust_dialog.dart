@@ -118,7 +118,7 @@ class _TabletInventoryAdjustDialogState extends State<TabletInventoryAdjustDialo
           ),
           const Spacer(),
           IconButton(
-            icon: const Icon(Icons.close_rounded, color: Colors.white24, size: 20),
+            icon: const Icon(Icons.close_rounded, color: Colors.white70, size: 20),
             onPressed: () => Navigator.pop(context),
           ),
         ],
@@ -137,14 +137,14 @@ class _TabletInventoryAdjustDialogState extends State<TabletInventoryAdjustDialo
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(widget.variant.name.toUpperCase(), style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white70)),
-                Text("${widget.variant.variantName} ml", style: GoogleFonts.robotoMono(fontSize: 10, color: Colors.white24)),
+                Text("${widget.variant.variantName} ml", style: GoogleFonts.robotoMono(fontSize: 10, color: Colors.white60)),
               ],
             ),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text("TỒN KHO HIỆN TẠI", style: GoogleFonts.montserrat(fontSize: 8, color: Colors.white24, fontWeight: FontWeight.bold)),
+              Text("TỒN KHO HIỆN TẠI", style: GoogleFonts.montserrat(fontSize: 8, color: Colors.white60, fontWeight: FontWeight.bold)),
               Text("${widget.variant.stock}", style: GoogleFonts.robotoMono(fontSize: 12, color: AppTheme.accentGold, fontWeight: FontWeight.bold)),
             ],
           ),
@@ -203,7 +203,7 @@ class _TabletInventoryAdjustDialogState extends State<TabletInventoryAdjustDialo
           style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 11),
           decoration: InputDecoration(
             hintText: "NHẬP LÝ DO ĐIỀU CHỈNH...",
-            hintStyle: GoogleFonts.montserrat(color: Colors.white12, fontSize: 9, letterSpacing: 1),
+            hintStyle: GoogleFonts.montserrat(color: Colors.white60, fontSize: 9, letterSpacing: 1),
             border: InputBorder.none,
             filled: false,
           ),
@@ -257,7 +257,7 @@ class _KeyPadBtn extends StatelessWidget {
         alignment: Alignment.center,
         child: Text(
           label,
-          style: GoogleFonts.robotoMono(fontSize: 20, color: Colors.white70, fontWeight: FontWeight.w300),
+          style: GoogleFonts.robotoMono(fontSize: 20, color: Colors.white, fontWeight: FontWeight.normal),
         ),
       ),
     );

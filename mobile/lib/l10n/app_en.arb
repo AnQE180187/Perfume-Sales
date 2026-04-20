@@ -782,10 +782,28 @@
     }
   },
   "voucherDiscount": "VOUCHER DISCOUNT",
+  "validUntil": "Valid until: {date}",
+  "@validUntil": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
   "paymentVnpayDesc": "Pay with VNPay wallet",
   "paymentMomoDesc": "Pay with MoMo wallet",
   "paymentCodDesc": "Cash on delivery",
   "paymentPayosDesc": "Scan QR or bank transfer",
+  "earnPoints": "Earn {points} reward points on this order",
+  "@earnPoints": {
+    "placeholders": {
+      "points": { "type": "int" }
+    }
+  },
+  "dnaMatch": "MATCH {percent}% WITH YOUR DNA",
+  "@dnaMatch": {
+    "placeholders": {
+      "percent": { "type": "int" }
+    }
+  },
   "productReviewTitle": "Product Review",
   "productCountHeader": "Product {current}/{total}",
   "@productCountHeader": {

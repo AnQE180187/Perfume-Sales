@@ -14,6 +14,9 @@ import '../../pos/models/pos_models.dart';
 import '../../pos/providers/pos_provider.dart';
 import '../../staff_shell.dart';
 import '../../../../core/widgets/app_error_widget.dart';
+import '../../../../core/config/env.dart';
+import '../../../../core/utils/responsive.dart';
+import 'dart:ui';
 
 class StaffOrdersScreen extends ConsumerStatefulWidget {
   const StaffOrdersScreen({super.key});
@@ -141,13 +144,14 @@ class _StaffOrdersScreenState extends ConsumerState<StaffOrdersScreen> {
     }
     
     final state = ref.watch(ordersProvider);
+    final isTablet = Responsive.isTablet(context) || Responsive.isDesktop(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF030303),
+      backgroundColor: Colors.black,
       body: SafeArea(
-        top: false, // Custom header handles top padding partly
         child: RefreshIndicator(
           color: AppTheme.accentGold,
+          backgroundColor: const Color(0xFF1A1A1A),
           onRefresh: () async {
             final q = ref.read(ordersSearchQueryProvider);
             final range = ref.read(ordersDateRangeProvider);
@@ -157,30 +161,79 @@ class _StaffOrdersScreenState extends ConsumerState<StaffOrdersScreen> {
               endDate: range?.end.toIso8601String(),
             );
           },
-          child: CustomScrollView(
-            controller: _scrollController,
-            physics: const AlwaysScrollableScrollPhysics(),
-            slivers: [
-              // 1. Fixed Header Area
-              SliverToBoxAdapter(child: _buildGradientHeader(context, l10n)),
-              
-              // 2. Search Bar Area
-              SliverToBoxAdapter(
-                child: Container(
-                  padding: const EdgeInsets.only(top: AppSpacing.sm),
-                  color: const Color(0xFF030303),
-                  child: _buildSearchBar(l10n),
+          child: Column(
+            children: [
+              _buildGradientHeader(context, l10n),
+              _buildSearchBar(l10n),
+              if (!state.isLoading && state.orders.isNotEmpty) 
+                _buildDashboardBar(state),
+              Expanded(
+                child: CustomScrollView(
+                  controller: _scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+                  slivers: [
+                    _buildSliverBody(state, l10n),
+                    const SliverToBoxAdapter(child: SizedBox(height: 80)),
+                  ],
                 ),
               ),
-              
-              // 3. Body Content
-              _buildSliverBody(state, l10n),
             ],
           ),
         ),
       ),
     );
   }
+
+  Widget _buildDashboardBar(OrdersState state) {
+    if (Responsive.isMobile(context)) return const SizedBox.shrink();
+    
+    final totalRevenue = state.orders.fold<double>(0, (sum, order) => sum + order.finalAmount);
+    final pendingCount = state.orders.where((o) => o.paymentStatus == 'PENDING').length;
+    final paidCount = state.orders.where((o) => o.paymentStatus == 'PAID').length;
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      decoration: BoxDecoration(
+        color: AppTheme.accentGold.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.accentGold.withOpacity(0.1)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _DashboardItem(
+            label: "TỔNG DOANH THU",
+            value: "${_currencyFmt.format(totalRevenue)}đ",
+            icon: Icons.payments_outlined,
+            isGold: true,
+          ),
+          _buildDivider(),
+          _DashboardItem(
+            label: "SỐ ĐƠN HÀNG",
+            value: "${state.total}",
+            icon: Icons.receipt_long_outlined,
+          ),
+          _buildDivider(),
+          _DashboardItem(
+            label: "ĐÃ THANH TOÁN",
+            value: "$paidCount",
+            icon: Icons.check_circle_outline_rounded,
+            color: Colors.greenAccent,
+          ),
+          _buildDivider(),
+          _DashboardItem(
+            label: "CHỜ THANH TOÁN",
+            value: "$pendingCount",
+            icon: Icons.hourglass_empty_rounded,
+            color: Colors.orangeAccent,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDivider() => Container(width: 1, height: 32, color: Colors.white.withOpacity(0.05));
 
   Widget _buildSliverBody(OrdersState state, AppLocalizations l10n) {
     if (state.isLoading) {
@@ -246,69 +299,36 @@ class _StaffOrdersScreenState extends ConsumerState<StaffOrdersScreen> {
   // ── Gradient Header ────────────────────────────────────────────
 
   Widget _buildGradientHeader(BuildContext context, AppLocalizations l10n) {
-    final topPadding = MediaQuery.paddingOf(context).top;
     return Container(
-      padding: EdgeInsets.fromLTRB(
-        AppSpacing.md,
-        topPadding + AppSpacing.xs,
-        AppSpacing.md,
-        AppSpacing.sm,
-      ),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF121212), Color(0xFF030303)],
-        ),
-        border: const Border(bottom: BorderSide(color: Colors.white10, width: 0.5)),
-      ),
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
       child: Row(
         children: [
-          Container(
-            width: 34,
-            height: 34,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  AppTheme.accentGold,
-                  AppTheme.accentGold.withOpacity(0.7),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(9),
-            ),
-            child: const Icon(Icons.receipt_long_rounded, color: Colors.black87, size: 18),
-          ),
-          AppSpacing.horzSm,
-          Text(
-            l10n.ordersHistoryLabel,
-            style: GoogleFonts.playfairDisplay(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-            ),
-          ),
-          const Spacer(),
-          Consumer(
-            builder: (ctx, ref, _) {
-              final total = ref.watch(ordersProvider).total;
-              return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppTheme.accentGold.withOpacity(0.15),
-                  borderRadius: AppRadius.chipBorder,
-                  border: Border.all(color: AppTheme.accentGold.withOpacity(0.3)),
-                ),
-                child: Text(
-                  l10n.totalOrdersCount(total),
-                  style: GoogleFonts.montserrat(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.accentGold,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.ordersHistoryLabel,
+                  style: GoogleFonts.playfairDisplay(
+                    fontSize: Responsive.isMobile(context) ? 22 : 32,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    letterSpacing: -0.5,
                   ),
                 ),
-              );
-            },
+                const SizedBox(height: 4),
+                Text(
+                  "Theo dõi và quản lý lịch sử giao dịch",
+                  style: GoogleFonts.montserrat(
+                    fontSize: 12,
+                    color: Colors.white38,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
           ),
+          _TotalBadge(count: ref.watch(ordersProvider).total),
         ],
       ),
     );
@@ -321,83 +341,78 @@ class _StaffOrdersScreenState extends ConsumerState<StaffOrdersScreen> {
     final hasRange = range != null;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
       child: Row(
         children: [
           Expanded(
-            child: TextField(
-              controller: _searchController,
-              onChanged: _onSearch,
-              decoration: InputDecoration(
-                hintText: l10n.searchOrdersHint,
-                hintStyle: GoogleFonts.montserrat(fontSize: 13, color: Colors.white24),
-                prefixIcon: const Icon(Icons.search_rounded, color: Colors.white24, size: 20),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear_rounded, size: 18, color: Colors.white24),
-                        onPressed: () {
-                          _searchController.clear();
-                          _onSearch('');
-                        },
-                      )
-                    : null,
-                contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                filled: true,
-                fillColor: const Color(0xFF0D0D0D),
-                border: OutlineInputBorder(
-                  borderRadius: AppRadius.inputBorder,
-                  borderSide: const BorderSide(color: Colors.white10),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: AppRadius.inputBorder,
-                  borderSide: const BorderSide(color: Colors.white10),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: AppRadius.inputBorder,
-                  borderSide: const BorderSide(color: AppTheme.accentGold, width: 0.5),
+            child: Container(
+              height: 48,
+              decoration: BoxDecoration(
+                color: const Color(0xFF151515),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white.withOpacity(0.1)),
+              ),
+              child: TextField(
+                controller: _searchController,
+                onChanged: _onSearch,
+                style: GoogleFonts.montserrat(fontSize: 13, color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: l10n.searchOrdersHint,
+                  hintStyle: GoogleFonts.montserrat(fontSize: 13, color: Colors.white38),
+                  prefixIcon: const Icon(Icons.search_rounded, color: Colors.white38, size: 20),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear_rounded, size: 18, color: Colors.white38),
+                          onPressed: () {
+                            _searchController.clear();
+                            _onSearch('');
+                          },
+                        )
+                      : null,
                 ),
               ),
-              style: GoogleFonts.montserrat(fontSize: 13, color: Colors.white),
             ),
           ),
-          AppSpacing.horzSm,
-          Theme(
-            data: ThemeData.dark(),
+          const SizedBox(width: 12),
+          GestureDetector(
+            onTap: _showFilterOptions,
             child: Container(
-              height: 44,
+              height: 48,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
-                color: hasRange ? AppTheme.accentGold.withOpacity(0.1) : const Color(0xFF0D0D0D),
-                borderRadius: AppRadius.inputBorder,
-                border: Border.all(
-                  color: hasRange ? AppTheme.accentGold.withOpacity(0.3) : Colors.white10,
-                ),
+                color: hasRange ? AppTheme.accentGold.withOpacity(0.1) : Colors.white.withOpacity(0.03),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: hasRange ? AppTheme.accentGold.withOpacity(0.3) : Colors.white.withOpacity(0.05)),
               ),
               child: Row(
                 children: [
-                  if (hasRange)
-                    IconButton(
-                      icon: const Icon(Icons.close_rounded, size: 18, color: AppTheme.accentGold),
-                      onPressed: _clearDateRange,
-                      tooltip: "Xoá lọc ngày",
-                    ),
-                  TextButton.icon(
-                    onPressed: _showFilterOptions,
-                    icon: Icon(
-                      Icons.calendar_today_rounded,
-                      size: 16,
-                      color: hasRange ? AppTheme.accentGold : Colors.white24,
-                    ),
-                    label: Text(
-                      hasRange
-                          ? "${DateFormat('dd/MM').format(range.start)}${range.start.day == range.end.day ? '' : ' - ${DateFormat('dd/MM').format(range.end)}'}"
-                          : "Lọc ngày",
-                      style: GoogleFonts.montserrat(
-                        fontSize: 12,
-                        color: hasRange ? AppTheme.accentGold : Colors.white24,
-                        fontWeight: hasRange ? FontWeight.w600 : FontWeight.w400,
-                      ),
+                  Icon(
+                    Icons.calendar_today_rounded,
+                    size: 16,
+                    color: hasRange ? AppTheme.accentGold : Colors.white38,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    hasRange
+                        ? "${DateFormat('dd/MM').format(range.start)} - ${DateFormat('dd/MM').format(range.end)}"
+                        : "Lọc ngày",
+                    style: GoogleFonts.montserrat(
+                      fontSize: 12,
+                      color: hasRange ? AppTheme.accentGold : Colors.white38,
+                      fontWeight: hasRange ? FontWeight.w600 : FontWeight.w500,
                     ),
                   ),
+                  if (hasRange) ...[
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () {
+                        _clearDateRange();
+                      },
+                      child: const Icon(Icons.close_rounded, size: 14, color: AppTheme.accentGold),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -457,146 +472,279 @@ class _OrderDetailSheet extends ConsumerWidget {
     final detail = ref.watch(orderDetailProvider(orderId));
     final currencyFmt = NumberFormat('#,###', 'vi');
     final dateFmt = DateFormat('dd/MM/yyyy HH:mm');
+    final isMobile = Responsive.isMobile(context);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF030303),
-        borderRadius: AppRadius.sheetBorder,
-        border: const Border(top: BorderSide(color: Colors.white10, width: 0.5)),
-      ),
-      child: DraggableScrollableSheet(
-        initialChildSize: 0.65,
-        maxChildSize: 0.95,
-        minChildSize: 0.4,
-        expand: false,
-        builder: (ctx, scrollCtrl) {
-          return Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: AppSpacing.sm),
-                child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(2))),
-              ),
-              Expanded(
-                child: detail.when(
-                  loading: () => const Center(child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.accentGold)),
-                  error: (e, _) => Center(
-                    child: AppErrorWidget(
-                      message: e.toString(),
-                      onRetry: () => ref.invalidate(orderDetailProvider(orderId)),
+    return BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.85),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
+        ),
+        child: DraggableScrollableSheet(
+          initialChildSize: isMobile ? 0.85 : 0.7,
+          maxChildSize: 0.95,
+          minChildSize: 0.5,
+          expand: false,
+          builder: (ctx, scrollCtrl) {
+            return Column(
+              children: [
+                const SizedBox(height: 12),
+                Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
+                Expanded(
+                  child: detail.when(
+                    loading: () => const Center(child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.accentGold)),
+                    error: (e, _) => Center(
+                      child: AppErrorWidget(
+                        message: e.toString(),
+                        onRetry: () => ref.invalidate(orderDetailProvider(orderId)),
+                      ),
+                    ),
+                    data: (order) => ListView(
+                      controller: scrollCtrl,
+                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 40),
+                      children: [
+                        _buildDetailHeader(context, l10n, order, currencyFmt, dateFmt),
+                        const SizedBox(height: 32),
+                        _buildStatusTimeline(order, l10n),
+                        const SizedBox(height: 32),
+                        if (order.user != null || order.phone != null) _buildCustomerSection(l10n, order),
+                        const SizedBox(height: 32),
+                        _buildItemsSection(l10n, order, currencyFmt),
+                        const SizedBox(height: 32),
+                        _buildSumarySection(l10n, order, currencyFmt),
+                        if (order.payments.isNotEmpty) ...[
+                          const SizedBox(height: 32),
+                          _buildPaymentInfo(l10n, order),
+                        ],
+                        const SizedBox(height: 40),
+                        if (order.isPaid) _buildPaidReturnButton(context, l10n, ref, order),
+                        if (!order.isPaid && order.status != 'CANCELLED') _buildActionButtons(context, l10n, ref, order),
+                      ],
                     ),
                   ),
-                  data: (order) => ListView(
-                    controller: scrollCtrl,
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    children: [
-                      _buildDetailHeader(context, l10n, order, currencyFmt, dateFmt),
-                      AppSpacing.vertMd,
-                      if (order.user != null || order.phone != null) _buildCustomerCard(l10n, order),
-                      if (order.user != null || order.phone != null) AppSpacing.vertMd,
-                      _buildItemsList(l10n, order, currencyFmt),
-                      AppSpacing.vertMd,
-                      _buildOrderSummary(l10n, order, currencyFmt),
-                      if (order.payments.isNotEmpty) ...[AppSpacing.vertMd, _buildPaymentInfo(l10n, order)],
-                      if (order.isPaid) ...[AppSpacing.vertMd, _buildReturnButton(context, l10n, ref, order)],
-                      if (!order.isPaid && order.status != 'CANCELLED') ...[AppSpacing.vertMd, _buildActionButtons(context, l10n, ref, order)],
-                      AppSpacing.vertMd,
-                    ],
-                  ),
                 ),
-              ),
-            ],
-          );
-        },
+              ],
+            );
+          },
+        ),
       ),
     );
   }
 
-  Widget _buildDetailHeader(BuildContext context, AppLocalizations l10n, StaffOrder order, NumberFormat currencyFmt, DateFormat dateFmt) {
-    final isPaid = order.paymentStatus == 'PAID';
-    final isCancelled = order.status == 'CANCELLED';
+  Widget _buildStatusTimeline(StaffOrder order, AppLocalizations l10n) {
+    bool isCancelled = order.status == 'CANCELLED';
+    bool isPaid = order.paymentStatus == 'PAID';
+    
     return Row(
       children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        _TimelineStep(title: "Khởi tạo", isComplete: true, time: DateFormat('HH:mm').format(order.createdAt.toLocal())),
+        _TimelineConnector(isComplete: isPaid || isCancelled),
+        _TimelineStep(
+          title: isPaid ? "Thanh toán" : (isCancelled ? "Đã huỷ" : "Chờ xử lý"), 
+          isComplete: isPaid || isCancelled,
+          isAlert: isCancelled,
+        ),
+        _TimelineConnector(isComplete: isPaid && !isCancelled),
+        _TimelineStep(title: "Hoàn tất", isComplete: isPaid && !isCancelled, last: true),
+      ],
+    );
+  }
+
+  Widget _buildCustomerSection(AppLocalizations l10n, StaffOrder order) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("THÔNG TIN KHÁCH HÀNG", style: GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.white38, letterSpacing: 1.5)),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.02),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white.withOpacity(0.05)),
+          ),
+          child: Row(
             children: [
-              Text(order.code, style: GoogleFonts.playfairDisplay(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.white)),
-              Text(dateFmt.format(order.createdAt.toLocal()), style: GoogleFonts.montserrat(fontSize: 12, color: Colors.white38)),
-              if (order.store != null) Text(order.store?.name ?? '', style: GoogleFonts.montserrat(fontSize: 12, color: Colors.white38)),
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(color: AppTheme.accentGold.withOpacity(0.1), shape: BoxShape.circle),
+                child: const Icon(Icons.person_outline_rounded, color: AppTheme.accentGold, size: 20),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(order.user?.fullName ?? order.phone ?? l10n.guest, style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.white)),
+                    const SizedBox(height: 4),
+                    Text(order.user?.phone ?? order.phone ?? 'Không có số điện thoại', style: GoogleFonts.montserrat(fontSize: 12, color: Colors.white38, fontWeight: FontWeight.w500)),
+                  ],
+                ),
+              ),
+              if (order.user?.email != null)
+                const Icon(Icons.verified_user_outlined, size: 16, color: Colors.greenAccent),
             ],
           ),
-        ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text('${currencyFmt.format(order.finalAmount)}đ', style: GoogleFonts.montserrat(fontSize: 20, fontWeight: FontWeight.w700, color: AppTheme.accentGold)),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(color: isCancelled ? Colors.red.withOpacity(0.1) : isPaid ? Colors.green.withOpacity(0.1) : Colors.orange.withOpacity(0.1), borderRadius: AppRadius.chipBorder),
-              child: Text(isCancelled ? l10n.statusCancelled : isPaid ? l10n.statusPaid : l10n.statusPendingPayment, style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w600, color: isCancelled ? Colors.red.shade400 : isPaid ? Colors.green.shade400 : Colors.orange.shade400)),
-            ),
-          ],
         ),
       ],
     );
   }
 
-  Widget _buildReturnButton(BuildContext context, AppLocalizations l10n, WidgetRef ref, StaffOrder order) {
+  Widget _buildItemsSection(AppLocalizations l10n, StaffOrder order, NumberFormat currencyFmt) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("${l10n.products.toUpperCase()} (${order.items.length})", style: GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.white38, letterSpacing: 1.5)),
+        const SizedBox(height: 16),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.02),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white.withOpacity(0.05)),
+          ),
+          child: ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: order.items.length,
+            separatorBuilder: (_, __) => Divider(height: 1, color: Colors.white.withOpacity(0.05), indent: 70),
+            itemBuilder: (ctx, i) => _buildItemTile(order.items[i], currencyFmt),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildItemTile(StaffOrderItem item, NumberFormat currencyFmt) {
+    String? imageUrl = item.variant?.product?.imageUrl;
+    if (imageUrl != null && !imageUrl.startsWith('http')) {
+      imageUrl = '${EnvConfig.apiBaseUrl}/$imageUrl';
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              color: const Color(0xFF151515),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white10),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: imageUrl != null
+                ? Image.network(
+                    imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => const Icon(Icons.inventory_2_outlined, size: 20, color: Colors.white10),
+                  )
+                : const Icon(Icons.inventory_2_outlined, size: 20, color: Colors.white10),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(item.variant?.product?.name ?? 'Sản phẩm', style: GoogleFonts.montserrat(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white)),
+                const SizedBox(height: 4),
+                Text("${item.variant?.name} × ${item.quantity}", style: GoogleFonts.montserrat(fontSize: 12, color: Colors.white38, fontWeight: FontWeight.w500)),
+              ],
+            ),
+          ),
+          Text("${currencyFmt.format(item.totalPrice)}đ", style: GoogleFonts.robotoMono(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSumarySection(AppLocalizations l10n, StaffOrder order, NumberFormat currencyFmt) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: AppTheme.accentGold.withOpacity(0.03),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.accentGold.withOpacity(0.05)),
+      ),
+      child: Column(
+        children: [
+          _SummaryRow(label: l10n.subtotal, value: "${currencyFmt.format(order.totalAmount)}đ"),
+          if (order.discountAmount > 0) ...[
+            const SizedBox(height: 12),
+            _SummaryRow(label: "Giảm giá", value: "-${currencyFmt.format(order.discountAmount)}đ", color: Colors.redAccent),
+          ],
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Divider(height: 1, color: Colors.white10),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(l10n.total, style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white)),
+              Text("${currencyFmt.format(order.finalAmount)}đ", style: GoogleFonts.playfairDisplay(fontSize: 24, fontWeight: FontWeight.w900, color: AppTheme.accentGold)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPaidReturnButton(BuildContext context, AppLocalizations l10n, WidgetRef ref, StaffOrder order) {
     if (order.hasReturnRequest) {
       return Container(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-        width: double.infinity,
+        height: 60,
+        alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: Colors.green.withOpacity(0.05),
-          borderRadius: AppRadius.cardBorder,
-          border: Border.all(color: Colors.green.withOpacity(0.2)),
+          color: Colors.greenAccent.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.greenAccent.withOpacity(0.1)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.check_circle_outline_rounded, size: 18, color: Colors.green.shade400),
-            AppSpacing.horzSm,
-            Text("Đã yêu cầu trả hàng thành công", style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.green.shade400)),
+            const Icon(Icons.check_circle_rounded, color: Colors.greenAccent, size: 20),
+            const SizedBox(width: 12),
+            Text("ĐÃ YÊU CẦU TRẢ HÀNG", style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w800, color: Colors.greenAccent, letterSpacing: 1)),
           ],
         ),
       );
     }
 
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton.icon(
-        onPressed: () async {
-          final confirmed = await showDialog<bool>(
-            context: context,
-            builder: (ctx) => AlertDialog(
-              backgroundColor: const Color(0xFF121212),
-              shape: RoundedRectangleBorder(borderRadius: AppRadius.cardBorder, side: const BorderSide(color: Colors.white10)),
-              title: Text(l10n.confirmReturnTitle, style: GoogleFonts.playfairDisplay(fontWeight: FontWeight.w700, color: Colors.white)),
-              content: Text(l10n.confirmReturnDesc(order.code), style: GoogleFonts.montserrat(fontSize: 13, color: Colors.white60)),
-              actions: [
-                TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.no, style: const TextStyle(color: Colors.white38))),
-                TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l10n.confirm, style: const TextStyle(color: AppTheme.accentGold))),
-              ],
-            ),
-          );
-          if (confirmed != true) return;
-
-          if (!context.mounted) return;
-
+    return _PremiumButton(
+      label: l10n.returnRefundLabel,
+      icon: Icons.keyboard_return_rounded,
+      onTap: () async {
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            backgroundColor: const Color(0xFF151515),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: const BorderSide(color: Colors.white10)),
+            title: Text(l10n.confirmReturnTitle, style: GoogleFonts.playfairDisplay(fontWeight: FontWeight.w800, color: Colors.white)),
+            content: Text(l10n.confirmReturnDesc(order.code), style: GoogleFonts.montserrat(fontSize: 14, color: Colors.white60)),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l10n.no, style: GoogleFonts.montserrat(color: Colors.white38, fontWeight: FontWeight.w600))),
+              TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l10n.confirm, style: GoogleFonts.montserrat(color: AppTheme.accentGold, fontWeight: FontWeight.w800))),
+            ],
+          ),
+        );
+        if (confirmed == true) {
           final ok = await ref.read(posProvider.notifier).createPosReturn(
             orderId: order.id,
             orderItems: order.items.map((e) => PosOrderItem(id: e.id, variantId: e.variantId, quantity: e.quantity, unitPrice: e.unitPrice, totalPrice: e.totalPrice, variant: e.variant != null ? PosOrderItemVariant(id: e.variant!.id, name: e.variant!.name, price: e.variant!.price, product: e.variant!.product != null ? PosOrderItemProduct(id: e.variant!.product!.id, name: e.variant!.product!.name) : null) : null)).toList(),
             reason: l10n.reasonCustomerReturnCounter,
           );
-          if (!context.mounted) return;
-          Navigator.pop(context);
-          ref.read(ordersProvider.notifier).loadOrders();
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(ok ? l10n.returnSuccess : l10n.returnError), backgroundColor: ok ? Colors.green.shade600 : Colors.red.shade600));
-        },
-        icon: const Icon(Icons.keyboard_return_rounded, size: 18),
-        label: Text(l10n.returnRefundLabel),
-        style: ElevatedButton.styleFrom(backgroundColor: Colors.blueGrey.shade900, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm), shape: RoundedRectangleBorder(borderRadius: AppRadius.buttonBorder)),
-      ),
+          if (context.mounted) {
+            Navigator.pop(context);
+            ref.read(ordersProvider.notifier).loadOrders();
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(ok ? l10n.returnSuccess : l10n.returnError), backgroundColor: ok ? Colors.green.shade600 : Colors.red.shade600));
+          }
+        }
+      },
+      color: const Color(0xFF1A1A1A),
+      textColor: Colors.white,
     );
   }
 
@@ -606,25 +754,28 @@ class _OrderDetailSheet extends ConsumerWidget {
     return Row(
       children: [
         Expanded(
-          child: ElevatedButton.icon(
-            onPressed: () {
+          child: _PremiumButton(
+            label: "Tiếp tục thanh toán",
+            icon: Icons.shopping_cart_checkout_rounded,
+            onTap: () {
               Navigator.pop(context);
               if (order.store?.id != null) ref.read(posSelectedStoreIdProvider.notifier).state = order.store!.id;
               ref.read(posProvider.notifier).loadExistingOrder(order.id, storeId: order.store?.id);
               ref.read(staffTabIndexProvider.notifier).state = 1;
             },
-            icon: const Icon(Icons.shopping_cart_checkout_rounded, size: 18),
-            label: const Text("Tiếp tục thanh toán"),
-            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentGold, foregroundColor: Colors.black87, padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm), shape: RoundedRectangleBorder(borderRadius: AppRadius.buttonBorder)),
+            color: AppTheme.accentGold,
+            textColor: Colors.black,
           ),
         ),
-        AppSpacing.horzSm,
+        const SizedBox(width: 12),
         Expanded(
-          child: OutlinedButton.icon(
-            onPressed: () => _confirmCancelOrder(context, l10n, ref, order),
-            icon: const Icon(Icons.cancel_outlined, size: 18),
-            label: const Text("Hủy đơn"),
-            style: OutlinedButton.styleFrom(foregroundColor: Colors.red.shade400, side: BorderSide(color: Colors.red.withOpacity(0.3)), padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm), shape: RoundedRectangleBorder(borderRadius: AppRadius.buttonBorder)),
+          child: _PremiumButton(
+            label: "Hủy đơn",
+            icon: Icons.cancel_outlined,
+            onTap: () => _confirmCancelOrder(context, l10n, ref, order),
+            color: Colors.transparent,
+            textColor: Colors.redAccent,
+            isOutlined: true,
           ),
         ),
       ],
@@ -635,12 +786,12 @@ class _OrderDetailSheet extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF121212),
-        shape: RoundedRectangleBorder(borderRadius: AppRadius.cardBorder, side: const BorderSide(color: Colors.white10)),
-        title: Text(l10n.confirmCancelOrderTitle, style: GoogleFonts.playfairDisplay(fontWeight: FontWeight.w700, color: Colors.white)),
-        content: Text(l10n.confirmCancelOrderDesc(order.code), style: GoogleFonts.montserrat(fontSize: 13, color: Colors.white60)),
+        backgroundColor: const Color(0xFF151515),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: const BorderSide(color: Colors.white10)),
+        title: Text(l10n.confirmCancelOrderTitle, style: GoogleFonts.playfairDisplay(fontWeight: FontWeight.w800, color: Colors.white)),
+        content: Text(l10n.confirmCancelOrderDesc(order.code), style: GoogleFonts.montserrat(fontSize: 14, color: Colors.white60)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.no, style: GoogleFonts.montserrat(color: Colors.white38))),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(l10n.no, style: GoogleFonts.montserrat(color: Colors.white38, fontWeight: FontWeight.w600))),
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
@@ -651,141 +802,284 @@ class _OrderDetailSheet extends ConsumerWidget {
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(success ? l10n.cancelOrderSuccess(order.code) : l10n.cancelOrderError), backgroundColor: success ? Colors.green.shade600 : Colors.red.shade600));
               }
             },
-            child: Text(l10n.statusCancelled, style: GoogleFonts.montserrat(color: Colors.red.shade400, fontWeight: FontWeight.w600)),
+            child: Text(l10n.statusCancelled, style: GoogleFonts.montserrat(color: Colors.redAccent, fontWeight: FontWeight.w800)),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCustomerCard(AppLocalizations l10n, StaffOrder order) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(color: const Color(0xFF0D0D0D), borderRadius: AppRadius.cardBorder, border: Border.all(color: Colors.white10)),
-      child: Row(
-        children: [
-          Container(width: 36, height: 36, decoration: BoxDecoration(color: AppTheme.accentGold.withOpacity(0.12), borderRadius: AppRadius.cardBorder), child: const Icon(Icons.person_rounded, size: 18, color: AppTheme.accentGold)),
-          AppSpacing.horzSm,
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(order.user?.fullName ?? l10n.guest, style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white)),
-                if (order.user?.phone != null || order.phone != null) Text(order.user?.phone ?? order.phone ?? '', style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white38)),
-                if (order.user?.email != null) Text(order.user?.email ?? '', style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white38)),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget _buildDetailHeader(BuildContext context, AppLocalizations l10n, StaffOrder order, NumberFormat currencyFmt, DateFormat dateFmt) {
+    final status = order.status == 'CANCELLED' ? l10n.statusCancelled : (order.paymentStatus == 'PAID' ? l10n.statusPaid : l10n.statusPendingPayment);
+    final color = order.status == 'CANCELLED' ? Colors.redAccent : (order.paymentStatus == 'PAID' ? Colors.greenAccent : Colors.orangeAccent);
 
-  Widget _buildItemsList(AppLocalizations l10n, StaffOrder order, NumberFormat currencyFmt) {
-    return Container(
-      decoration: BoxDecoration(color: const Color(0xFF0D0D0D), borderRadius: AppRadius.cardBorder, border: Border.all(color: Colors.white10)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.md, AppSpacing.md, AppSpacing.sm), child: Text('${l10n.products} (${order.items.length})', style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white24, letterSpacing: 0.5))),
-          ...order.items.asMap().entries.map((e) => _buildItemRow(e.value, e.key == order.items.length - 1, currencyFmt)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildItemRow(StaffOrderItem item, bool isLast, NumberFormat currencyFmt) {
-    return Column(
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-          child: Row(
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1A1A1A),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.white10, width: 0.5),
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: item.variant?.product?.imageUrl != null
-                    ? Image.network(
-                        item.variant!.product!.imageUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const Icon(Icons.image_not_supported_outlined, size: 20, color: Colors.white10),
-                      )
-                    : const Icon(Icons.inventory_2_outlined, size: 20, color: Colors.white10),
+              Text(order.code, style: GoogleFonts.playfairDisplay(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.5)),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  const Icon(Icons.access_time_rounded, size: 12, color: Colors.white38),
+                  const SizedBox(width: 4),
+                  Text(dateFmt.format(order.createdAt.toLocal()), style: GoogleFonts.montserrat(fontSize: 12, color: Colors.white38, fontWeight: FontWeight.w500)),
+                ],
               ),
-              AppSpacing.horzSm,
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(item.variant?.product?.name ?? 'Sản phẩm',
-                        style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w500, color: Colors.white),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis),
-                    Text('${item.variant?.name ?? ''}  ×${item.quantity}', style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white38)),
-                  ],
-                ),
-              ),
-              Text('${currencyFmt.format(item.totalPrice)}đ', style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white)),
             ],
           ),
         ),
-        if (!isLast) Divider(height: 1, color: Colors.white10, indent: AppSpacing.md, endIndent: AppSpacing.md),
+        _StatusBadge(label: status.toUpperCase(), color: color),
       ],
     );
   }
 
-  Widget _buildOrderSummary(AppLocalizations l10n, StaffOrder order, NumberFormat currencyFmt) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(color: const Color(0xFF0D0D0D), borderRadius: AppRadius.cardBorder, border: Border.all(color: Colors.white10)),
-      child: Column(
-        children: [
-          _Row(label: l10n.subtotal, value: '${currencyFmt.format(order.totalAmount)}đ'),
-          if (order.discountAmount > 0) _Row(label: l10n.discount, value: '-${currencyFmt.format(order.discountAmount)}đ'),
-          _Row(label: l10n.total, value: '${currencyFmt.format(order.finalAmount)}đ', isBold: true),
-        ],
-      ),
-    );
-  }
-
   Widget _buildPaymentInfo(AppLocalizations l10n, StaffOrder order) {
+    if (order.payments.isEmpty) return const SizedBox.shrink();
     final p = order.payments.first;
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(color: const Color(0xFF0D0D0D), borderRadius: AppRadius.cardBorder, border: Border.all(color: Colors.white10)),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.02),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
+      ),
       child: Row(
         children: [
-          Icon(p.provider == 'COD' ? Icons.payments_rounded : Icons.qr_code_rounded, size: 20, color: AppTheme.accentGold),
-          AppSpacing.horzSm,
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(l10n.paymentMethod, style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white38)), Text(p.provider, style: GoogleFonts.montserrat(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white))])),
-          Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3), decoration: BoxDecoration(color: p.status == 'PAID' ? Colors.green.withOpacity(0.1) : Colors.orange.withOpacity(0.1), borderRadius: AppRadius.chipBorder), child: Text(p.status, style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w600, color: p.status == 'PAID' ? Colors.green.shade400 : Colors.orange.shade400))),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppTheme.accentGold.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              p.provider == 'COD' ? Icons.payments_rounded : Icons.qr_code_rounded, 
+              size: 20, 
+              color: AppTheme.accentGold
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start, 
+              children: [
+                Text(l10n.paymentMethod.toUpperCase(), style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white38, fontWeight: FontWeight.w800, letterSpacing: 1)),
+                const SizedBox(height: 4),
+                Text(p.provider, style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.white))
+              ]
+            )
+          ),
+          _StatusChip(label: p.status, color: p.status == 'PAID' ? Colors.greenAccent : Colors.orangeAccent),
         ],
       ),
     );
   }
-
 }
 
-class _Row extends StatelessWidget {
+class _DashboardItem extends StatelessWidget {
   final String label;
   final String value;
-  final bool isBold;
-  const _Row({required this.label, required this.value, this.isBold = false});
+  final IconData icon;
+  final bool isGold;
+  final Color? color;
+
+  const _DashboardItem({
+    required this.label,
+    required this.value,
+    required this.icon,
+    this.isGold = false,
+    this.color,
+  });
+
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
-      child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(label, style: GoogleFonts.montserrat(fontSize: isBold ? 14 : 13, fontWeight: isBold ? FontWeight.w700 : FontWeight.w400, color: isBold ? Colors.white : Colors.white60)), Text(value, style: GoogleFonts.montserrat(fontSize: isBold ? 16 : 13, fontWeight: isBold ? FontWeight.w700 : FontWeight.w400, color: isBold ? AppTheme.accentGold : Colors.white))]),
+    return Column(
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 10, color: Colors.white38),
+            const SizedBox(width: 6),
+            Text(label, style: GoogleFonts.montserrat(fontSize: 9, color: Colors.white38, fontWeight: FontWeight.w800, letterSpacing: 1.5)),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          value,
+          style: GoogleFonts.playfairDisplay(
+            fontSize: 18,
+            fontWeight: FontWeight.w900,
+            color: isGold ? AppTheme.accentGold : (color ?? Colors.white70),
+          ),
+        ),
+      ],
     );
   }
 }
 
+class _TotalBadge extends StatelessWidget {
+  final int count;
+  const _TotalBadge({required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFF151515),
+        borderRadius: BorderRadius.circular(100),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            "$count",
+            style: GoogleFonts.robotoMono(fontSize: 12, fontWeight: FontWeight.w800, color: AppTheme.accentGold),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            "đơn",
+            style: GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white38, letterSpacing: 0.5),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SummaryRow extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color? color;
+  const _SummaryRow({required this.label, required this.value, this.color});
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: GoogleFonts.montserrat(fontSize: 13, color: Colors.white38, fontWeight: FontWeight.w500)),
+        Text(value, style: GoogleFonts.robotoMono(fontSize: 14, fontWeight: FontWeight.bold, color: color ?? Colors.white70)),
+      ],
+    );
+  }
+}
+
+class _TimelineStep extends StatelessWidget {
+  final String title;
+  final bool isComplete;
+  final bool isAlert;
+  final String? time;
+  final bool last;
+
+  const _TimelineStep({required this.title, required this.isComplete, this.isAlert = false, this.time, this.last = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      flex: last ? 0 : 1,
+      child: Column(
+        children: [
+          Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(
+              color: isComplete ? (isAlert ? Colors.redAccent : Colors.greenAccent) : Colors.white24,
+              shape: BoxShape.circle,
+              boxShadow: isComplete ? [BoxShadow(color: (isAlert ? Colors.redAccent : Colors.greenAccent).withOpacity(0.3), blurRadius: 4)] : [],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(title, style: GoogleFonts.montserrat(fontSize: 9, fontWeight: FontWeight.w800, color: isComplete ? Colors.white70 : Colors.white24, letterSpacing: 0.5)),
+          if (time != null) ...[
+            const SizedBox(height: 2),
+            Text(time!, style: GoogleFonts.robotoMono(fontSize: 8, color: Colors.white38)),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _TimelineConnector extends StatelessWidget {
+  final bool isComplete;
+  const _TimelineConnector({required this.isComplete});
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        height: 1,
+        margin: const EdgeInsets.only(bottom: 24),
+        color: isComplete ? Colors.greenAccent.withOpacity(0.3) : Colors.white.withOpacity(0.05),
+      ),
+    );
+  }
+}
+
+class _PremiumButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final VoidCallback onTap;
+  final Color color;
+  final Color textColor;
+  final bool isOutlined;
+
+  const _PremiumButton({
+    required this.label, 
+    required this.icon, 
+    required this.onTap, 
+    required this.color, 
+    required this.textColor,
+    this.isOutlined = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 56,
+        decoration: BoxDecoration(
+          color: isOutlined ? Colors.transparent : color,
+          borderRadius: BorderRadius.circular(16),
+          border: isOutlined ? Border.all(color: textColor.withOpacity(0.3)) : null,
+          boxShadow: !isOutlined ? [
+            BoxShadow(color: color.withOpacity(0.2), blurRadius: 12, offset: const Offset(0, 4))
+          ] : [],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 20, color: textColor),
+            const SizedBox(width: 12),
+            Text(label, style: GoogleFonts.montserrat(fontSize: 14, fontWeight: FontWeight.w800, color: textColor, letterSpacing: 0.5)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StatusBadge extends StatelessWidget {
+  final String label;
+  final Color color;
+  const _StatusBadge({required this.label, required this.color});
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withOpacity(0.2)),
+      ),
+      child: Text(label, style: GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.w800, color: color, letterSpacing: 1)),
+    );
+  }
+}
 
 class _StatusChip extends StatelessWidget {
   final String label;
@@ -832,6 +1126,7 @@ class _HoverableOrderCardState extends State<_HoverableOrderCard> {
   Widget build(BuildContext context) {
     final order = widget.order;
     final payBadge = widget.payBadge;
+    final isMobile = Responsive.isMobile(context);
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
@@ -840,153 +1135,110 @@ class _HoverableOrderCardState extends State<_HoverableOrderCard> {
       child: GestureDetector(
         onTap: widget.onTap,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeOutCubic,
-          margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+          duration: const Duration(milliseconds: 200),
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           decoration: BoxDecoration(
-            color: _isHovered ? const Color(0xFF121212) : const Color(0xFF0D0D0D),
-            borderRadius: AppRadius.cardBorder,
+            color: _isHovered ? Colors.white.withOpacity(0.04) : Colors.white.withOpacity(0.02),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: _isHovered ? AppTheme.accentGold.withOpacity(0.3) : Colors.white10,
+              color: _isHovered ? AppTheme.accentGold.withOpacity(0.3) : Colors.white.withOpacity(0.05),
             ),
-            boxShadow: _isHovered
-                ? [
-                    BoxShadow(
-                        color: AppTheme.accentGold.withOpacity(0.05),
-                        blurRadius: 16,
-                        offset: const Offset(0, 4))
-                  ]
-                : [],
           ),
           child: Row(
             children: [
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                width: 4,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: _isHovered ? payBadge.color.withOpacity(0.9) : payBadge.color.withOpacity(0.7),
-                  borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
-                  boxShadow: _isHovered
-                      ? [BoxShadow(color: payBadge.color.withOpacity(0.3), blurRadius: 8)]
-                      : [],
-                ),
-              ),
+              _buildProductPreview(order, payBadge),
+              const SizedBox(width: 16),
               Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.sm),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: payBadge.color.withOpacity(0.05),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: payBadge.color.withOpacity(0.15), width: 0.5),
-                        ),
-                        clipBehavior: Clip.antiAlias,
-                        child: order.items.isNotEmpty && order.items.first.variant?.product?.imageUrl != null
-                            ? Image.network(
-                                order.items.first.variant!.product!.imageUrl!,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => Icon(payBadge.icon, size: 22, color: payBadge.color),
-                              )
-                            : Icon(payBadge.icon, size: 22, color: payBadge.color),
-                      ),
-                      AppSpacing.horzSm,
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Flexible(
-                                  child: Text(
-                                    order.code,
-                                    style: GoogleFonts.montserrat(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.white,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                AppSpacing.horzXs,
-                                _StatusChip(label: payBadge.label, color: payBadge.color),
-                                if (order.hasReturnRequest) ...[
-                                  AppSpacing.horzXs,
-                                  _StatusChip(label: "TRẢ HÀNG", color: Colors.blue.shade400),
-                                ],
-                              ],
-                            ),
-                            AppSpacing.vertXxs,
-                            Row(
-                              children: [
-                                const Icon(Icons.person_outline_rounded, size: 12, color: Colors.white38),
-                                const SizedBox(width: 3),
-                                Flexible(
-                                  child: Text(
-                                    order.customerDisplay,
-                                    style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white38),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            AppSpacing.vertXxs,
-                            Row(
-                              children: [
-                                const Icon(Icons.access_time_rounded, size: 12, color: Colors.white38),
-                                const SizedBox(width: 3),
-                                Text(
-                                  widget.dateFmt.format(order.createdAt.toLocal()),
-                                  style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white38),
-                                ),
-                                if (order.store != null) ...[
-                                  const SizedBox(width: 8),
-                                  const Icon(Icons.store_outlined, size: 12, color: Colors.white38),
-                                  const SizedBox(width: 3),
-                                  Flexible(
-                                    child: Text(
-                                      order.store?.name ?? '',
-                                      style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white38),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      AppSpacing.horzSm,
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            '${widget.currencyFmt.format(order.finalAmount)}đ',
-                            style: GoogleFonts.montserrat(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              color: AppTheme.accentGold,
-                            ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          order.code,
+                          style: GoogleFonts.playfairDisplay(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
                           ),
-                          AppSpacing.vertXxs,
-                          Text(
-                            widget.l10n.itemCount(order.items.length),
-                            style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white38),
-                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        _StatusChip(label: payBadge.label, color: payBadge.color),
+                        if (order.hasReturnRequest) ...[
+                          const SizedBox(width: 4),
+                          _StatusChip(label: "TRẢ HÀNG", color: Colors.blueAccent),
                         ],
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        const Icon(Icons.person_outline_rounded, size: 12, color: Colors.white38),
+                        const SizedBox(width: 4),
+                        Text(
+                          order.customerDisplay,
+                          style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white38, fontWeight: FontWeight.w500),
+                        ),
+                        const SizedBox(width: 12),
+                        const Icon(Icons.access_time_rounded, size: 12, color: Colors.white38),
+                        const SizedBox(width: 4),
+                        Text(
+                          widget.dateFmt.format(order.createdAt.toLocal()),
+                          style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white38, fontWeight: FontWeight.w500),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
+              const SizedBox(width: 16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '${widget.currencyFmt.format(order.finalAmount)}đ',
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                      color: AppTheme.accentGold,
+                    ),
+                  ),
+                  Text(
+                    "${order.items.length} sản phẩm",
+                    style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white38, fontWeight: FontWeight.w700),
+                  ),
+                ],
+              ),
+              if (!isMobile) ...[
+                const SizedBox(width: 20),
+                Icon(Icons.chevron_right_rounded, color: _isHovered ? AppTheme.accentGold : Colors.white10),
+              ],
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildProductPreview(StaffOrder order, _PayBadge payBadge) {
+    final hasImage = order.items.isNotEmpty && order.items.first.variant?.product?.imageUrl != null;
+    return Container(
+      width: 52,
+      height: 52,
+      decoration: BoxDecoration(
+        color: const Color(0xFF151515),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white10),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: hasImage
+          ? Image.network(
+              order.items.first.variant!.product!.imageUrl!,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Icon(payBadge.icon, size: 18, color: payBadge.color.withOpacity(0.5)),
+            )
+          : Icon(payBadge.icon, size: 18, color: payBadge.color.withOpacity(0.5)),
     );
   }
 }

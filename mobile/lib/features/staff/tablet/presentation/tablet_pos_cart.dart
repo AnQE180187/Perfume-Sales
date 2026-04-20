@@ -11,9 +11,11 @@ import '../../../../core/theme/app_radius.dart';
 import 'package:perfume_gpt_app/l10n/app_localizations.dart';
 import '../../pos/providers/pos_provider.dart';
 import '../../pos/models/pos_models.dart';
-import 'boutique_success_overlay.dart';
+import 'package:perfume_gpt_app/features/staff/tablet/presentation/boutique_success_overlay.dart';
 import 'dart:ui';
-import '../../../../core/utils/responsive.dart';
+import 'package:perfume_gpt_app/core/utils/responsive.dart';
+import 'package:perfume_gpt_app/features/staff/models/staff_store.dart' as staff;
+import 'package:perfume_gpt_app/features/stores/services/stores_service.dart' as stores;
 
 class TabletPosCart extends ConsumerWidget {
   const TabletPosCart({super.key});
@@ -59,9 +61,9 @@ class TabletPosCart extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Row(
               children: [
-                Text("MÔ TẢ", style: GoogleFonts.montserrat(fontSize: 9, color: Colors.white60, fontWeight: FontWeight.w700, letterSpacing: 1)),
+                Text("MÔ TẢ", style: GoogleFonts.montserrat(fontSize: 9, color: Colors.white, fontWeight: FontWeight.w700, letterSpacing: 1)),
                 const Spacer(),
-                Text("TẠM TÍNH", style: GoogleFonts.montserrat(fontSize: 9, color: Colors.white60, fontWeight: FontWeight.w700, letterSpacing: 1)),
+                Text("TẠM TÍNH", style: GoogleFonts.montserrat(fontSize: 9, color: Colors.white, fontWeight: FontWeight.w700, letterSpacing: 1)),
               ],
             ),
           ),
@@ -92,8 +94,8 @@ class TabletPosCart extends ConsumerWidget {
             style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 12),
             decoration: InputDecoration(
               hintText: "GẮN SĐT KHÁCH HÀNG...",
-              hintStyle: GoogleFonts.montserrat(color: Colors.white38, fontSize: 10, letterSpacing: 1),
-              prefixIcon: const Icon(Icons.person_outline_rounded, color: Colors.white60, size: 16),
+              hintStyle: GoogleFonts.montserrat(color: Colors.white60, fontSize: 10, letterSpacing: 1),
+              prefixIcon: const Icon(Icons.person_outline_rounded, color: Colors.white, size: 16),
               border: InputBorder.none,
               filled: false,
             ),
@@ -204,7 +206,7 @@ class TabletPosCart extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(item.productName.toUpperCase(), style: GoogleFonts.playfairDisplay(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
-                        Text("${item.variantName} @ ${fmt.format(item.price)}đ", style: GoogleFonts.robotoMono(fontSize: 12, color: Colors.white60)),
+                        Text("${item.variantName} @ ${fmt.format(item.price)}đ", style: GoogleFonts.robotoMono(fontSize: 12, color: Colors.white)),
                       ],
                     ),
                   ),
@@ -315,23 +317,39 @@ class TabletPosCart extends ConsumerWidget {
 
     final notifier = ref.read(posProvider.notifier);
     
+    final storesAsync = ref.read(posStoresProvider);
+    final selectedStoreId = storeId;
+    stores.Store? currentStore;
+    
+    storesAsync.whenData((list) {
+      final staffStore = list.firstWhere((s) => s.id == selectedStoreId);
+      currentStore = stores.Store(
+        id: staffStore.id,
+        name: staffStore.name,
+        address: staffStore.address,
+      );
+    });
+
     if (method == "CASH") {
       final res = await notifier.checkoutCash(storeId);
       if (res != null) {
-        _showSuccessDialog(context, "THANH TOÁN TIỀN MẶT THÀNH CÔNG");
+        final order = PosOrder.fromJson(res);
+        _showSuccessDialog(context, "THANH TOÁN TIỀN MẶT THÀNH CÔNG", order, currentStore);
       }
     } else {
       final res = await notifier.checkoutQr(storeId);
       if (res != null) {
         final url = res['checkoutUrl'] as String?;
+        final orderJson = res['order'] as Map<String, dynamic>?;
         if (url != null) {
-          _showQrDialog(context, url, l10n);
+          final order = orderJson != null ? PosOrder.fromJson(orderJson) : null;
+          _showQrDialog(context, url, l10n, order, currentStore);
         }
       }
     }
   }
 
-  void _showSuccessDialog(BuildContext context, String title) {
+  void _showSuccessDialog(BuildContext context, String title, [PosOrder? order, stores.Store? store]) {
     showGeneralDialog(
       context: context,
       barrierDismissible: false,
@@ -339,12 +357,14 @@ class TabletPosCart extends ConsumerWidget {
       transitionDuration: const Duration(milliseconds: 400),
       pageBuilder: (ctx, _, __) => BoutiqueSuccessOverlay(
         title: title,
+        order: order,
+        store: store,
         onDismiss: () => Navigator.pop(ctx),
       ),
     );
   }
 
-  void _showQrDialog(BuildContext context, String url, AppLocalizations l10n) {
+  void _showQrDialog(BuildContext context, String url, AppLocalizations l10n, [PosOrder? order, stores.Store? store]) {
     showDialog(
       context: context,
       barrierColor: Colors.black87,
@@ -389,6 +409,14 @@ class TabletPosCart extends ConsumerWidget {
           ),
           actions: [
             TextButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                if (order != null) _showSuccessDialog(context, "THANH TOÁN THÀNH CÔNG", order, store);
+              },
+              style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 20)),
+              child: Center(child: Text(l10n.confirm, style: GoogleFonts.montserrat(color: AppTheme.accentGold, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1))),
+            ),
+            TextButton(
               onPressed: () => Navigator.pop(ctx),
               style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 20)),
               child: Center(child: Text(l10n.terminateRequest, style: GoogleFonts.montserrat(color: Colors.redAccent, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1))),
@@ -413,8 +441,8 @@ class _PriceLine extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: GoogleFonts.montserrat(fontSize: 12, color: isGold ? AppTheme.accentGold : Colors.white60, fontWeight: FontWeight.w700, letterSpacing: 1.5)),
-          Text(value, style: GoogleFonts.robotoMono(fontSize: 14, color: isGold ? AppTheme.accentGold : Colors.white54)),
+          Text(label, style: GoogleFonts.montserrat(fontSize: 12, color: isGold ? AppTheme.accentGold : Colors.white, fontWeight: FontWeight.w700, letterSpacing: 1.5)),
+          Text(value, style: GoogleFonts.robotoMono(fontSize: 14, color: isGold ? AppTheme.accentGold : Colors.white70)),
         ],
       ),
     );

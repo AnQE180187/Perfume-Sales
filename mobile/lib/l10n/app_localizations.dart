@@ -4340,6 +4340,12 @@ abstract class AppLocalizations {
   /// **'VOUCHER DISCOUNT'**
   String get voucherDiscount;
 
+  /// No description provided for @validUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'Valid until: {date}'**
+  String validUntil(String date);
+
   /// No description provided for @paymentVnpayDesc.
   ///
   /// In en, this message translates to:
@@ -4363,6 +4369,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Scan QR or bank transfer'**
   String get paymentPayosDesc;
+
+  /// No description provided for @earnPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'Earn {points} reward points on this order'**
+  String earnPoints(int points);
+
+  /// No description provided for @dnaMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'MATCH {percent}% WITH YOUR DNA'**
+  String dnaMatch(int percent);
 
   /// No description provided for @productReviewTitle.
   ///

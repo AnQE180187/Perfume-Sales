@@ -13,6 +13,7 @@ import 'package:perfume_gpt_app/l10n/app_localizations.dart';
 import '../../cart/providers/cart_provider.dart';
 import '../../cart/providers/cart_selection_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
+import '../../profile/providers/ai_preferences_provider.dart';
 import '../providers/product_provider.dart';
 import '../models/product.dart';
 import '../../../core/widgets/product_price_section.dart';
@@ -366,7 +367,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                               const SizedBox(height: 8),
                               // SUBTITLE
                               Text(
-                                AppLocalizations.of(context)!.eauDeParfum,
+                                (product.concentration ?? AppLocalizations.of(context)!.eauDeParfum).toUpperCase(),
                                 style: GoogleFonts.montserrat(
                                   fontSize: 10,
                                   letterSpacing: 2.0,
@@ -375,6 +376,76 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                                 ),
                               ),
                               const SizedBox(height: 12),
+                              // DNA MATCH + LOYALTY POINTS
+                              Consumer(
+                                builder: (context, ref, _) {
+                                  final aiPrefs = ref.watch(aiPreferencesProvider).value;
+                                  final preferredNotes = aiPrefs?.preferredNotes ?? [];
+                                  
+                                  // Calculate Match %
+                                  int match = 0;
+                                  if (preferredNotes.isNotEmpty) {
+                                    final pNotes = product.notes.map((n) => n.toLowerCase()).toSet();
+                                    int matches = 0;
+                                    for (var n in preferredNotes) {
+                                      if (pNotes.contains(n.toLowerCase())) matches++;
+                                    }
+                                    if (matches > 0) {
+                                      match = (75 + (matches * 10)).clamp(80, 99);
+                                    }
+                                  }
+
+                                  final points = (currentPrice / 10000).floor();
+
+                                  return Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      if (match > 0) ...[
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                          decoration: BoxDecoration(
+                                            color: AppTheme.accentGold.withValues(alpha: 0.1),
+                                            borderRadius: BorderRadius.circular(12),
+                                            border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.2)),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Icon(Icons.auto_awesome_rounded, size: 14, color: AppTheme.accentGold),
+                                              const SizedBox(width: 6),
+                                              Text(
+                                                AppLocalizations.of(context)!.dnaMatch(match),
+                                                style: GoogleFonts.montserrat(
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: AppTheme.accentGold,
+                                                  letterSpacing: 0.5,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 12),
+                                      ],
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.stars_rounded, size: 16, color: AppTheme.accentGold),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            AppLocalizations.of(context)!.earnPoints(points),
+                                            style: GoogleFonts.montserrat(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w500,
+                                              color: AppTheme.deepCharcoal.withValues(alpha: 0.7),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 16),
+                                    ],
+                                  );
+                                },
+                              ),
                               // RATING + VIEW REVIEWS
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.center,
