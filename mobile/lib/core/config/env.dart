@@ -30,6 +30,13 @@ class EnvConfig {
   /// Full base URL including the API prefix.
   static String get fullBaseUrl => '$apiBaseUrl$apiPrefix';
 
+  /// Google Web Client ID for social login.
+  static String get googleWebClientId {
+    final clientId = dotenv.maybeGet('GOOGLE_WEB_CLIENT_ID');
+    if (clientId != null && clientId.isNotEmpty) return clientId;
+    return '703366728616-2vgef2fv3561b3aohkvbo0hmt44969ps.apps.googleusercontent.com';
+  }
+
   /// Connection timeout in milliseconds.
   static const int connectTimeout = 60000;
 
