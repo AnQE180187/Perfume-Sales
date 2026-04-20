@@ -5,6 +5,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/promotions_provider.dart';
+import 'package:intl/intl.dart';
 
 class PromoCodeSection extends ConsumerStatefulWidget {
   final TextEditingController controller;
@@ -316,7 +317,7 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
             ...promos.map(
               (promo) => Padding(
                 padding: const EdgeInsets.only(bottom: 8),
-                child: _buildPromoItem(promo.code, promo.displayDescription, l10n),
+                child: _buildPromoItem(promo, l10n),
               ),
             ),
           ],
@@ -325,8 +326,11 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
     );
   }
 
-  Widget _buildPromoItem(String code, String desc, AppLocalizations l10n) {
+  Widget _buildPromoItem(Promotion promo, AppLocalizations l10n) {
+    final String code = promo.code;
+    final String desc = promo.displayDescription;
     final bool isSelected = widget.promoCode == code;
+    final String expiryDate = DateFormat('dd/MM/yyyy').format(promo.endDate);
 
     return GestureDetector(
       onTap: () {
@@ -394,9 +398,24 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
                         desc,
                         style: GoogleFonts.montserrat(
                           fontSize: 10,
-                          fontWeight: FontWeight.w500,
-                          color: AppTheme.mutedSilver,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.accentGold,
                         ),
+                      ),
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          const Icon(Icons.access_time_rounded, size: 10, color: AppTheme.mutedSilver),
+                          const SizedBox(width: 4),
+                          Text(
+                            l10n.validUntil(expiryDate),
+                            style: GoogleFonts.montserrat(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w500,
+                              color: AppTheme.mutedSilver,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

@@ -2229,6 +2229,11 @@ class AppLocalizationsVi extends AppLocalizations {
   String get voucherDiscount => 'VOUCHER GIẢM';
 
   @override
+  String validUntil(String date) {
+    return 'Hết hạn: $date';
+  }
+
+  @override
   String get paymentVnpayDesc => 'Thanh toán bằng ví điện tử VNPay';
 
   @override
@@ -2239,6 +2244,16 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get paymentPayosDesc => 'Quét mã QR hoặc chuyển khoản ngân hàng';
+
+  @override
+  String earnPoints(int points) {
+    return 'Tích lũy $points điểm khi mua sản phẩm này';
+  }
+
+  @override
+  String dnaMatch(int percent) {
+    return 'ĐỘ TƯƠNG THÍCH DNA: $percent%';
+  }
 
   @override
   String get productReviewTitle => 'Đánh giá sản phẩm';

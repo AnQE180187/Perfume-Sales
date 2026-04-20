@@ -55,67 +55,104 @@ class StaffReturnsScreen extends ConsumerWidget {
               const SizedBox(height: 8),
             ],
             Expanded(
-              child: returnsAsync.when(
-                loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.accentGold)),
-                error: (e, _) => AppErrorWidget(
-                  message: l10n.unableLoadData,
-                  onRetry: () => ref.read(staffReturnsProvider.notifier).loadReturns(),
-                ),
-                data: (list) {
-                  final storeId = ref.watch(posSelectedStoreIdProvider);
-                  final range = ref.watch(returnsDateRangeProvider);
-                  final posReturnsToday = list.where((item) {
-                    try {
-                      if (item['origin'] != 'POS') return false;
-                      if (item['order']?['storeId'] != storeId) return false;
-                      
-                      if (range == null) {
-                        // Default to today if no range selected
-                        final createdAt = DateTime.parse(item['createdAt']).toLocal();
-                        final now = DateTime.now();
-                        return createdAt.year == now.year &&
-                            createdAt.month == now.month &&
-                            createdAt.day == now.day;
-                      }
-                      
-                      final createdAt = DateTime.parse(item['createdAt']).toLocal();
-                      // Compare with range (inclusive of the whole start and end days)
-                      final start = DateTime(range.start.year, range.start.month, range.start.day);
-                      final end = DateTime(range.end.year, range.end.month, range.end.day, 23, 59, 59);
-                      return createdAt.isAfter(start.subtract(const Duration(seconds: 1))) &&
-                             createdAt.isBefore(end.add(const Duration(seconds: 1)));
-                    } catch (_) {
-                      return false;
-                    }
-                  }).toList();
-
-                  if (posReturnsToday.isEmpty) {
-                    return Center(
-                      child: Text(
-                          range == null
-                              ? "Không tìm thấy yêu cầu trả hàng nào hôm nay tại quầy"
-                              : "Không tìm thấy yêu cầu trả hàng trong khoảng thời gian đã chọn",
-                          style: GoogleFonts.montserrat(
-                              fontSize: 11,
-                              color: Colors.white38,
-                              letterSpacing: 2)),
-                    );
-                  }
-                  return ListView.builder(
-                    itemCount: posReturnsToday.length,
-                    itemBuilder: (ctx, i) => GestureDetector(
-                      onTap: () => showDialog(
-                        context: context,
-                        builder: (ctx) => TabletReturnDetailsDialog(
-                            returnId: posReturnsToday[i]['id']),
-                      ),
-                      child: _ReturnCard(
-                        data: posReturnsToday[i],
-                        dateFmt: dateFmt,
-                      ),
-                    ),
-                  );
+              child: RefreshIndicator(
+                color: AppTheme.accentGold,
+                backgroundColor: const Color(0xFF1A1A1A),
+                onRefresh: () async {
+                  await ref.read(staffReturnsProvider.notifier).loadReturns();
                 },
+                child: returnsAsync.when(
+                  loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.accentGold)),
+                  error: (e, _) => AppErrorWidget(
+                    message: l10n.unableLoadData,
+                    onRetry: () => ref.read(staffReturnsProvider.notifier).loadReturns(),
+                  ),
+                  data: (list) {
+                    final storeId = ref.watch(posSelectedStoreIdProvider);
+                    final range = ref.watch(returnsDateRangeProvider);
+                    final posReturns = list.where((item) {
+                      try {
+                        // Filter by store if one is selected
+                        if (storeId != null && item['order']?['storeId'] != storeId) return false;
+                        
+                        if (range == null) {
+                          // Default to showing all recent returns if no range is selected
+                          // Or we can keep "Today" but maybe the user expects more.
+                          // Let's keep Today but make sure it's not too restrictive.
+                          final createdAt = DateTime.parse(item['createdAt']).toLocal();
+                          final now = DateTime.now();
+                          bool isToday = createdAt.year == now.year &&
+                              createdAt.month == now.month &&
+                              createdAt.day == now.day;
+                          
+                          // If it's not today, still show it if it's REQUESTED (pending) 
+                          // so staff don't miss older pending items.
+                          if (item['status'] == 'REQUESTED') return true;
+                          return isToday;
+                        }
+                        
+                        final createdAt = DateTime.parse(item['createdAt']).toLocal();
+                        final start = DateTime(range.start.year, range.start.month, range.start.day);
+                        final end = DateTime(range.end.year, range.end.month, range.end.day, 23, 59, 59);
+                        return createdAt.isAfter(start.subtract(const Duration(seconds: 1))) &&
+                               createdAt.isBefore(end.add(const Duration(seconds: 1)));
+                      } catch (_) {
+                        return false;
+                      }
+                    }).toList();
+
+                    if (posReturns.isEmpty) {
+                      return ListView(
+                        physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+                        children: [
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.4,
+                            child: Center(
+                              child: Text(
+                                  range == null
+                                      ? "Không tìm thấy yêu cầu trả hàng mới hoặc trong hôm nay"
+                                      : "Không tìm thấy yêu cầu trả hàng trong khoảng thời gian đã chọn",
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.montserrat(
+                                      fontSize: 11,
+                                      color: Colors.white38,
+                                      letterSpacing: 2)),
+                            ),
+                          ),
+                        ],
+                      );
+                    }
+
+                    // Calculate summary
+                    final totalAmount = posReturns.fold<double>(0, (sum, item) => sum + (item['totalAmount'] ?? 0));
+                    final pendingCount = posReturns.where((item) => item['status'] == 'REQUESTED').length;
+
+                    return Column(
+                      children: [
+                        if (!isMobile) _buildSummaryBar(totalAmount, posReturns.length, pendingCount),
+                        if (!isMobile) const SizedBox(height: 24),
+                        Expanded(
+                          child: ListView.builder(
+                            physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+                            padding: const EdgeInsets.only(bottom: 40),
+                            itemCount: posReturns.length,
+                            itemBuilder: (ctx, i) => GestureDetector(
+                              onTap: () => showDialog(
+                                context: context,
+                                builder: (ctx) => TabletReturnDetailsDialog(
+                                    returnId: posReturns[i]['id']),
+                              ),
+                              child: _ReturnCard(
+                                data: posReturns[i],
+                                dateFmt: dateFmt,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
               ),
             ),
           ],
@@ -124,11 +161,34 @@ class StaffReturnsScreen extends ConsumerWidget {
     );
   }
 
+  Widget _buildSummaryBar(double totalAmount, int totalCount, int pendingCount) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppTheme.accentGold.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.accentGold.withOpacity(0.15)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _SummaryItem(label: "TỔNG HOÀN TIỀN", value: "${NumberFormat('#,###', 'vi_VN').format(totalAmount)}đ", isGold: true),
+          _buildVerticalDivider(),
+          _SummaryItem(label: "SỐ LƯỢNG ĐƠN", value: "$totalCount"),
+          _buildVerticalDivider(),
+          _SummaryItem(label: "CHỜ XỬ LÝ", value: "$pendingCount", isAlert: pendingCount > 0),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVerticalDivider() => Container(width: 1, height: 30, color: Colors.white.withOpacity(0.05));
+
   Widget _buildTableHeader() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withOpacity(0.03),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -137,6 +197,7 @@ class StaffReturnsScreen extends ConsumerWidget {
           Expanded(flex: 2, child: Text("Mã Yêu Cầu", style: _headerStyle())),
           Expanded(flex: 2, child: Text("Mã Đơn", style: _headerStyle())),
           Expanded(flex: 2, child: Text("Ngày tạo", style: _headerStyle())),
+          Expanded(flex: 2, child: Text("Số tiền", style: _headerStyle())),
           Expanded(flex: 3, child: Text("Lý do", style: _headerStyle())),
           Expanded(flex: 2, child: Text("Trạng thái", style: _headerStyle())),
           SizedBox(width: 48, child: Text("Hành động", style: _headerStyle(), textAlign: TextAlign.center)),
@@ -146,7 +207,33 @@ class StaffReturnsScreen extends ConsumerWidget {
   }
 
   TextStyle _headerStyle() {
-    return GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white54);
+    return GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.white38, letterSpacing: 1);
+  }
+}
+
+class _SummaryItem extends StatelessWidget {
+  final String label;
+  final String value;
+  final bool isGold;
+  final bool isAlert;
+  const _SummaryItem({required this.label, required this.value, this.isGold = false, this.isAlert = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(label, style: GoogleFonts.montserrat(fontSize: 9, color: Colors.white38, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+        const SizedBox(height: 6),
+        Text(
+          value, 
+          style: GoogleFonts.robotoMono(
+            fontSize: 18, 
+            fontWeight: FontWeight.bold, 
+            color: isGold ? AppTheme.accentGold : (isAlert ? Colors.orangeAccent : Colors.white70)
+          )
+        ),
+      ],
+    );
   }
 }
 
@@ -168,23 +255,25 @@ class _ReturnCardState extends State<_ReturnCard> {
     final status = (widget.data['status'] as String?) ?? 'REQUESTED';
     final origin = (widget.data['origin'] as String?) ?? 'ONLINE';
     final reason = (widget.data['reason'] as String?) ?? '';
+    final amount = (widget.data['totalAmount'] as num?) ?? 0;
 
     final isMobile = Responsive.isMobile(context);
+    final currencyFmt = NumberFormat('#,###', 'vi_VN');
+
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       cursor: SystemMouseCursors.click,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeOutCubic,
+        duration: const Duration(milliseconds: 200),
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
-          color: _isHovered ? const Color(0xFF151515) : const Color(0xFF0F0F0F),
+          color: _isHovered ? Colors.white.withOpacity(0.04) : Colors.white.withOpacity(0.02),
           border: Border.all(
-            color: _isHovered ? AppTheme.accentGold.withOpacity(0.3) : Colors.white10,
+            color: _isHovered ? AppTheme.accentGold.withOpacity(0.3) : Colors.white.withOpacity(0.05),
           ),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(12),
         ),
         child: isMobile 
           ? Column(
@@ -195,7 +284,7 @@ class _ReturnCardState extends State<_ReturnCard> {
                     _buildOriginBadge(origin),
                     const SizedBox(width: 8),
                     Text(
-                      "RQ-${(widget.data['id']?.toString() ?? '').substring(0, 8).toUpperCase()}",
+                      "#${(widget.data['id']?.toString() ?? '').substring(0, 8).toUpperCase()}",
                       style: GoogleFonts.robotoMono(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.accentGold),
                     ),
                     const Spacer(),
@@ -210,33 +299,32 @@ class _ReturnCardState extends State<_ReturnCard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text("Mã Đơn: ${(widget.data['orderId']?.toString() ?? '').substring(0, 8).toUpperCase()}", style: GoogleFonts.robotoMono(fontSize: 11, color: Colors.white70)),
-                        Text(widget.dateFmt.format(DateTime.parse(widget.data['createdAt']).toLocal()), style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white38)),
+                        const SizedBox(height: 4),
+                        Text(widget.dateFmt.format(DateTime.parse(widget.data['createdAt']).toLocal()), style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white24)),
                       ],
                     ),
-                    const Icon(Icons.chevron_right_rounded, color: Colors.white24),
+                    Text("${currencyFmt.format(amount)}đ", style: GoogleFonts.robotoMono(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
                   ],
                 ),
                 if (reason.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Text(reason, style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white60), maxLines: 2, overflow: TextOverflow.ellipsis),
+                  const SizedBox(height: 12),
+                  Text(reason, style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white54, fontStyle: FontStyle.italic), maxLines: 2, overflow: TextOverflow.ellipsis),
                 ],
               ],
             )
           : Row(
               children: [
                 Expanded(flex: 1, child: _buildOriginBadge(origin)),
-                Expanded(flex: 2, child: Text((widget.data['id']?.toString() ?? '').substring(0, (widget.data['id']?.toString().length ?? 0) > 8 ? 8 : (widget.data['id']?.toString().length ?? 0)).toUpperCase(), style: GoogleFonts.robotoMono(fontSize: 12, color: _isHovered ? AppTheme.accentGold : Colors.white70))),
+                Expanded(flex: 2, child: Text((widget.data['id']?.toString() ?? '').substring(0, (widget.data['id']?.toString().length ?? 0) > 8 ? 8 : (widget.data['id']?.toString().length ?? 0)).toUpperCase(), style: GoogleFonts.robotoMono(fontSize: 12, fontWeight: FontWeight.bold, color: _isHovered ? AppTheme.accentGold : Colors.white70))),
                 Expanded(flex: 2, child: Text((widget.data['orderId']?.toString() ?? '').substring(0, (widget.data['orderId']?.toString().length ?? 0) > 8 ? 8 : (widget.data['orderId']?.toString().length ?? 0)).toUpperCase(), style: GoogleFonts.robotoMono(fontSize: 12, color: Colors.white70))),
                 Expanded(flex: 2, child: Text(widget.dateFmt.format(DateTime.parse(widget.data['createdAt']).toLocal()), style: GoogleFonts.montserrat(fontSize: 12, color: Colors.white70))),
-                Expanded(flex: 3, child: Text(reason.isEmpty ? "Không có lý do" : reason, style: GoogleFonts.montserrat(fontSize: 12, color: reason.isEmpty ? Colors.white38 : Colors.white70, fontStyle: reason.isEmpty ? FontStyle.italic : FontStyle.normal), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                Expanded(flex: 2, child: Text("${currencyFmt.format(amount)}đ", style: GoogleFonts.robotoMono(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white))),
+                Expanded(flex: 3, child: Text(reason.isEmpty ? "Không có lý do" : reason, style: GoogleFonts.montserrat(fontSize: 12, color: reason.isEmpty ? Colors.white24 : Colors.white70, fontStyle: reason.isEmpty ? FontStyle.italic : FontStyle.normal), maxLines: 1, overflow: TextOverflow.ellipsis)),
                 Expanded(flex: 2, child: Align(alignment: Alignment.centerLeft, child: _StatusBadge(status: status))),
                 SizedBox(
                   width: 48,
                   child: Center(
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      child: Icon(Icons.search_rounded, size: 20, color: _isHovered ? AppTheme.accentGold.withOpacity(0.8) : Colors.white38),
-                    ),
+                    child: Icon(Icons.chevron_right_rounded, size: 20, color: _isHovered ? AppTheme.accentGold : Colors.white10),
                   ),
                 ),
               ],
@@ -248,18 +336,18 @@ class _ReturnCardState extends State<_ReturnCard> {
   Widget _buildOriginBadge(String origin) {
     bool isPos = origin == 'POS';
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: isPos ? Colors.redAccent.withOpacity(0.1) : Colors.cyanAccent.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: isPos ? Colors.redAccent.withOpacity(0.3) : Colors.cyanAccent.withOpacity(0.3)),
+        color: isPos ? Colors.redAccent.withOpacity(0.05) : Colors.cyanAccent.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: isPos ? Colors.redAccent.withOpacity(0.2) : Colors.cyanAccent.withOpacity(0.2)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(isPos ? Icons.store_rounded : Icons.public_rounded, size: 10, color: isPos ? Colors.redAccent.shade100 : Colors.cyanAccent.shade100),
           const SizedBox(width: 4),
-          Text(isPos ? "POS" : "Online", style: GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.bold, color: isPos ? Colors.redAccent.shade100 : Colors.cyanAccent.shade100)),
+          Text(isPos ? "POS" : "Online", style: GoogleFonts.montserrat(fontSize: 9, fontWeight: FontWeight.w800, color: isPos ? Colors.redAccent.shade100 : Colors.cyanAccent.shade100, letterSpacing: 0.5)),
         ],
       ),
     );

@@ -61,9 +61,17 @@ class _StaffInventoryScreenState extends ConsumerState<StaffInventoryScreen> {
               _buildGlassDashboard(inventoryState.overview!),
 
             _buildRefinedSearchBar(),
-
             Expanded(
-              child: _buildPremiumInventoryTable(inventoryState, selectedStoreId),
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  if (selectedStoreId != null) {
+                    await ref.read(inventoryProvider.notifier).loadOverview(selectedStoreId);
+                  }
+                },
+                color: AppTheme.accentGold,
+                backgroundColor: const Color(0xFF141414),
+                child: _buildPremiumInventoryTable(inventoryState, selectedStoreId),
+              ),
             ),
           ],
         ),
@@ -301,6 +309,27 @@ class _StaffInventoryScreenState extends ConsumerState<StaffInventoryScreen> {
 
   Widget _buildGlassDashboard(InventoryOverview overview) {
     final isMobile = Responsive.isMobile(context);
+    final stats = [
+      {
+        'label': 'TỔNG SẢN PHẨM',
+        'value': '${overview.stats.totalUnits}',
+        'icon': Icons.layers_outlined,
+        'isAlert': false,
+      },
+      {
+        'label': 'TỔNG SKU',
+        'value': '${overview.variants.length}',
+        'icon': Icons.science_outlined,
+        'isAlert': false,
+      },
+      {
+        'label': 'SẮP HẾT HÀNG',
+        'value': '${overview.stats.lowStockCount}',
+        'icon': Icons.emergency_outlined,
+        'isAlert': overview.stats.lowStockCount > 0,
+      },
+    ];
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: isMobile ? 20 : 32),
       child: isMobile 
@@ -310,54 +339,42 @@ class _StaffInventoryScreenState extends ConsumerState<StaffInventoryScreen> {
                 children: [
                   Expanded(
                     child: _GlassStatCard(
-                      label: "TỔNG SẢN PHẨM",
-                      value: "${overview.stats.totalUnits}",
-                      icon: Icons.layers_outlined,
+                      label: stats[0]['label'] as String,
+                      value: stats[0]['value'] as String,
+                      icon: stats[0]['icon'] as IconData,
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: _GlassStatCard(
-                      label: "TỔNG SKU",
-                      value: "${overview.variants.length}",
-                      icon: Icons.science_outlined,
+                      label: stats[1]['label'] as String,
+                      value: stats[1]['value'] as String,
+                      icon: stats[1]['icon'] as IconData,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: _GlassStatCard(
-                  label: "SẮP HẾT HÀNG",
-                  value: "${overview.stats.lowStockCount}",
-                  icon: Icons.emergency_outlined,
-                  isAlert: overview.stats.lowStockCount > 0,
-                ),
+              _GlassStatCard(
+                label: stats[2]['label'] as String,
+                value: stats[2]['value'] as String,
+                icon: stats[2]['icon'] as IconData,
+                isAlert: stats[2]['isAlert'] as bool,
               ),
             ],
           )
         : Row(
-            children: [
-              _GlassStatCard(
-                label: "TỔNG SẢN PHẨM",
-                value: "${overview.stats.totalUnits}",
-                icon: Icons.layers_outlined,
+            children: stats.map((s) => Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(right: s != stats.last ? 24 : 0),
+                child: _GlassStatCard(
+                  label: s['label'] as String,
+                  value: s['value'] as String,
+                  icon: s['icon'] as IconData,
+                  isAlert: s['isAlert'] as bool,
+                ),
               ),
-              const SizedBox(width: 24),
-              _GlassStatCard(
-                label: "TỔNG SKU",
-                value: "${overview.variants.length}",
-                icon: Icons.science_outlined,
-              ),
-              const SizedBox(width: 24),
-              _GlassStatCard(
-                label: "SẮP HẾT HÀNG",
-                value: "${overview.stats.lowStockCount}",
-                icon: Icons.emergency_outlined,
-                isAlert: overview.stats.lowStockCount > 0,
-              ),
-            ],
+            )).toList(),
           ),
     );
   }
@@ -388,7 +405,7 @@ class _StaffInventoryScreenState extends ConsumerState<StaffInventoryScreen> {
                 style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 13),
                 decoration: InputDecoration(
                   hintText: isMobile ? "Tìm kiếm..." : "Tìm tên sản phẩm, SKU, nhóm mùi hương, thương hiệu",
-                  hintStyle: GoogleFonts.montserrat(color: Colors.white24, fontSize: 11, letterSpacing: 0.5),
+                  hintStyle: GoogleFonts.montserrat(color: Colors.white60, fontSize: 11, letterSpacing: 0.5),
                   border: InputBorder.none,
                   filled: false,
                 ),
@@ -524,23 +541,28 @@ class _GlassStatCardState extends State<_GlassStatCard> {
             padding: EdgeInsets.all(isMobile ? 12 : 24),
             transform: Matrix4.identity()..translate(0.0, _isHovered ? -3.0 : 0.0),
             decoration: BoxDecoration(
-              color: _isHovered ? Colors.white.withOpacity(0.06) : Colors.white.withOpacity(0.03),
-              borderRadius: BorderRadius.circular(4),
+              color: _isHovered ? Colors.white.withOpacity(0.08) : Colors.white.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(8),
               border: Border.all(
                 color: widget.isAlert
-                    ? Colors.redAccent.withOpacity(_isHovered ? 0.5 : 0.3)
+                    ? Colors.redAccent.withOpacity(_isHovered ? 0.6 : 0.4)
                     : _isHovered
-                        ? AppTheme.accentGold.withOpacity(0.4)
-                        : Colors.white10,
+                        ? AppTheme.accentGold.withOpacity(0.5)
+                        : Colors.white.withOpacity(0.1),
               ),
-              boxShadow: _isHovered
-                  ? [
-                      BoxShadow(
-                          color: (widget.isAlert ? Colors.redAccent : AppTheme.accentGold).withOpacity(0.08),
-                          blurRadius: 20,
-                          offset: const Offset(0, 8))
-                    ]
-                  : [],
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+                if (_isHovered)
+                  BoxShadow(
+                    color: (widget.isAlert ? Colors.redAccent : AppTheme.accentGold).withOpacity(0.1),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
+              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -621,7 +643,7 @@ class _TableHeaderText extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       flex: flex,
-      child: Text(text, style: GoogleFonts.montserrat(fontSize: 9, color: Colors.white60, fontWeight: FontWeight.w900, letterSpacing: 2)),
+      child: Text(text, style: GoogleFonts.montserrat(fontSize: 9, color: Colors.white70, fontWeight: FontWeight.w900, letterSpacing: 2)),
     );
   }
 }
@@ -704,7 +726,7 @@ class _InventoryRowState extends State<_InventoryRow> {
                         children: [
                           Text(
                             "SKU: ${widget.variant.id.substring(0,8)}".toUpperCase(),
-                            style: GoogleFonts.robotoMono(fontSize: 9, color: Colors.white10),
+                            style: GoogleFonts.robotoMono(fontSize: 9, color: Colors.white38),
                           ),
                           if (widget.variant.barcode != null)
                             Text(
@@ -767,7 +789,7 @@ class _InventoryRowState extends State<_InventoryRow> {
                       children: [
                         Text(
                           "SKU: ${widget.variant.id.substring(0,8)}".toUpperCase(),
-                          style: GoogleFonts.robotoMono(fontSize: 9, color: Colors.white10),
+                          style: GoogleFonts.robotoMono(fontSize: 9, color: Colors.white38),
                         ),
                         if (widget.variant.barcode != null)
                           Text(
@@ -776,7 +798,7 @@ class _InventoryRowState extends State<_InventoryRow> {
                           ),
                         Text(
                           "${widget.variant.variantName} UNIT",
-                          style: GoogleFonts.robotoMono(fontSize: 9, color: Colors.white38),
+                          style: GoogleFonts.robotoMono(fontSize: 9, color: Colors.white60),
                         ),
                       ],
                     ),

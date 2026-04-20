@@ -56,31 +56,43 @@ class StaffInventoryHistoryScreen extends ConsumerWidget {
             if (!isMobile) ...[
               Text(
                 "Nhật ký điều chỉnh".toUpperCase(),
-                style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white38, fontWeight: FontWeight.bold, letterSpacing: 2),
+                style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white70, fontWeight: FontWeight.bold, letterSpacing: 2),
               ),
               const SizedBox(height: 8),
               const Divider(color: Colors.white10),
             ],
             const SizedBox(height: 16),
             Expanded(
-              child: logsAsync.when(
-                loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.accentGold)),
-                error: (e, _) => AppErrorWidget(
-                  message: l10n.unableLoadData,
-                  onRetry: () => ref.refresh(inventoryLogsProvider(storeId)),
-                ),
-                data: (logs) {
-                  if (logs.isEmpty) {
-                    return Center(
-                      child: Text(l10n.noRecentActivity, style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white10, letterSpacing: 4)),
+              child: RefreshIndicator(
+                onRefresh: () async => ref.refresh(inventoryLogsProvider(storeId)),
+                color: AppTheme.accentGold,
+                backgroundColor: const Color(0xFF141414),
+                child: logsAsync.when(
+                  loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.accentGold)),
+                  error: (e, _) => AppErrorWidget(
+                    message: l10n.unableLoadData,
+                    onRetry: () => ref.refresh(inventoryLogsProvider(storeId)),
+                  ),
+                  data: (logs) {
+                    if (logs.isEmpty) {
+                      return ListView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        children: [
+                          SizedBox(height: MediaQuery.of(context).size.height * 0.3),
+                          Center(
+                            child: Text(l10n.noRecentActivity, style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white38, letterSpacing: 4)),
+                          ),
+                        ],
+                      );
+                    }
+                    return ListView.separated(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      itemCount: logs.length,
+                      separatorBuilder: (_, __) => Divider(color: Colors.white.withOpacity(0.05), height: 1),
+                      itemBuilder: (ctx, i) => _LogItem(log: logs[i], dateFmt: dateFmt),
                     );
-                  }
-                  return ListView.separated(
-                    itemCount: logs.length,
-                    separatorBuilder: (_, __) => Divider(color: Colors.white.withOpacity(0.05), height: 1),
-                    itemBuilder: (ctx, i) => _LogItem(log: logs[i], dateFmt: dateFmt),
-                  );
-                },
+                  },
+                ),
               ),
             ),
           ],
@@ -161,7 +173,7 @@ class _LogItem extends StatelessWidget {
                     Expanded(
                       child: Text(
                         log.reason?.toUpperCase() ?? 'KHÔNG CÓ LÝ DO',
-                        style: GoogleFonts.montserrat(fontSize: 9, color: Colors.white38, letterSpacing: 1),
+                        style: GoogleFonts.montserrat(fontSize: 9, color: Colors.white60, letterSpacing: 1),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -180,7 +192,7 @@ class _LogItem extends StatelessWidget {
                 style: GoogleFonts.robotoMono(fontSize: 18, fontWeight: FontWeight.w900, color: isIncrease ? Colors.greenAccent : Colors.orangeAccent),
               ),
               const SizedBox(height: 2),
-              Text(dateFmt.format(log.createdAt), style: GoogleFonts.robotoMono(fontSize: 9, color: Colors.white24)),
+              Text(dateFmt.format(log.createdAt), style: GoogleFonts.robotoMono(fontSize: 9, color: Colors.white60)),
             ],
           ),
         ],

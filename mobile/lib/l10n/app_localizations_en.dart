@@ -2227,6 +2227,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get voucherDiscount => 'VOUCHER DISCOUNT';
 
   @override
+  String validUntil(String date) {
+    return 'Valid until: $date';
+  }
+
+  @override
   String get paymentVnpayDesc => 'Pay with VNPay wallet';
 
   @override
@@ -2237,6 +2242,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get paymentPayosDesc => 'Scan QR or bank transfer';
+
+  @override
+  String earnPoints(int points) {
+    return 'Earn $points reward points on this order';
+  }
+
+  @override
+  String dnaMatch(int percent) {
+    return 'MATCH $percent% WITH YOUR DNA';
+  }
 
   @override
   String get productReviewTitle => 'Product Review';
