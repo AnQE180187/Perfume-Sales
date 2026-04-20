@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Standardized spacing tokens for the Lumina design system.
+/// Standardized spacing tokens for the Perfume GPT design system.
 ///
 /// Usage:
 /// ```dart

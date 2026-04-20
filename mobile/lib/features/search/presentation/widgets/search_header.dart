@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:perfume_gpt_app/l10n/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 
 class SearchHeader extends StatelessWidget {
@@ -60,7 +61,7 @@ class SearchHeader extends StatelessWidget {
                       autofocus: true,
                       cursorColor: AppTheme.accentGold,
                       decoration: InputDecoration(
-                        hintText: 'Tìm kiếm hương thơm...',
+                        hintText: AppLocalizations.of(context)!.searchHint,
                         border: InputBorder.none,
                         isDense: true,
                         contentPadding: const EdgeInsets.symmetric(vertical: 12),

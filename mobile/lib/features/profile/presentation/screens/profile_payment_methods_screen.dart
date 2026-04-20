@@ -183,7 +183,7 @@ class _ProfilePaymentMethodsScreenState
                     const SizedBox(height: 18),
                     _PaymentSectionTitle(
                       eyebrow: l10n.currentPriority('').replaceAll(':', '').toUpperCase(),
-                      title: '${l10n.payosTitle.split(' ').first} & ${l10n.codTitle.split(' ').first}',
+                      title: l10n.paymentMethodsComboTitle,
                     ),
                     const SizedBox(height: 14),
                   ],
@@ -594,7 +594,7 @@ class _PayOsInfoCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            l10n.payosTitle.split(' ').last + ' Note',
+            l10n.payosNoteTitle,
             style: GoogleFonts.playfairDisplay(
               fontSize: 20,
               fontWeight: FontWeight.w600,

@@ -13,6 +13,7 @@ import '../../models/order.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../providers/order_provider.dart';
 import '../../providers/order_realtime_provider.dart';
+import '../../../../features/payment/models/payment_method.dart' hide PaymentStatus;
 import '../widgets/order_status_badge.dart';
 
 class OrderDetailScreen extends ConsumerWidget {
@@ -237,18 +238,27 @@ class OrderDetailScreen extends ConsumerWidget {
   }
 
   String _paymentLabel(Order order, String? status, AppLocalizations l10n) {
-    if (order.paymentMethod == 'COD') return l10n.cod;
+    // If it's a known backend type, we can try to localize it properly
+    final methodType = PaymentMethodType.fromBackend(order.paymentMethod);
+    final baseLabel = methodType.getLocalizedTitle(l10n);
 
     // Use synced status if available, fallback to order's payment status
-    final effectiveStatus = status ?? order.paymentStatus.name.toUpperCase();
+    final effectiveStatus = status?.toUpperCase() ?? order.paymentStatus.name.toUpperCase();
 
-    if (effectiveStatus == 'PAID' || effectiveStatus == 'COMPLETED') {
-      return l10n.paid;
+    if (effectiveStatus == 'PAID' || effectiveStatus == 'COMPLETED' || effectiveStatus == 'SUCCESS') {
+      return '$baseLabel - ${l10n.paid}';
     }
     if (effectiveStatus == 'CANCELLED' || effectiveStatus == 'EXPIRED') {
-      return l10n.cancelled;
+      return '$baseLabel - ${l10n.cancelled}';
     }
-    return l10n.pending; // Will show "Chờ thanh toán" after l10n update
+    if (effectiveStatus == 'REFUNDED') {
+      return '$baseLabel - ${l10n.paymentStatusRefunded}';
+    }
+    
+    // For COD, "Pending" is normal
+    if (methodType == PaymentMethodType.cod) return baseLabel;
+
+    return '$baseLabel - ${l10n.paymentStatusPending}';
   }
 
   Future<void> _handleCancel(

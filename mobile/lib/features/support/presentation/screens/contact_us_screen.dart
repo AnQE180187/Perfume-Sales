@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/routing/app_routes.dart';
+import '../../../chat/providers/chat_providers.dart';
+import '../../../chat/models/chat_models.dart';
 
-class ContactUsScreen extends StatelessWidget {
+class ContactUsScreen extends ConsumerWidget {
   const ContactUsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: AppTheme.ivoryBackground,
       appBar: AppBar(
@@ -48,16 +52,33 @@ class ContactUsScreen extends StatelessWidget {
               Icons.chat_bubble_outline_rounded,
               'Trò chuyện trực tiếp',
               'Thời gian phản hồi ~ 5 phút',
+              onTap: () async {
+                final adminAsync = ref.read(adminContactProvider);
+                adminAsync.whenData((admin) async {
+                  if (admin != null) {
+                    final conversation = await ref
+                        .read(chatServiceProvider)
+                        .getOrCreateConversation(
+                          type: ConversationType.customerAdmin,
+                          otherUserId: admin['id'],
+                        );
+                    context.push(AppRoutes.liveChatWithId(conversation.id,
+                        title: 'CONCIERGE CHAT'));
+                  }
+                });
+              },
             ),
             _buildContactMethod(
               Icons.mail_outline_rounded,
               'Gửi Email cho chúng tôi',
-              'concierge@lumina-atelier.com',
+              'concierge@perfumegpt.com',
+              onTap: () {},
             ),
             _buildContactMethod(
               Icons.phone_iphone_rounded,
               'Hotline hỗ trợ 24/7',
               '1900 8888 (Miễn phí)',
+              onTap: () {},
             ),
             const SizedBox(height: 32),
             Text(
@@ -78,8 +99,11 @@ class ContactUsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildContactMethod(IconData icon, String title, String subtitle) {
-    return Container(
+  Widget _buildContactMethod(IconData icon, String title, String subtitle,
+      {VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -130,6 +154,7 @@ class ContactUsScreen extends StatelessWidget {
               color: AppTheme.mutedSilver, size: 20),
         ],
       ),
+    ),
     );
   }
 

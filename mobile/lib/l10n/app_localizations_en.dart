@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appName => 'Lumina';
+  String get appName => 'Perfume GPT';
 
   @override
   String get atelierDeParfum => 'ATELIER DE PARFUM';
@@ -367,7 +367,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get disconnectSession => 'DISCONNECT';
 
   @override
-  String get luminaAtelier => 'LUMINA ATELIER';
+  String get luminaAtelier => 'PERFUME GPT';
 
   @override
   String get intensity => 'INTENSITY';
@@ -582,6 +582,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get orderStatusCancelled => 'Cancelled';
 
   @override
+  String get wishlistTitle => 'Wishlist';
+
+  @override
+  String get wishlistEmptyTitle => 'YOUR WISHLIST IS EMPTY';
+
+  @override
+  String get wishlistEmptySubtitle =>
+      'Your favorites list is waiting for the scents you truly love.';
+
+  @override
+  String get exploreFragrances => 'EXPLORE FRAGRANCES';
+
+  @override
   String get orderStatusRefunded => 'Refunded';
 
   @override
@@ -639,6 +652,83 @@ class AppLocalizationsEn extends AppLocalizations {
   String get paymentCancelled => 'Payment Cancelled';
 
   @override
+  String get paymentMethodPayos => 'PayOS Gateway';
+
+  @override
+  String get paymentMethodPayosDesc => 'Scan QR code or instant bank transfer';
+
+  @override
+  String get paymentMethodCod => 'Cash On Delivery (COD)';
+
+  @override
+  String get paymentMethodCodDesc => 'Pay when you receive the product';
+
+  @override
+  String get paymentMethodVnpay => 'VNPay Wallet';
+
+  @override
+  String get paymentMethodMomo => 'MoMo Wallet';
+
+  @override
+  String get paymentStatusPending => 'Payment Pending';
+
+  @override
+  String get paymentStatusProcessing => 'Processing';
+
+  @override
+  String get paymentStatusSuccess => 'Success';
+
+  @override
+  String get paymentStatusFailed => 'Payment Failed';
+
+  @override
+  String get paymentStatusCancelled => 'Cancelled';
+
+  @override
+  String get paymentStatusRefunded => 'Refunded';
+
+  @override
+  String get notSelected => 'Not selected';
+
+  @override
+  String get exclusiveOffer => 'EXCLUSIVE OFFER';
+
+  @override
+  String get taxVat => 'Tax (VAT)';
+
+  @override
+  String get incTaxLabel => 'Inclusive of all taxes';
+
+  @override
+  String get totalAmountUpper => 'TOTAL AMOUNT';
+
+  @override
+  String get productValue => 'Product Value';
+
+  @override
+  String get addShippingAddress => 'Add Shipping Address';
+
+  @override
+  String get defaultLabel => 'Default';
+
+  @override
+  String get selectShippingAddress => 'Select Shipping Address';
+
+  @override
+  String get syncAccountDesc =>
+      'This list is synced directly from your account.';
+
+  @override
+  String get noAddressFound =>
+      'You don\'t have any addresses. Please add one before ordering.';
+
+  @override
+  String get manageAddresses => 'Manage Addresses';
+
+  @override
+  String get openAddressManager => 'Open Address Manager';
+
+  @override
   String get searchFragrance => 'SEARCH FRAGRANCE...';
 
   @override
@@ -648,7 +738,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tailoredRecommendations => 'TAILORED RECOMMENDATIONS';
 
   @override
-  String get viewCollection => 'Xem tất cả';
+  String get viewCollection => 'View all';
 
   @override
   String get eauDeParfum => 'EAU DE PARFUM';
@@ -730,6 +820,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterAll => 'All';
 
   @override
+  String get all => 'All';
+
+  @override
   String get filterUnread => 'Unread';
 
   @override
@@ -797,27 +890,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get paymentStatusPaid => 'Payment Completed';
-
-  @override
-  String get paymentStatusPending => 'Payment Pending';
-
-  @override
-  String get paymentStatusFailed => 'Payment Failed';
-
-  @override
-  String get paymentStatusRefunded => 'Refunded';
-
-  @override
-  String get paymentMethodPayos => 'PayOS Gateway';
-
-  @override
-  String get paymentMethodCod => 'Cash On Delivery (COD)';
-
-  @override
-  String get paymentMethodVnpay => 'VNPay Wallet';
-
-  @override
-  String get paymentMethodMomo => 'MoMo Wallet';
 
   @override
   String get returnRequestTitle => 'Return Request';
@@ -1270,7 +1342,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get readMore => 'Read more';
 
   @override
+  String get readMoreUpper => 'READ MORE';
+
+  @override
   String get readLess => 'Read less';
+
+  @override
+  String readTime(int count) {
+    return '$count MIN READ';
+  }
 
   @override
   String get aiScentAnalysisDesc1 =>
@@ -1980,9 +2060,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get defaultLabel => 'Default';
-
-  @override
   String get activateMethod => 'Activate Method';
 
   @override
@@ -2371,4 +2448,115 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ctaStoryBtn => 'DISCOVER MY SCENT';
+
+  @override
+  String get manageDeliveryPoints => 'Manage Delivery Points';
+
+  @override
+  String get shippingAddressDesc =>
+      'Select a default address for future orders, or save separate gift/office addresses for faster checkouts.';
+
+  @override
+  String savedAddressesCount(int count) {
+    return '$count saved addresses';
+  }
+
+  @override
+  String currentDefaultIs(Object label) {
+    return 'Current default is $label.';
+  }
+
+  @override
+  String priorityRecipient(Object name) {
+    return 'Priority recipient: $name.';
+  }
+
+  @override
+  String get canChangeBeforeCheckout =>
+      'You can quickly change delivery destination before final checkout.';
+
+  @override
+  String get savedAddressesUpper => 'SAVED ADDRESSES';
+
+  @override
+  String get readyForDeliveryScenario => 'Ready for any delivery scenario';
+
+  @override
+  String get deliveryTipsTitle => 'Delivery Tips';
+
+  @override
+  String get deliveryTipNoAddress =>
+      'Create your first address so checkout can automatically fill your recipient info.';
+
+  @override
+  String deliveryTipWithAddress(Object label) {
+    return 'Current default is $label. If this is an office, always include floor and company name for smoother delivery.';
+  }
+
+  @override
+  String get addressFormTitleAdd => 'Add Shipping Address';
+
+  @override
+  String get addressFormTitleEdit => 'Edit Shipping Address';
+
+  @override
+  String get addressFormSubtitle =>
+      'Save delivery info for faster and more accurate checkout.';
+
+  @override
+  String get setAsDefaultAddressDesc =>
+      'This address will be prioritized and pre-filled during checkout.';
+
+  @override
+  String get errorRequiredFields => 'Please fill all required fields';
+
+  @override
+  String get defaultAddressUpdated => 'Default address updated';
+
+  @override
+  String get addressAddedSuccess => 'New shipping address added';
+
+  @override
+  String get addressUpdatedSuccess => 'Shipping address updated';
+
+  @override
+  String addressDeletedSuccess(Object label) {
+    return 'Address $label deleted';
+  }
+
+  @override
+  String get notSetLabel => 'Not set';
+
+  @override
+  String get noDefaultAddressYet => 'No default address yet';
+
+  @override
+  String get payosNoteTitle => 'PayOS Note';
+
+  @override
+  String get paymentMethodsComboTitle => 'PayOS & COD';
+
+  @override
+  String get scentNotes => 'Scent Notes';
+
+  @override
+  String get noNotesFound => 'No scent notes found';
+
+  @override
+  String get technicalSpecs => 'TECHNICAL SPECIFICATIONS';
+
+  @override
+  String get longevityLabel => 'Longevity';
+
+  @override
+  String get concentrationLabel => 'Concentration';
+
+  @override
+  String get updating => 'Updating...';
+
+  @override
+  String get seeMore => 'See more';
+
+  @override
+  String get seeLess => 'See less';
 }

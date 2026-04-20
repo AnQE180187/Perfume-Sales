@@ -56,7 +56,7 @@ class MyApp extends ConsumerWidget {
 
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      title: 'Lumina',
+      title: 'Perfume GPT',
 
       // Theme (switch to staff theme if authenticated user role is STAFF)
       theme: isStaff ? AppTheme.staffLightTheme : AppTheme.lightTheme,

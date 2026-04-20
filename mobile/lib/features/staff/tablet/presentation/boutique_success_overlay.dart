@@ -41,6 +41,7 @@ class BoutiqueSuccessOverlay extends StatelessWidget {
                 
                 Text(
                   title,
+                  textAlign: TextAlign.center,
                   style: GoogleFonts.playfairDisplay(
                     fontSize: 32,
                     fontWeight: FontWeight.w900,

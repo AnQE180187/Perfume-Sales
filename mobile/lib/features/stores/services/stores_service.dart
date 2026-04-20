@@ -68,7 +68,7 @@ class StoresService {
     return const [
       Store(
         id: 'st_1',
-        name: 'Aura Boutique - Hồ Chí Minh',
+        name: 'Perfume GPT Boutique - Hồ Chí Minh',
         address: '45 Nguyễn Huệ, Quận 1',
         phone: '0909 111 111',
         lat: 10.77653,
@@ -76,7 +76,7 @@ class StoresService {
       ),
       Store(
         id: 'st_2',
-        name: 'Aura Boutique - Hà Nội',
+        name: 'Perfume GPT Boutique - Hà Nội',
         address: '12 Hàng Bông, Hoàn Kiếm',
         phone: '0909 222 222',
         lat: 21.02776,
@@ -84,7 +84,7 @@ class StoresService {
       ),
       Store(
         id: 'st_3',
-        name: 'Aura Boutique - Đà Nẵng',
+        name: 'Perfume GPT Boutique - Đà Nẵng',
         address: '5 Bạch Đằng, Sơn Trà',
         phone: '0909 333 333',
         lat: 16.05441,

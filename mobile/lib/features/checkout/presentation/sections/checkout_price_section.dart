@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../../l10n/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/currency_utils.dart';
 
@@ -22,6 +23,7 @@ class CheckoutPriceSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -38,7 +40,7 @@ class CheckoutPriceSection extends StatelessWidget {
       ),
       child: Column(
         children: [
-          _PriceRow(label: 'Giá trị sản phẩm', value: formatVND(subtotal)),
+          _PriceRow(label: l10n.productValue, value: formatVND(subtotal)),
           const SizedBox(height: 14),
           if (discount > 0) ...[
             Container(
@@ -54,7 +56,7 @@ class CheckoutPriceSection extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'ƯU ĐÃI ĐẶC QUYỀN',
+                      l10n.exclusiveOffer,
                       style: GoogleFonts.montserrat(
                         fontSize: 9,
                         fontWeight: FontWeight.w800,
@@ -77,12 +79,12 @@ class CheckoutPriceSection extends StatelessWidget {
             const SizedBox(height: 14),
           ],
           _PriceRow(
-            label: 'Phí vận chuyển',
-            value: shippingCost == 0 ? 'Miễn phí' : formatVND(shippingCost),
+            label: l10n.shippingFee,
+            value: shippingCost == 0 ? l10n.complimentary : formatVND(shippingCost),
             highlight: shippingCost == 0,
           ),
           const SizedBox(height: 14),
-          _PriceRow(label: 'Thuế (VAT)', value: formatVND(tax)),
+          _PriceRow(label: l10n.taxVat, value: formatVND(tax)),
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 20),
             child: Divider(color: Color(0xFFE5D5C0), thickness: 0.5),
@@ -96,7 +98,7 @@ class CheckoutPriceSection extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'TỔNG THANH TOÁN',
+                      l10n.totalAmountUpper,
                       style: GoogleFonts.montserrat(
                         fontSize: 10,
                         fontWeight: FontWeight.w800,
@@ -106,7 +108,7 @@ class CheckoutPriceSection extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Đã bao gồm các loại thuế',
+                      l10n.incTaxLabel,
                       style: GoogleFonts.montserrat(
                         fontSize: 9,
                         fontWeight: FontWeight.w500,

@@ -83,8 +83,8 @@ class PreferredPaymentMethodScreen extends ConsumerWidget {
                         // Payment cards
                         for (final method in methods)
                           PaymentMethodTile(
-                            title: method.label,
-                            description: method.description,
+                            title: method.type.getLocalizedTitle(l10n),
+                            description: method.type.getLocalizedDescription(l10n),
                             type: method.type,
                             isSelected: selectedMethod?.id == method.id,
                             badgeLabel: _badgeFor(method.type, l10n),

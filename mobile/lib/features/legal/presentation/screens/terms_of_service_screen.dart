@@ -39,7 +39,7 @@ class TermsOfServiceScreen extends StatelessWidget {
           children: [
             _buildSection(
               '1. Chấp thuận điều khoản',
-              'Bằng việc truy cập và sử dụng ứng dụng Lumina Atelier, bạn đồng ý tuân thủ các điều khoản và điều kiện được nêu tại đây.',
+              'Bằng việc truy cập và sử dụng ứng dụng Perfume GPT, bạn đồng ý tuân thủ các điều khoản và điều kiện được nêu tại đây.',
             ),
             _buildSection(
               '2. Tài khoản người dùng',
@@ -47,7 +47,7 @@ class TermsOfServiceScreen extends StatelessWidget {
             ),
             _buildSection(
               '3. Quyền sở hữu trí tuệ',
-              'Tất cả nội dung, hình ảnh, thiết kế và thuật toán AI trên ứng dụng đều thuộc sở hữu của Lumina Atelier và được bảo vệ bởi luật sở hữu trí tuệ.',
+              'Tất cả nội dung, hình ảnh, thiết kế và thuật toán AI trên ứng dụng đều thuộc sở hữu của Perfume GPT và được bảo vệ bởi luật sở hữu trí tuệ.',
             ),
             _buildSection(
               '4. Chính sách mua hàng',
@@ -55,7 +55,7 @@ class TermsOfServiceScreen extends StatelessWidget {
             ),
             _buildSection(
               '5. Giới hạn trách nhiệm',
-              'Lumina Atelier không chịu trách nhiệm cho bất kỳ thiệt hại gián tiếp nào phát sinh từ việc sử dụng dịch vụ của chúng tôi.',
+              'Perfume GPT không chịu trách nhiệm cho bất kỳ thiệt hại gián tiếp nào phát sinh từ việc sử dụng dịch vụ của chúng tôi.',
             ),
             const SizedBox(height: 40),
             Center(

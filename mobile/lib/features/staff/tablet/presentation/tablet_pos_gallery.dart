@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -114,7 +115,7 @@ class _TabletPosGalleryState extends ConsumerState<TabletPosGallery> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                "LUMINA ATELIER",
+                "PERFUME GPT",
                 style: GoogleFonts.playfairDisplay(
                   fontSize: isMobile ? 32 : 48,
                   fontWeight: FontWeight.w700,
@@ -463,7 +464,7 @@ class _ScientificProductCardState extends ConsumerState<_ScientificProductCard> 
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      (widget.product.brand?.name ?? widget.product.family ?? "LUMINA").toUpperCase(),
+                      (widget.product.brand?.name ?? widget.product.family ?? "PERFUME GPT").toUpperCase(),
                       style: GoogleFonts.montserrat(
                         fontSize: 9,
                         color: Colors.white38,
@@ -547,7 +548,35 @@ class _AiConsultationPanelState extends ConsumerState<_AiConsultationPanel> {
   bool _isLoading = false;
 
   final List<String> _genders = ["male", "female", "unisex"];
-  final List<String> _occasions = ["date", "office", "daily", "party", "gift"];
+  final List<String> _occasions = [
+    "date", "office", "daily", "party", "gift", 
+    "event", "sports", "summer", "winter",
+    "meeting", "travel", "study", "evening", "formal", "relax"
+  ];
+
+  final Map<String, String> _genderLabels = {
+    "male": "NAM",
+    "female": "NỮ",
+    "unisex": "UNISEX"
+  };
+
+  final Map<String, String> _occasionLabels = {
+    "date": "HẸN HÒ",
+    "office": "VĂN PHÒNG",
+    "daily": "HÀNG NGÀY",
+    "party": "TIỆC TÙNG",
+    "gift": "QUÀ TẶNG",
+    "event": "SỰ KIỆN",
+    "sports": "THỂ THAO",
+    "summer": "MÙA HÈ",
+    "winter": "MÙA ĐÔNG",
+    "meeting": "GẶP ĐỐI TÁC",
+    "travel": "DU LỊCH",
+    "study": "ĐI HỌC",
+    "evening": "BUỔI TỐI",
+    "formal": "TRANG TRỌNG",
+    "relax": "THƯ GIÃN"
+  };
 
   @override
   void dispose() {
@@ -618,7 +647,7 @@ class _AiConsultationPanelState extends ConsumerState<_AiConsultationPanel> {
                               dropdownColor: const Color(0xFF151515),
                               hint: Text("CHỌN...", style: GoogleFonts.robotoMono(color: Colors.white24, fontSize: 11)),
                               style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 13),
-                              items: _genders.map((g) => DropdownMenuItem(value: g, child: Text(g.toUpperCase()))).toList(),
+                              items: _genders.map((g) => DropdownMenuItem(value: g, child: Text(_genderLabels[g] ?? g))).toList(),
                               onChanged: (v) => setState(() => _gender = v),
                             ),
                           ),
@@ -633,7 +662,7 @@ class _AiConsultationPanelState extends ConsumerState<_AiConsultationPanel> {
                               dropdownColor: const Color(0xFF151515),
                               hint: Text("CHỌN...", style: GoogleFonts.robotoMono(color: Colors.white24, fontSize: 11)),
                               style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 13),
-                              items: _occasions.map((o) => DropdownMenuItem(value: o, child: Text(o.toUpperCase()))).toList(),
+                              items: _occasions.map((o) => DropdownMenuItem(value: o, child: Text(_occasionLabels[o] ?? o))).toList(),
                               onChanged: (v) => setState(() => _occasion = v),
                             ),
                           ),
@@ -666,7 +695,7 @@ class _AiConsultationPanelState extends ConsumerState<_AiConsultationPanel> {
                                 dropdownColor: const Color(0xFF151515),
                                 hint: Text("CHỌN...", style: GoogleFonts.robotoMono(color: Colors.white24, fontSize: 11)),
                                 style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 13),
-                                items: _genders.map((g) => DropdownMenuItem(value: g, child: Text(g.toUpperCase()))).toList(),
+                                items: _genders.map((g) => DropdownMenuItem(value: g, child: Text(_genderLabels[g] ?? g))).toList(),
                                 onChanged: (v) => setState(() => _gender = v),
                               ),
                             ),
@@ -682,7 +711,7 @@ class _AiConsultationPanelState extends ConsumerState<_AiConsultationPanel> {
                                 dropdownColor: const Color(0xFF151515),
                                 hint: Text("CHỌN...", style: GoogleFonts.robotoMono(color: Colors.white24, fontSize: 11)),
                                 style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 13),
-                                items: _occasions.map((o) => DropdownMenuItem(value: o, child: Text(o.toUpperCase()))).toList(),
+                                items: _occasions.map((o) => DropdownMenuItem(value: o, child: Text(_occasionLabels[o] ?? o))).toList(),
                                 onChanged: (v) => setState(() => _occasion = v),
                               ),
                             ),
@@ -709,7 +738,7 @@ class _AiConsultationPanelState extends ConsumerState<_AiConsultationPanel> {
                     ),
                   const SizedBox(height: 16),
                   _MinimalField(
-                    label: "STAFF NOTES (PREFERENCES / ALLERGIES)",
+                    label: "GHI CHÚ (SỞ THÍCH / DỊ ỨNG)",
                     child: TextField(
                       controller: _notesController,
                       style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 13),
@@ -768,25 +797,75 @@ class _AiConsultationPanelState extends ConsumerState<_AiConsultationPanel> {
       );
 
       if (mounted) {
-        final variantId = await _showAiResults(result['recommendations'] as List<dynamic>);
-        if (variantId != null && mounted) {
-           // Search for the product and add the variant
-           // (Simple approach: find the product in current list if it matches variantId)
-           final productList = ref.read(posProductsProvider).value ?? [];
-           for (final p in productList) {
-             final v = p.variants.where((v) => v.id == variantId).firstOrNull;
-             if (v != null) {
-               ref.read(posProvider.notifier).addToCart(v, p.name);
-               ScaffoldMessenger.of(context).showSnackBar(
-                 SnackBar(content: Text("Đã thêm ${p.name} vào đơn hàng")),
-               );
-               return;
-             }
-           }
-           // If not found in current list, maybe show a message
-           ScaffoldMessenger.of(context).showSnackBar(
-             const SnackBar(content: Text("Sản phẩm đề xuất không có sẵn tại quầy này.")),
-           );
+        var recommendations = (result['recommendations'] as List? ?? []);
+        final rawResponse = result['rawResponse'] as String? ?? '';
+
+        // Backup: Aggressive JSON extraction if recommendations are empty
+        if (recommendations.isEmpty && rawResponse.isNotEmpty) {
+          try {
+            debugPrint("AI Consult: Attempting aggressive local parse...");
+            // 1. Try to find the array first
+            final firstBracket = rawResponse.indexOf('[');
+            final lastBracket = rawResponse.lastIndexOf(']');
+            
+            if (firstBracket != -1 && lastBracket != -1 && lastBracket > firstBracket) {
+              final jsonPart = rawResponse.substring(firstBracket, lastBracket + 1);
+              try {
+                recommendations = json.decode(jsonPart);
+              } catch (e) {
+                // If array parse fails, try to find individual objects
+                debugPrint("AI Array parse failed: $e. Trying object extraction...");
+                final objectRegex = RegExp(r'\{[^{}]*"productId"[^{}]*\}', dotAll: true);
+                final matches = objectRegex.allMatches(rawResponse);
+                if (matches.isNotEmpty) {
+                  recommendations = matches.map((m) {
+                    try {
+                      return json.decode(m.group(0)!);
+                    } catch (_) {
+                      return null;
+                    }
+                  }).where((e) => e != null).toList();
+                }
+              }
+            } else {
+                // No brackets? Still try finding objects
+                final objectRegex = RegExp(r'\{[^{}]*"productId"[^{}]*\}', dotAll: true);
+                final matches = objectRegex.allMatches(rawResponse);
+                recommendations = matches.map((m) {
+                  try {
+                    return json.decode(m.group(0)!);
+                  } catch (_) {
+                    return null;
+                  }
+                }).where((e) => e != null).toList();
+            }
+          } catch (e) {
+            debugPrint("AI Local Parse Failed: $e");
+          }
+        }
+
+        if (mounted) {
+          debugPrint("AI Recommendations count: ${recommendations.length}");
+          final variantId = await _showAiResults(recommendations);
+          if (variantId != null && mounted) {
+            // Search for the product and add the variant
+            // (Simple approach: find the product in current list if it matches variantId)
+            final productList = ref.read(posProductsProvider).value ?? [];
+            for (final p in productList) {
+              final v = p.variants.where((v) => v.id == variantId).firstOrNull;
+              if (v != null) {
+                ref.read(posProvider.notifier).addToCart(v, p.name);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("Đã thêm ${p.name} vào đơn hàng")),
+                );
+                return;
+              }
+            }
+            // If not found in current list, maybe show a message
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Sản phẩm đề xuất không có sẵn tại quầy này.")),
+            );
+          }
         }
       }
     } catch (e) {

@@ -2,9 +2,52 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/routing/app_routes.dart';
 
 class HelpCenterScreen extends StatelessWidget {
   const HelpCenterScreen({super.key});
+
+  static const List<Map<String, dynamic>> _categories = [
+    {
+      'id': 'don-hang',
+      'icon': Icons.shopping_bag_outlined,
+      'title': 'Đơn hàng'
+    },
+    {
+      'id': 'thanh-toan',
+      'icon': Icons.payment_outlined,
+      'title': 'Thanh toán'
+    },
+    {
+      'id': 'van-chuyen',
+      'icon': Icons.local_shipping_outlined,
+      'title': 'Vận chuyển'
+    },
+    {
+      'id': 'ai-tu-van',
+      'icon': Icons.auto_awesome_outlined,
+      'title': 'AI Tư vấn'
+    },
+    {'id': 'tai-khoan', 'icon': Icons.person_outline_rounded, 'title': 'Tài khoản'},
+  ];
+
+  static const List<Map<String, String>> _faqs = [
+    {
+      'question': 'Làm thế nào để đổi trả sản phẩm?',
+      'answer':
+          'Bạn có thể gửi yêu cầu đổi trả trong vòng 7 ngày kể từ khi nhận hàng. Vui lòng vào mục "Đơn hàng của tôi", chọn đơn hàng cần đổi trả và nhấn "Yêu cầu hoàn trả".'
+    },
+    {
+      'question': 'Thuật toán AI gợi ý mùi hương hoạt động ra sao?',
+      'answer':
+          'Perfume GPT sử dụng hệ thống thần kinh nhân tạo kết hợp với dữ liệu về 147 điểm cảm quan và lối sống của bạn để phối hợp các phân tử mùi hương phù hợp nhất với bản sắc riêng của bạn.'
+    },
+    {
+      'question': 'Perfume GPT có giao hàng quốc tế không?',
+      'answer':
+          'Hiện tại chúng tôi hỗ trợ giao hàng tại Việt Nam và các quốc gia khu vực Đông Nam Á. Chúng tôi đang mở rộng mạng lưới giao hàng toàn cầu trong thời gian tới.'
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -92,14 +135,18 @@ class HelpCenterScreen extends StatelessWidget {
                 crossAxisSpacing: 16,
                 childAspectRatio: 1.1,
               ),
-              delegate: SliverChildListDelegate([
-                _buildCategoryCard(Icons.shopping_bag_outlined, 'Đơn hàng'),
-                _buildCategoryCard(Icons.payment_outlined, 'Thanh toán'),
-                _buildCategoryCard(Icons.local_shipping_outlined, 'Vận chuyển'),
-                _buildCategoryCard(Icons.auto_awesome_outlined, 'AI Tư vấn'),
-                _buildCategoryCard(Icons.person_outline_rounded, 'Tài khoản'),
-                _buildCategoryCard(Icons.card_membership_outlined, 'Ưu đãi'),
-              ]),
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final cat = _categories[index];
+                  return _buildCategoryCard(
+                    context,
+                    cat['icon'] as IconData,
+                    cat['title'] as String,
+                    cat['id'] as String,
+                  );
+                },
+                childCount: _categories.length,
+              ),
             ),
           ),
 
@@ -120,20 +167,23 @@ class HelpCenterScreen extends StatelessWidget {
           ),
 
           SliverList(
-            delegate: SliverChildListDelegate([
-              _buildFaqItem('Làm thế nào để đổi trả sản phẩm?'),
-              _buildFaqItem('Thuật toán AI gợi ý mùi hương hoạt động ra sao?'),
-              _buildFaqItem('Lumina có giao hàng quốc tế không?'),
-              _buildFaqItem('Làm sao để tích điểm thành viên?'),
-              const SizedBox(height: 48),
-            ]),
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final faq = _faqs[index];
+                return _buildExpandableFaqItem(faq['question']!, faq['answer']!);
+              },
+              childCount: _faqs.length,
+            ),
           ),
+
+          const SliverToBoxAdapter(child: SizedBox(height: 48)),
         ],
       ),
     );
   }
 
-  Widget _buildCategoryCard(IconData icon, String title) {
+  Widget _buildCategoryCard(
+      BuildContext context, IconData icon, String title, String id) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -149,7 +199,7 @@ class HelpCenterScreen extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () {},
+          onTap: () => context.push(AppRoutes.helpArticleWithId(id)),
           borderRadius: BorderRadius.circular(20),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -178,25 +228,40 @@ class HelpCenterScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFaqItem(String question) {
+  Widget _buildExpandableFaqItem(String question, String answer) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: ListTile(
-        title: Text(
-          question,
-          style: GoogleFonts.montserrat(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: AppTheme.deepCharcoal,
+      child: Theme(
+        data: ThemeData().copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          title: Text(
+            question,
+            style: GoogleFonts.montserrat(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: AppTheme.deepCharcoal,
+            ),
           ),
+          trailing: const Icon(Icons.expand_more_rounded,
+              color: AppTheme.mutedSilver, size: 20),
+          childrenPadding:
+              const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+          expandedAlignment: Alignment.topLeft,
+          children: [
+            Text(
+              answer,
+              style: GoogleFonts.montserrat(
+                fontSize: 12,
+                height: 1.6,
+                color: AppTheme.deepCharcoal.withValues(alpha: 0.7),
+              ),
+            ),
+          ],
         ),
-        trailing: const Icon(Icons.chevron_right_rounded,
-            color: AppTheme.mutedSilver, size: 20),
-        onTap: () {},
       ),
     );
   }

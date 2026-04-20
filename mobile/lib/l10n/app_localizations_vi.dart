@@ -9,7 +9,7 @@ class AppLocalizationsVi extends AppLocalizations {
   AppLocalizationsVi([String locale = 'vi']) : super(locale);
 
   @override
-  String get appName => 'Lumina';
+  String get appName => 'Perfume GPT';
 
   @override
   String get atelierDeParfum => 'XƯỞNG NƯỚC HOA';
@@ -366,7 +366,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get disconnectSession => 'ĐĂNG XUẤT';
 
   @override
-  String get luminaAtelier => 'XƯỞNG LUMINA';
+  String get luminaAtelier => 'PERFUME GPT';
 
   @override
   String get intensity => 'ĐỘ ĐẬM ĐẶC';
@@ -547,7 +547,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get failedLoadOrder => 'Tải chi tiết đơn hàng thất bại';
 
   @override
-  String get retry => 'THỬ LẠI';
+  String get retry => 'Thử lại';
 
   @override
   String get moreItems => 'sản phẩm khác';
@@ -578,6 +578,19 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get orderStatusCancelled => 'Đã hủy';
+
+  @override
+  String get wishlistTitle => 'Yêu thích';
+
+  @override
+  String get wishlistEmptyTitle => 'DANH SÁCH YÊU THÍCH TRỐNG';
+
+  @override
+  String get wishlistEmptySubtitle =>
+      'Danh sách yêu thích đang chờ mùi hương bạn thật sự yêu.';
+
+  @override
+  String get exploreFragrances => 'KHÁM PHÁ NƯỚC HOA';
 
   @override
   String get orderStatusRefunded => 'Đã hoàn tiền';
@@ -637,7 +650,84 @@ class AppLocalizationsVi extends AppLocalizations {
   String get paymentCancelled => 'Đã hủy thanh toán';
 
   @override
-  String get searchFragrance => 'TÌM KIẾM MÙI HƯƠNG...';
+  String get paymentMethodPayos => 'Cổng PayOS';
+
+  @override
+  String get paymentMethodPayosDesc => 'Quét mã QR hoặc chuyển khoản ngân hàng';
+
+  @override
+  String get paymentMethodCod => 'Thanh toán khi nhận hàng (COD)';
+
+  @override
+  String get paymentMethodCodDesc => 'Thanh toán khi nhận sản phẩm';
+
+  @override
+  String get paymentMethodVnpay => 'Ví VNPay';
+
+  @override
+  String get paymentMethodMomo => 'Ví MoMo';
+
+  @override
+  String get paymentStatusPending => 'Chờ thanh toán';
+
+  @override
+  String get paymentStatusProcessing => 'Đang xử lý';
+
+  @override
+  String get paymentStatusSuccess => 'Thành công';
+
+  @override
+  String get paymentStatusFailed => 'Thanh toán thất bại';
+
+  @override
+  String get paymentStatusCancelled => 'Đã hủy';
+
+  @override
+  String get paymentStatusRefunded => 'Đã hoàn tiền';
+
+  @override
+  String get notSelected => 'Chưa chọn';
+
+  @override
+  String get exclusiveOffer => 'ƯU ĐÃI ĐẶC QUYỀN';
+
+  @override
+  String get taxVat => 'Thuế (VAT)';
+
+  @override
+  String get incTaxLabel => 'Đã bao gồm các loại thuế';
+
+  @override
+  String get totalAmountUpper => 'TỔNG THANH TOÁN';
+
+  @override
+  String get productValue => 'Giá trị sản phẩm';
+
+  @override
+  String get addShippingAddress => 'Thêm địa chỉ giao hàng';
+
+  @override
+  String get defaultLabel => 'Mặc định';
+
+  @override
+  String get selectShippingAddress => 'Chọn địa chỉ giao hàng';
+
+  @override
+  String get syncAccountDesc =>
+      'Danh sách này được đồng bộ trực tiếp từ tài khoản của bạn.';
+
+  @override
+  String get noAddressFound =>
+      'Bạn chưa có địa chỉ. Hãy thêm địa chỉ trước khi đặt hàng.';
+
+  @override
+  String get manageAddresses => 'Quản lý địa chỉ';
+
+  @override
+  String get openAddressManager => 'Mở màn quản lý địa chỉ';
+
+  @override
+  String get searchFragrance => 'TÌM KIẾM HƯƠNG THƠM...';
 
   @override
   String get personalizedSelection => 'LỰA CHỌN DÀNH RIÊNG CHO BẠN';
@@ -728,6 +818,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get filterAll => 'Tất cả';
 
   @override
+  String get all => 'Tất cả';
+
+  @override
   String get filterUnread => 'Chưa đọc';
 
   @override
@@ -770,7 +863,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get buyNow => 'MUA NGAY';
 
   @override
-  String get freeReturns => 'Miễn phí đổi trả trong 7 ngày';
+  String get freeReturns => 'Đổi trả miễn phí trong 7 ngày';
 
   @override
   String get checkingPayment => 'Đang kiểm tra...';
@@ -795,27 +888,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get paymentStatusPaid => 'Hoàn tất thanh toán';
-
-  @override
-  String get paymentStatusPending => 'Chờ thanh toán';
-
-  @override
-  String get paymentStatusFailed => 'Thanh toán thất bại';
-
-  @override
-  String get paymentStatusRefunded => 'Đã hoàn tiền';
-
-  @override
-  String get paymentMethodPayos => 'Cổng PayOS';
-
-  @override
-  String get paymentMethodCod => 'Thanh toán khi nhận hàng (COD)';
-
-  @override
-  String get paymentMethodVnpay => 'Ví VNPay';
-
-  @override
-  String get paymentMethodMomo => 'Ví MoMo';
 
   @override
   String get returnRequestTitle => 'Yêu cầu trả hàng';
@@ -1056,7 +1128,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get exclusiveCollection => 'Bộ sưu tập độc quyền';
 
   @override
-  String get journal => 'Tạp chí Journal';
+  String get journal => 'Tạp chí';
 
   @override
   String get ingredientsDictionary => 'Từ điển thành phần';
@@ -1270,7 +1342,15 @@ class AppLocalizationsVi extends AppLocalizations {
   String get readMore => 'Đọc thêm';
 
   @override
+  String get readMoreUpper => 'ĐỌC THÊM';
+
+  @override
   String get readLess => 'Thu gọn';
+
+  @override
+  String readTime(int count) {
+    return '$count PHÚT ĐỌC';
+  }
 
   @override
   String get aiScentAnalysisDesc1 =>
@@ -1979,9 +2059,6 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get defaultLabel => 'Mặc định';
-
-  @override
   String get activateMethod => 'Kích hoạt phương thức';
 
   @override
@@ -2373,4 +2450,115 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get ctaStoryBtn => 'KHÁM PHÁ MÙI HƯƠNG CỦA TÔI';
+
+  @override
+  String get manageDeliveryPoints => 'Quản lý điểm nhận hàng';
+
+  @override
+  String get shippingAddressDesc =>
+      'Chọn địa chỉ mặc định cho các đơn hàng tiếp theo, đồng thời lưu riêng địa chỉ quà tặng hoặc văn phòng để thanh toán nhanh hơn.';
+
+  @override
+  String savedAddressesCount(int count) {
+    return '$count địa chỉ đã lưu';
+  }
+
+  @override
+  String currentDefaultIs(Object label) {
+    return 'Địa chỉ mặc định hiện tại là $label.';
+  }
+
+  @override
+  String priorityRecipient(Object name) {
+    return 'Người nhận ưu tiên: $name.';
+  }
+
+  @override
+  String get canChangeBeforeCheckout =>
+      'Bạn có thể đổi nhanh địa chỉ nhận ngay trước khi thanh toán.';
+
+  @override
+  String get savedAddressesUpper => 'ĐỊA CHỈ ĐÃ LƯU';
+
+  @override
+  String get readyForDeliveryScenario => 'Sẵn sàng cho mọi kịch bản giao hàng';
+
+  @override
+  String get deliveryTipsTitle => 'Gợi ý giao hàng mượt hơn';
+
+  @override
+  String get deliveryTipNoAddress =>
+      'Hãy tạo địa chỉ đầu tiên để checkout có thể tự động điền thông tin nhận hàng.';
+
+  @override
+  String deliveryTipWithAddress(Object label) {
+    return 'Địa chỉ mặc định hiện tại là $label. Nếu đây là địa chỉ công ty, hãy luôn điền người nhận và ghi chú quầy lễ tân để shipper giao thuận lợi hơn.';
+  }
+
+  @override
+  String get addressFormTitleAdd => 'Thêm địa chỉ giao hàng';
+
+  @override
+  String get addressFormTitleEdit => 'Chỉnh sửa địa chỉ';
+
+  @override
+  String get addressFormSubtitle =>
+      'Lưu thông tin nhận hàng để checkout nhanh và chính xác hơn.';
+
+  @override
+  String get setAsDefaultAddressDesc =>
+      'Địa chỉ này sẽ được ưu tiên điền sẵn ở bước thanh toán.';
+
+  @override
+  String get errorRequiredFields => 'Vui lòng điền đủ thông tin bắt buộc';
+
+  @override
+  String get defaultAddressUpdated => 'Đã cập nhật địa chỉ mặc định';
+
+  @override
+  String get addressAddedSuccess => 'Đã thêm địa chỉ giao hàng mới';
+
+  @override
+  String get addressUpdatedSuccess => 'Đã cập nhật địa chỉ giao hàng';
+
+  @override
+  String addressDeletedSuccess(Object label) {
+    return 'Đã xóa địa chỉ $label';
+  }
+
+  @override
+  String get notSetLabel => 'Chưa thiết lập';
+
+  @override
+  String get noDefaultAddressYet => 'Chưa có địa chỉ mặc định';
+
+  @override
+  String get payosNoteTitle => 'Ghi chú PayOS';
+
+  @override
+  String get paymentMethodsComboTitle => 'PayOS & COD';
+
+  @override
+  String get scentNotes => 'Nốt hương';
+
+  @override
+  String get noNotesFound => 'Không tìm thấy nốt hương nào';
+
+  @override
+  String get technicalSpecs => 'THÔNG SỐ KỸ THUẬT';
+
+  @override
+  String get longevityLabel => 'Độ lưu hương';
+
+  @override
+  String get concentrationLabel => 'Nồng độ';
+
+  @override
+  String get updating => 'Đang cập nhật...';
+
+  @override
+  String get seeMore => 'Xem thêm';
+
+  @override
+  String get seeLess => 'Thu gọn';
 }

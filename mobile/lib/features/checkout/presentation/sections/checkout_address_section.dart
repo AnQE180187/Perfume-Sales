@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/routing/app_routes.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../address/models/address.dart';
 import '../../../address/providers/address_providers.dart';
@@ -23,6 +24,7 @@ class CheckoutAddressSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final selectedAddress = address;
     final isEmpty = selectedAddress == null;
 
@@ -83,7 +85,7 @@ class CheckoutAddressSection extends StatelessWidget {
                           Flexible(
                             child: Text(
                               selectedAddress?.recipientName ??
-                                  'Thêm địa chỉ giao hàng',
+                                  l10n.addShippingAddress,
                               style: GoogleFonts.montserrat(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
@@ -97,7 +99,7 @@ class CheckoutAddressSection extends StatelessWidget {
                           ),
                           if (selectedAddress?.isDefault ?? false) ...[
                             const SizedBox(width: 10),
-                            _GoldFoilTag(label: 'Mặc định'),
+                            _GoldFoilTag(label: l10n.defaultLabel),
                           ],
                         ],
                       ),
@@ -181,12 +183,13 @@ class AddressPickerSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final addressesAsync = ref.watch(addressListProvider);
     final selected = ref.watch(selectedAddressProvider);
 
     return CheckoutSheet(
-      title: 'Chọn địa chỉ giao hàng',
-      subtitle: 'Danh sách này được đồng bộ trực tiếp từ tài khoản của bạn.',
+      title: l10n.selectShippingAddress,
+      subtitle: l10n.syncAccountDesc,
       child: addressesAsync.when(
         loading: () => const Padding(
           padding: EdgeInsets.symmetric(vertical: 18),
@@ -208,7 +211,7 @@ class AddressPickerSheet extends ConsumerWidget {
             const SizedBox(height: 10),
             OutlinedButton(
               onPressed: () => ref.read(addressListProvider.notifier).reload(),
-              child: const Text('Thử lại'),
+              child: Text(l10n.retry),
             ),
           ],
         ),
@@ -217,7 +220,7 @@ class AddressPickerSheet extends ConsumerWidget {
             return Column(
               children: [
                 Text(
-                  'Bạn chưa có địa chỉ. Hãy thêm địa chỉ trước khi đặt hàng.',
+                  l10n.noAddressFound,
                   textAlign: TextAlign.center,
                   style: GoogleFonts.montserrat(
                     fontSize: 12,
@@ -228,7 +231,7 @@ class AddressPickerSheet extends ConsumerWidget {
                 const SizedBox(height: 10),
                 OutlinedButton(
                   onPressed: () => context.push(AppRoutes.shippingAddresses),
-                  child: const Text('Mở màn quản lý địa chỉ'),
+                  child: Text(l10n.openAddressManager),
                 ),
               ],
             );
@@ -240,7 +243,7 @@ class AddressPickerSheet extends ConsumerWidget {
                 return SelectableTile(
                   title: address.recipientName,
                   subtitle: address.fullAddress,
-                  badge: address.isDefault ? 'Mặc định' : null,
+                  badge: address.isDefault ? l10n.defaultLabel : null,
                   icon: Icons.location_on_outlined,
                   isSelected: selected?.id == address.id,
                   onTap: () async {
@@ -256,7 +259,7 @@ class AddressPickerSheet extends ConsumerWidget {
                 child: TextButton.icon(
                   onPressed: () => context.push(AppRoutes.shippingAddresses),
                   icon: const Icon(Icons.add),
-                  label: const Text('Quản lý địa chỉ'),
+                  label: Text(l10n.manageAddresses),
                 ),
               ),
             ],
