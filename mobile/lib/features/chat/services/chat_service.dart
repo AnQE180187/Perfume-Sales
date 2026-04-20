@@ -88,7 +88,13 @@ class ChatService {
       ),
     });
 
-    final response = await apiClient.post('/chat/messages/image', data: formData);
+    final response = await apiClient.post(
+      '/chat/messages/image-upload',
+      data: formData,
+      options: Options(
+        contentType: 'multipart/form-data',
+      ),
+    );
     return ChatMessage.fromJson(response.data['message']);
   }
 
