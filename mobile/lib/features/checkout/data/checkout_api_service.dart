@@ -24,6 +24,7 @@ class CheckoutApiService {
     required String shippingWardCode,
     required int shippingServiceId,
     required String paymentMethod,
+    required List<int> cartItemIds,
     double shippingFee = 0,
     String? promotionCode,
   }) async {
@@ -39,6 +40,7 @@ class CheckoutApiService {
         'shippingServiceId': shippingServiceId,
         'paymentMethod': paymentMethod,
         'shippingFee': shippingFee.round(),
+        'cartItemIds': cartItemIds,
         if (promotionCode != null && promotionCode.isNotEmpty)
           'promotionCode': promotionCode,
       },

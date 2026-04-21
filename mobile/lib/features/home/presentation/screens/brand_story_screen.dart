@@ -57,8 +57,8 @@ class BrandStoryScreen extends StatelessWidget {
         children: [
           // Background Image
           Positioned.fill(
-            child: Image.network(
-              'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?q=80&w=2000&auto=format&fit=crop',
+            child: Image.asset(
+              'assets/images/brand_hero.png',
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) => Container(
                 color: AppTheme.deepCharcoal.withValues(alpha: 0.9),
@@ -201,8 +201,8 @@ class BrandStoryScreen extends StatelessWidget {
           const SizedBox(height: 50),
           ClipRRect(
             borderRadius: BorderRadius.circular(24),
-            child: Image.network(
-              'https://images.unsplash.com/photo-1595475242265-c30c94950637?q=80&w=1000&auto=format&fit=crop',
+            child: Image.asset(
+              'assets/images/brand_philosophy.png',
               height: 450,
               width: double.infinity,
               fit: BoxFit.cover,
@@ -241,19 +241,19 @@ class BrandStoryScreen extends StatelessWidget {
           ),
           const SizedBox(height: 60),
           _MethodStep(
-            icon: Icons.wind_power_outlined,
+            imagePath: 'assets/icons/icon_sourcing.png',
             title: l10n.methodSourcingTitle,
             description: l10n.methodSourcingDesc,
           ),
           const SizedBox(height: 48),
           _MethodStep(
-            icon: Icons.auto_awesome_outlined,
+            imagePath: 'assets/icons/icon_analysis.png',
             title: l10n.methodAnalysisTitle,
             description: l10n.methodAnalysisDesc,
           ),
           const SizedBox(height: 48),
           _MethodStep(
-            icon: Icons.favorite_outline_rounded,
+            imagePath: 'assets/icons/icon_crafting.png',
             title: l10n.methodCraftingTitle,
             description: l10n.methodCraftingDesc,
           ),
@@ -269,8 +269,8 @@ class BrandStoryScreen extends StatelessWidget {
       child: Stack(
         children: [
           Positioned.fill(
-            child: Image.network(
-              'https://images.unsplash.com/photo-1512201066735-b5a6881c19b8?q=80&w=2000&auto=format&fit=crop',
+            child: Image.asset(
+              'assets/images/brand_cta.png',
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) => Container(
                 color: AppTheme.deepCharcoal,
@@ -341,12 +341,12 @@ class BrandStoryScreen extends StatelessWidget {
 }
 
 class _MethodStep extends StatelessWidget {
-  final IconData icon;
+  final String imagePath;
   final String title;
   final String description;
 
   const _MethodStep({
-    required this.icon,
+    required this.imagePath,
     required this.title,
     required this.description,
   });
@@ -359,13 +359,29 @@ class _MethodStep extends StatelessWidget {
           width: 80,
           height: 80,
           decoration: BoxDecoration(
-            color: AppTheme.ivoryBackground,
+            color: Colors.white,
             borderRadius: BorderRadius.circular(28),
             border: Border.all(
               color: AppTheme.accentGold.withValues(alpha: 0.1),
             ),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.accentGold.withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-          child: Icon(icon, color: AppTheme.accentGold, size: 32),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(28),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Image.asset(
+                imagePath,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
         ),
         const SizedBox(height: 24),
         Text(

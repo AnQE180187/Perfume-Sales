@@ -19,8 +19,44 @@ class MainShell extends StatefulWidget {
   State<MainShell> createState() => _MainShellState();
 }
 
-class _MainShellState extends State<MainShell> {
+class _MainShellState extends State<MainShell> with SingleTickerProviderStateMixin {
   int _selectedIndex = 0;
+  late AnimationController _aiController;
+  late Animation<double> _floatingAnimation;
+  late Animation<double> _pulseAnimation;
+  late Animation<double> _shimmerAnimation;
+  late Animation<double> _glowAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _aiController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2), // Slightly faster for punchier feel
+    )..repeat(reverse: true);
+
+    _floatingAnimation = Tween<double>(begin: 4, end: -12).animate(
+      CurvedAnimation(parent: _aiController, curve: Curves.easeInOut),
+    );
+
+    _pulseAnimation = Tween<double>(begin: 0.9, end: 1.1).animate(
+      CurvedAnimation(parent: _aiController, curve: Curves.easeInOut),
+    );
+
+    _shimmerAnimation = Tween<double>(begin: -1.0, end: 2.0).animate(
+      CurvedAnimation(parent: _aiController, curve: Curves.linear),
+    );
+
+    _glowAnimation = Tween<double>(begin: 10.0, end: 40.0).animate(
+      CurvedAnimation(parent: _aiController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _aiController.dispose();
+    super.dispose();
+  }
 
   final List<Widget> _screens = const [
     HomeScreen(),
@@ -58,46 +94,76 @@ class _MainShellState extends State<MainShell> {
       ),
 
       // ================= FLOATING AI BUTTON =================
-      floatingActionButton: Container(
-        height: 68,
-        width: 68,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: AppTheme.accentGold.withValues(alpha: 0.4),
-              blurRadius: 20,
-              spreadRadius: 2,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: FloatingActionButton(
-          onPressed: _openConsultation,
-          elevation: 0,
-          highlightElevation: 0,
-          backgroundColor: Colors.transparent,
-          shape: const CircleBorder(),
-          child: Container(
-            width: 68,
-            height: 68,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [AppTheme.champagneGold, AppTheme.accentGold],
+      floatingActionButton: AnimatedBuilder(
+        animation: _aiController,
+        builder: (context, child) {
+          final shimmerValue = _shimmerAnimation.value;
+          return Transform.translate(
+            offset: Offset(0, _floatingAnimation.value),
+            child: Transform.scale(
+              scale: _pulseAnimation.value,
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.accentGold.withValues(alpha: 0.25),
+                      blurRadius: _glowAnimation.value,
+                      spreadRadius: _glowAnimation.value / 2,
+                    ),
+                    BoxShadow(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      blurRadius: _glowAnimation.value * 1.5,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+                child: FloatingActionButton(
+                  onPressed: _openConsultation,
+                  elevation: 0,
+                  highlightElevation: 0,
+                  backgroundColor: Colors.transparent,
+                  shape: const CircleBorder(),
+                  child: Center(
+                    child: SizedBox(
+                      width: 95,
+                      height: 95,
+                      child: ShaderMask(
+                        shaderCallback: (bounds) => LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          stops: [
+                            (shimmerValue - 0.2).clamp(0.0, 1.0),
+                            shimmerValue.clamp(0.0, 1.0),
+                            (shimmerValue + 0.2).clamp(0.0, 1.0),
+                          ],
+                          colors: const [
+                            AppTheme.accentGold,
+                            Colors.white, // The "Dazzle" Light
+                            AppTheme.accentGold,
+                          ],
+                        ).createShader(bounds),
+                        blendMode: BlendMode.srcIn,
+                        child: ColorFiltered(
+                          colorFilter: const ColorFilter.matrix(<double>[
+                            1, 1, 1, 0, -110,
+                            1, 1, 1, 0, -110,
+                            1, 1, 1, 0, -110,
+                            2, 2, 2, 0, -180,
+                          ]),
+                          child: Image.asset(
+                            'assets/icons/ai_consultation_dark.png',
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
-            child: const Center(
-              child: Icon(
-                Icons.auto_awesome_rounded,
-                size: 30,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ),
+          );
+        },
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
 

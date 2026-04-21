@@ -16,6 +16,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   final _emailController = TextEditingController();
   bool _isLoading = false;
   bool _emailSent = false;
+  String? _devToken;
 
   @override
   void dispose() {
@@ -34,11 +35,16 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
     setState(() => _isLoading = true);
     try {
-      await ref.read(authControllerProvider.notifier).forgotPassword(email);
+      final result = await ref
+          .read(authControllerProvider.notifier)
+          .forgotPassword(email);
+
       if (mounted) {
         setState(() {
           _isLoading = false;
           _emailSent = true;
+          // Capture dev token from response if provided by backend (development mode)
+          _devToken = result['resetToken'] as String?;
         });
       }
     } catch (e) {
@@ -236,14 +242,48 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             height: 1.5,
           ),
         ),
+        if (_devToken != null) ...[
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.amber.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
+            ),
+            child: Column(
+              children: [
+                const Text(
+                  'DEBUG TOKEN (Development Mode)',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.amber,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SelectableText(
+                  _devToken!,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.sourceCodePro(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
         const SizedBox(height: 16),
         Text(
-          'Nếu bạn có mã token, hãy nhấn bên dưới để đặt lại.',
+          'Vui lòng nhấn vào liên kết trong email để mở trình duyệt và tiến hành đặt lại mật khẩu của bạn.',
           textAlign: TextAlign.center,
           style: GoogleFonts.montserrat(
-            fontSize: 13,
+            fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: const Color(0xFF999999),
+            color: const Color(0xFF666666),
+            height: 1.5,
           ),
         ),
         const SizedBox(height: 32),
@@ -259,9 +299,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                 borderRadius: BorderRadius.circular(30),
               ),
             ),
-            onPressed: () => context.push('/reset-password'),
+            onPressed: () => context.pop(),
             child: Text(
-              'Nhập mã đặt lại',
+              'Quay lại đăng nhập',
               style: GoogleFonts.montserrat(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -271,17 +311,6 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        TextButton(
-          onPressed: () => context.pop(),
-          child: Text(
-            'Quay lại đăng nhập',
-            style: GoogleFonts.montserrat(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: const Color(0xFFD4AF37),
-            ),
-          ),
-        ),
       ],
     );
   }

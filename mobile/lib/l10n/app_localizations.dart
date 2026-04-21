@@ -3779,13 +3779,13 @@ abstract class AppLocalizations {
   /// No description provided for @discoverYourScentSignature.
   ///
   /// In en, this message translates to:
-  /// **'Discover Your\nScent Signature'**
+  /// **'Let the Angel\nFind Your Signature'**
   String get discoverYourScentSignature;
 
   /// No description provided for @quizIntroDescription.
   ///
   /// In en, this message translates to:
-  /// **'Answer 5 quick questions and our AI will find the ideal scent for your personality.'**
+  /// **'Begin an olfactory journey with the Perfume Angel to discover the scent that perfectly reflects your identity.'**
   String get quizIntroDescription;
 
   /// No description provided for @startNow.
@@ -3809,49 +3809,49 @@ abstract class AppLocalizations {
   /// No description provided for @auraAnalysis.
   ///
   /// In en, this message translates to:
-  /// **'AURA ANALYSIS...'**
+  /// **'THE ANGEL IS SENSING...'**
   String get auraAnalysis;
 
   /// No description provided for @personalizingScentExperience.
   ///
   /// In en, this message translates to:
-  /// **'Personalizing your olfactory experience'**
+  /// **'Guiding your soul to the realm of scents...'**
   String get personalizingScentExperience;
 
   /// No description provided for @processingOlfactoryData.
   ///
   /// In en, this message translates to:
-  /// **'Processing olfactory data...'**
+  /// **'Understanding your heart\'s desires...'**
   String get processingOlfactoryData;
 
   /// No description provided for @matchingResonantNotes.
   ///
   /// In en, this message translates to:
-  /// **'Matching resonant notes...'**
+  /// **'Seeking resonance from a million notes...'**
   String get matchingResonantNotes;
 
   /// No description provided for @identifyingPersonalSignature.
   ///
   /// In en, this message translates to:
-  /// **'Identifying personal signature...'**
+  /// **'Sketching your unique scent signature...'**
   String get identifyingPersonalSignature;
 
   /// No description provided for @completingAuraAlgorithm.
   ///
   /// In en, this message translates to:
-  /// **'Completing Aura algorithm...'**
+  /// **'Wrapping your unique fragrance gift...'**
   String get completingAuraAlgorithm;
 
   /// No description provided for @yourScentSignature.
   ///
   /// In en, this message translates to:
-  /// **'Your Scent Signature'**
+  /// **'The Angel\'s Gift'**
   String get yourScentSignature;
 
   /// No description provided for @resultsDescription.
   ///
   /// In en, this message translates to:
-  /// **'Based on your preferences, the Aura algorithm has selected the most suitable scents.'**
+  /// **'From thousands of notes, the Angel has meticulously selected the most exquisite scents uniquely for your soul.'**
   String get resultsDescription;
 
   /// No description provided for @noRecommendations.
@@ -4364,6 +4364,180 @@ abstract class AppLocalizations {
   /// **'Cash on delivery'**
   String get paymentCodDesc;
 
+  /// No description provided for @welcomeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'HELLO!'**
+  String get welcomeTitle;
+
+  /// No description provided for @welcomeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'I am the Perfume Angel, your companion in finding your \"destined scent\".'**
+  String get welcomeSubtitle;
+
+  /// No description provided for @aiScentDnaDiscover.
+  ///
+  /// In en, this message translates to:
+  /// **'Discover Scent DNA'**
+  String get aiScentDnaDiscover;
+
+  /// No description provided for @aiScentDnaDiscoverSub.
+  ///
+  /// In en, this message translates to:
+  /// **'AI will analyze your preferences'**
+  String get aiScentDnaDiscoverSub;
+
+  /// No description provided for @giftConsultation.
+  ///
+  /// In en, this message translates to:
+  /// **'Gift Consultation'**
+  String get giftConsultation;
+
+  /// No description provided for @giftConsultationSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Find the perfect gift for your loved ones'**
+  String get giftConsultationSub;
+
+  /// No description provided for @aiCrafting.
+  ///
+  /// In en, this message translates to:
+  /// **'The Scent Deity is crafting...'**
+  String get aiCrafting;
+
+  /// No description provided for @aiMolecularProcessing.
+  ///
+  /// In en, this message translates to:
+  /// **'Molecular processing...'**
+  String get aiMolecularProcessing;
+
+  /// No description provided for @promptAnalyzeDna.
+  ///
+  /// In en, this message translates to:
+  /// **'Help me analyze my scent DNA'**
+  String get promptAnalyzeDna;
+
+  /// No description provided for @promptGiftSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'I want to find perfume as a gift'**
+  String get promptGiftSearch;
+
+  /// No description provided for @chatInputHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell me what you are looking for...'**
+  String get chatInputHint;
+
+  /// No description provided for @chipSurprise.
+  ///
+  /// In en, this message translates to:
+  /// **'Surprise Me'**
+  String get chipSurprise;
+
+  /// No description provided for @chipSurprisePrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Give me a surprise scent recommendation'**
+  String get chipSurprisePrompt;
+
+  /// No description provided for @chipUnder1m.
+  ///
+  /// In en, this message translates to:
+  /// **'Under 1M'**
+  String get chipUnder1m;
+
+  /// No description provided for @chipUnder1mPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest perfumes under 1 million VND'**
+  String get chipUnder1mPrompt;
+
+  /// No description provided for @chipNight.
+  ///
+  /// In en, this message translates to:
+  /// **'Evening Scent'**
+  String get chipNight;
+
+  /// No description provided for @chipNightPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Scent suitable for evening occasion'**
+  String get chipNightPrompt;
+
+  /// No description provided for @chipGift.
+  ///
+  /// In en, this message translates to:
+  /// **'Gift Ideas'**
+  String get chipGift;
+
+  /// No description provided for @chipGiftPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest perfumes for gifting'**
+  String get chipGiftPrompt;
+
+  /// No description provided for @chipCheaper.
+  ///
+  /// In en, this message translates to:
+  /// **'More affordable'**
+  String get chipCheaper;
+
+  /// No description provided for @chipCheaperPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest similar but more affordable options'**
+  String get chipCheaperPrompt;
+
+  /// No description provided for @chipSweeter.
+  ///
+  /// In en, this message translates to:
+  /// **'Sweeter'**
+  String get chipSweeter;
+
+  /// No description provided for @chipSweeterPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest a sweeter scent'**
+  String get chipSweeterPrompt;
+
+  /// No description provided for @chipOffice.
+  ///
+  /// In en, this message translates to:
+  /// **'Office Wear'**
+  String get chipOffice;
+
+  /// No description provided for @chipOfficePrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest perfumes suitable for work'**
+  String get chipOfficePrompt;
+
+  /// No description provided for @chipMasculine.
+  ///
+  /// In en, this message translates to:
+  /// **'More masculine'**
+  String get chipMasculine;
+
+  /// No description provided for @chipMasculinePrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest a more masculine perfume'**
+  String get chipMasculinePrompt;
+
+  /// No description provided for @chipFeminine.
+  ///
+  /// In en, this message translates to:
+  /// **'More feminine'**
+  String get chipFeminine;
+
+  /// No description provided for @chipFemininePrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest a more feminine perfume'**
+  String get chipFemininePrompt;
+
   /// No description provided for @paymentPayosDesc.
   ///
   /// In en, this message translates to:
@@ -4375,6 +4549,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Earn {points} reward points on this order'**
   String earnPoints(int points);
+
+  /// No description provided for @homeAiBannerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask the Angel'**
+  String get homeAiBannerTitle;
+
+  /// No description provided for @homeAiBannerDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Let the Angel guide you to your destined scent today.'**
+  String get homeAiBannerDesc;
+
+  /// No description provided for @askNow.
+  ///
+  /// In en, this message translates to:
+  /// **'ASK NOW'**
+  String get askNow;
 
   /// No description provided for @dnaMatch.
   ///

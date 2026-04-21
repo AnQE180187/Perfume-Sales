@@ -29,10 +29,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final items = ref.read(cartProvider).items;
-      if (items.isNotEmpty) {
+      final availableItems = items.where((e) => !e.isOutOfStock).map((e) => e.id).toList();
+      if (availableItems.isNotEmpty) {
         ref
             .read(cartSelectionProvider.notifier)
-            .initFromCart(items.map((e) => e.id).toList());
+            .syncWithAvailableItems(availableItems);
       }
     });
   }
@@ -69,9 +70,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       if (next.items.isNotEmpty) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
+            final available = next.items.where((e) => !e.isOutOfStock).map((e) => e.id).toList();
             ref
                 .read(cartSelectionProvider.notifier)
-                .initFromCart(next.items.map((e) => e.id).toList());
+                .syncWithAvailableItems(available);
           }
         });
       }
@@ -119,7 +121,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                               onSelectChanged: (selected) {
                                 ref
                                     .read(cartSelectionProvider.notifier)
-                                    .toggle(item.id, cartState.items.length);
+                                    .toggle(item.id, cartState.items.where((e) => !e.isOutOfStock).length);
                               },
                               onQuantityChanged: (quantity) {
                                 ref
@@ -131,6 +133,35 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                 ref
                                     .read(cartSelectionProvider.notifier)
                                     .removeId(item.id);
+                              },
+                              onLimitReached: () {
+                                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Row(
+                                      children: [
+                                        const Icon(Icons.info_outline_rounded,
+                                            color: Colors.white, size: 18),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: Text(
+                                            'Rất tiếc, sản phẩm này chỉ còn ${item.stock} món trong kho',
+                                            style: GoogleFonts.montserrat(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    backgroundColor: AppTheme.deepCharcoal,
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10)),
+                                    duration: const Duration(seconds: 2),
+                                    margin: const EdgeInsets.all(16),
+                                  ),
+                                );
                               },
                             );
                           }),
@@ -200,9 +231,10 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             ),
             padding: EdgeInsets.zero,
             onPressed: () {
+              final available = cartState.items.where((e) => !e.isOutOfStock).map((e) => e.id).toList();
               ref
                   .read(cartSelectionProvider.notifier)
-                  .toggleAll(cartState.items.map((e) => e.id).toList());
+                  .toggleAll(available);
             },
             tooltip: l10n.selectAll,
           ),

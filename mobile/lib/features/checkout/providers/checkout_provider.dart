@@ -205,6 +205,7 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
         paymentMethod: isOnline ? 'ONLINE' : 'COD',
         shippingFee: state.shippingCost,
         promotionCode: state.promoCode,
+        cartItemIds: state.orderItems.map((e) => int.parse(e.id)).toList(),
       );
 
       final orderId = orderData['id'] as String? ?? '';

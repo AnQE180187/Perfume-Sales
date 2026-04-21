@@ -270,9 +270,9 @@ class _UserProfileHeader extends StatelessWidget {
     String tierLabel;
     if (loyaltyPoints >= 5000) {
       tierLabel = l10n.memberPlatinum;
-    } else if (loyaltyPoints >= 1000) {
+    } else if (loyaltyPoints >= 2000) {
       tierLabel = l10n.memberGold;
-    } else if (loyaltyPoints >= 300) {
+    } else if (loyaltyPoints >= 500) {
       tierLabel = l10n.memberSilver;
     } else {
       tierLabel = l10n.memberStandard;

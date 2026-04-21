@@ -8,6 +8,7 @@ import '../../../../core/utils/currency_utils.dart';
 import '../../../cart/providers/cart_provider.dart';
 import '../../models/chat_message.dart';
 import '../../utils/time_formatter.dart';
+import '../../../../core/widgets/luxury_notification.dart';
 
 class AiMessageBubble extends ConsumerStatefulWidget {
   final ChatMessage message;
@@ -44,11 +45,10 @@ class _AiMessageBubbleState extends ConsumerState<AiMessageBubble> {
                 ),
               ],
             ),
-            child: const Center(
-              child: Icon(
-                Icons.auto_awesome_rounded,
-                color: AppTheme.primaryDb,
-                size: 16,
+            child: ClipOval(
+              child: Image.asset(
+                'assets/images/perfume_angel.png',
+                fit: BoxFit.cover,
               ),
             ),
           ),
@@ -85,7 +85,7 @@ class _AiMessageBubbleState extends ConsumerState<AiMessageBubble> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           const Icon(
-                            Icons.auto_awesome,
+                            Icons.auto_awesome_rounded,
                             size: 14,
                             color: AppTheme.accentGold,
                           ),
@@ -234,151 +234,155 @@ class _RecommendationCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    return Container(
-      width: 200,
-      margin: const EdgeInsets.only(right: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Product Image with soft gold price tag
-            Stack(
-              children: [
-                _ProductImage(url: rec.imageUrl),
-                if (rec.price > 0)
-                  Positioned(
-                    top: 12,
-                    right: 12,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppTheme.parchment.withValues(alpha: 0.9),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: AppTheme.accentGold.withValues(alpha: 0.3),
-                        ),
-                      ),
-                      child: Text(
-                        formatVND(rec.price),
-                        style: GoogleFonts.montserrat(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: AppTheme.accentGold,
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-
-            // Info
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (rec.brand.isNotEmpty)
-                      Text(
-                        rec.brand.toUpperCase(),
-                        style: GoogleFonts.montserrat(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1,
-                          color: AppTheme.mutedSilver.withValues(alpha: 0.7),
-                        ),
-                      ),
-                    const SizedBox(height: 4),
-                    Text(
-                      rec.name,
-                      style: GoogleFonts.playfairDisplay(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.deepCharcoal,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 8),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => _showAiInsight(context),
-                        child: Text(
-                          rec.reason,
-                          style: GoogleFonts.montserrat(
-                            fontSize: 11,
-                            color: AppTheme.mutedSilver,
-                            height: 1.4,
-                            fontStyle: FontStyle.italic,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    // Add to Cart invitation style
-                    GestureDetector(
-                      onTap: () => _addToCart(context, ref),
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        decoration: BoxDecoration(
-                          gradient: AppTheme.getGoldGradient(),
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppTheme.accentGold.withValues(alpha: 0.2),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.shopping_bag_outlined,
-                              size: 14,
-                              color: AppTheme.primaryDb,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              l10n.addToBagInvite,
-                              style: GoogleFonts.montserrat(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: AppTheme.primaryDb,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+    return GestureDetector(
+      onTap: () => context.push('/product/${rec.productId}'),
+      child: Container(
+        width: 200,
+        margin: const EdgeInsets.only(right: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
             ),
           ],
         ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Product Image with soft gold price tag
+              Stack(
+                children: [
+                  _ProductImage(url: rec.imageUrl),
+                  if (rec.price > 0)
+                    Positioned(
+                      top: 12,
+                      right: 12,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppTheme.parchment.withValues(alpha: 0.9),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppTheme.accentGold.withValues(alpha: 0.3),
+                          ),
+                        ),
+                        child: Text(
+                          formatVND(rec.price),
+                          style: GoogleFonts.montserrat(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.accentGold,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+
+              // Info
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (rec.brand.isNotEmpty)
+                        Text(
+                          rec.brand.toUpperCase(),
+                          style: GoogleFonts.montserrat(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1,
+                            color: AppTheme.mutedSilver.withValues(alpha: 0.7),
+                          ),
+                        ),
+                      const SizedBox(height: 4),
+                      Text(
+                        rec.name,
+                        style: GoogleFonts.playfairDisplay(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.deepCharcoal,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 8),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => _showAiInsight(context),
+                          child: Text(
+                            rec.reason,
+                            style: GoogleFonts.montserrat(
+                              fontSize: 11,
+                              color: AppTheme.mutedSilver,
+                              height: 1.4,
+                              fontStyle: FontStyle.italic,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Add to Cart invitation style
+                      GestureDetector(
+                        onTap: () => _addToCart(context, ref),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          decoration: BoxDecoration(
+                            gradient: AppTheme.getGoldGradient(),
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.accentGold.withValues(alpha: 0.2),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.shopping_bag_outlined,
+                                size: 14,
+                                color: AppTheme.primaryDb,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                l10n.addToBagInvite,
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppTheme.primaryDb,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
+;
   }
 
   void _showAiInsight(BuildContext context) {
@@ -410,9 +414,9 @@ class _RecommendationCard extends ConsumerWidget {
             Row(
               children: [
                 const Icon(
-                  Icons.auto_awesome,
+                  Icons.auto_awesome_rounded,
                   color: AppTheme.accentGold,
-                  size: 20,
+                  size: 22,
                 ),
                 const SizedBox(width: 12),
                 Text(
@@ -481,12 +485,13 @@ class _RecommendationCard extends ConsumerWidget {
     try {
       await ref.read(cartProvider.notifier).addItemByVariant(rec.variantId);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Đã thêm ${rec.name} vào giỏ hàng'),
-            duration: const Duration(seconds: 2),
-            backgroundColor: AppTheme.accentGold,
-          ),
+        LuxuryNotification.showSuccess(
+          context,
+          message: AppLocalizations.of(context)!.addedToCart,
+          subMessage: rec.name,
+          imageUrl: rec.imageUrl,
+          actionLabel: AppLocalizations.of(context)!.viewCart,
+          onAction: () => context.push('/cart'),
         );
       }
     } catch (e) {
@@ -495,6 +500,7 @@ class _RecommendationCard extends ConsumerWidget {
           SnackBar(
             content: Text('Lỗi: $e'),
             backgroundColor: const Color(0xFFFF453A),
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }

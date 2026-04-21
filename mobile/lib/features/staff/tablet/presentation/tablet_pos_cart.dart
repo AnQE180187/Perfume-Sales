@@ -256,7 +256,7 @@ class TabletPosCart extends ConsumerWidget {
                 alignment: Alignment.centerRight,
                 child: Text(
                   "${fmt.format(total)}đ",
-                  style: GoogleFonts.playfairDisplay(fontSize: 28, fontWeight: FontWeight.w900, color: AppTheme.accentGold),
+                  style: GoogleFonts.montserrat(fontSize: 24, fontWeight: FontWeight.w800, color: AppTheme.accentGold),
                 ),
               ),
             ),
