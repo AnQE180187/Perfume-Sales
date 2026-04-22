@@ -72,7 +72,6 @@ export class ProductsService {
       isFeatured,
       isBestseller,
       notes,
-      occasion,
       minPrice,
       maxPrice,
     } = query;
@@ -112,15 +111,6 @@ export class ProductsService {
           {
             scentFamily: { name: { contains: notes, mode: 'insensitive' } },
           },
-        ],
-      });
-    }
-
-    if (occasion) {
-      where.AND.push({
-        OR: [
-          { name: { contains: occasion, mode: 'insensitive' } },
-          { description: { contains: occasion, mode: 'insensitive' } },
         ],
       });
     }

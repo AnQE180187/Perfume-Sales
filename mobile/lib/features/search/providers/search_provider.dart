@@ -5,12 +5,12 @@ import '../../product/models/product.dart';
 class SearchState {
   final String query;
   final int? categoryId;
+  final String? categoryName;
   final int? scentFamilyId;
   final int? brandId;
   final String? brandName;
   final String? scentFamily;
   final String? selectedNote;
-  final String? occasion;
   final String? priceRange;
   final List<Product> results;
   final bool isLoading;
@@ -19,12 +19,12 @@ class SearchState {
   const SearchState({
     this.query = '',
     this.categoryId,
+    this.categoryName,
     this.scentFamilyId,
     this.brandId,
     this.brandName,
     this.scentFamily,
     this.selectedNote,
-    this.occasion,
     this.priceRange,
     this.results = const [],
     this.isLoading = false,
@@ -34,6 +34,7 @@ class SearchState {
   SearchState copyWith({
     String? query,
     int? categoryId,
+    String? categoryName,
     bool clearCategory = false,
     int? scentFamilyId,
     bool clearScentFamily = false,
@@ -43,8 +44,6 @@ class SearchState {
     int? brandId,
     String? brandName,
     bool clearBrand = false,
-    String? occasion,
-    bool clearOccasion = false,
     String? priceRange,
     bool clearPriceRange = false,
     List<Product>? results,
@@ -55,13 +54,13 @@ class SearchState {
     return SearchState(
       query: query ?? this.query,
       categoryId: clearCategory ? null : (categoryId ?? this.categoryId),
+      categoryName: clearCategory ? null : (categoryName ?? this.categoryName),
       scentFamilyId:
           clearScentFamily ? null : (scentFamilyId ?? this.scentFamilyId),
       scentFamily: clearScentFamily ? null : (scentFamily ?? this.scentFamily),
       selectedNote: clearNote ? null : (selectedNote ?? this.selectedNote),
       brandId: clearBrand ? null : (brandId ?? this.brandId),
       brandName: clearBrand ? null : (brandName ?? this.brandName),
-      occasion: clearOccasion ? null : (occasion ?? this.occasion),
       priceRange: clearPriceRange ? null : (priceRange ?? this.priceRange),
       results: results ?? this.results,
       isLoading: isLoading ?? this.isLoading,
@@ -100,7 +99,6 @@ class SearchNotifier extends StateNotifier<SearchState> {
         scentFamilyId: state.scentFamilyId,
         brandId: state.brandId,
         notes: state.selectedNote,
-        occasion: state.occasion,
         minPrice: minPrice,
         maxPrice: maxPrice,
         take: 50,
@@ -146,15 +144,6 @@ class SearchNotifier extends StateNotifier<SearchState> {
     _fetch();
   }
 
-  void setOccasion(String? occasion) {
-    if (occasion == state.occasion) {
-      state = state.copyWith(clearOccasion: true);
-    } else {
-      state = state.copyWith(occasion: occasion);
-    }
-    _fetch();
-  }
-
   void setPriceRange(String? range) {
     if (range == state.priceRange) {
       state = state.copyWith(clearPriceRange: true);
@@ -164,11 +153,11 @@ class SearchNotifier extends StateNotifier<SearchState> {
     _fetch();
   }
 
-  void setCategory(int? categoryId) {
-    if (categoryId == state.categoryId) {
+  void setCategory(String? name, {int? id}) {
+    if (id == state.categoryId) {
       state = state.copyWith(clearCategory: true);
     } else {
-      state = state.copyWith(categoryId: categoryId);
+      state = state.copyWith(categoryId: id, categoryName: name);
     }
     _fetch();
   }
