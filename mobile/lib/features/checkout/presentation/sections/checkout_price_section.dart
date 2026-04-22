@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../../l10n/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/currency_utils.dart';
 
@@ -8,6 +9,7 @@ class CheckoutPriceSection extends StatelessWidget {
   final double subtotal;
   final double shippingCost;
   final double tax;
+  final double discount;
   final double totalAmount;
 
   const CheckoutPriceSection({
@@ -15,51 +17,129 @@ class CheckoutPriceSection extends StatelessWidget {
     required this.subtotal,
     required this.shippingCost,
     required this.tax,
+    required this.discount,
     required this.totalAmount,
   });
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.softTaupe.withValues(alpha: 0.6)),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE5D5C0).withValues(alpha: 0.5)),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.deepCharcoal.withValues(alpha: 0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         children: [
-          _PriceRow(label: 'Tiền hàng', value: formatVND(subtotal)),
-          const SizedBox(height: 12),
+          _PriceRow(label: l10n.productValue, value: formatVND(subtotal)),
+          const SizedBox(height: 14),
+          if (discount > 0) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF1E5AC).withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.2)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.stars_rounded, color: AppTheme.accentGold, size: 14),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      l10n.exclusiveOffer,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.5,
+                        color: AppTheme.accentGold,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    '-${formatVND(discount)}',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.accentGold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+          ],
           _PriceRow(
-            label: 'Vận chuyển',
-            value: shippingCost == 0 ? 'Miễn phí' : formatVND(shippingCost),
+            label: l10n.shippingFee,
+            value: shippingCost == 0 ? l10n.complimentary : formatVND(shippingCost),
             highlight: shippingCost == 0,
           ),
-          const SizedBox(height: 12),
-          _PriceRow(label: 'Thuế', value: formatVND(tax)),
-          const SizedBox(height: 16),
-          Divider(color: AppTheme.softTaupe.withValues(alpha: 0.8), height: 1),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
+          _PriceRow(label: l10n.taxVat, value: formatVND(tax)),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: Divider(color: Color(0xFFE5D5C0), thickness: 0.5),
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.totalAmountUpper,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.2,
+                        color: AppTheme.mutedSilver,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      l10n.incTaxLabel,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w500,
+                        color: AppTheme.mutedSilver.withValues(alpha: 0.6),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 4),
               Text(
-                'TỔNG CỘNG',
+                formatVND(totalAmount)
+                    .replaceAll(RegExp(r'[^0-9.,]'), '')
+                    .trim(),
+                maxLines: 1,
                 style: GoogleFonts.montserrat(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1.4,
+                  fontSize: 22, // Slightly smaller to avoid overflow
+                  fontWeight: FontWeight.w800,
+                  height: 1,
                   color: AppTheme.deepCharcoal,
                 ),
               ),
-              Text(
-                formatVND(totalAmount),
-                style: GoogleFonts.playfairDisplay(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.5,
-                  color: AppTheme.deepCharcoal,
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4, left: 1),
+                child: Text(
+                  'đ',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.deepCharcoal,
+                  ),
                 ),
               ),
             ],
@@ -84,23 +164,26 @@ class _PriceRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Expanded(
           child: Text(
             label,
             style: GoogleFonts.montserrat(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
               color: AppTheme.mutedSilver,
             ),
           ),
         ),
+        const SizedBox(width: 8),
         Text(
           value,
           style: GoogleFonts.montserrat(
-            fontSize: 12,
+            fontSize: 13,
             fontWeight: FontWeight.w700,
             color: highlight ? AppTheme.accentGold : AppTheme.deepCharcoal,
+            letterSpacing: -0.2,
           ),
         ),
       ],

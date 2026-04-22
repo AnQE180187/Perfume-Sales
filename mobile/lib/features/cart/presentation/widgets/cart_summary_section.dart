@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/currency_utils.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../providers/cart_provider.dart';
 
 class CartSummarySection extends StatelessWidget {
@@ -27,72 +28,110 @@ class CartSummarySection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final hasSelection = selectedItems.isNotEmpty;
 
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 16,
-            offset: const Offset(0, -4),
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 20,
+            offset: const Offset(0, -10),
           ),
         ],
       ),
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-          child: Builder(
-            builder: (context) => GestureDetector(
-              onTap: hasSelection
-                  ? () => context.push(AppRoutes.checkout)
-                  : null,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                height: 52,
-                decoration: BoxDecoration(
-                  color: hasSelection
-                      ? AppTheme.accentGold
-                      : AppTheme.mutedSilver.withValues(alpha: 0.25),
-                  borderRadius: BorderRadius.circular(26),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      hasSelection
-                          ? 'Thanh toán'
-                          : 'Chọn sản phẩm để thanh toán',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: hasSelection
-                            ? Colors.white
-                            : AppTheme.mutedSilver,
-                      ),
-                    ),
-                    if (hasSelection) ...[
-                      Text(
-                        '  •  ${formatVND(total)}',
-                        style: GoogleFonts.montserrat(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white.withValues(alpha: 0.9),
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (hasSelection)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l10n.estSubtotal,
+                              style: GoogleFonts.montserrat(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 1.5,
+                                color: AppTheme.mutedSilver,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              l10n.shippingFeeNotice,
+                              style: GoogleFonts.montserrat(
+                                fontSize: 9,
+                                fontStyle: FontStyle.italic,
+                                color: AppTheme.mutedSilver.withValues(alpha: 0.6),
+                              ),
+                              maxLines: 2,
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(width: 6),
-                      const Icon(
-                        Icons.arrow_forward_rounded,
-                        size: 18,
-                        color: Colors.white,
+                      const SizedBox(width: 16),
+                      Text(
+                        formatVND(total),
+                        style: GoogleFonts.montserrat(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.5,
+                          color: AppTheme.deepCharcoal,
+                        ),
                       ),
                     ],
-                  ],
+                  ),
+                ),
+              GestureDetector(
+                onTap: hasSelection
+                    ? () => context.push(AppRoutes.checkout)
+                    : null,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: hasSelection
+                        ? AppTheme.deepCharcoal
+                        : AppTheme.softTaupe.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: hasSelection
+                        ? [
+                            BoxShadow(
+                              color: AppTheme.deepCharcoal.withValues(alpha: 0.2),
+                              blurRadius: 15,
+                              offset: const Offset(0, 6),
+                            )
+                          ]
+                        : [],
+                  ),
+                  child: Center(
+                    child: Text(
+                      hasSelection ? l10n.goToCheckout : l10n.pleaseSelectItems,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 2,
+                        color: hasSelection ? Colors.white : AppTheme.mutedSilver,
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
         ),
       ),

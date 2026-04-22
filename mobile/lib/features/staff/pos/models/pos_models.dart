@@ -4,6 +4,7 @@ class PosProduct {
   final String name;
   final String? slug;
   final PosProductBrand? brand;
+  final String? family;
   final List<PosProductImage> images;
   final List<PosVariant> variants;
 
@@ -12,6 +13,7 @@ class PosProduct {
     required this.name,
     this.slug,
     this.brand,
+    this.family,
     this.images = const [],
     this.variants = const [],
   });
@@ -24,6 +26,7 @@ class PosProduct {
       brand: json['brand'] != null
           ? PosProductBrand.fromJson(json['brand'] as Map<String, dynamic>)
           : null,
+      family: json['family'] as String?,
       images:
           (json['images'] as List<dynamic>?)
               ?.map((e) => PosProductImage.fromJson(e as Map<String, dynamic>))
@@ -149,12 +152,14 @@ class PosOrderCustomer {
   final String? fullName;
   final String? phone;
   final int loyaltyPoints;
+  final String? tier;
 
   const PosOrderCustomer({
     required this.id,
     this.fullName,
     this.phone,
     required this.loyaltyPoints,
+    this.tier,
   });
 
   factory PosOrderCustomer.fromJson(Map<String, dynamic> json) {
@@ -163,6 +168,7 @@ class PosOrderCustomer {
       fullName: json['fullName'] as String?,
       phone: json['phone'] as String?,
       loyaltyPoints: (json['loyaltyPoints'] as num?)?.toInt() ?? 0,
+      tier: json['tier'] as String?,
     );
   }
 }
@@ -248,6 +254,7 @@ class LoyaltyResult {
   final String? fullName;
   final String? phone;
   final int loyaltyPoints;
+  final String? tier;
 
   const LoyaltyResult({
     required this.registered,
@@ -255,6 +262,7 @@ class LoyaltyResult {
     this.fullName,
     this.phone,
     required this.loyaltyPoints,
+    this.tier,
   });
 
   factory LoyaltyResult.fromJson(Map<String, dynamic> json) {
@@ -264,6 +272,7 @@ class LoyaltyResult {
       fullName: json['fullName'] as String?,
       phone: json['phone'] as String?,
       loyaltyPoints: (json['loyaltyPoints'] as num?)?.toInt() ?? 0,
+      tier: json['tier'] as String?,
     );
   }
 }

@@ -1,26 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:palette_generator/palette_generator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/routing/app_routes.dart';
-import '../../../core/widgets/floating_icon_button.dart';
 import '../../../core/widgets/product_size_selector.dart';
 import '../../../core/widgets/ai_scent_analysis_card.dart';
-import '../../../core/widgets/scent_structure_section.dart';
-import '../../../core/widgets/product_story_section.dart';
 import '../../../core/widgets/product_bottom_cta.dart';
+import '../../../core/widgets/luxury_button.dart';
+import 'package:perfume_gpt_app/l10n/app_localizations.dart';
 import '../../cart/providers/cart_provider.dart';
+import '../../cart/providers/cart_selection_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
-import 'scent_structure_detail_screen.dart';
+import '../../profile/providers/ai_preferences_provider.dart';
 import '../providers/product_provider.dart';
 import '../models/product.dart';
 import '../../../core/widgets/product_price_section.dart';
+import '../../../core/widgets/scent_structure_section.dart';
+import 'scent_structure_detail_screen.dart';
 
 class ProductDetailScreen extends ConsumerStatefulWidget {
   final String productId;
+  final String? heroTag;
 
-  const ProductDetailScreen({super.key, required this.productId});
+  const ProductDetailScreen({
+    super.key,
+    required this.productId,
+    this.heroTag,
+  });
 
   @override
   ConsumerState<ProductDetailScreen> createState() =>
@@ -30,11 +38,14 @@ class ProductDetailScreen extends ConsumerStatefulWidget {
 class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
     with SingleTickerProviderStateMixin {
   bool _isAIAnalysisExpanded = false;
+  bool _isStoryExpanded = false;
   String _selectedSize = '100ml';
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   final PageController _pageController = PageController();
   int _currentImagePage = 0;
+  Color? _dominantColor;
+  String? _loadedImageUrl;
 
   // Size pricing map
   final Map<String, double> _sizePricing = {
@@ -81,6 +92,22 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
     _animationController.forward();
   }
 
+  Future<void> _extractColor(String imageUrl) async {
+    if (_loadedImageUrl == imageUrl) return;
+    _loadedImageUrl = imageUrl;
+    try {
+      final palette = await PaletteGenerator.fromImageProvider(
+        NetworkImage(imageUrl),
+        size: const Size(100, 100),
+      );
+      if (mounted) {
+        setState(() {
+          _dominantColor = palette.dominantColor?.color ?? palette.lightMutedColor?.color;
+        });
+      }
+    } catch (_) {}
+  }
+
   @override
   void dispose() {
     _animationController.dispose();
@@ -109,7 +136,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                 color: AppTheme.mutedSilver,
               ),
               const SizedBox(height: 16),
-              Text('Không thể tải sản phẩm', style: GoogleFonts.montserrat()),
+              Text(AppLocalizations.of(context)!.failedLoadOrder, style: GoogleFonts.montserrat()),
             ],
           ),
         ),
@@ -128,6 +155,10 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                     : _selectedSize);
           final currentPrice = _priceFor(product, selectedSize);
 
+          if (_dominantColor == null && _loadedImageUrl != images.first) {
+            _extractColor(images.first);
+          }
+
           return Stack(
             children: [
               CustomScrollView(
@@ -138,16 +169,19 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                     pinned: false,
                     elevation: 0,
                     backgroundColor: Colors.transparent,
-                    leading: FloatingIconButton(
-                      icon: Icons.arrow_back,
-                      onTap: () => context.pop(),
+                    leading: Padding(
+                      padding: const EdgeInsets.only(left: 8.0, top: 4.0),
+                      child: IconButton(
+                        icon: Icon(Icons.arrow_back, color: AppTheme.creamWhite, size: 22),
+                        onPressed: () => context.pop(),
+                      ),
                     ),
                     actions: [
-                      FloatingIconButton(
-                        icon: Icons.share_outlined,
-                        onTap: () {},
+                      IconButton(
+                        icon: Icon(Icons.share_outlined, color: AppTheme.creamWhite, size: 22),
+                        onPressed: () {},
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 4),
                       Consumer(
                         builder: (context, ref, _) {
                           final isFav =
@@ -156,24 +190,25 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                                   .valueOrNull
                                   ?.any((p) => p.id == product.id) ??
                               false;
-                          return FloatingIconButton(
-                            icon: isFav
-                                ? Icons.favorite
-                                : Icons.favorite_border,
-                            onTap: () => ref
+                          return IconButton(
+                            icon: Icon(
+                              isFav ? Icons.favorite : Icons.favorite_border,
+                              color: isFav ? const Color(0xFFD32F2F) : AppTheme.creamWhite,
+                              size: 22,
+                            ),
+                            onPressed: () => ref
                                 .read(wishlistProvider.notifier)
                                 .toggle(product),
-                            isActive: isFav,
                           );
                         },
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 8),
                     ],
                     flexibleSpace: FlexibleSpaceBar(
                       background: FadeTransition(
                         opacity: _fadeAnimation,
                         child: Hero(
-                          tag: 'product-${product.id}',
+                          tag: widget.heroTag ?? 'product-${product.id}',
                           child: ClipRRect(
                             borderRadius: const BorderRadius.only(
                               bottomLeft: Radius.circular(32),
@@ -184,13 +219,13 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                               children: [
                                 // gradient background
                                 Container(
-                                  decoration: const BoxDecoration(
+                                  decoration: BoxDecoration(
                                     gradient: LinearGradient(
                                       begin: Alignment.topCenter,
                                       end: Alignment.bottomCenter,
                                       colors: [
-                                        Color(0xFFE8D5B7),
-                                        Color(0xFFF5F1ED),
+                                        _dominantColor?.withValues(alpha: 0.15) ?? const Color(0xFFE8D5B7),
+                                        _dominantColor?.withValues(alpha: 0.5) ?? const Color(0xFFF5F1ED),
                                       ],
                                     ),
                                   ),
@@ -213,10 +248,29 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                                     ),
                                   ),
                                 ),
+                                // dark gradient for icon visibility
+                                Positioned(
+                                  top: 0,
+                                  left: 0,
+                                  right: 0,
+                                  height: 120,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                        colors: [
+                                          AppTheme.deepCharcoal.withValues(alpha: 0.45),
+                                          Colors.transparent,
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
                                 // indicator dots
                                 if (images.length > 1)
                                   Positioned(
-                                    bottom: 28,
+                                    bottom: 32,
                                     left: 0,
                                     right: 0,
                                     child: Row(
@@ -232,14 +286,14 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                                             horizontal: 3,
                                           ),
                                           width: i == _currentImagePage
-                                              ? 18.0
+                                              ? 20.0
                                               : 6.0,
                                           height: 6,
                                           decoration: BoxDecoration(
                                             color: i == _currentImagePage
-                                                ? Colors.white
-                                                : Colors.white.withValues(
-                                                    alpha: 0.5,
+                                                ? AppTheme.creamWhite
+                                                : AppTheme.creamWhite.withValues(
+                                                    alpha: 0.4,
                                                   ),
                                             borderRadius: BorderRadius.circular(
                                               3,
@@ -270,20 +324,20 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                           decoration: BoxDecoration(
                             color: AppTheme.ivoryBackground,
                             borderRadius: BorderRadius.circular(28),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.10),
-                                blurRadius: 32,
-                                spreadRadius: 0,
-                                offset: const Offset(0, 8),
-                              ),
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.04),
-                                blurRadius: 8,
-                                spreadRadius: 0,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppTheme.deepCharcoal.withValues(alpha: 0.10),
+                                    blurRadius: 32,
+                                    spreadRadius: 0,
+                                    offset: const Offset(0, 8),
+                                  ),
+                                  BoxShadow(
+                                    color: AppTheme.deepCharcoal.withValues(alpha: 0.04),
+                                    blurRadius: 8,
+                                    spreadRadius: 0,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -303,60 +357,145 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                               Text(
                                 product.name,
                                 style: GoogleFonts.playfairDisplay(
-                                  fontSize: 24,
+                                  fontSize: 28,
                                   fontWeight: FontWeight.w600,
-                                  height: 1.15,
+                                  letterSpacing: -0.5,
+                                  height: 1.1,
                                   color: AppTheme.deepCharcoal,
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 8),
                               // SUBTITLE
                               Text(
-                                'Nước hoa Eau de Parfum',
+                                (product.concentration ?? AppLocalizations.of(context)!.eauDeParfum).toUpperCase(),
                                 style: GoogleFonts.montserrat(
-                                  fontSize: 12,
+                                  fontSize: 10,
+                                  letterSpacing: 2.0,
+                                  fontWeight: FontWeight.w500,
                                   color: AppTheme.mutedSilver,
                                 ),
                               ),
                               const SizedBox(height: 12),
+                              // DNA MATCH + LOYALTY POINTS
+                              Consumer(
+                                builder: (context, ref, _) {
+                                  final aiPrefs = ref.watch(aiPreferencesProvider).value;
+                                  final preferredNotes = aiPrefs?.preferredNotes ?? [];
+                                  
+                                  // Calculate Match %
+                                  int match = 0;
+                                  if (preferredNotes.isNotEmpty) {
+                                    final pNotes = product.notes.map((n) => n.toLowerCase()).toSet();
+                                    int matches = 0;
+                                    for (var n in preferredNotes) {
+                                      if (pNotes.contains(n.toLowerCase())) matches++;
+                                    }
+                                    if (matches > 0) {
+                                      match = (75 + (matches * 10)).clamp(80, 99);
+                                    }
+                                  }
+
+                                  final points = (currentPrice / 10000).floor();
+
+                                  return Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      if (match > 0) ...[
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                          decoration: BoxDecoration(
+                                            color: AppTheme.accentGold.withValues(alpha: 0.1),
+                                            borderRadius: BorderRadius.circular(12),
+                                            border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.2)),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Icon(Icons.auto_awesome_rounded, size: 14, color: AppTheme.accentGold),
+                                              const SizedBox(width: 6),
+                                              Text(
+                                                AppLocalizations.of(context)!.dnaMatch(match),
+                                                style: GoogleFonts.montserrat(
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: AppTheme.accentGold,
+                                                  letterSpacing: 0.5,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 12),
+                                      ],
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.stars_rounded, size: 16, color: AppTheme.accentGold),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            AppLocalizations.of(context)!.earnPoints(points),
+                                            style: GoogleFonts.montserrat(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w500,
+                                              color: AppTheme.deepCharcoal.withValues(alpha: 0.7),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 16),
+                                    ],
+                                  );
+                                },
+                              ),
                               // RATING + VIEW REVIEWS
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  if (product.rating != null) ...[
-                                    const Icon(
-                                      Icons.star,
-                                      size: 14,
-                                      color: AppTheme.accentGold,
-                                    ),
-                                    const SizedBox(width: 5),
-                                    Text(
-                                      '${product.rating}/5',
-                                      style: GoogleFonts.montserrat(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: AppTheme.deepCharcoal,
+                                  if (product.rating != null)
+                                    Expanded(
+                                      child: Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.star,
+                                            size: 14,
+                                            color: AppTheme.accentGold,
+                                          ),
+                                          const SizedBox(width: 5),
+                                          Text(
+                                            '${product.rating!.toStringAsFixed(1)}/5',
+                                            style: GoogleFonts.montserrat(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
+                                              color: AppTheme.deepCharcoal,
+                                            ),
+                                          ),
+                                          if (product.reviews != null) ...[
+                                            const SizedBox(width: 4),
+                                            Flexible(
+                                              child: Text(
+                                                '· ${product.reviews} ${AppLocalizations.of(context)!.rating}',
+                                                style: GoogleFonts.montserrat(
+                                                  fontSize: 11,
+                                                  color: AppTheme.mutedSilver,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ],
                                       ),
-                                    ),
-                                    if (product.reviews != null) ...[
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        '· ${product.reviews} đánh giá',
+                                    )
+                                  else
+                                    Expanded(
+                                      child: Text(
+                                        AppLocalizations.of(context)!.noReviews,
                                         style: GoogleFonts.montserrat(
                                           fontSize: 11,
                                           color: AppTheme.mutedSilver,
                                         ),
                                       ),
-                                    ],
-                                  ] else
-                                    Text(
-                                      'Chưa có đánh giá',
-                                      style: GoogleFonts.montserrat(
-                                        fontSize: 11,
-                                        color: AppTheme.mutedSilver,
-                                      ),
                                     ),
-                                  const Spacer(),
+                                  const SizedBox(width: 8),
                                   GestureDetector(
                                     onTap: () => context.push(
                                       AppRoutes.reviewsWithProductId(
@@ -365,7 +504,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                                       ),
                                     ),
                                     child: Text(
-                                      'Xem review →',
+                                      '${AppLocalizations.of(context)!.viewReviews} →',
                                       style: GoogleFonts.montserrat(
                                         fontSize: 11,
                                         fontWeight: FontWeight.w600,
@@ -389,24 +528,31 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
 
                   // ================= SIZE SELECTOR =================
                   SliverToBoxAdapter(
-                    child: ProductSizeSelector(
-                      selectedSize: selectedSize,
-                      sizes: backendVariantSizes.isEmpty
-                          ? null
-                          : backendVariantSizes,
-                      onSizeChanged: (size) =>
-                          setState(() => _selectedSize = size),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24.0),
+                      child: ProductSizeSelector(
+                        selectedSize: selectedSize,
+                        sizes: backendVariantSizes.isEmpty
+                            ? null
+                            : backendVariantSizes,
+                        onSizeChanged: (size) =>
+                            setState(() => _selectedSize = size),
+                      ),
                     ),
                   ),
 
                   // ================= AI SCENT ANALYSIS =================
                   SliverToBoxAdapter(
-                    child: AIScentAnalysisCard(
-                      isExpanded: _isAIAnalysisExpanded,
-                      onToggle: () => setState(
-                        () => _isAIAnalysisExpanded = !_isAIAnalysisExpanded,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 32.0),
+                      child: AIScentAnalysisCard(
+                        isExpanded: _isAIAnalysisExpanded,
+                        onToggle: () => setState(
+                          () => _isAIAnalysisExpanded = !_isAIAnalysisExpanded,
+                        ),
+                        notes: product.notes,
+                        scentAnalysis: product.scentAnalysis,
                       ),
-                      notes: product.notes,
                     ),
                   ),
 
@@ -462,14 +608,20 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                     ),
                   ),
 
-                  // ================= THE STORY =================
-                  const SliverToBoxAdapter(child: SizedBox(height: 40)),
+                  // ================= TECHNICAL SPECS =================
                   SliverToBoxAdapter(
-                    child: ProductStorySection(
-                      description: product.description,
-                      productId: product.id,
-                      productName: product.name,
-                      imageUrl: product.imageUrl,
+                    child: _TechnicalSpecsSection(
+                      longevity: product.longevity,
+                      concentration: product.concentration,
+                    ),
+                  ),
+
+                  // ================= PRODUCT STORY =================
+                  SliverToBoxAdapter(
+                    child: _ProductStorySection(
+                      product: product,
+                      isExpanded: _isStoryExpanded,
+                      onToggle: () => setState(() => _isStoryExpanded = !_isStoryExpanded),
                     ),
                   ),
 
@@ -493,9 +645,9 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                     if (variant == null || variant.id.isEmpty) {
                       if (!mounted) return;
                       messenger.showSnackBar(
-                        const SnackBar(
+                        SnackBar(
                           content: Text(
-                            'Không tìm thấy phiên bản sản phẩm phù hợp.',
+                            AppLocalizations.of(context)!.variantNotFound,
                           ),
                           behavior: SnackBarBehavior.floating,
                         ),
@@ -508,7 +660,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                           .read(cartProvider.notifier)
                           .addItemByVariant(variant.id, quantity: 1);
 
-                      if (!mounted) return;
+                      if (!context.mounted) return;
+                      final l10nAfter = AppLocalizations.of(context)!;
                       messenger.clearSnackBars();
                       messenger.showSnackBar(
                         SnackBar(
@@ -522,7 +675,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                               const SizedBox(width: 10),
                               Expanded(
                                 child: Text(
-                                  'Đã thêm ${product.name} vào giỏ hàng',
+                                  '${l10nAfter.addedToCart} ${product.name}',
                                   style: const TextStyle(fontSize: 13),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -535,9 +688,9 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                                     context.push('/cart');
                                   }
                                 },
-                                child: const Text(
-                                  'Xem giỏ',
-                                  style: TextStyle(
+                                child: Text(
+                                  l10nAfter.viewCart,
+                                  style: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w700,
                                     fontSize: 13,
@@ -558,10 +711,70 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                         ),
                       );
                     } catch (error) {
-                      if (!mounted) return;
+                      if (!context.mounted) return;
+                      final l10nAfter = AppLocalizations.of(context)!;
                       messenger.showSnackBar(
                         SnackBar(
-                          content: Text('Không thể thêm vào giỏ: $error'),
+                          content: Text('${l10nAfter.failedAddToCart}: $error'),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    }
+                  },
+                  onBuyNow: () async {
+                    final l10n = AppLocalizations.of(context)!;
+                    final variant = _findSelectedVariant(product, selectedSize);
+                    if (variant == null || variant.id.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(l10n.variantNotFound),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                      return;
+                    }
+
+                    try {
+                      // 1) Add to cart (backend may merge quantities)
+                      await ref
+                          .read(cartProvider.notifier)
+                          .addItemByVariant(variant.id, quantity: 1);
+
+                      if (!mounted) return;
+
+                      // 2) Select ONLY this product in checkout
+                      final cart = ref.read(cartProvider);
+                      final target = cart.items.firstWhere(
+                        (it) {
+                          final sameProduct = it.productId == product.id;
+                          final sizeMatch = (it.size ?? '')
+                              .toLowerCase()
+                              .contains(selectedSize.toLowerCase());
+                          return sameProduct && (sizeMatch || it.size == null);
+                        },
+                        orElse: () => cart.items.firstWhere(
+                          (it) => it.productId == product.id,
+                          orElse: () => cart.items.isNotEmpty
+                              ? cart.items.first
+                              : throw StateError('empty cart'),
+                        ),
+                      );
+
+                      ref
+                          .read(cartSelectionProvider.notifier)
+                          .setSelection({target.id}, selectAll: false);
+
+                      if (!context.mounted) return;
+                      final messenger = ScaffoldMessenger.of(context);
+                      messenger.hideCurrentSnackBar();
+                      context.push(AppRoutes.checkout);
+                    } catch (e) {
+                      if (!context.mounted) return;
+                      final l10nAfter = AppLocalizations.of(context)!;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('${l10nAfter.error}: $e'),
+                          backgroundColor: const Color(0xFFD32F2F),
                           behavior: SnackBarBehavior.floating,
                         ),
                       );
@@ -572,6 +785,157 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+class _TechnicalSpecsSection extends StatelessWidget {
+  final String? longevity;
+  final String? concentration;
+
+  const _TechnicalSpecsSection({this.longevity, this.concentration});
+
+  @override
+  Widget build(BuildContext context) {
+    if (longevity == null && concentration == null) return const SizedBox.shrink();
+
+    final l10n = AppLocalizations.of(context)!;
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppTheme.creamWhite.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.accentGold.withOpacity(0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.technicalSpecs.toUpperCase(),
+            style: GoogleFonts.montserrat(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.5,
+              color: AppTheme.accentGold,
+            ),
+          ),
+          const SizedBox(height: 16),
+          _specRow(Icons.timer_outlined, l10n.longevityLabel, longevity ?? l10n.updating),
+          const Divider(height: 24, color: AppTheme.softTaupe),
+          _specRow(Icons.water_drop_outlined, l10n.concentrationLabel, concentration ?? l10n.updating),
+        ],
+      ),
+    );
+  }
+
+  Widget _specRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: AppTheme.mutedSilver),
+        const SizedBox(width: 12),
+        Text(
+          label,
+          style: GoogleFonts.montserrat(
+            fontSize: 13,
+            color: AppTheme.deepCharcoal.withOpacity(0.6),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Text(
+            value,
+            textAlign: TextAlign.end,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.montserrat(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: AppTheme.deepCharcoal,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ProductStorySection extends StatelessWidget {
+  final Product product;
+  final bool isExpanded;
+  final VoidCallback onToggle;
+
+  const _ProductStorySection({
+    required this.product,
+    required this.isExpanded,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final story = product.story ?? product.description ?? '';
+    if (story.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 24,
+                height: 1,
+                color: AppTheme.accentGold,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                l10n.theStory.toUpperCase(),
+                style: GoogleFonts.montserrat(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 2,
+                  color: AppTheme.accentGold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            story,
+            maxLines: isExpanded ? null : 4,
+            overflow: isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
+            style: GoogleFonts.montserrat(
+              fontSize: 14,
+              height: 1.7,
+              color: AppTheme.deepCharcoal.withValues(alpha: 0.7),
+            ),
+          ),
+          const SizedBox(height: 8),
+          GestureDetector(
+            onTap: onToggle,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  isExpanded ? l10n.seeLess : l10n.seeMore,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.accentGold,
+                  ),
+                ),
+                Icon(
+                  isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                  size: 20,
+                  color: AppTheme.accentGold,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

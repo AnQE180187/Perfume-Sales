@@ -23,13 +23,35 @@ export class OrdersController {
   }
 
   @Get()
-  async listMy(@Req() req: any) {
-    return this.ordersService.listMyOrders(req.user.userId);
+  async listMy(
+    @Req() req: any,
+    @Query('skip') skip?: string | number,
+    @Query('take') take?: string | number,
+  ) {
+    const parsedSkip = Number(skip ?? 0);
+    const parsedTake = Number(take ?? 10);
+    return this.ordersService.listMyOrders(
+      req.user.userId,
+      Number.isFinite(parsedSkip) ? parsedSkip : 0,
+      Number.isFinite(parsedTake) ? parsedTake : 10,
+    );
   }
 
   @Get('admin/all')
-  async listAll(@Query('skip') skip?: number, @Query('take') take?: number) {
-    return this.ordersService.listAllOrders(skip || 0, take || 10);
+  async listAll(
+    @Query('skip') skip?: string | number,
+    @Query('take') take?: string | number,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    const parsedSkip = Number(skip ?? 0);
+    const parsedTake = Number(take ?? 10);
+    return this.ordersService.listAllOrders(
+      Number.isFinite(parsedSkip) ? parsedSkip : 0,
+      Number.isFinite(parsedTake) ? parsedTake : 10,
+      startDate,
+      endDate,
+    );
   }
 
   @Get(':id')
@@ -37,9 +59,34 @@ export class OrdersController {
     return this.ordersService.getMyOrderById(req.user.userId, id);
   }
 
+  @Post(':id/refund-bank-info')
+  async submitRefundBankInfo(
+    @Req() req: any,
+    @Param('id') id: string,
+    @Body()
+    body: {
+      bankName: string;
+      accountNumber: string;
+      accountHolder: string;
+      note?: string;
+    },
+  ) {
+    return this.ordersService.submitRefundBankInfo(req.user.userId, id, body);
+  }
+
+  @Get(':id/refund-bank-info')
+  async getMyRefundBankInfo(@Req() req: any, @Param('id') id: string) {
+    return this.ordersService.getRefundBankInfo(id, req.user.userId);
+  }
+
   @Get('admin/:id')
   async getById(@Param('id') id: string) {
     return this.ordersService.getOrderById(id);
+  }
+
+  @Get('admin/:id/refund-bank-info')
+  async getRefundBankInfoAdmin(@Param('id') id: string) {
+    return this.ordersService.getRefundBankInfo(id);
   }
 
   @Post('admin/:id/status')
@@ -48,5 +95,10 @@ export class OrdersController {
     @Body() dto: { status?: any; paymentStatus?: any },
   ) {
     return this.ordersService.updateStatus(id, dto.status, dto.paymentStatus);
+  }
+
+  @Post(':id/cancel')
+  async cancel(@Req() req: any, @Param('id') id: string) {
+    return this.ordersService.cancelMyOrder(req.user.userId, id);
   }
 }

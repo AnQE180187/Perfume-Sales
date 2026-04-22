@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/routing/app_routes.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../address/models/address.dart';
 import '../../../address/providers/address_providers.dart';
@@ -23,113 +24,151 @@ class CheckoutAddressSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final selectedAddress = address;
     final isEmpty = selectedAddress == null;
 
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: highlight && isEmpty
-                  ? Colors.orange.withValues(alpha: 0.6)
-                  : AppTheme.softTaupe,
-            ),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE5D5C0).withValues(alpha: 0.5)),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.deepCharcoal.withValues(alpha: 0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
-          child: Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: AppTheme.ivoryBackground,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.location_on_outlined,
-                  color: isEmpty ? AppTheme.mutedSilver : AppTheme.deepCharcoal,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: AppTheme.ivoryBackground,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Center(
+                    child: Stack(
+                      alignment: Alignment.center,
                       children: [
-                        Flexible(
-                          child: Text(
-                            selectedAddress?.recipientName ??
-                                'Thêm địa chỉ giao hàng',
-                            style: GoogleFonts.montserrat(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: isEmpty
-                                  ? (highlight
-                                        ? Colors.orange.shade700
-                                        : AppTheme.mutedSilver)
-                                  : AppTheme.deepCharcoal,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                        Icon(
+                          Icons.map_outlined,
+                          color: AppTheme.accentGold.withValues(alpha: 0.4),
+                          size: 24,
                         ),
-                        if (selectedAddress?.isDefault ?? false) ...[
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 3,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppTheme.accentGold.withValues(
-                                alpha: 0.12,
-                              ),
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                            child: Text(
-                              'Mặc định',
-                              style: GoogleFonts.montserrat(
-                                fontSize: 9,
-                                fontWeight: FontWeight.w700,
-                                color: AppTheme.accentGold,
-                              ),
-                            ),
-                          ),
-                        ],
+                        const Icon(
+                          Icons.location_on,
+                          color: AppTheme.deepCharcoal,
+                          size: 18,
+                        ),
                       ],
                     ),
-                    if (!isEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        selectedAddress.fullAddress,
-                        style: GoogleFonts.montserrat(
-                          fontSize: 12,
-                          height: 1.5,
-                          fontWeight: FontWeight.w500,
-                          color: AppTheme.mutedSilver,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Icon(
-                Icons.chevron_right_rounded,
-                color: isEmpty ? AppTheme.accentGold : AppTheme.mutedSilver,
-                size: 22,
-              ),
-            ],
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              selectedAddress?.recipientName ??
+                                  l10n.addShippingAddress,
+                              style: GoogleFonts.montserrat(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.2,
+                                color: isEmpty
+                                    ? AppTheme.mutedSilver
+                                    : AppTheme.deepCharcoal,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (selectedAddress?.isDefault ?? false) ...[
+                            const SizedBox(width: 10),
+                            _GoldFoilTag(label: l10n.defaultLabel),
+                          ],
+                        ],
+                      ),
+                      if (!isEmpty) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          selectedAddress.fullAddress,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 12,
+                            height: 1.5,
+                            fontWeight: FontWeight.w500,
+                            color: AppTheme.mutedSilver,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: Color(0xFFE5D5C0),
+                  size: 24,
+                ),
+              ],
+            ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _GoldFoilTag extends StatelessWidget {
+  final String label;
+  const _GoldFoilTag({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFFD4AF37), // Metallic Gold
+            const Color(0xFFF1E5AC), // Light Gold
+            const Color(0xFFCFB53B), // Old Gold
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(999),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFD4AF37).withValues(alpha: 0.2),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Text(
+        label.toUpperCase(),
+        style: GoogleFonts.montserrat(
+          fontSize: 8,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.5,
+          color: Colors.white,
         ),
       ),
     );
@@ -144,12 +183,13 @@ class AddressPickerSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final addressesAsync = ref.watch(addressListProvider);
     final selected = ref.watch(selectedAddressProvider);
 
     return CheckoutSheet(
-      title: 'Chọn địa chỉ giao hàng',
-      subtitle: 'Danh sách này được đồng bộ trực tiếp từ tài khoản của bạn.',
+      title: l10n.selectShippingAddress,
+      subtitle: l10n.syncAccountDesc,
       child: addressesAsync.when(
         loading: () => const Padding(
           padding: EdgeInsets.symmetric(vertical: 18),
@@ -171,7 +211,7 @@ class AddressPickerSheet extends ConsumerWidget {
             const SizedBox(height: 10),
             OutlinedButton(
               onPressed: () => ref.read(addressListProvider.notifier).reload(),
-              child: const Text('Thử lại'),
+              child: Text(l10n.retry),
             ),
           ],
         ),
@@ -180,7 +220,7 @@ class AddressPickerSheet extends ConsumerWidget {
             return Column(
               children: [
                 Text(
-                  'Bạn chưa có địa chỉ. Hãy thêm địa chỉ trước khi đặt hàng.',
+                  l10n.noAddressFound,
                   textAlign: TextAlign.center,
                   style: GoogleFonts.montserrat(
                     fontSize: 12,
@@ -191,7 +231,7 @@ class AddressPickerSheet extends ConsumerWidget {
                 const SizedBox(height: 10),
                 OutlinedButton(
                   onPressed: () => context.push(AppRoutes.shippingAddresses),
-                  child: const Text('Mở màn quản lý địa chỉ'),
+                  child: Text(l10n.openAddressManager),
                 ),
               ],
             );
@@ -203,7 +243,7 @@ class AddressPickerSheet extends ConsumerWidget {
                 return SelectableTile(
                   title: address.recipientName,
                   subtitle: address.fullAddress,
-                  badge: address.isDefault ? 'Mặc định' : null,
+                  badge: address.isDefault ? l10n.defaultLabel : null,
                   icon: Icons.location_on_outlined,
                   isSelected: selected?.id == address.id,
                   onTap: () async {
@@ -219,7 +259,7 @@ class AddressPickerSheet extends ConsumerWidget {
                 child: TextButton.icon(
                   onPressed: () => context.push(AppRoutes.shippingAddresses),
                   icon: const Icon(Icons.add),
-                  label: const Text('Quản lý địa chỉ'),
+                  label: Text(l10n.manageAddresses),
                 ),
               ),
             ],
@@ -246,6 +286,9 @@ class CheckoutSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.8,
+      ),
       padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
       decoration: const BoxDecoration(
         color: AppTheme.creamWhite,
@@ -253,40 +296,44 @@ class CheckoutSheet extends StatelessWidget {
       ),
       child: SafeArea(
         top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 42,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppTheme.softTaupe,
-                borderRadius: BorderRadius.circular(999),
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 42,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppTheme.softTaupe,
+                  borderRadius: BorderRadius.circular(999),
+                ),
               ),
-            ),
-            const SizedBox(height: 18),
-            Text(
-              title,
-              style: GoogleFonts.playfairDisplay(
-                fontSize: 24,
-                fontWeight: FontWeight.w600,
-                color: AppTheme.deepCharcoal,
+              const SizedBox(height: 18),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.playfairDisplay(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.deepCharcoal,
+                ),
               ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              subtitle,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.montserrat(
-                fontSize: 12,
-                height: 1.5,
-                fontWeight: FontWeight.w500,
-                color: AppTheme.mutedSilver,
+              const SizedBox(height: 6),
+              Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.montserrat(
+                  fontSize: 12,
+                  height: 1.5,
+                  fontWeight: FontWeight.w500,
+                  color: AppTheme.mutedSilver,
+                ),
               ),
-            ),
-            const SizedBox(height: 18),
-            child,
-          ],
+              const SizedBox(height: 18),
+              child,
+            ],
+          ),
         ),
       ),
     );

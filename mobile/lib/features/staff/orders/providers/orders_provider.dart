@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/api/api_client.dart';
@@ -14,6 +15,7 @@ final staffOrdersServiceProvider = Provider<StaffOrdersService>((ref) {
 // ── Search Query ─────────────────────────────────────────────────────
 
 final ordersSearchQueryProvider = StateProvider<String>((ref) => '');
+final ordersDateRangeProvider = StateProvider<DateTimeRange?>((ref) => null);
 
 // ── Orders List State ─────────────────────────────────────────────────
 
@@ -65,10 +67,19 @@ class OrdersNotifier extends StateNotifier<OrdersState> {
 
   OrdersNotifier(this._service) : super(const OrdersState());
 
-  Future<void> loadOrders({String? search}) async {
+  Future<void> loadOrders({
+    String? search,
+    String? startDate,
+    String? endDate,
+  }) async {
     state = const OrdersState(isLoading: true);
     try {
-      final page = await _service.listOrders(skip: 0, search: search);
+      final page = await _service.listOrders(
+        skip: 0,
+        search: search,
+        startDate: startDate,
+        endDate: endDate,
+      );
       state = OrdersState(
         orders: page.data,
         total: page.total,
@@ -80,13 +91,19 @@ class OrdersNotifier extends StateNotifier<OrdersState> {
     }
   }
 
-  Future<void> loadMore({String? search}) async {
+  Future<void> loadMore({
+    String? search,
+    String? startDate,
+    String? endDate,
+  }) async {
     if (state.isLoadingMore || !state.hasMore) return;
     state = state.copyWith(isLoadingMore: true, clearError: true);
     try {
       final page = await _service.listOrders(
         skip: state.currentSkip,
         search: search,
+        startDate: startDate,
+        endDate: endDate,
       );
       state = state.copyWith(
         orders: [...state.orders, ...page.data],

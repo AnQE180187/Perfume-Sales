@@ -7,6 +7,7 @@ class InventoryVariant {
   final int stock;
   final DateTime updatedAt;
   final String? imageUrl;
+  final String? barcode;
 
   const InventoryVariant({
     required this.id,
@@ -16,6 +17,7 @@ class InventoryVariant {
     required this.stock,
     required this.updatedAt,
     this.imageUrl,
+    this.barcode,
   });
 
   bool get isLowStock => stock > 0 && stock <= 5;
@@ -30,6 +32,7 @@ class InventoryVariant {
       stock: (json['stock'] as num).toInt(),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
       imageUrl: json['imageUrl'] as String?,
+      barcode: json['barcode'] as String?,
     );
   }
 }
@@ -86,27 +89,31 @@ class InventoryLog {
   final String variantId;
   final String type; // IMPORT | ADJUST | SALE_POS
   final int quantity;
+  final int change;
   final String? reason;
   final DateTime createdAt;
   final String? productName;
   final String? variantName;
   final String? staffName;
+  final InventoryLogVariant? variant;
 
   const InventoryLog({
     required this.id,
     required this.variantId,
     required this.type,
     required this.quantity,
+    required this.change,
     this.reason,
     required this.createdAt,
     this.productName,
     this.variantName,
     this.staffName,
+    this.variant,
   });
 
   factory InventoryLog.fromJson(Map<String, dynamic> json) {
-    final variant = json['variant'] as Map<String, dynamic>?;
-    final product = variant?['product'] as Map<String, dynamic>?;
+    final variantData = json['variant'] as Map<String, dynamic>?;
+    final productData = variantData?['product'] as Map<String, dynamic>?;
     final staff = json['staff'] as Map<String, dynamic>?;
 
     return InventoryLog(
@@ -114,11 +121,43 @@ class InventoryLog {
       variantId: json['variantId'] as String,
       type: json['type'] as String,
       quantity: (json['quantity'] as num).toInt(),
+      change: (json['change'] as num? ?? json['quantity'] ?? 0).toInt(),
       reason: json['reason'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
-      productName: product?['name'] as String?,
-      variantName: variant?['name'] as String?,
+      productName: productData?['name'] as String?,
+      variantName: variantData?['name'] as String?,
       staffName: (staff?['fullName'] ?? staff?['email']) as String?,
+      variant: variantData != null ? InventoryLogVariant.fromJson(variantData) : null,
+    );
+  }
+}
+
+class InventoryLogVariant {
+  final String id;
+  final String name;
+  final InventoryLogProduct? product;
+  final String? imageUrl;
+  InventoryLogVariant({required this.id, required this.name, this.product, this.imageUrl});
+  factory InventoryLogVariant.fromJson(Map<String, dynamic> json) {
+    return InventoryLogVariant(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      product: json['product'] != null ? InventoryLogProduct.fromJson(json['product'] as Map<String, dynamic>) : null,
+      imageUrl: json['imageUrl'] ?? json['product']?['imageUrl'] as String?,
+    );
+  }
+}
+
+class InventoryLogProduct {
+  final String id;
+  final String name;
+  final String? imageUrl;
+  InventoryLogProduct({required this.id, required this.name, this.imageUrl});
+  factory InventoryLogProduct.fromJson(Map<String, dynamic> json) {
+    return InventoryLogProduct(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      imageUrl: json['imageUrl'] as String?,
     );
   }
 }
@@ -216,6 +255,7 @@ class SystemVariant {
   final String? sku;
   final double? price;
   final String? imageUrl;
+  final String? barcode;
 
   const SystemVariant({
     required this.variantId,
@@ -225,6 +265,7 @@ class SystemVariant {
     this.sku,
     this.price,
     this.imageUrl,
+    this.barcode,
   });
 
   factory SystemVariant.fromJson(Map<String, dynamic> json) {
@@ -236,6 +277,7 @@ class SystemVariant {
       sku: json['sku'] as String?,
       price: (json['price'] as num?)?.toDouble(),
       imageUrl: json['imageUrl'] as String?,
+      barcode: json['barcode'] as String?,
     );
   }
 }

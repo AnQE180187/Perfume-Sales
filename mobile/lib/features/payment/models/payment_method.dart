@@ -1,3 +1,5 @@
+import '../../../l10n/app_localizations.dart';
+
 enum PaymentMethodType {
   cod,
   payos,
@@ -78,6 +80,32 @@ enum PaymentMethodType {
         this == PaymentMethodType.vnpay ||
         this == PaymentMethodType.momo;
   }
+
+  String getLocalizedTitle(AppLocalizations l10n) {
+    switch (this) {
+      case PaymentMethodType.cod:
+        return l10n.paymentMethodCod;
+      case PaymentMethodType.payos:
+        return l10n.paymentMethodPayos;
+      case PaymentMethodType.vnpay:
+        return l10n.paymentMethodVnpay;
+      case PaymentMethodType.momo:
+        return l10n.paymentMethodMomo;
+    }
+  }
+
+  String getLocalizedDescription(AppLocalizations l10n) {
+    switch (this) {
+      case PaymentMethodType.cod:
+        return l10n.paymentMethodCodDesc;
+      case PaymentMethodType.payos:
+        return l10n.paymentMethodPayosDesc;
+      case PaymentMethodType.vnpay:
+        return l10n.paymentMethodVnpay;
+      case PaymentMethodType.momo:
+        return l10n.paymentMethodMomo;
+    }
+  }
 }
 
 class PaymentMethod {
@@ -152,18 +180,18 @@ enum PaymentStatus {
   failed,
   cancelled;
 
-  String get displayName {
+  String getLocalizedStatus(AppLocalizations l10n) {
     switch (this) {
       case PaymentStatus.pending:
-        return 'Chờ xử lý';
+        return l10n.paymentStatusPending;
       case PaymentStatus.processing:
-        return 'Đang xử lý';
+        return l10n.paymentStatusProcessing;
       case PaymentStatus.success:
-        return 'Thành công';
+        return l10n.paymentStatusSuccess;
       case PaymentStatus.failed:
-        return 'Thất bại';
+        return l10n.paymentStatusFailed;
       case PaymentStatus.cancelled:
-        return 'Đã hủy';
+        return l10n.paymentStatusCancelled;
     }
   }
 }

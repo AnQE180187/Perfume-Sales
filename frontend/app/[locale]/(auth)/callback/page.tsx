@@ -1,11 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from '@/lib/i18n';
+import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { useAuthStore } from '@/store/auth.store';
 import { userService } from '@/services/user.service';
+import { useTranslations } from 'next-intl';
 
 // Map backend user to frontend shape
 function toFrontendUser(me: { id: string; email: string; fullName?: string | null; role: string }) {
@@ -22,8 +24,9 @@ export default function AuthCallbackPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { setAuth } = useAuthStore();
+    const t = useTranslations('auth.callback');
     const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
-    const [message, setMessage] = useState('Processing authentication...');
+    const [message, setMessage] = useState(t('processing'));
 
     useEffect(() => {
         const processOAuthCallback = async () => {
@@ -37,23 +40,30 @@ export default function AuthCallbackPage() {
                     localStorage.setItem('refreshToken', refreshToken);
 
                     // Fetch user profile
-                    setMessage('Fetching your profile...');
+                    setMessage(t('fetching_profile'));
                     const userProfile = await userService.getMe();
 
                     // Update auth store with user info and token
                     setAuth(toFrontendUser(userProfile), accessToken);
 
                     setStatus('success');
-                    setMessage('Authentication successful! Redirecting...');
+                    setMessage(t('success_msg'));
 
-                    // Redirect to home page after 1.5 seconds
+                    // Role-based redirection after 1.5 seconds
+                    const mappedUser = toFrontendUser(userProfile);
                     setTimeout(() => {
-                        router.push('/');
+                        if (mappedUser.role === 'ADMIN') {
+                            router.push('/dashboard/admin');
+                        } else if (mappedUser.role === 'STAFF') {
+                            router.push('/dashboard/staff');
+                        } else {
+                            router.push('/');
+                        }
                     }, 1500);
                 } catch (error) {
                     console.error('Error processing OAuth callback:', error);
                     setStatus('error');
-                    setMessage('Failed to fetch user profile');
+                    setMessage(t('error_fetch_profile'));
 
                     // Clean up tokens on error
                     localStorage.removeItem('token');
@@ -65,7 +75,7 @@ export default function AuthCallbackPage() {
                 }
             } else {
                 setStatus('error');
-                setMessage('Authentication failed. No tokens received.');
+                setMessage(t('error_no_token'));
 
                 setTimeout(() => {
                     router.push('/login?error=oauth_failed');
@@ -87,7 +97,7 @@ export default function AuthCallbackPage() {
                     <>
                         <Loader2 className="w-16 h-16 mx-auto mb-6 text-gold animate-spin" />
                         <h2 className="text-2xl font-serif text-luxury-black dark:text-white mb-3">
-                            Authenticating
+                            {t('authenticating')}
                         </h2>
                         <p className="text-sm text-stone-500 dark:text-stone-400">
                             {message}
@@ -103,7 +113,7 @@ export default function AuthCallbackPage() {
                     >
                         <CheckCircle className="w-16 h-16 mx-auto mb-6 text-green-500" />
                         <h2 className="text-2xl font-serif text-luxury-black dark:text-white mb-3">
-                            Success!
+                            {t('success_title')}
                         </h2>
                         <p className="text-sm text-stone-500 dark:text-stone-400">
                             {message}
@@ -119,7 +129,7 @@ export default function AuthCallbackPage() {
                     >
                         <XCircle className="w-16 h-16 mx-auto mb-6 text-red-500" />
                         <h2 className="text-2xl font-serif text-luxury-black dark:text-white mb-3">
-                            Authentication Failed
+                            {t('error_title')}
                         </h2>
                         <p className="text-sm text-stone-500 dark:text-stone-400 mb-6">
                             {message}
@@ -128,7 +138,7 @@ export default function AuthCallbackPage() {
                             onClick={() => router.push('/login')}
                             className="px-6 py-3 bg-luxury-black dark:bg-gold text-white rounded-full text-xs font-bold tracking-widest uppercase hover:bg-stone-800 dark:hover:bg-gold/80 transition-all"
                         >
-                            Back to Login
+                            {t('back_to_login')}
                         </button>
                     </motion.div>
                 )}

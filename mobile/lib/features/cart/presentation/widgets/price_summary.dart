@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/currency_utils.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class PriceSummary extends StatelessWidget {
   final double subtotal;
@@ -19,6 +20,7 @@ class PriceSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -36,52 +38,69 @@ class PriceSummary extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'CHI TIẾT ĐọN HÀNG',
+            l10n.orderDetails,
             style: GoogleFonts.montserrat(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.2,
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.5,
               color: AppTheme.mutedSilver,
             ),
           ),
-          const SizedBox(height: 14),
-          _PriceRow(label: 'Tạm tính', value: formatVND(subtotal)),
+          const SizedBox(height: 18),
+          _PriceRow(label: l10n.subtotal, value: formatVND(subtotal)),
           if (discount > 0) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             _PriceRow(
-              label: 'Giảm giá',
+              label: l10n.memberDiscount,
               value: '-${formatVND(discount)}',
-              valueColor: const Color(0xFF27AE60),
+              valueColor: AppTheme.accentGold,
             ),
           ],
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           _PriceRow(
-            label: 'Phí vận chuyển',
-            value: shipping == 0 ? 'Miễn phí' : formatVND(shipping),
-            valueColor: shipping == 0 ? const Color(0xFF27AE60) : null,
+            label: l10n.shippingFee,
+            value: shipping == 0 ? l10n.notCalculated : formatVND(shipping),
+            valueColor: shipping == 0
+                ? AppTheme.mutedSilver.withValues(alpha: 0.5)
+                : null,
           ),
-          const SizedBox(height: 14),
-          const Divider(height: 1, color: Color(0xFFEEE9E2)),
-          const SizedBox(height: 14),
+          const SizedBox(height: 20),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Row(
+              children: List.generate(
+                30,
+                (index) => Expanded(
+                  child: Container(
+                    height: 1,
+                    color: index % 2 == 0
+                        ? AppTheme.softTaupe.withValues(alpha: 0.15)
+                        : Colors.transparent,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
             children: [
               Text(
-                'TỔNG CỘNG',
+                l10n.total.toUpperCase(),
                 style: GoogleFonts.montserrat(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
                   color: AppTheme.deepCharcoal,
-                  letterSpacing: 0.5,
+                  letterSpacing: 2,
                 ),
               ),
               Text(
                 formatVND(total),
                 style: GoogleFonts.playfairDisplay(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
                   color: AppTheme.deepCharcoal,
                 ),
               ),
@@ -109,7 +128,7 @@ class _PriceRow extends StatelessWidget {
           label,
           style: GoogleFonts.montserrat(
             fontSize: 13,
-            color: AppTheme.deepCharcoal.withValues(alpha: 0.65),
+            color: AppTheme.mutedSilver,
           ),
         ),
         Text(

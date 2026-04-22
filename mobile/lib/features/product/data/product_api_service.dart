@@ -14,15 +14,25 @@ class ProductApiService {
     int? skip,
     int? take,
     int? categoryId,
+    int? scentFamilyId,
     int? brandId,
     String? search,
+    String? notes,
+    String? occasion,
+    int? minPrice,
+    int? maxPrice,
   }) async {
     final queryParams = <String, dynamic>{
       if (skip != null) 'skip': skip,
       if (take != null) 'take': take,
       if (categoryId != null) 'categoryId': categoryId,
+      if (scentFamilyId != null) 'scentFamilyId': scentFamilyId,
       if (brandId != null) 'brandId': brandId,
       if (search != null) 'search': search,
+      if (notes != null) 'notes': notes,
+      if (occasion != null) 'occasion': occasion,
+      if (minPrice != null) 'minPrice': minPrice,
+      if (maxPrice != null) 'maxPrice': maxPrice,
     };
 
     final response = await _client.get(
@@ -43,5 +53,11 @@ class ProductApiService {
   Future<Map<String, dynamic>> getProductById(String id) async {
     final response = await _client.get(ApiEndpoints.productById(id));
     return response.data as Map<String, dynamic>;
+  }
+
+  /// GET /catalog/brands
+  Future<List<dynamic>> getBrands() async {
+    final response = await _client.get(ApiEndpoints.brands);
+    return response.data as List<dynamic>;
   }
 }

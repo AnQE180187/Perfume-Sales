@@ -34,37 +34,42 @@ class ProfileActionTile extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           decoration: BoxDecoration(
             color: Colors.white,
             border: Border(
               bottom: BorderSide(
-                color: AppTheme.softTaupe.withValues(alpha: 0.2),
-                width: 0.5,
+                color: AppTheme.softTaupe.withValues(alpha: 0.1),
+                width: 0.8,
               ),
             ),
           ),
           child: Row(
             children: [
-              // Icon box
+              // Icon box with gold theme
               Container(
-                width: 40,
-                height: 40,
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
-                  color: AppTheme.ivoryBackground,
-                  borderRadius: BorderRadius.circular(10),
+                  color: AppTheme.accentGold.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: AppTheme.accentGold.withValues(alpha: 0.15),
+                    width: 0.5,
+                  ),
                 ),
-                child: Icon(icon, color: AppTheme.deepCharcoal, size: 19),
+                child: Icon(icon, color: AppTheme.accentGold, size: 20),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 18),
               // Title
               Expanded(
                 child: Text(
-                  title,
+                  title.toUpperCase(),
                   style: GoogleFonts.montserrat(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.deepCharcoal,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.deepCharcoal.withValues(alpha: 0.9),
+                    letterSpacing: 1,
                   ),
                 ),
               ),
@@ -72,19 +77,27 @@ class ProfileActionTile extends StatelessWidget {
               if (subtitle != null && subtitleIsBadge)
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 9,
-                    vertical: 4,
+                    horizontal: 10,
+                    vertical: 5,
                   ),
                   decoration: BoxDecoration(
-                    color: AppTheme.accentGold.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(12),
+                    color: AppTheme.accentGold,
+                    borderRadius: BorderRadius.circular(30),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.accentGold.withValues(alpha: 0.2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
                   child: Text(
-                    subtitle!,
+                    subtitle!.toUpperCase(),
                     style: GoogleFonts.montserrat(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.accentGold,
+                      fontSize: 8,
+                      fontWeight: FontWeight.w800,
+                      color: AppTheme.deepCharcoal,
+                      letterSpacing: 0.5,
                     ),
                   ),
                 )
@@ -96,11 +109,11 @@ class ProfileActionTile extends StatelessWidget {
                     color: AppTheme.mutedSilver,
                   ),
                 ),
-              const SizedBox(width: 6),
+              const SizedBox(width: 12),
               Icon(
                 Icons.arrow_forward_ios_rounded,
                 size: 11,
-                color: AppTheme.mutedSilver.withValues(alpha: 0.5),
+                color: AppTheme.mutedSilver.withValues(alpha: 0.4),
               ),
             ],
           ),

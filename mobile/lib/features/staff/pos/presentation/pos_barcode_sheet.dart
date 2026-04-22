@@ -69,7 +69,7 @@ class _PosBarcodeSheetBodyState extends State<_PosBarcodeSheetBody> {
                 style: GoogleFonts.playfairDisplay(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: AppTheme.deepCharcoal,
+                  color: Colors.white,
                 ),
               ),
               AppSpacing.vertSm,
@@ -77,7 +77,7 @@ class _PosBarcodeSheetBodyState extends State<_PosBarcodeSheetBody> {
                 'Hướng camera vào mã vạch, hoặc nhập mã thủ công bên dưới.',
                 style: GoogleFonts.montserrat(
                   fontSize: 12,
-                  color: AppTheme.mutedSilver,
+                  color: Colors.white38,
                 ),
               ),
               AppSpacing.vertMd,
@@ -106,13 +106,26 @@ class _PosBarcodeSheetBodyState extends State<_PosBarcodeSheetBody> {
                 textInputAction: TextInputAction.done,
                 decoration: InputDecoration(
                   labelText: 'Nhập mã vạch',
+                  labelStyle: GoogleFonts.montserrat(color: AppTheme.accentGold, fontSize: 13),
                   hintText: 'VD: 8934563123456',
+                  hintStyle: GoogleFonts.montserrat(color: Colors.white24, fontSize: 13),
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.05),
                   border: OutlineInputBorder(
                     borderRadius: AppRadius.inputBorder,
+                    borderSide: const BorderSide(color: Colors.white10),
                   ),
-                  prefixIcon: const Icon(Icons.keyboard_rounded),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: AppRadius.inputBorder,
+                    borderSide: const BorderSide(color: Colors.white10),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: AppRadius.inputBorder,
+                    borderSide: const BorderSide(color: AppTheme.accentGold),
+                  ),
+                  prefixIcon: const Icon(Icons.keyboard_rounded, color: AppTheme.accentGold),
                 ),
-                style: GoogleFonts.montserrat(fontSize: 14),
+                style: GoogleFonts.montserrat(fontSize: 14, color: Colors.white),
                 onSubmitted: _finish,
               ),
               AppSpacing.vertMd,

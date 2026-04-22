@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/routing/app_routes.dart';
-import '../../../../core/theme/app_text_style.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/currency_utils.dart';
 import '../../models/order.dart';
 import 'order_status_badge.dart';
+import 'return_status_badge.dart';
+import '../../../../l10n/app_localizations.dart';
 
-enum OrderCardVariant { active, completed }
+enum OrderCardVariant { active, completed, returns }
 
 class OrderCard extends StatelessWidget {
   final Order order;
@@ -33,45 +35,57 @@ class OrderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final previewItem = order.previewItem;
+    final l10n = AppLocalizations.of(context)!;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.only(bottom: 16),
       child: Material(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         child: InkWell(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
           onTap: onTap,
           child: Ink(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: variant == OrderCardVariant.active
-                    ? AppTheme.accentGold.withValues(alpha: 0.4)
-                    : AppTheme.softTaupe,
+                    ? AppTheme.accentGold.withValues(alpha: 0.25)
+                    : AppTheme.softTaupe.withValues(alpha: 0.3),
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.deepCharcoal.withValues(alpha: 0.03),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Padding(
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
-                    children: [
-                      OrderStatusBadge(status: order.status),
-                      const Spacer(),
-                      Text(
-                        _formatDate(order.createdAt),
-                        style: Theme.of(context).textTheme.bodyMedium,
+                children: [
+                  if (variant == OrderCardVariant.returns && order.returnRequests.isNotEmpty)
+                    ReturnStatusBadge(status: order.returnRequests.first.status)
+                  else
+                    OrderStatusBadge(status: order.status),
+                  const Spacer(),
+                  Text(
+                    _formatDate(variant == OrderCardVariant.returns && order.returnRequests.isNotEmpty 
+                        ? order.returnRequests.first.createdAt 
+                        : order.createdAt),
+                        style: GoogleFonts.montserrat(
+                          fontSize: 12,
+                          color: AppTheme.mutedSilver,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    order.code,
-                    style: AppTextStyle.titleMd(color: AppTheme.deepCharcoal),
-                  ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 14),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -79,40 +93,88 @@ class OrderCard extends StatelessWidget {
                         url: previewItem?.productImage ?? '',
                         productId: previewItem?.productId ?? '',
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 16),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              previewItem?.productName ?? 'Perfume item',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: AppTextStyle.titleMd(
-                                color: AppTheme.deepCharcoal,
+                              variant == OrderCardVariant.returns && order.returnRequests.isNotEmpty
+                                  ? '${l10n.returnCode} #${order.returnRequests.first.id.substring(order.returnRequests.first.id.length - 8).toUpperCase()}'
+                                  : order.code,
+                              style: GoogleFonts.montserrat(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: AppTheme.mutedSilver,
+                                letterSpacing: 0.5,
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              (previewItem?.variantLabel.isNotEmpty ?? false)
-                                  ? previewItem!.variantLabel
-                                  : 'Luxury fragrance',
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              '${order.itemCount} sản phẩm • ${formatVND(order.finalAmount)}',
-                              style: AppTextStyle.priceSm(
-                                color: AppTheme.accentGold,
+                              previewItem?.productName ?? 'Perfume item',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.playfairDisplay(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w700,
+                                color: AppTheme.deepCharcoal,
                               ),
                             ),
+                            const SizedBox(height: 6),
+                            if (variant == OrderCardVariant.returns && order.returnRequests.isNotEmpty) ...[
+                              Text(
+                                '${l10n.relatedOrder}: ${order.code}',
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppTheme.mutedSilver,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              const SizedBox(height: 4),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '${order.itemCount} ${l10n.items.toLowerCase()}',
+                                    style: GoogleFonts.montserrat(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppTheme.deepCharcoal.withValues(alpha: 0.7),
+                                    ),
+                                  ),
+                                  if (order.returnRequests.first.status == ReturnStatus.completed) ...[
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      'Hoàn tiền: ${formatVND(order.returnRequests.first.totalAmount)}',
+                                      style: GoogleFonts.montserrat(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppTheme.accentGold,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ] else ...[
+                              Text(
+                                '${order.itemCount} ${l10n.items.toLowerCase()} • ${formatVND(order.finalAmount)}',
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppTheme.accentGold,
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 14),
-                  _buildCtaRow(context),
+                  const SizedBox(height: 16),
+                  const Divider(height: 1, color: AppTheme.softTaupe),
+                  const SizedBox(height: 12),
+                  _buildCtaRow(context, l10n),
                 ],
               ),
             ),
@@ -122,44 +184,86 @@ class OrderCard extends StatelessWidget {
     );
   }
 
-  Widget _buildCtaRow(BuildContext context) {
+  Widget _buildCtaRow(BuildContext context, AppLocalizations l10n) {
     final showTrack = variant == OrderCardVariant.active && onTrack != null;
     final isCancelled = order.status == OrderStatus.cancelled;
+    final isReturn = variant == OrderCardVariant.returns;
+    
     final ctaLabel = showTrack
-        ? 'Theo dõi'
-        : isCancelled
-        ? 'Xem chi tiết'
-        : isReviewed
-        ? 'Đã đánh giá'
-        : 'Đánh giá';
+        ? l10n.trackShipment
+        : isReturn
+            ? l10n.returnDetails
+            : isCancelled
+                ? l10n.viewDetails
+                : isReviewed
+                    ? l10n.reviewed
+                    : l10n.review;
 
     return Row(
       children: [
-        TextButton(
-          onPressed: onViewDetail ?? onTap,
-          child: const Text('Xem chi tiết'),
-        ),
-        const Spacer(),
-        ElevatedButton(
-          onPressed: isReviewed
-              ? null
-              : showTrack
-              ? onTrack
-              : (isCancelled ? onViewDetail : onReview),
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            disabledBackgroundColor: AppTheme.softTaupe,
-            disabledForegroundColor: AppTheme.mutedSilver,
+        if (!isCancelled && !isReturn) ...[
+          TextButton(
+            onPressed: onViewDetail ?? onTap,
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: Text(
+              l10n.viewDetails,
+              style: GoogleFonts.montserrat(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.deepCharcoal.withValues(alpha: 0.6),
+              ),
+            ),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (isReviewed) ...[
-                const Icon(Icons.check_circle, size: 16),
-                const SizedBox(width: 4),
+          const SizedBox(width: 8),
+        ],
+        const Spacer(),
+        Flexible(
+          child: ElevatedButton(
+            onPressed: isReviewed
+                ? null
+                : showTrack
+                    ? onTrack
+                    : (isCancelled || isReturn ? onViewDetail : onReview),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: showTrack || isReturn ? AppTheme.accentGold : AppTheme.deepCharcoal,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              minimumSize: const Size(80, 40),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 0,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (isReviewed) ...[
+                  const Icon(Icons.check_circle, size: 14),
+                  const SizedBox(width: 4),
+                ],
+                Flexible(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      showTrack 
+                          ? l10n.traceOrder 
+                          : isReturn 
+                              ? l10n.viewDetails 
+                              : (isCancelled ? l10n.viewDetails : (isReviewed ? l10n.reviewed : l10n.review)),
+                      style: GoogleFonts.montserrat(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 11,
+                      ),
+                      maxLines: 1,
+                    ),
+                  ),
+                ),
               ],
-              Text(ctaLabel),
-            ],
+            ),
           ),
         ),
       ],

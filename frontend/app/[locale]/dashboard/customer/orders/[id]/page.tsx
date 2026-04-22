@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { Link } from "@/lib/i18n";
 import { orderService, type Order } from "@/services/order.service";
 import { shippingService, type Shipment } from "@/services/shipping.service";
+import { returnsService, type ReturnRequest } from "@/services/returns.service";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import Image from "next/image";
 import {
@@ -18,8 +19,10 @@ import {
   Clock,
   PackageCheck,
   XCircle,
+  RotateCcw,
 } from "lucide-react";
 import ReviewForm from "@/components/review/review-form";
+import { CreateReturnModal } from "@/components/returns/CreateReturnModal";
 import { useTranslations, useLocale, useFormatter } from "next-intl";
 
 export default function CustomerOrderDetailPage() {
@@ -35,6 +38,23 @@ export default function CustomerOrderDetailPage() {
   const [shipments, setShipments] = useState<Shipment[]>([]);
   const [loading, setLoading] = useState(true);
   const [reviewingItemId, setReviewingItemId] = useState<number | null>(null);
+  const [showReturnModal, setShowReturnModal] = useState(false);
+  const [existingReturn, setExistingReturn] = useState<ReturnRequest | null>(null);
+  const [cancelling, setCancelling] = useState(false);
+  const [showRefundModal, setShowRefundModal] = useState(false);
+  const [savingRefundInfo, setSavingRefundInfo] = useState(false);
+  const [refundInfo, setRefundInfo] = useState<{
+    bankName: string;
+    accountNumber: string;
+    accountHolder: string;
+    note: string;
+  }>({
+    bankName: "",
+    accountNumber: "",
+    accountHolder: "",
+    note: "",
+  });
+  const [submittedRefundInfo, setSubmittedRefundInfo] = useState<any>(null);
 
   const STATUS_CONFIG: Record<
     string,
@@ -83,11 +103,33 @@ export default function CustomerOrderDetailPage() {
         ]);
         setOrder(o);
         setShipments(s);
+        const r = await orderService.getRefundBankInfo(orderId).catch(() => null);
+        setSubmittedRefundInfo(r);
+        // Check if return already exists for this order
+        returnsService.listMyReturns().then((returns) => {
+          const found = returns.find((r) => r.orderId === orderId) || null;
+          setExistingReturn(found);
+        }).catch(() => { });
       } catch (err) {
         setOrder(null);
       } finally {
         setLoading(false);
       }
+    }
+  };
+
+  const handleCancelOrder = async () => {
+    if (!window.confirm(tDetail("confirm_cancel_desc"))) return;
+
+    setCancelling(true);
+    try {
+      await orderService.cancel(orderId);
+      fetchOrder();
+    } catch (err) {
+      console.error("Cancel error:", err);
+      alert(tDetail("cancel_error"));
+    } finally {
+      setCancelling(false);
     }
   };
 
@@ -134,6 +176,10 @@ export default function CustomerOrderDetailPage() {
   const style =
     STATUS_CONFIG[order.status as keyof typeof STATUS_CONFIG] ||
     STATUS_CONFIG.PENDING;
+  const needsRefundBankInfo =
+    order.status === "CANCELLED" &&
+    order.paymentStatus === "PAID" &&
+    !submittedRefundInfo;
 
   return (
     <AuthGuard allowedRoles={["customer", "staff", "admin"]}>
@@ -146,7 +192,7 @@ export default function CustomerOrderDetailPage() {
             <ArrowLeft size={16} />
             {tDetail("back")}
           </Link>
-          <h1 className="text-4xl md:text-5xl font-heading gold-gradient mb-2 uppercase tracking-tighter">
+          <h1 className="text-2xl md:text-3xl font-heading gold-gradient mb-2 uppercase tracking-tighter">
             {tDetail("order_number", { code: order.code })}
           </h1>
           <p className="text-[10px] text-stone-500 uppercase tracking-[.4em] font-bold">
@@ -240,6 +286,44 @@ export default function CustomerOrderDetailPage() {
                                   × {item.quantity} —{" "}
                                   {formatCurrency(item.unitPrice)}
                                 </p>
+                                {(() => {
+                                  const refundedQty = (order.returnRequests || [])
+                                    .filter(r => r.status === 'COMPLETED')
+                                    .reduce((sum, r) => {
+                                      const ri = r.items.find(ri => ri.variantId === item.variantId);
+                                      return sum + (ri?.quantity || 0);
+                                    }, 0);
+                                  
+                                  if (refundedQty > 0) {
+                                    return (
+                                      <div className="mt-2 flex items-center gap-2">
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-widest bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                                          {refundedQty >= item.quantity 
+                                            ? tDetail("status_refunded_full", { defaultValue: "Đã hoàn trả" })
+                                            : tDetail("status_refunded_partial", { defaultValue: `Đã hoàn trả ${refundedQty}` })}
+                                        </span>
+                                      </div>
+                                    );
+                                  }
+
+                                  const pendingRefundQty = (order.returnRequests || [])
+                                    .filter(r => !['COMPLETED', 'CANCELLED', 'REJECTED', 'REJECTED_AFTER_RETURN'].includes(r.status))
+                                    .reduce((sum, r) => {
+                                      const ri = r.items.find(ri => ri.variantId === item.variantId);
+                                      return sum + (ri?.quantity || 0);
+                                    }, 0);
+
+                                  if (pendingRefundQty > 0) {
+                                    return (
+                                      <div className="mt-2 flex items-center gap-2">
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-widest bg-blue-500/10 text-blue-600 border border-blue-500/20 animate-pulse">
+                                          {tDetail("status_refunding", { defaultValue: "Đang yêu cầu trả" })}
+                                        </span>
+                                      </div>
+                                    );
+                                  }
+                                  return null;
+                                })()}
                               </div>
                               <div className="flex flex-col items-end gap-2 flex-shrink-0">
                                 <span className="font-bold text-luxury-black dark:text-white">
@@ -332,17 +416,72 @@ export default function CustomerOrderDetailPage() {
                   <style.icon size={12} />
                   {style.label}
                 </span>
+
+                {["PENDING", "CONFIRMED", "PROCESSING"].includes(order.status) && (
+                  <button
+                    disabled={cancelling}
+                    onClick={handleCancelOrder}
+                    className="flex items-center gap-2 w-fit px-4 py-2 rounded-full border border-red-500/30 text-red-600 text-[10px] font-bold uppercase tracking-widest hover:bg-red-500/5 transition-all disabled:opacity-50"
+                  >
+                    {cancelling ? (
+                      <Loader2 size={12} className="animate-spin" />
+                    ) : (
+                      <XCircle size={12} />
+                    )}
+                    {tDetail("cancel_order")}
+                  </button>
+                )}
                 <p className="text-[10px] text-stone-400 uppercase tracking-widest font-bold">
                   {tDetail("payment")}:{" "}
                   <span className="text-luxury-black dark:text-white uppercase">
                     {order.paymentStatus === "PAID"
                       ? tDetail("payment_status.paid")
-                      : order.paymentStatus === "PENDING"
-                      ? tDetail("payment_status.pending")
-                      : order.paymentStatus}
+                      : order.paymentStatus === "PARTIALLY_REFUNDED"
+                        ? tDetail("payment_status.partially_refunded", { defaultValue: "Hoàn tiền một phần" })
+                        : order.paymentStatus === "REFUNDED"
+                          ? tDetail("payment_status.refunded", { defaultValue: "Đã hoàn tiền" })
+                          : order.paymentStatus === "PENDING"
+                            ? tDetail("payment_status.pending")
+                            : order.paymentStatus}
                   </span>
                 </p>
+                {needsRefundBankInfo && (
+                  <button
+                    onClick={() => setShowRefundModal(true)}
+                    className="mt-2 w-fit px-4 py-2 rounded-full bg-red-500/10 text-red-600 border border-red-500/20 text-[10px] font-bold uppercase tracking-widest hover:bg-red-500/15 transition-all"
+                  >
+                    Nhập thông tin nhận hoàn tiền
+                  </button>
+                )}
+                {submittedRefundInfo && (
+                  <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest">
+                    Đã gửi thông tin nhận hoàn tiền
+                  </p>
+                )}
               </div>
+
+              {/* Return Request Button — only for COMPLETED orders */}
+              {order.status === "COMPLETED" && order.paymentStatus === "PAID" && (
+                <div className="mt-6 pt-6 border-t border-stone-100 dark:border-white/5">
+                  {existingReturn ? (
+                    <Link
+                      href={`/dashboard/customer/returns/${existingReturn.id}`}
+                      className="flex items-center gap-2 w-full px-4 py-3 rounded-2xl border border-amber-500/30 bg-amber-500/5 text-amber-600 text-[10px] font-bold uppercase tracking-widest hover:bg-amber-500/10 transition-all"
+                    >
+                      <RotateCcw size={12} />
+                      {tDetail("view_return")}
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={() => setShowReturnModal(true)}
+                      className="flex items-center gap-2 w-full px-4 py-3 rounded-2xl border border-stone-200 dark:border-white/10 text-stone-600 dark:text-stone-400 text-[10px] font-bold uppercase tracking-widest hover:border-amber-500/30 hover:text-amber-600 hover:bg-amber-500/5 transition-all"
+                    >
+                      <RotateCcw size={12} />
+                      {tDetail("request_return")}
+                    </button>
+                  )}
+                </div>
+              )}
 
               <div className="mt-8 pt-8 border-t border-border space-y-3">
                 <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
@@ -401,9 +540,8 @@ export default function CustomerOrderDetailPage() {
                         </div>
                         {(s.trackingCode || s.ghnOrderCode) && (
                           <a
-                            href={`${TRACKING_URL}${
-                              s.trackingCode || s.ghnOrderCode
-                            }`}
+                            href={`${TRACKING_URL}${s.trackingCode || s.ghnOrderCode
+                              }`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-2 text-gold hover:text-gold/80 text-[10px] font-bold uppercase tracking-widest border border-gold/20 w-fit px-4 py-2 rounded-full hover:bg-gold/5 transition-all"
@@ -420,6 +558,103 @@ export default function CustomerOrderDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Create Return Modal */}
+      {showReturnModal && order.items && order.items.length > 0 && (
+        <CreateReturnModal
+          orderId={orderId}
+          items={order.items.map((item) => ({
+            id: item.id,
+            variantId: item.variantId,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            totalPrice: item.totalPrice,
+            product: item.product,
+          }))}
+          onClose={() => setShowReturnModal(false)}
+          onSuccess={() => {
+            setShowReturnModal(false);
+            fetchOrder();
+          }}
+        />
+      )}
+      {showRefundModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-lg rounded-3xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-white/10 p-8 space-y-4">
+            <h3 className="text-lg font-heading uppercase tracking-widest text-foreground">
+              Thông tin tài khoản nhận hoàn tiền
+            </h3>
+            <input
+              value={refundInfo.bankName}
+              onChange={(e) =>
+                setRefundInfo((p) => ({ ...p, bankName: e.target.value }))
+              }
+              placeholder="Tên ngân hàng"
+              className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold"
+            />
+            <input
+              value={refundInfo.accountNumber}
+              onChange={(e) =>
+                setRefundInfo((p) => ({ ...p, accountNumber: e.target.value }))
+              }
+              placeholder="Số tài khoản"
+              className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold"
+            />
+            <input
+              value={refundInfo.accountHolder}
+              onChange={(e) =>
+                setRefundInfo((p) => ({ ...p, accountHolder: e.target.value }))
+              }
+              placeholder="Tên chủ tài khoản"
+              className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold"
+            />
+            <textarea
+              value={refundInfo.note}
+              onChange={(e) =>
+                setRefundInfo((p) => ({ ...p, note: e.target.value }))
+              }
+              placeholder="Ghi chú (không bắt buộc)"
+              className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold min-h-24"
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowRefundModal(false)}
+                className="flex-1 py-3 rounded-full border border-border text-muted-foreground hover:bg-secondary/50 text-[10px] font-bold uppercase tracking-widest"
+              >
+                Hủy
+              </button>
+              <button
+                disabled={
+                  savingRefundInfo ||
+                  !refundInfo.bankName.trim() ||
+                  !refundInfo.accountNumber.trim() ||
+                  !refundInfo.accountHolder.trim()
+                }
+                onClick={async () => {
+                  setSavingRefundInfo(true);
+                  try {
+                    await orderService.submitRefundBankInfo(orderId, refundInfo);
+                    const r = await orderService.getRefundBankInfo(orderId);
+                    setSubmittedRefundInfo(r);
+                    setShowRefundModal(false);
+                  } catch (e: any) {
+                    alert(
+                      e?.response?.data?.message ||
+                        e?.message ||
+                        "Không thể gửi thông tin hoàn tiền",
+                    );
+                  } finally {
+                    setSavingRefundInfo(false);
+                  }
+                }}
+                className="flex-1 py-3 rounded-full bg-gold text-primary-foreground text-[10px] font-bold uppercase tracking-widest disabled:opacity-50"
+              >
+                {savingRefundInfo ? "Đang gửi..." : "Gửi thông tin"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AuthGuard>
   );
 }

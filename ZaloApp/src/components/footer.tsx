@@ -3,6 +3,12 @@ import HorizontalDivider from "./horizontal-divider";
 import { useAtomValue } from "jotai";
 import { cartState } from "@/state";
 import TransitionLink from "./transition-link";
+import { Sparkles } from "lucide-react";
+
+// Wrapper cho Lucide icon để nhận prop active
+const SparklesIcon = ({ active }: { active?: boolean }) => (
+  <Sparkles size={24} className={active ? "text-primary" : "text-gray-500"} />
+);
 
 const NAV_ITEMS = [
   {
@@ -11,9 +17,14 @@ const NAV_ITEMS = [
     icon: HomeIcon,
   },
   {
-    name: "Danh mục",
-    path: "/categories",
-    icon: CategoryIcon,
+    name: "Tìm hương",
+    path: "/ai-quiz",
+    icon: SparklesIcon,
+  },
+  {
+    name: "Tư vấn AI",
+    path: "/ai-chat",
+    icon: SparklesIcon,
   },
   {
     name: "Giỏ hàng",

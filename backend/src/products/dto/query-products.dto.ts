@@ -27,6 +27,12 @@ export class QueryProductsDto {
   @IsOptional()
   @Type(() => Number)
   @IsInt()
+  @Min(1)
+  scentFamilyId?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
   categoryId?: number;
 
   @IsOptional()
@@ -34,4 +40,23 @@ export class QueryProductsDto {
 
   @IsOptional()
   isBestseller?: any;
+
+  @IsOptional()
+  @IsString()
+  notes?: string;
+
+  @IsOptional()
+  @IsString()
+  occasion?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  minPrice?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  maxPrice?: number;
 }

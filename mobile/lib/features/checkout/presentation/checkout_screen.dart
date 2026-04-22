@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,9 +7,15 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/routing/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_utils.dart';
+import '../../../core/utils/date_utils.dart';
 import '../../../core/widgets/luxury_button.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../address/providers/address_providers.dart';
 import '../../orders/providers/order_provider.dart';
+import '../../cart/providers/cart_provider.dart';
+import '../../cart/providers/cart_selection_provider.dart';
+import '../../cart/providers/promotions_provider.dart';
+import '../models/checkout_state.dart';
 import '../providers/checkout_provider.dart';
 import 'sections/checkout_address_section.dart';
 import 'sections/checkout_items_section.dart';
@@ -21,121 +27,150 @@ class CheckoutScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     ref.watch(addressListProvider);
+
+    // Listen for payment success to navigate automatically
+    ref.listen<CheckoutState>(checkoutProvider, (previous, next) {
+      if (next.isPaymentSuccessful && !(previous?.isPaymentSuccessful ?? false)) {
+        ref.invalidate(orderProvider);
+        ref.invalidate(cartProvider);
+        ref.invalidate(cartSelectionProvider);
+        ref.invalidate(activePromotionsProvider);
+        context.go(AppRoutes.orderSuccess);
+      }
+    });
+
     final checkoutState = ref.watch(checkoutProvider);
     final itemCount = checkoutState.orderItems.fold<int>(
       0,
       (sum, item) => sum + item.quantity,
     );
 
-    return Scaffold(
-      backgroundColor: AppTheme.ivoryBackground,
-      appBar: AppBar(
+    return _CheckoutLifecycleWrapper(
+      child: Scaffold(
         backgroundColor: AppTheme.ivoryBackground,
-        elevation: 0,
-        centerTitle: true,
-        title: Text(
-          'THANH TOÁN',
-          style: GoogleFonts.montserrat(
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 2.4,
-            color: AppTheme.deepCharcoal,
+        appBar: AppBar(
+          backgroundColor: AppTheme.ivoryBackground,
+          elevation: 0,
+          centerTitle: true,
+          title: Text(
+            l10n.payment.toUpperCase(),
+            style: GoogleFonts.montserrat(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 2.4,
+              color: AppTheme.deepCharcoal,
+            ),
+          ),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: AppTheme.deepCharcoal),
+            onPressed: () => context.pop(),
           ),
         ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.deepCharcoal),
-          onPressed: () => context.pop(),
-        ),
-      ),
-      body: checkoutState.orderItems.isEmpty
-          ? checkoutState.isCartLoading
-                ? const Center(
-                    child: CircularProgressIndicator(
-                      color: AppTheme.accentGold,
-                    ),
-                  )
-                : _EmptyCheckoutState(
-                    onReturnToCart: () => context.go(AppRoutes.cart),
-                    message:
-                        checkoutState.cartError ??
-                        'Hãy thêm sản phẩm vào giỏ hàng trước khi tiến hành thanh toán.',
-                  )
-          : ListView(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 140),
-              children: [
-                _CompactOrderHeader(
-                  itemCount: itemCount,
-                  totalAmount: checkoutState.totalAmount,
-                ),
-                const SizedBox(height: 20),
-                const _SectionLabel(label: 'ĐỊA CHỈ GIAO HÀNG'),
-                const SizedBox(height: 8),
-                CheckoutAddressSection(
-                  address: checkoutState.selectedAddress,
-                  onTap: () => _showAddressSheet(context, ref),
-                  highlight: checkoutState.selectedAddress == null,
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    const Expanded(
-                      child: _SectionLabel(label: 'PHƯƠNG THỨC THANH TOÁN'),
-                    ),
-                    TextButton(
-                      onPressed: () =>
-                          context.push(AppRoutes.profilePaymentMethods),
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        body: checkoutState.orderItems.isEmpty
+            ? checkoutState.isCartLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        color: AppTheme.accentGold,
                       ),
-                      child: Text(
-                        'Đổi',
-                        style: GoogleFonts.montserrat(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.accentGold,
+                    )
+                  : _EmptyCheckoutState(
+                      onReturnToCart: () => context.go(AppRoutes.cart),
+                      message:
+                          checkoutState.cartError ??
+                          l10n.emptyCheckoutMessage,
+                    )
+            : ListView(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 140),
+                children: [
+                  _CompactOrderHeader(
+                    itemCount: itemCount,
+                    totalAmount: checkoutState.totalAmount,
+                  ),
+                  const SizedBox(height: 24),
+                  _SectionLabel(label: l10n.shippingAddressUpper),
+                  const SizedBox(height: 12),
+                  CheckoutAddressSection(
+                    address: checkoutState.selectedAddress,
+                    onTap: () => _showAddressSheet(context, ref),
+                    highlight: checkoutState.selectedAddress == null,
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 24),
+                    child: Divider(color: Color(0xFFE5D5C0), thickness: 0.5),
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _SectionLabel(label: l10n.paymentMethodUpper),
+                      ),
+                      TextButton(
+                        onPressed: () =>
+                            context.push(AppRoutes.profilePaymentMethods),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: Text(
+                          l10n.change,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.5,
+                            color: AppTheme.accentGold,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                CheckoutPaymentSection(
-                  method: checkoutState.selectedPaymentMethod,
-                  onEdit: () => context.push(AppRoutes.profilePaymentMethods),
-                ),
-                const SizedBox(height: 16),
-                const _SectionLabel(label: 'SẢN PHẨM'),
-                const SizedBox(height: 8),
-                CheckoutItemsSection(items: checkoutState.orderItems),
-                const SizedBox(height: 16),
-                const _SectionLabel(label: 'TỔNG CỘNG'),
-                const SizedBox(height: 8),
-                CheckoutPriceSection(
-                  subtotal: checkoutState.subtotal,
-                  shippingCost: checkoutState.shippingCost,
-                  tax: checkoutState.tax,
-                  totalAmount: checkoutState.totalAmount,
-                ),
-              ],
-            ),
-      bottomNavigationBar: checkoutState.orderItems.isEmpty
-          ? null
-          : _CheckoutBottomBar(
-              totalAmount: checkoutState.totalAmount,
-              isSubmitting: checkoutState.isSubmitting,
-              canConfirm: checkoutState.canConfirm,
-              pendingPayment: checkoutState.pendingOnlinePayment,
-              onConfirm: () => _handleConfirmOrder(context, ref),
-            ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  CheckoutPaymentSection(
+                    method: checkoutState.selectedPaymentMethod,
+                    onEdit: () => context.push(AppRoutes.profilePaymentMethods),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 24),
+                    child: Divider(color: Color(0xFFE5D5C0), thickness: 0.5),
+                  ),
+                  _SectionLabel(label: l10n.itemsUpper),
+                  const SizedBox(height: 12),
+                  CheckoutItemsSection(items: checkoutState.orderItems),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 24),
+                    child: Divider(color: Color(0xFFE5D5C0), thickness: 0.5),
+                  ),
+                  _SectionLabel(label: l10n.payment),
+                  const SizedBox(height: 12),
+                  CheckoutPriceSection(
+                    subtotal: checkoutState.subtotal,
+                    shippingCost: checkoutState.shippingCost,
+                    tax: checkoutState.tax,
+                    discount: checkoutState.discountAmount,
+                    totalAmount: checkoutState.totalAmount,
+                  ),
+                  const SizedBox(height: 40),
+                  const _TrustSignalsRow(),
+                ],
+              ),
+        bottomNavigationBar: checkoutState.orderItems.isEmpty
+            ? null
+            : _CheckoutBottomBar(
+                totalAmount: checkoutState.totalAmount,
+                isSubmitting: checkoutState.isSubmitting,
+                canConfirm: checkoutState.canConfirm,
+                pendingPayment: checkoutState.pendingOnlinePayment,
+                onConfirm: () => _handleConfirmOrder(context, ref),
+              ),
+      ),
     );
   }
 
   Future<void> _showAddressSheet(BuildContext context, WidgetRef ref) async {
     await showModalBottomSheet<void>(
       context: context,
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (sheetContext) {
         return AddressPickerSheet(
@@ -146,18 +181,22 @@ class CheckoutScreen extends ConsumerWidget {
   }
 
   Future<void> _handleConfirmOrder(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
     final notifier = ref.read(checkoutProvider.notifier);
     final currentState = ref.read(checkoutProvider);
     final isOnlinePayment =
         currentState.selectedPaymentMethod?.type.requiresOnlinePayment ?? false;
 
-    // For existing online orders, verify backend status before any success navigation.
     if (isOnlinePayment && currentState.createdOrderId != null) {
       final isPaid = await notifier.isOnlinePaymentPaid();
       if (!context.mounted) return;
 
       if (isPaid) {
+        // Handled by ref.listen but adding here for safety/immediacy
         ref.invalidate(orderProvider);
+        ref.invalidate(cartProvider);
+        ref.invalidate(cartSelectionProvider);
+        ref.invalidate(activePromotionsProvider);
         context.go(AppRoutes.orderSuccess);
         return;
       }
@@ -170,7 +209,7 @@ class CheckoutScreen extends ConsumerWidget {
       final errorMessage = ref.read(checkoutProvider).errorMessage;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(errorMessage ?? 'Không thể xác nhận đơn hàng'),
+          content: Text(errorMessage ?? l10n.orderConfirmError),
           backgroundColor: Colors.red,
         ),
       );
@@ -186,8 +225,8 @@ class CheckoutScreen extends ConsumerWidget {
     if (isOnlineAfterConfirm) {
       if (payosUrl == null || payosUrl.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Đơn đã tạo nhưng chưa có link thanh toán. Thử lại.'),
+          SnackBar(
+            content: Text(l10n.missingPaymentLink),
             backgroundColor: Colors.orange,
           ),
         );
@@ -204,48 +243,83 @@ class CheckoutScreen extends ConsumerWidget {
 
         if (!launched) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
+            SnackBar(
               content: Text(
-                'Không thể mở trang thanh toán. Nhấn nút để thử lại.',
+                l10n.unableOpenPayment,
               ),
               backgroundColor: Colors.orange,
-              duration: Duration(seconds: 4),
+              duration: const Duration(seconds: 4),
             ),
           );
           return;
         }
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text(
-              'Hoàn tất thanh toán trên browser, sau đó quay lại và nhấn kiểm tra.',
+              l10n.paymentInstructions,
             ),
             backgroundColor: Colors.green,
-            duration: Duration(seconds: 3),
+            duration: const Duration(seconds: 3),
           ),
         );
       } catch (_) {
         if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text(
-              'Không thể mở trang thanh toán. Nhấn nút để thử lại.',
+              l10n.unableOpenPayment,
             ),
             backgroundColor: Colors.orange,
-            duration: Duration(seconds: 4),
+            duration: const Duration(seconds: 4),
           ),
         );
       }
       return;
     }
 
-    // COD  navigate directly to success
     ref.invalidate(orderProvider);
+    ref.invalidate(cartProvider);
+    ref.invalidate(cartSelectionProvider);
+    ref.invalidate(activePromotionsProvider);
     context.go(AppRoutes.orderSuccess);
   }
 }
 
-//  Small private helpers kept in orchestrator
+class _CheckoutLifecycleWrapper extends ConsumerStatefulWidget {
+  final Widget child;
+  const _CheckoutLifecycleWrapper({required this.child});
+
+  @override
+  ConsumerState<_CheckoutLifecycleWrapper> createState() => _CheckoutLifecycleWrapperState();
+}
+
+class _CheckoutLifecycleWrapperState extends ConsumerState<_CheckoutLifecycleWrapper> {
+  late final AppLifecycleListener _listener;
+
+  @override
+  void initState() {
+    super.initState();
+    _listener = AppLifecycleListener(
+      onResume: () {
+        // App is back from background (potentially from external payment browser)
+        final checkoutState = ref.read(checkoutProvider);
+        if (checkoutState.pendingOnlinePayment && !checkoutState.isPaymentSuccessful) {
+          ref.read(checkoutProvider.notifier).isOnlinePaymentPaid();
+        }
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _listener.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}
 
 class _CompactOrderHeader extends StatelessWidget {
   final int itemCount;
@@ -258,60 +332,91 @@ class _CompactOrderHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       decoration: BoxDecoration(
-        color: AppTheme.champagneGold.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.35)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE5D5C0).withValues(alpha: 0.5)),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.deepCharcoal.withValues(alpha: 0.03),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Row(
         children: [
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              color: AppTheme.accentGold.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(
-              Icons.shopping_bag_outlined,
-              color: AppTheme.accentGold,
-              size: 20,
-            ),
-          ),
-          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '$itemCount sản phẩm',
+                  l10n.orderSummary,
                   style: GoogleFonts.montserrat(
-                    fontSize: 13,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.2,
+                    color: AppTheme.accentGold,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  '$itemCount ${l10n.products}',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: AppTheme.deepCharcoal,
                   ),
                 ),
-                const SizedBox(height: 3),
-                Text(
-                  'Dự kiến nhận hàng trong 24 ngày',
-                  style: GoogleFonts.montserrat(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: AppTheme.mutedSilver,
-                  ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.auto_awesome,
+                      size: 11,
+                      color: AppTheme.accentGold,
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        '${l10n.estDelivery}: ${AppDateUtils.getEstimatedDeliveryRange(2, 4, l10n.localeName)}',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                          fontStyle: FontStyle.italic,
+                          color: AppTheme.mutedSilver,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-          Text(
-            formatVND(totalAmount),
-            style: GoogleFonts.playfairDisplay(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: AppTheme.deepCharcoal,
-            ),
+          const SizedBox(width: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                l10n.totalUpper,
+                style: GoogleFonts.montserrat(
+                  fontSize: 8,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.mutedSilver,
+                ),
+              ),
+              Text(
+                formatVND(totalAmount).replaceAll(RegExp(r'[^0-9.,]'), '').trim(),
+                style: GoogleFonts.playfairDisplay(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.deepCharcoal,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -355,9 +460,10 @@ class _CheckoutBottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final buttonText = pendingPayment
-        ? 'Kiểm tra / mở lại thanh toán  '
-        : 'Đặt hàng    ${formatVND(totalAmount)}';
+        ? l10n.checkPaymentOpen
+        : '${l10n.placeOrder}    ${formatVND(totalAmount)}';
     final buttonIcon = pendingPayment
         ? Icons.open_in_browser_rounded
         : Icons.arrow_forward_rounded;
@@ -378,63 +484,53 @@ class _CheckoutBottomBar extends StatelessWidget {
             ),
           ],
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            LuxuryButton(
-              text: buttonText,
-              trailingIcon: buttonIcon,
-              height: 56,
-              isLoading: isSubmitting,
-              onPressed: canConfirm && !isSubmitting ? onConfirm : null,
-            ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                _TrustItem(icon: Icons.lock_outline_rounded, label: 'Bảo mật'),
-                _TrustDivider(),
-                _TrustItem(
-                  icon: Icons.local_shipping_outlined,
-                  label: '24 ngày',
-                ),
-                _TrustDivider(),
-                _TrustItem(
-                  icon: Icons.replay_rounded,
-                  label: 'Đổi trả 14 ngày',
-                ),
-              ],
-            ),
-          ],
+        child: LuxuryButton(
+          text: buttonText,
+          trailingIcon: buttonIcon,
+          height: 56,
+          isLoading: isSubmitting,
+          onPressed: canConfirm && !isSubmitting ? onConfirm : null,
         ),
       ),
     );
   }
 }
 
-class _TrustItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-
-  const _TrustItem({required this.icon, required this.label});
+class _TrustSignalsRow extends StatelessWidget {
+  const _TrustSignalsRow();
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
+    final l10n = AppLocalizations.of(context)!;
+    return Column(
       children: [
-        Icon(
-          icon,
-          size: 12,
-          color: AppTheme.mutedSilver.withValues(alpha: 0.7),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _TrustIconItem(
+              icon: Icons.verified_user_outlined,
+              label: l10n.securePayment,
+            ),
+            _TrustIconDivider(),
+            _TrustIconItem(
+              icon: Icons.local_shipping_outlined,
+              label: l10n.expressShipping,
+            ),
+            _TrustIconDivider(),
+            _TrustIconItem(
+              icon: Icons.history_edu_outlined,
+              label: l10n.dayReturn7,
+            ),
+          ],
         ),
-        const SizedBox(width: 4),
+        const SizedBox(height: 24),
         Text(
-          label,
+          'AURA LUXURY PERFUME SIGNATURE',
           style: GoogleFonts.montserrat(
-            fontSize: 10,
-            fontWeight: FontWeight.w500,
-            color: AppTheme.mutedSilver.withValues(alpha: 0.8),
+            fontSize: 8,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 2.0,
+            color: AppTheme.mutedSilver.withValues(alpha: 0.4),
           ),
         ),
       ],
@@ -442,17 +538,44 @@ class _TrustItem extends StatelessWidget {
   }
 }
 
-class _TrustDivider extends StatelessWidget {
-  const _TrustDivider();
+class _TrustIconItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _TrustIconItem({required this.icon, required this.label});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Text(
-        '',
-        style: TextStyle(fontSize: 12, color: AppTheme.softTaupe),
-      ),
+    return Column(
+      children: [
+        Icon(
+          icon,
+          size: 20,
+          color: AppTheme.accentGold.withValues(alpha: 0.6),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          label.toUpperCase(),
+          style: GoogleFonts.montserrat(
+            fontSize: 7,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.5,
+            color: AppTheme.mutedSilver,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _TrustIconDivider extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 20,
+      width: 0.5,
+      margin: const EdgeInsets.symmetric(horizontal: 14),
+      color: const Color(0xFFE5D5C0),
     );
   }
 }
@@ -468,6 +591,7 @@ class _EmptyCheckoutState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 28),
@@ -489,7 +613,7 @@ class _EmptyCheckoutState extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              'Trang thanh toán của bạn đang trống.',
+              l10n.checkoutEmptyTitle,
               style: GoogleFonts.playfairDisplay(
                 fontSize: 28,
                 fontWeight: FontWeight.w600,
@@ -508,7 +632,7 @@ class _EmptyCheckoutState extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            LuxuryButton(text: 'Quay lại giỏ hàng', onPressed: onReturnToCart),
+            LuxuryButton(text: l10n.returnToCart, onPressed: onReturnToCart),
           ],
         ),
       ),

@@ -5,22 +5,33 @@ import '../models/order.dart';
 import '../models/payment.dart';
 import '../services/order_service.dart';
 import '../services/payment_service.dart';
+import '../services/return_service.dart';
 
 class OrderListState {
   final List<Order> all;
   final List<Order> active;
   final List<Order> completed;
+  final List<Order> cancelled;
 
   const OrderListState({
     required this.all,
     required this.active,
     required this.completed,
+    required this.cancelled,
   });
 
   factory OrderListState.fromOrders(List<Order> orders) {
     final active = orders.where((order) => order.status.isActive).toList();
-    final completed = orders.where((order) => order.isCompletedBucket).toList();
-    return OrderListState(all: orders, active: active, completed: completed);
+    final completed =
+        orders.where((order) => order.status == OrderStatus.completed).toList();
+    final cancelled =
+        orders.where((order) => order.status == OrderStatus.cancelled).toList();
+    return OrderListState(
+      all: orders,
+      active: active,
+      completed: completed,
+      cancelled: cancelled,
+    );
   }
 }
 
@@ -44,12 +55,14 @@ class TrackingViewData {
   final String header;
   final String etaText;
   final String mapLabel;
+  final String? trackingCode;
   final List<TrackingTimelineStep> steps;
 
   const TrackingViewData({
     required this.header,
     required this.etaText,
     required this.mapLabel,
+    required this.trackingCode,
     required this.steps,
   });
 }
@@ -62,6 +75,11 @@ final orderServiceProvider = Provider<OrderService>((ref) {
 final orderPaymentServiceProvider = Provider<OrderPaymentService>((ref) {
   final client = ref.watch(apiClientProvider);
   return OrderPaymentService(client: client);
+});
+
+final returnServiceProvider = Provider<ReturnService>((ref) {
+  final client = ref.watch(apiClientProvider);
+  return ReturnService(client: client);
 });
 
 class OrderNotifier extends AsyncNotifier<OrderListState> {
@@ -79,6 +97,32 @@ class OrderNotifier extends AsyncNotifier<OrderListState> {
       final orders = await service.getOrders();
       return OrderListState.fromOrders(orders);
     });
+  }
+
+  Future<void> cancelOrder(String orderId) async {
+    final service = ref.read(orderServiceProvider);
+    await service.cancelOrder(orderId);
+    await refresh();
+    ref.invalidate(orderDetailProvider(orderId));
+  }
+
+  Future<void> submitRefundBankInfo({
+    required String orderId,
+    required String bankName,
+    required String accountNumber,
+    required String accountHolder,
+    String? note,
+  }) async {
+    final service = ref.read(orderServiceProvider);
+    await service.submitRefundBankInfo(
+      orderId: orderId,
+      bankName: bankName,
+      accountNumber: accountNumber,
+      accountHolder: accountHolder,
+      note: note,
+    );
+    await refresh();
+    ref.invalidate(orderDetailProvider(orderId));
   }
 }
 
@@ -114,6 +158,7 @@ final trackingProvider = FutureProvider.family<TrackingViewData, String>((
   final order = await ref.watch(orderDetailProvider(orderId).future);
   final latestShipment = order.latestShipment;
 
+  final trackingCode = latestShipment?.trackingCode;
   final mapLabel = latestShipment?.trackingCode == null
       ? 'Đang chờ tạo vận đơn GHN'
       : 'Mã vận đơn: ${latestShipment!.trackingCode}';
@@ -170,7 +215,7 @@ final trackingProvider = FutureProvider.family<TrackingViewData, String>((
   });
 
   final headerMap = <OrderStatus, String>{
-    OrderStatus.pending: 'Đơn hàng đang chờ xử lý',
+    OrderStatus.pending: 'Đơn hàng đang chờ xác nhận',
     OrderStatus.confirmed: 'Đơn hàng đã được xác nhận',
     OrderStatus.processing: 'Đơn hàng đang được chuẩn bị',
     OrderStatus.shipped: 'Đơn hàng đang trên đường giao',
@@ -182,6 +227,7 @@ final trackingProvider = FutureProvider.family<TrackingViewData, String>((
     header: headerMap[order.status] ?? 'Đang cập nhật',
     etaText: etaText,
     mapLabel: mapLabel,
+    trackingCode: trackingCode,
     steps: order.status == OrderStatus.cancelled
         ? const [
             TrackingTimelineStep(

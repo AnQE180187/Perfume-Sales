@@ -49,11 +49,16 @@ class AppRoutes {
   static const String orderDetail = '/orders/:id';
   static const String trackOrder = '/orders/:id/track';
   static const String returnOrder = '/orders/:id/return';
+  static const String returnDetail = '/returns/:id';
 
   // ============================================
   // SEARCH & DISCOVERY
   // ============================================
   static const String search = '/search';
+  static const String scentClub = '/scent-club';
+  static const String brands = '/brands';
+  static const String journal = '/journal';
+  static const String journalDetail = '/journal/:id';
 
   // ============================================
   // PAYMENT ROUTES
@@ -69,6 +74,15 @@ class AppRoutes {
   static const String profileEdit = '/profile-edit';
   static const String rewards = '/rewards';
   static const String quiz = '/quiz';
+  static const String brandStory = '/brand-story';
+  static const String aiPreferences = '/ai-preferences';
+  static const String settings = '/settings';
+  static const String privacyPolicy = '/privacy-policy';
+  static const String termsOfService = '/terms-of-service';
+  static const String helpCenter = '/help-center';
+  static const String contactUs = '/contact-us';
+  static const String liveChat = '/live-chat/:id';
+  static const String helpArticle = '/help-article/:id';
 
   // ============================================
   // STAFF ROUTES
@@ -102,9 +116,32 @@ class AppRoutes {
     return '/orders/$orderId/return';
   }
 
+  /// Build return detail route with ID
+  static String returnDetailWithId(String returnId) {
+    return '/returns/$returnId';
+  }
+
+  /// Build live chat route with ID
+  static String liveChatWithId(String conversationId, {String? title}) {
+    final query = title != null ? '?title=${Uri.encodeComponent(title)}' : '';
+    return '/live-chat/$conversationId$query';
+  }
+
   /// Build product story route with ID
-  static String productStoryWithId(String productId) {
-    return '/product/story?id=$productId';
+  static String productStoryWithId(
+    String productId, {
+    String? productName,
+    String? imageUrl,
+  }) {
+    final params = <String>[];
+    if (productName != null) {
+      params.add('name=${Uri.encodeComponent(productName)}');
+    }
+    if (imageUrl != null) {
+      params.add('imageUrl=${Uri.encodeComponent(imageUrl)}');
+    }
+    final query = params.isEmpty ? '' : '?${params.join('&')}';
+    return '/product/$productId/story$query';
   }
 
   /// Build reviews route with product ID
@@ -113,5 +150,15 @@ class AppRoutes {
         ? ''
         : '?name=${Uri.encodeComponent(productName)}';
     return '/product/$productId/reviews$encodedName';
+  }
+
+  /// Build help article detail route with ID
+  static String helpArticleWithId(String articleId) {
+    return '/help-article/$articleId';
+  }
+
+  /// Build journal detail route with ID
+  static String journalDetailWithId(String journalId) {
+    return '/journal/$journalId';
   }
 }

@@ -14,6 +14,14 @@ export type ProductVariant = {
   isActive: boolean;
 };
 
+export type ProductVariantInput = {
+  id?: string;
+  name: string;
+  sku?: string;
+  price: number;
+  stock: number;
+};
+
 export type Product = {
   id: string;
   name: string;
@@ -30,6 +38,7 @@ export type Product = {
   category?: { id: number; name: string } | null;
   images?: { id: number; url: string; order: number; publicId?: string }[];
   variants?: ProductVariant[];
+  scentFamily?: { id: number; name: string } | null;
   notes?: { note: { name: string; type: 'TOP' | 'MIDDLE' | 'BASE' } }[];
 };
 
@@ -55,7 +64,8 @@ interface IProductService {
     longevity?: string;
     concentration?: string;
     isActive?: boolean;
-    variants: Omit<ProductVariant, 'id' | 'isActive'>[];
+    variants: ProductVariantInput[];
+    scentNotes?: { name: string; type: 'TOP' | 'MIDDLE' | 'BASE' }[];
   }): Promise<Product>;
   adminUpdate(id: string, dto: Partial<Parameters<IProductService['adminCreate']>[0]>): Promise<Product>;
   adminDelete(id: string): Promise<{ success: boolean }>;
@@ -88,7 +98,8 @@ export const productService: IProductService = {
     longevity?: string;
     concentration?: string;
     isActive?: boolean;
-    variants: Omit<ProductVariant, 'id' | 'isActive'>[];
+    variants: ProductVariantInput[];
+    scentNotes?: { name: string; type: 'TOP' | 'MIDDLE' | 'BASE' }[];
   }) {
     return api.post<Product>('/admin/products', dto).then((r) => r.data);
   },

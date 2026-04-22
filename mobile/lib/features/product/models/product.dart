@@ -45,6 +45,8 @@ class Product {
   final String imageUrl;
   final String? description;
   final String? story;
+  final String? longevity;
+  final String? concentration;
   final double? rating;
   final int? reviews;
   final List<String> notes;
@@ -56,6 +58,8 @@ class Product {
   final List<ProductVariant> variants;
   final bool? inStock;
   final List<String>? images;
+  final String? scentAnalysis;
+  final String? scentFamily;
 
   Product({
     required this.id,
@@ -65,6 +69,8 @@ class Product {
     required this.imageUrl,
     this.description,
     this.story,
+    this.longevity,
+    this.concentration,
     this.rating,
     this.reviews,
     this.notes = const [],
@@ -76,6 +82,8 @@ class Product {
     this.variants = const [],
     this.inStock = true,
     this.images,
+    this.scentAnalysis,
+    this.scentFamily,
   });
 
   Product copyWith({
@@ -97,6 +105,8 @@ class Product {
     List<ProductVariant>? variants,
     bool? inStock,
     List<String>? images,
+    String? scentAnalysis,
+    String? scentFamily,
   }) {
     return Product(
       id: id ?? this.id,
@@ -117,6 +127,8 @@ class Product {
       variants: variants ?? this.variants,
       inStock: inStock ?? this.inStock,
       images: images ?? this.images,
+      scentAnalysis: scentAnalysis ?? this.scentAnalysis,
+      scentFamily: scentFamily ?? this.scentFamily,
     );
   }
 
@@ -139,6 +151,8 @@ class Product {
       'variants': variants.map((v) => v.toJson()).toList(),
       'in_stock': inStock,
       'images': images,
+      'scentAnalysis': scentAnalysis,
+      'scent_family': scentFamily,
     };
   }
 
@@ -202,45 +216,50 @@ class Product {
         : <String>[];
 
     final topNotes = parseStringList(json['top_notes'] ?? json['topNotes']);
-    final heartNotes = parseStringList(
-      json['heart_notes'] ?? json['heartNotes'],
-    );
+    final heartNotes = parseStringList(json['heart_notes'] ?? json['heartNotes'] ?? json['middle_notes'] ?? json['middleNotes']);
     final baseNotes = parseStringList(json['base_notes'] ?? json['baseNotes']);
 
+    // Map notes from the complex relationship structure
     if (notesRaw is List) {
       for (final entry in notesRaw) {
-        if (entry is! Map<String, dynamic>) continue;
-        final noteRaw = entry['note'];
-        if (noteRaw is! Map<String, dynamic>) continue;
-
-        final noteName = noteRaw['name']?.toString();
-        final noteType = noteRaw['type']?.toString().toUpperCase();
-        if (noteName == null || noteName.isEmpty || noteType == null) continue;
-
-        if (noteType == 'TOP' && !topNotes.contains(noteName)) {
-          topNotes.add(noteName);
-        } else if ((noteType == 'MIDDLE' || noteType == 'HEART') &&
-            !heartNotes.contains(noteName)) {
-          heartNotes.add(noteName);
-        } else if (noteType == 'BASE' && !baseNotes.contains(noteName)) {
-          baseNotes.add(noteName);
+        dynamic noteObj = entry;
+        if (entry is Map && entry['note'] != null) {
+          noteObj = entry['note'];
+        }
+        
+        if (noteObj is! Map) continue;
+        
+        final name = noteObj['name']?.toString() ?? '';
+        final type = (noteObj['type']?.toString() ?? '').toUpperCase();
+        
+        if (name.isEmpty) continue;
+        
+        if ((type == 'TOP' || type == 'HEAD') && !topNotes.contains(name)) {
+          topNotes.add(name);
+        } else if ((type == 'MIDDLE' || type == 'HEART') && !heartNotes.contains(name)) {
+          heartNotes.add(name);
+        } else if ((type == 'BASE' || type == 'BOTTOM') && !baseNotes.contains(name)) {
+          baseNotes.add(name);
+        } else if (type.isEmpty || type == 'NONE') {
+          // If no type, we'll distribute later if lists are empty
+          if (!parsedNotes.contains(name)) parsedNotes.add(name);
         }
       }
     }
 
-    if (topNotes.isEmpty && heartNotes.isEmpty && baseNotes.isEmpty) {
-      if (parsedNotes.length == 1) {
-        topNotes.add(parsedNotes.first);
-      } else if (parsedNotes.length == 2) {
+    // Fallback: If categorized lists are empty, distribute the general notes
+    if (topNotes.isEmpty && heartNotes.isEmpty && baseNotes.isEmpty && parsedNotes.isNotEmpty) {
+      final total = parsedNotes.length;
+      if (total == 1) {
+        topNotes.add(parsedNotes[0]);
+      } else if (total == 2) {
         topNotes.add(parsedNotes[0]);
         heartNotes.add(parsedNotes[1]);
-      } else if (parsedNotes.length > 2) {
-        final topEnd = (parsedNotes.length / 3).ceil();
-        final heartEnd = ((parsedNotes.length * 2) / 3).ceil();
-
-        topNotes.addAll(parsedNotes.sublist(0, topEnd));
-        heartNotes.addAll(parsedNotes.sublist(topEnd, heartEnd));
-        baseNotes.addAll(parsedNotes.sublist(heartEnd));
+      } else {
+        final third = total ~/ 3;
+        topNotes.addAll(parsedNotes.sublist(0, third == 0 ? 1 : third));
+        heartNotes.addAll(parsedNotes.sublist(topNotes.length, (2 * total) ~/ 3));
+        baseNotes.addAll(parsedNotes.sublist(topNotes.length + heartNotes.length));
       }
     }
 
@@ -276,6 +295,18 @@ class Product {
         ? json['image_url'] as String
         : (imageList.isNotEmpty ? imageList.first : '');
 
+    final dynamic scentFamilyRaw = json['scent_family'] ?? json['scentFamily'];
+    String? scentFamily;
+    if (scentFamilyRaw is String) {
+      scentFamily = scentFamilyRaw;
+    } else if (scentFamilyRaw is Map) {
+      scentFamily = scentFamilyRaw['name']?.toString();
+    }
+    
+    if (scentFamily == null || scentFamily.isEmpty) {
+      scentFamily = (json['category'] is Map ? json['category']['name']?.toString() : null);
+    }
+
     return Product(
       id: json['id'] as String,
       name: json['name'] as String,
@@ -284,6 +315,8 @@ class Product {
       imageUrl: imageUrl,
       description: json['description'] as String?,
       story: json['story'] as String?,
+      longevity: json['longevity']?.toString(),
+      concentration: json['concentration']?.toString(),
       rating: rating,
       reviews: reviewCount,
       notes: parsedNotes,
@@ -295,6 +328,8 @@ class Product {
       variants: parsedVariants,
       inStock: inStock,
       images: imageList,
+      scentAnalysis: json['scentAnalysis'] as String?,
+      scentFamily: scentFamily,
     );
   }
 }

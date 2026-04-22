@@ -70,14 +70,28 @@ export class ChatService {
         let aiResponseText: string;
 
         if (conv.type === 'CUSTOMER_AI') {
+          // Fetch User DNA for personalized advice
+          const dna = await this.prisma.userAiPreference.findUnique({
+            where: { userId },
+          });
+
           aiResponseText = await this.aiService.perfumeConsult(
             userText,
             history,
+            userId,
+            dna
+              ? {
+                  preferredNotes: dna.preferredNotes,
+                  avoidedNotes: dna.avoidedNotes,
+                  riskLevel: dna.riskLevel,
+                }
+              : undefined,
           );
         } else {
           aiResponseText = await this.aiService.marketingAdvise(
             userText,
             history,
+            userId,
           );
         }
 

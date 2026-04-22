@@ -29,6 +29,24 @@ export type Order = {
   }[];
   createdAt?: string;
   updatedAt?: string;
+  returnRequests?: {
+    id: string;
+    status: string;
+    items: {
+      variantId: string;
+      quantity: number;
+    }[];
+  }[];
+};
+
+export type RefundBankInfo = {
+  id: number;
+  createdAt: string;
+  bankName: string;
+  accountNumber: string;
+  accountHolder: string;
+  note?: string | null;
+  submittedAt?: string;
 };
 
 export type OrderListResponse = {
@@ -52,19 +70,23 @@ export const orderService = {
     promotionCode?: string;
     redeemPoints?: number;
     paymentMethod?: "COD" | "ONLINE";
+    cartItemIds?: number[];
   }) {
     return api.post<Order>("/orders", dto).then((r) => r.data);
   },
-  listMy() {
-    return api.get<Order[]>("/orders").then((r) => r.data);
+  listMy(params?: { skip?: number; take?: number }) {
+    return api.get<OrderListResponse>("/orders", { params }).then((r) => r.data);
   },
   getById(id: string) {
     return api.get<Order>("/orders/" + id).then((r) => r.data);
   },
   // Admin endpoints
-  listAll(skip: number = 0, take: number = 10) {
+  listAll(skip: number = 0, take: number = 10, startDate?: string, endDate?: string) {
+    const params: any = { skip, take };
+    if (startDate) params.startDate = startDate;
+    if (endDate) params.endDate = endDate;
     return api
-      .get<OrderListResponse>(`/orders/admin/all?skip=${skip}&take=${take}`)
+      .get<OrderListResponse>(`/orders/admin/all`, { params })
       .then((r) => r.data);
   },
   getAdminById(id: string) {
@@ -73,6 +95,37 @@ export const orderService = {
   updateStatus(id: string, dto: { status?: string; paymentStatus?: string }) {
     return api
       .post<Order>(`/orders/admin/${id}/status`, dto)
+      .then((r) => r.data);
+  },
+  cancel(id: string) {
+    return api.post<Order>(`/orders/${id}/cancel`).then((r) => r.data);
+  },
+  submitRefundBankInfo(
+    id: string,
+    dto: {
+      bankName: string;
+      accountNumber: string;
+      accountHolder: string;
+      note?: string;
+    },
+  ) {
+    return api
+      .post<{ success: boolean }>(`/orders/${id}/refund-bank-info`, dto)
+      .then((r) => r.data);
+  },
+  getRefundBankInfo(id: string) {
+    return api
+      .get<RefundBankInfo | null>(`/orders/${id}/refund-bank-info`)
+      .then((r) => r.data);
+  },
+  getRefundBankInfoAdmin(id: string) {
+    return api
+      .get<RefundBankInfo | null>(`/orders/admin/${id}/refund-bank-info`)
+      .then((r) => r.data);
+  },
+  createGhnShipment(id: string) {
+    return api
+      .post<{ shipmentId: string; orderCode: string; fee: number }>(`/shipping/admin/${id}/create-ghn`)
       .then((r) => r.data);
   },
 };

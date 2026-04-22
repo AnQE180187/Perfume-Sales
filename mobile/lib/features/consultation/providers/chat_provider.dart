@@ -11,21 +11,45 @@ class ConversationSummary {
   final String type;
   final String lastMessageText;
   final DateTime updatedAt;
+  final List<String> recommendedImages;
 
   const ConversationSummary({
     required this.id,
     required this.type,
     required this.lastMessageText,
     required this.updatedAt,
+    this.recommendedImages = const [],
   });
 
   factory ConversationSummary.fromJson(Map<String, dynamic> json) {
     final messages = json['messages'] as List? ?? [];
     String lastMsg = '';
+    final List<String> images = [];
+
+    // Extract last message text
     if (messages.isNotEmpty) {
       final content = messages[0]['content'];
       if (content is Map) lastMsg = (content['text'] ?? '').toString();
     }
+
+    // Extract recommended images from all messages in the summary if available
+    for (var msg in messages) {
+      final content = msg['content'];
+      if (content is Map && content['recommendations'] is List) {
+        final recs = content['recommendations'] as List;
+        for (var rec in recs) {
+          if (rec is Map && rec['imageUrl'] != null && rec['imageUrl'].toString().isNotEmpty) {
+            final url = rec['imageUrl'].toString();
+            if (!images.contains(url)) {
+              images.add(url);
+            }
+          }
+          if (images.length >= 3) break;
+        }
+      }
+      if (images.length >= 3) break;
+    }
+
     return ConversationSummary(
       id: json['id'] as String,
       type: (json['type'] ?? 'CUSTOMER_AI') as String,
@@ -33,6 +57,7 @@ class ConversationSummary {
       updatedAt:
           DateTime.tryParse(json['updatedAt']?.toString() ?? '') ??
           DateTime.now(),
+      recommendedImages: images,
     );
   }
 }

@@ -16,109 +16,107 @@ class UserIdentitySection extends StatelessWidget {
 
   const UserIdentitySection({super.key, required this.profile});
 
+  String _getInitials(String fullName) {
+    final trimmed = fullName.trim();
+    if (trimmed.isEmpty) return 'U';
+    final parts = trimmed.split(RegExp(r'\s+'));
+    if (parts.length == 1) return parts[0][0].toUpperCase();
+    return '${parts[0][0]}${parts[parts.length - 1][0]}'.toUpperCase();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final initials = _getInitials(profile.name);
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 28, 20, 24),
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
       child: Column(
         children: [
-          // Avatar with gold ring
+          // Avatar (aligned with Drawer style)
           Container(
-            width: 100,
-            height: 100,
+            width: 110,
+            height: 110,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: AppTheme.accentGold.withValues(alpha: 0.55),
-                width: 2.5,
+                color: AppTheme.champagneGold.withValues(alpha: 0.6),
+                width: 1,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.accentGold.withValues(alpha: 0.15),
-                  blurRadius: 18,
+                  color: AppTheme.champagneGold.withValues(alpha: 0.12),
+                  blurRadius: 16,
                   spreadRadius: 2,
-                ),
-                BoxShadow(
-                  color: AppTheme.deepCharcoal.withValues(alpha: 0.08),
-                  offset: const Offset(0, 4),
-                  blurRadius: 12,
                 ),
               ],
             ),
-            child: ClipOval(
-              child: profile.avatarUrl != null
-                  ? Image.network(
-                      profile.avatarUrl!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _buildPlaceholder(),
+            child: CircleAvatar(
+              radius: 55,
+              backgroundColor: AppTheme.softTaupe.withValues(alpha: 0.5),
+              backgroundImage: profile.avatarUrl != null
+                  ? NetworkImage(profile.avatarUrl!)
+                  : null,
+              child: profile.avatarUrl == null
+                  ? Text(
+                      initials,
+                      style: GoogleFonts.playfairDisplay(
+                        fontSize: 36,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.accentGold,
+                      ),
                     )
-                  : _buildPlaceholder(),
+                  : null,
             ),
           ),
-          const SizedBox(height: 16),
-          // Name
+          const SizedBox(height: 24),
+          // Name with editorial serif
           Text(
-            profile.name,
+            profile.name.toUpperCase(),
             style: GoogleFonts.playfairDisplay(
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
+              fontSize: 24,
+              fontWeight: FontWeight.w800,
               color: AppTheme.deepCharcoal,
-              height: 1.2,
+              letterSpacing: 1.5,
+              height: 1.1,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 6),
-          // Email (masked)
-          if (profile.email.isNotEmpty)
-            Text(
-              profile.email,
-              style: GoogleFonts.montserrat(
-                fontSize: 12,
-                fontWeight: FontWeight.w400,
-                color: AppTheme.mutedSilver,
-              ),
-            ),
-          const SizedBox(height: 12),
-          // Membership badge
+          const SizedBox(height: 8),
+          // Membership badge with minimalist star
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
             decoration: BoxDecoration(
-              color: AppTheme.accentGold.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(20),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(30),
               border: Border.all(
-                color: AppTheme.accentGold.withValues(alpha: 0.3),
-                width: 1,
+                color: AppTheme.softTaupe.withValues(alpha: 0.3),
+                width: 0.8,
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.star_rounded, size: 12, color: AppTheme.accentGold),
-                const SizedBox(width: 5),
+                const Icon(Icons.auto_awesome_rounded, size: 10, color: AppTheme.accentGold),
+                const SizedBox(width: 6),
                 Text(
-                  profile.memberSinceText,
+                  profile.memberSinceText.toUpperCase(),
                   style: GoogleFonts.montserrat(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.accentGold,
-                    letterSpacing: 0.2,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.deepCharcoal.withValues(alpha: 0.7),
+                    letterSpacing: 1.5,
                   ),
                 ),
               ],
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildPlaceholder() {
-    return Container(
-      color: AppTheme.accentGold.withValues(alpha: 0.06),
-      child: Icon(
-        Icons.person_outline,
-        size: 42,
-        color: AppTheme.accentGold.withValues(alpha: 0.5),
       ),
     );
   }

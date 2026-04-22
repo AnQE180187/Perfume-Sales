@@ -22,6 +22,10 @@ class ApiEndpoints {
   static const String promotionsActive = '/promotions/active';
   static const String promotionsValidate = '/promotions/validate';
 
+  // ── Banners ───────────────────────────────────────────────────────
+  static const String banners = '/banners';
+  static String bannerById(String id) => '/banners/$id';
+
   // ── Products ──────────────────────────────────────────────────────
   static const String products = '/products';
   static String productById(String id) => '/products/$id';
@@ -34,6 +38,8 @@ class ApiEndpoints {
   // ── Orders ────────────────────────────────────────────────────────
   static const String orders = '/orders';
   static String orderById(String id) => '/orders/$id';
+  static String cancelOrder(String id) => '/orders/$id/cancel';
+  static String refundBankInfo(String id) => '/orders/$id/refund-bank-info';
   static String shipmentsByOrderId(String orderId) =>
       '/shipping/orders/$orderId';
 
@@ -52,7 +58,9 @@ class ApiEndpoints {
   // ── Payments ──────────────────────────────────────────────────────
   static const String payments = '/payments';
   static const String createPayosPayment = '/payments/create-payment';
-  static String paymentByOrderId(String orderId) => '/payments/order/$orderId';
+  static String paymentByOrderId(String id) => '/payments/order/$id';
+  static String verifySyncPayment(String orderId) =>
+      '/payments/verify-sync/$orderId';
   static const String paymentMethods = '/payment-methods';
   static String paymentMethodDefaultById(String id) =>
       '/payment-methods/$id/default';
@@ -67,6 +75,8 @@ class ApiEndpoints {
   static const String catalog = '/catalog';
   static const String categories = '/catalog/categories';
   static const String brands = '/catalog/brands';
+  static const String scentFamilies = '/catalog/scent-families';
+  static const String scentNotes = '/catalog/scent-notes';
 
   // ── Reviews ───────────────────────────────────────────────────────
   static const String createReview = '/reviews';
@@ -106,8 +116,26 @@ class ApiEndpoints {
   static String staffPosPayQr(String id) => '/staff/pos/orders/$id/pay/qr';
   static String staffPosCancelOrder(String id) => '/staff/pos/orders/$id';
   static const String staffPosCheckout = '/staff/pos/checkout';
+  static const String staffPosSaveDraft = '/staff/pos/save-draft';
   static const String staffPosAiConsult = '/staff/pos/ai-consult';
 
   // ── Staff: Reports ────────────────────────────────────────────────
   static const String staffReportsDaily = '/staff/reports/daily';
+
+  // ── Returns ───────────────────────────────────────────────────────
+  static const String returns = '/returns';
+  static String returnById(String id) => '/returns/$id';
+  static const String uploadReturnVideo = '/returns/upload-video';
+  static const String uploadReturnImages = '/returns/upload-images';
+  static String addReturnShipment(String id) => '/returns/$id/shipment';
+  static String cancelReturn(String id) => '/returns/$id/cancel';
+  static String handoverReturn(String id) => '/returns/$id/handover';
+
+  // ── Quiz ──────────────────────────────────────────────────────────
+  static const String quizSubmit = '/quiz/submit';
+  static String quizResult(String id) => '/quiz/$id';
+
+  // ── Journals ──────────────────────────────────────────────────────
+  static const String journals = '/journals';
+  static String journalById(String id) => '/journals/$id';
 }

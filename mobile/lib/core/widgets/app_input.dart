@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../theme/app_theme.dart';
+import '../theme/app_text_style.dart';
 
-/// A standardized text input field used throughout the app.
-///
-/// Supports a [TextEditingController] (preferred) or an [initialValue] for
-/// uncontrolled usage. Do NOT supply both.
 class AppInput extends StatefulWidget {
   final String label;
   final String? hint;
@@ -104,6 +102,9 @@ class _AppInputState extends State<AppInput> {
       obscureText: widget.obscureText,
       keyboardType: widget.keyboardType,
       textInputAction: widget.textInputAction,
+      style: AppTextStyle.bodyMd(
+        color: AppTheme.deepCharcoal,
+      ).copyWith(fontWeight: FontWeight.w500),
       maxLines: widget.obscureText ? 1 : widget.maxLines,
       maxLength: widget.maxLength,
       inputFormatters: widget.inputFormatters,
@@ -113,10 +114,18 @@ class _AppInputState extends State<AppInput> {
       validator: widget.validator,
       cursorColor: AppTheme.deepCharcoal,
       decoration: InputDecoration(
-        labelText: widget.label,
+        labelText: widget.label.toUpperCase(),
+        labelStyle: AppTextStyle.labelXs(
+          color: AppTheme.mutedSilver,
+          letterSpacing: 1.2,
+        ).copyWith(fontWeight: FontWeight.w700),
         hintText: widget.hint,
-        floatingLabelBehavior: FloatingLabelBehavior.auto,
+        hintStyle: AppTextStyle.bodyMd(
+          color: AppTheme.mutedSilver.withValues(alpha: 0.5),
+        ),
+        floatingLabelBehavior: FloatingLabelBehavior.always,
         errorText: widget.errorText,
+        errorStyle: AppTextStyle.caption(color: Colors.red),
         prefixIcon: widget.prefixIcon,
         suffixIcon: widget.suffixIcon,
         filled: true,
@@ -124,17 +133,30 @@ class _AppInputState extends State<AppInput> {
         hoverColor: Colors.transparent,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppTheme.softTaupe),
+          borderSide: BorderSide(
+            color: AppTheme.softTaupe.withValues(alpha: 0.4),
+            width: 0.5,
+          ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppTheme.softTaupe),
+          borderSide: BorderSide(
+            color: AppTheme.softTaupe.withValues(alpha: 0.4),
+            width: 0.5,
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppTheme.deepCharcoal),
+          borderSide: const BorderSide(color: AppTheme.deepCharcoal, width: 1),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.red, width: 0.5),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 18,
+        ),
       ),
     );
   }

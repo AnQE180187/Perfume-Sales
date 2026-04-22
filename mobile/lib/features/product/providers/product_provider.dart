@@ -3,6 +3,7 @@ import '../../../core/config/app_config.dart';
 import '../data/product_repository.dart';
 import '../models/product.dart';
 import '../services/product_service.dart';
+import '../../profile/providers/ai_preferences_provider.dart';
 
 final productServiceProvider = Provider<ProductService>((ref) {
   return ProductService();
@@ -19,9 +20,13 @@ final productsProvider = FutureProvider<List<Product>>((ref) async {
 });
 
 final personalizedProductsProvider = FutureProvider<List<Product>>((ref) async {
+  // Watch preferences to trigger re-fetch when they change
+  ref.watch(aiPreferencesProvider);
+
   if (AppConfig.useRealAPI) {
-    final products = await ref.watch(productsProvider.future);
-    return products.take(6).toList();
+    final repository = ref.watch(productRepositoryProvider);
+    // Request a fresh list which will be filtered/sorted by the backend AI logic
+    return await repository.getProducts(take: 12);
   }
 
   final service = ref.watch(productServiceProvider);

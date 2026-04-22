@@ -1,0 +1,992 @@
+import 'dart:ui';
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
+
+import '../../../../core/theme/app_theme.dart';
+import '../../pos/providers/pos_provider.dart';
+import '../../pos/models/pos_models.dart';
+import 'package:perfume_gpt_app/l10n/app_localizations.dart';
+import '../../../../core/utils/responsive.dart';
+
+class TabletPosGallery extends ConsumerStatefulWidget {
+  const TabletPosGallery({super.key});
+
+  @override
+  ConsumerState<TabletPosGallery> createState() => _TabletPosGalleryState();
+}
+
+class _TabletPosGalleryState extends ConsumerState<TabletPosGallery> {
+  final _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final stores = ref.watch(posStoresProvider);
+    final selectedStoreId = ref.watch(posSelectedStoreIdProvider);
+    final selectedFamily = ref.watch(posSelectedFamilyProvider);
+    final l10n = AppLocalizations.of(context)!;
+    final currencyFmt = NumberFormat('#,###', 'vi_VN');
+
+    return Container(
+      color: const Color(0xFF050505),
+      child: Column(
+        children: [
+          _buildMinimalHeader(context, ref, selectedStoreId, selectedFamily, l10n),
+          Expanded(
+            child: selectedStoreId == null
+                ? _buildLuxuryStorePicker(stores)
+                : _buildHighDensityGrid(context, selectedStoreId, currencyFmt, l10n),
+          ),
+          if (selectedStoreId != null) const _AiConsultationPanel(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMinimalHeader(
+    BuildContext context,
+    WidgetRef ref,
+    String? selectedStoreId,
+    String selectedFamily,
+    AppLocalizations l10n,
+  ) {
+    final isMobile = Responsive.isMobile(context);
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 24, vertical: 20),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              height: 48,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.03),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.white10),
+              ),
+              child: TextField(
+                controller: _searchController,
+                onChanged: (v) =>
+                    ref.read(posSearchQueryProvider.notifier).state = v,
+                style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 13),
+                decoration: InputDecoration(
+                  hintText: isMobile ? "Tìm kiếm..." : "Tìm tên sản phẩm, SKU, nhóm mùi hương, thương hiệu",
+                  hintStyle: GoogleFonts.montserrat(
+                      color: Colors.white60, fontSize: 11, letterSpacing: 0.5),
+                  prefixIcon: const Icon(Icons.search_rounded,
+                      color: AppTheme.accentGold, size: 18),
+                  border: InputBorder.none,
+                  filled: false,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          IconButton(
+            onPressed: () => _showBarcodeScanner(context, ref, selectedStoreId),
+            icon: const Icon(Icons.qr_code_scanner_rounded,
+                color: AppTheme.accentGold, size: 24),
+            padding: EdgeInsets.zero,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLuxuryStorePicker(AsyncValue<List<dynamic>> stores) {
+    final isMobile = Responsive.isMobile(context);
+    return stores.when(
+      loading: () => const Center(
+          child: CircularProgressIndicator(color: AppTheme.accentGold)),
+      error: (e, _) => Center(child: Text("Lỗi: $e", style: const TextStyle(color: Colors.redAccent))),
+      data: (storeList) => Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "PERFUME GPT",
+                style: GoogleFonts.playfairDisplay(
+                  fontSize: isMobile ? 32 : 48,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.accentGold,
+                  letterSpacing: isMobile ? 4 : 8,
+                ),
+              ),
+              SizedBox(height: isMobile ? 32 : 60),
+              Wrap(
+                spacing: 16,
+                runSpacing: 16,
+                alignment: WrapAlignment.center,
+                children: storeList.map((s) {
+                  return InkWell(
+                    onTap: () =>
+                        ref.read(posSelectedStoreIdProvider.notifier).state = s.id,
+                    child: Container(
+                      width: isMobile ? double.infinity : 240,
+                      padding: const EdgeInsets.symmetric(vertical: 32),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.white10),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Center(
+                        child: Text(
+                          s.name.toUpperCase(),
+                          style: GoogleFonts.montserrat(
+                            fontSize: 12,
+                            color: Colors.white,
+                            letterSpacing: 4,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHighDensityGrid(
+    BuildContext context,
+    String storeId,
+    NumberFormat fmt,
+    AppLocalizations l10n,
+  ) {
+    final productsAsync = ref.watch(posProductsProvider);
+
+    final isMobile = Responsive.isMobile(context);
+    return productsAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(child: Text("Lỗi: $e", style: const TextStyle(color: Colors.redAccent))),
+      data: (productList) {
+        final List<MapEntry<PosProduct, PosVariant>> allVariants = [];
+        for (final p in productList) {
+          for (final v in p.variants) {
+            allVariants.add(MapEntry(p, v));
+          }
+        }
+
+        return GridView.builder(
+          padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24, vertical: 8),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: isMobile ? 2 : 5, // High density
+            childAspectRatio: isMobile ? 0.7 : 0.62,
+            crossAxisSpacing: isMobile ? 12 : 16,
+            mainAxisSpacing: isMobile ? 12 : 16,
+          ),
+          itemCount: allVariants.length,
+          itemBuilder: (ctx, i) {
+            final entry = allVariants[i];
+            return _ScientificProductCard(
+              product: entry.key,
+              variant: entry.value,
+              fmt: fmt,
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showBarcodeScanner(BuildContext context, WidgetRef ref, String? storeId) {
+    if (storeId == null) return;
+    
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF0A0A0A),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => Container(
+        height: MediaQuery.of(context).size.height * 0.75,
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          children: [
+            const SizedBox(height: 12),
+            Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(2))),
+            const SizedBox(height: 24),
+            Text(
+              "QUÉT MÃ VẠCH / SKU",
+              style: GoogleFonts.montserrat(
+                color: AppTheme.accentGold,
+                fontWeight: FontWeight.w900,
+                fontSize: 16,
+                letterSpacing: 3,
+              ),
+            ),
+            const SizedBox(height: 32),
+            Expanded(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: Stack(
+                  children: [
+                    MobileScanner(
+                      controller: MobileScannerController(
+                        facing: CameraFacing.back,
+                        torchEnabled: false,
+                      ),
+                      onDetect: (capture) async {
+                        final List<Barcode> barcodes = capture.barcodes;
+                        for (final barcode in barcodes) {
+                          final code = barcode.rawValue;
+                          if (code != null) {
+                            final success = await ref.read(posProvider.notifier).applyBarcode(code, storeId);
+                            if (success && ctx.mounted) {
+                              Navigator.pop(ctx);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text("Sản phẩm [$code] đã được thêm vào giỏ"),
+                                  backgroundColor: Colors.green.shade900,
+                                ),
+                              );
+                            }
+                          }
+                        }
+                      },
+                    ),
+                    // Scanner Overlay UI
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: AppTheme.accentGold.withOpacity(0.2), width: 2),
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: Center(
+                        child: Container(
+                          width: 200,
+                          height: 200,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: AppTheme.accentGold, width: 2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 32),
+            // Simulation field for emulator or if camera fails
+            TextField(
+              style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 13),
+              textAlign: TextAlign.center,
+              decoration: InputDecoration(
+                hintStyle: GoogleFonts.montserrat(color: Colors.white60, fontSize: 11),
+                filled: true,
+                fillColor: Colors.white.withOpacity(0.05),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white10)),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white10)),
+                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppTheme.accentGold)),
+                prefixIcon: const Icon(Icons.keyboard_rounded, color: AppTheme.accentGold, size: 18),
+              ),
+              onSubmitted: (code) async {
+                final success = await ref.read(posProvider.notifier).applyBarcode(code, storeId);
+                if (success && ctx.mounted) {
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("Sản phẩm [$code] đã được thêm vào giỏ"),
+                      backgroundColor: Colors.green.shade900,
+                    ),
+                  );
+                }
+              },
+            ),
+            const SizedBox(height: 32),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ScientificProductCard extends ConsumerStatefulWidget {
+  final PosProduct product;
+  final PosVariant variant;
+  final NumberFormat fmt;
+
+  const _ScientificProductCard({
+    required this.product,
+    required this.variant,
+    required this.fmt,
+  });
+
+  @override
+  ConsumerState<_ScientificProductCard> createState() => _ScientificProductCardState();
+}
+
+class _ScientificProductCardState extends ConsumerState<_ScientificProductCard> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final imageUrl = widget.product.images.isNotEmpty ? widget.product.images.first.url : null;
+    final isOut = widget.variant.stock <= 0;
+    final isLow = widget.variant.stock > 0 && widget.variant.stock <= 5;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      cursor: isOut ? SystemMouseCursors.basic : SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: isOut ? null : () => ref.read(posProvider.notifier).addToCart(widget.variant, widget.product.name),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOutCubic,
+          transform: Matrix4.identity()..translate(0.0, _isHovered && !isOut ? -4.0 : 0.0),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0F0F0F),
+            border: Border.all(
+              color: isOut 
+                ? Colors.redAccent.withOpacity(0.2)
+                : isLow 
+                  ? Colors.orangeAccent.withOpacity(_isHovered ? 0.5 : 0.2)
+                  : _isHovered ? AppTheme.accentGold.withOpacity(0.4) : Colors.white10,
+            ),
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: _isHovered && !isOut
+                ? [
+                    BoxShadow(
+                        color: AppTheme.accentGold.withOpacity(0.08),
+                        blurRadius: 16,
+                        offset: const Offset(0, 8))
+                  ]
+                : [],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                flex: 4,
+                child: Stack(
+                  children: [
+                    Container(
+                      margin: const EdgeInsets.all(12),
+                      width: double.infinity,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: imageUrl != null
+                            ? Image.network(imageUrl, fit: BoxFit.contain)
+                            : const Icon(Icons.science_outlined,
+                                size: 48, color: AppTheme.accentGold),
+                      ),
+                    ),
+                    // Stock Badge Overlay
+                    Positioned(
+                      bottom: 12,
+                      left: 12,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.7),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(
+                            color: isOut 
+                              ? Colors.redAccent.withOpacity(0.5)
+                              : isLow 
+                                ? Colors.orangeAccent.withOpacity(0.5)
+                                : AppTheme.accentGold.withOpacity(0.2),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              isOut 
+                                ? Icons.block_flipped 
+                                : isLow 
+                                  ? Icons.warning_amber_rounded 
+                                  : Icons.inventory_2_outlined,
+                              size: 10,
+                              color: isOut 
+                                ? Colors.redAccent 
+                                : isLow 
+                                  ? Colors.orangeAccent 
+                                  : AppTheme.accentGold,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              isOut 
+                                ? l10n.posOutOfStock.toUpperCase()
+                                : isLow 
+                                  ? l10n.posLowStockWarning(widget.variant.stock).toUpperCase()
+                                  : l10n.posStockLabel(widget.variant.stock).toUpperCase(),
+                              style: GoogleFonts.robotoMono(
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                                color: isOut 
+                                  ? Colors.redAccent 
+                                  : isLow 
+                                    ? Colors.orangeAccent 
+                                    : AppTheme.accentGold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(color: Colors.white10, height: 1),
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.product.name.toUpperCase(),
+                      style: GoogleFonts.playfairDisplay(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        letterSpacing: 0.5,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      (widget.product.brand?.name ?? widget.product.family ?? "PERFUME GPT").toUpperCase(),
+                      style: GoogleFonts.montserrat(
+                        fontSize: 9,
+                        color: Colors.white70,
+                        letterSpacing: 1,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      widget.variant.name.toUpperCase(),
+                      style: GoogleFonts.robotoMono(
+                        fontSize: 9,
+                        color: Colors.white60,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (widget.variant.barcode != null)
+                      Text(
+                        "BC: ${widget.variant.barcode}",
+                        style: GoogleFonts.robotoMono(
+                          fontSize: 8,
+                          color: AppTheme.accentGold.withOpacity(0.4),
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "${widget.fmt.format(widget.variant.price)}đ",
+                          style: GoogleFonts.robotoMono(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.accentGold,
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: isOut ? Colors.white10 : AppTheme.accentGold.withOpacity(0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            isOut ? Icons.close : Icons.add,
+                            size: 14,
+                            color: isOut ? Colors.white24 : AppTheme.accentGold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AiConsultationPanel extends ConsumerStatefulWidget {
+  const _AiConsultationPanel();
+
+  @override
+  ConsumerState<_AiConsultationPanel> createState() => _AiConsultationPanelState();
+}
+
+class _AiConsultationPanelState extends ConsumerState<_AiConsultationPanel> {
+  bool _isExpanded = false;
+  String? _gender;
+  String? _occasion;
+  final _budgetController = TextEditingController();
+  final _notesController = TextEditingController();
+  bool _isLoading = false;
+
+  final List<String> _genders = ["male", "female", "unisex"];
+  final List<String> _occasions = [
+    "date", "office", "daily", "party", "gift", 
+    "event", "sports", "summer", "winter",
+    "meeting", "travel", "study", "evening", "formal", "relax"
+  ];
+
+  final Map<String, String> _genderLabels = {
+    "male": "NAM",
+    "female": "NỮ",
+    "unisex": "UNISEX"
+  };
+
+  final Map<String, String> _occasionLabels = {
+    "date": "HẸN HÒ",
+    "office": "VĂN PHÒNG",
+    "daily": "HÀNG NGÀY",
+    "party": "TIỆC TÙNG",
+    "gift": "QUÀ TẶNG",
+    "event": "SỰ KIỆN",
+    "sports": "THỂ THAO",
+    "summer": "MÙA HÈ",
+    "winter": "MÙA ĐÔNG",
+    "meeting": "GẶP ĐỐI TÁC",
+    "travel": "DU LỊCH",
+    "study": "ĐI HỌC",
+    "evening": "BUỔI TỐI",
+    "formal": "TRANG TRỌNG",
+    "relax": "THƯ GIÃN"
+  };
+
+  @override
+  void dispose() {
+    _budgetController.dispose();
+    _notesController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isMobile = Responsive.isMobile(context);
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F0F0F),
+        border: Border.all(color: AppTheme.accentGold.withOpacity(0.1)),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Column(
+        children: [
+          GestureDetector(
+            onTap: () => setState(() => _isExpanded = !_isExpanded),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  const Icon(Icons.auto_awesome_rounded,
+                      color: AppTheme.accentGold, size: 20),
+                  const SizedBox(width: 16),
+                  Text(
+                    "KHÁM PHÁ DNA MÙI HƯƠNG",
+                    style: GoogleFonts.montserrat(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      color: AppTheme.accentGold,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                  const Spacer(),
+                  Icon(
+                    _isExpanded ? Icons.expand_more_rounded : Icons.expand_less_rounded,
+                    color: AppTheme.accentGold,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (_isExpanded)
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: isMobile ? MediaQuery.of(context).size.height * 0.5 : double.infinity,
+              ),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    isMobile 
+                    ? Column(
+                      children: [
+                        _MinimalField(
+                          label: "GIỚI TÍNH",
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: _gender,
+                              isExpanded: true,
+                              dropdownColor: const Color(0xFF151515),
+                              hint: Text("CHỌN...", style: GoogleFonts.robotoMono(color: Colors.white24, fontSize: 11)),
+                              style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 13),
+                              items: _genders.map((g) => DropdownMenuItem(value: g, child: Text(_genderLabels[g] ?? g))).toList(),
+                              onChanged: (v) => setState(() => _gender = v),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        _MinimalField(
+                          label: "DỊP SỬ DỤNG",
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: _occasion,
+                              isExpanded: true,
+                              dropdownColor: const Color(0xFF151515),
+                              hint: Text("CHỌN...", style: GoogleFonts.robotoMono(color: Colors.white24, fontSize: 11)),
+                              style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 13),
+                              items: _occasions.map((o) => DropdownMenuItem(value: o, child: Text(_occasionLabels[o] ?? o))).toList(),
+                              onChanged: (v) => setState(() => _occasion = v),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        _MinimalField(
+                          label: "NGÂN SÁCH",
+                          child: TextField(
+                            controller: _budgetController,
+                            keyboardType: TextInputType.number,
+                            style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 13),
+                            decoration: InputDecoration(
+                              border: InputBorder.none, 
+                              hintText: "TỐI ĐA VND", 
+                              hintStyle: GoogleFonts.montserrat(color: Colors.white12, fontSize: 11),
+                              filled: false,
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        Expanded(
+                          child: _MinimalField(
+                            label: "GIỚI TÍNH",
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                value: _gender,
+                                dropdownColor: const Color(0xFF151515),
+                                hint: Text("CHỌN...", style: GoogleFonts.robotoMono(color: Colors.white24, fontSize: 11)),
+                                style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 13),
+                                items: _genders.map((g) => DropdownMenuItem(value: g, child: Text(_genderLabels[g] ?? g))).toList(),
+                                onChanged: (v) => setState(() => _gender = v),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _MinimalField(
+                            label: "DỊP SỬ DỤNG",
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                value: _occasion,
+                                dropdownColor: const Color(0xFF151515),
+                                hint: Text("CHỌN...", style: GoogleFonts.robotoMono(color: Colors.white24, fontSize: 11)),
+                                style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 13),
+                                items: _occasions.map((o) => DropdownMenuItem(value: o, child: Text(_occasionLabels[o] ?? o))).toList(),
+                                onChanged: (v) => setState(() => _occasion = v),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _MinimalField(
+                            label: "NGÂN SÁCH",
+                            child: TextField(
+                              controller: _budgetController,
+                              keyboardType: TextInputType.number,
+                              style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 13),
+                              decoration: InputDecoration(
+                                border: InputBorder.none, 
+                                hintText: "TỐI ĐA VND", 
+                                hintStyle: GoogleFonts.montserrat(color: Colors.white60, fontSize: 11),
+                                filled: false, // Don't use theme fill in this boxed container
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  const SizedBox(height: 16),
+                  _MinimalField(
+                    label: "GHI CHÚ (SỞ THÍCH / DỊ ỨNG)",
+                    child: TextField(
+                      controller: _notesController,
+                      style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 13),
+                      decoration: InputDecoration(
+                        border: InputBorder.none, 
+                        hintText: "MÔ TẢ SỞ THÍCH CỦA KHÁCH...", 
+                        hintStyle: GoogleFonts.montserrat(color: Colors.white60, fontSize: 11),
+                        filled: false, // Don't use theme fill
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : _runAiConsult,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.accentGold,
+                        foregroundColor: Colors.black,
+                        disabledBackgroundColor: AppTheme.accentGold.withOpacity(0.2),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(2)),
+                      ),
+                      child: _isLoading 
+                        ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2))
+                        : Text(
+                            "KÍCH HOẠT PHÂN TÍCH AI",
+                            style: GoogleFonts.montserrat(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 13,
+                              letterSpacing: 2,
+                            ),
+                          ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _runAiConsult() async {
+    setState(() => _isLoading = true);
+    try {
+      final service = ref.read(staffPosServiceProvider);
+      final budget = double.tryParse(_budgetController.text);
+      
+      final result = await service.aiConsult(
+        gender: _gender,
+        occasion: _occasion,
+        budget: budget,
+        notes: _notesController.text,
+      );
+
+      if (mounted) {
+        var recommendations = (result['recommendations'] as List? ?? []);
+        final rawResponse = result['rawResponse'] as String? ?? '';
+
+        // Backup: Aggressive JSON extraction if recommendations are empty
+        if (recommendations.isEmpty && rawResponse.isNotEmpty) {
+          try {
+            debugPrint("AI Consult: Attempting aggressive local parse...");
+            // 1. Try to find the array first
+            final firstBracket = rawResponse.indexOf('[');
+            final lastBracket = rawResponse.lastIndexOf(']');
+            
+            if (firstBracket != -1 && lastBracket != -1 && lastBracket > firstBracket) {
+              final jsonPart = rawResponse.substring(firstBracket, lastBracket + 1);
+              try {
+                recommendations = json.decode(jsonPart);
+              } catch (e) {
+                // If array parse fails, try to find individual objects
+                debugPrint("AI Array parse failed: $e. Trying object extraction...");
+                final objectRegex = RegExp(r'\{[^{}]*"productId"[^{}]*\}', dotAll: true);
+                final matches = objectRegex.allMatches(rawResponse);
+                if (matches.isNotEmpty) {
+                  recommendations = matches.map((m) {
+                    try {
+                      return json.decode(m.group(0)!);
+                    } catch (_) {
+                      return null;
+                    }
+                  }).where((e) => e != null).toList();
+                }
+              }
+            } else {
+                // No brackets? Still try finding objects
+                final objectRegex = RegExp(r'\{[^{}]*"productId"[^{}]*\}', dotAll: true);
+                final matches = objectRegex.allMatches(rawResponse);
+                recommendations = matches.map((m) {
+                  try {
+                    return json.decode(m.group(0)!);
+                  } catch (_) {
+                    return null;
+                  }
+                }).where((e) => e != null).toList();
+            }
+          } catch (e) {
+            debugPrint("AI Local Parse Failed: $e");
+          }
+        }
+
+        if (mounted) {
+          debugPrint("AI Recommendations count: ${recommendations.length}");
+          final variantId = await _showAiResults(recommendations);
+          if (variantId != null && mounted) {
+            // Search for the product and add the variant
+            // (Simple approach: find the product in current list if it matches variantId)
+            final productList = ref.read(posProductsProvider).value ?? [];
+            for (final p in productList) {
+              final v = p.variants.where((v) => v.id == variantId).firstOrNull;
+              if (v != null) {
+                ref.read(posProvider.notifier).addToCart(v, p.name);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("Đã thêm ${p.name} vào đơn hàng")),
+                );
+                return;
+              }
+            }
+            // If not found in current list, maybe show a message
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Sản phẩm đề xuất không có sẵn tại quầy này.")),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("AI Consult failed: $e")));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<dynamic> _showAiResults(List<dynamic> recommendations) {
+    return showModalBottomSheet<dynamic>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          height: 600,
+          decoration: const BoxDecoration(
+            color: Color(0xFF0A0A0A),
+            borderRadius: BorderRadius.only(topLeft: Radius.circular(32), topRight: Radius.circular(32)),
+          ),
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("ĐỀ XUẤT ĐƯỢC AI TUYỂN CHỌN", style: GoogleFonts.playfairDisplay(fontSize: 18, fontWeight: FontWeight.w900, color: AppTheme.accentGold, letterSpacing: 2)),
+              const SizedBox(height: 24),
+              Expanded(
+                child: recommendations.isEmpty 
+                  ? Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.sentiment_dissatisfied_rounded, color: Colors.white24, size: 48),
+                          const SizedBox(height: 16),
+                          Text(
+                            "Không tìm thấy đề xuất phù hợp.\nHãy thử điều chỉnh các tiêu chí hoặc ghi chú.",
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.montserrat(color: Colors.white54, fontSize: 13),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.separated(
+                      itemCount: recommendations.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 16),
+                      itemBuilder: (ctx, i) {
+                        final r = recommendations[i];
+                        return Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(color: Colors.white.withOpacity(0.03), border: Border.all(color: Colors.white10), borderRadius: BorderRadius.circular(12)),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(r['productName']?.toString().toUpperCase() ?? "", style: GoogleFonts.montserrat(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white)),
+                                    const SizedBox(height: 4),
+                                    Text(r['reason']?.toString() ?? "", style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white54, height: 1.4)),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppTheme.accentGold, 
+                                  foregroundColor: Colors.black, 
+                                  shape: const CircleBorder(), 
+                                  padding: const EdgeInsets.all(12)
+                                ),
+                                onPressed: () {
+                                  final vId = r['variantId'];
+                                  if (vId != null) {
+                                    // We need to find the variant details or just inform the user
+                                    // For now, let's try to find it in the current products list
+                                    // or just pop and let the user search. 
+                                    // Actually, let's just close and show a hint.
+                                    // BUT better: if we have the variantId, we can add it.
+                                    Navigator.pop(ctx, vId);
+                                  } else {
+                                    Navigator.pop(ctx);
+                                  }
+                                },
+                                child: const Icon(Icons.add_shopping_cart_rounded, size: 18),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MinimalField extends StatelessWidget {
+  final String label;
+  final Widget child;
+  const _MinimalField({required this.label, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white60, fontWeight: FontWeight.w700, letterSpacing: 1.5)),
+        const SizedBox(height: 8),
+        Container(
+          height: 40,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(border: Border.all(color: Colors.white10)),
+          child: child,
+        ),
+      ],
+    );
+  }
+}

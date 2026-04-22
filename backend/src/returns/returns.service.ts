@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { ShippingService } from '../shipping/shipping.service';
 import {
   ReturnStatus,
   ReturnOrigin,
@@ -27,14 +28,18 @@ const RETURN_WINDOW_DAYS = 7;
 const VALID_TRANSITIONS: Record<ReturnStatus, ReturnStatus[]> = {
   REQUESTED: [
     ReturnStatus.REVIEWING,
+    ReturnStatus.APPROVED,
+    ReturnStatus.REJECTED,
     ReturnStatus.AWAITING_CUSTOMER,
     ReturnStatus.CANCELLED,
+    ReturnStatus.RECEIVED, // For POS direct jump
   ],
   REVIEWING: [
     ReturnStatus.APPROVED,
     ReturnStatus.REJECTED,
     ReturnStatus.AWAITING_CUSTOMER,
     ReturnStatus.CANCELLED,
+    ReturnStatus.RECEIVED, // For POS direct jump
   ],
   AWAITING_CUSTOMER: [ReturnStatus.REVIEWING, ReturnStatus.CANCELLED],
   APPROVED: [ReturnStatus.RETURNING, ReturnStatus.CANCELLED],
@@ -53,11 +58,47 @@ export class ReturnsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notificationsService: NotificationsService,
+    private readonly shippingService: ShippingService,
   ) {}
 
   // ─────────── HELPERS ───────────
 
-  private async findReturnOrThrow(id: string) {
+  async getSuggestedRefundAmount(id: string) {
+    const ret = await this.prisma.returnRequest.findUnique({
+      where: { id },
+      include: { items: true },
+    });
+    if (!ret) throw new NotFoundException('Return not found');
+
+    const order = await this.prisma.order.findUnique({
+      where: { id: ret.orderId },
+      include: { items: true },
+    });
+    if (!order) throw new NotFoundException('Order not found');
+
+    // Luxury policy: Refund shipping if store fault or VIP
+    const isStoreFault =
+      ret.reason?.includes('[DAMAGED]') || ret.reason?.includes('[WRONG_ITEM]');
+    const isVIP = ((ret as any).user?.loyaltyPoints || 0) >= 5000;
+
+    const shippingRefundable =
+      isStoreFault || isVIP ? Number(order.shippingFee || 0) : 0;
+
+    const refundAmount = this.calculateRefundAmount(
+      order.items,
+      ret.items.map((ri) => ({
+        variantId: ri.variantId,
+        quantity: ri.quantity,
+        qtyReceived: ri.qtyReceived,
+      })),
+      order.discountAmount,
+      shippingRefundable,
+    );
+
+    return { suggestedAmount: refundAmount };
+  }
+
+  async findReturnOrThrow(id: string) {
     const ret = await this.prisma.returnRequest.findUnique({
       where: { id },
       include: {
@@ -79,7 +120,13 @@ export class ReturnsService {
         refunds: true,
         order: true,
         user: {
-          select: { id: true, fullName: true, email: true, phone: true },
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            phone: true,
+            loyaltyPoints: true,
+          },
         },
         staff: { select: { id: true, fullName: true } },
       },
@@ -94,7 +141,7 @@ export class ReturnsService {
     action: 'create' | 'refund',
   ): Promise<{ existing: boolean; result?: any }> {
     if (!idempotencyKey) {
-      throw new BadRequestException('Idempotency-Key header required');
+      return { existing: false };
     }
     const scope = `${action}_${returnId}_${idempotencyKey}`;
     const existing = await this.prisma.returnAudit.findFirst({
@@ -157,12 +204,7 @@ export class ReturnsService {
   }
 
   private calculateRefundAmount(
-    orderItems: {
-      variantId: string;
-      unitPrice: number;
-      quantity: number;
-      totalPrice: number;
-    }[],
+    orderItems: any[],
     returnItems: {
       variantId: string;
       quantity: number;
@@ -172,18 +214,29 @@ export class ReturnsService {
     shippingRefundable: number = 0,
   ): number {
     let subtotal = 0;
+    const orderItemsValue = orderItems.reduce(
+      (sum, o) => sum + (Number(o.totalPrice) || 0),
+      0,
+    );
+
     for (const ri of returnItems) {
       const oi = orderItems.find((o) => o.variantId === ri.variantId);
       if (!oi) continue;
       const qty = ri.qtyReceived ?? ri.quantity;
-      subtotal += oi.unitPrice * qty;
+      subtotal += (Number(oi.unitPrice) || 0) * qty;
     }
+
+    if (orderItemsValue === 0) return subtotal + shippingRefundable;
+
     // Pro-rata discount allocation
-    const subtotalRatio =
-      subtotal / orderItems.reduce((sum, o) => sum + o.totalPrice, 0);
-    const discountShare = orderDiscount * subtotalRatio;
+    const subtotalRatio = subtotal / orderItemsValue;
+    const discountShare = (Number(orderDiscount) || 0) * subtotalRatio;
+
+    // Standard e-commerce logic:
+    // Refund = (Gross Price for returned items) - (Discount proportion) + (Shipping if applicable)
     const total = subtotal - discountShare + shippingRefundable;
-    return Math.round(total);
+
+    return Math.max(0, Math.round(total));
   }
 
   // ─────────── CUSTOMER: CREATE ───────────
@@ -194,14 +247,46 @@ export class ReturnsService {
     staffId?: string,
     idempotencyKey?: string,
   ) {
-    // Idempotency check - for create use orderId as temp returnId
-    const check = await this.checkIdempotency(
-      idempotencyKey,
-      dto.orderId,
-      'create',
-    );
-    if (check.existing) {
-      return check.result;
+    // For CREATE: Check if return already exists for this order (idempotency check)
+    // We don't pre-check audit table because returnId doesn't exist yet
+    if (idempotencyKey) {
+      const existingReturn = await this.prisma.returnRequest.findFirst({
+        where: { orderId: dto.orderId },
+        orderBy: { createdAt: 'desc' },
+        include: {
+          items: {
+            include: {
+              variant: {
+                include: {
+                  product: {
+                    include: {
+                      images: { orderBy: { order: 'asc' as const }, take: 1 },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          shipments: true,
+          audits: { orderBy: { createdAt: 'desc' as const } },
+          refunds: true,
+          order: true,
+          user: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              phone: true,
+              loyaltyPoints: true,
+            },
+          },
+          staff: { select: { id: true, fullName: true } },
+        },
+      });
+      if (existingReturn) {
+        // Return already exists for this order, treat as successful idempotent response
+        return existingReturn;
+      }
     }
 
     const isStaff = !!staffId;
@@ -211,7 +296,7 @@ export class ReturnsService {
     // 1) Find order
     const order = await this.prisma.order.findFirst({
       where: isStaff ? { id: dto.orderId } : { id: dto.orderId, userId },
-      include: { items: true },
+      include: { items: true, user: true },
     });
     if (!order) throw new NotFoundException('Order not found');
 
@@ -264,11 +349,22 @@ export class ReturnsService {
     }
 
     // 5) Calculate expected refund amount (enhanced)
+    // Luxury Strategy: Refund shipping if reason is DAMAGED or WRONG_ITEM, OR if VIP
+    const isStoreFault =
+      dto.reason?.includes('[DAMAGED]') || dto.reason?.includes('[WRONG_ITEM]');
+
+    // Check if VIP (e.g. loyalty points > 5000)
+    const isVIP = (order.user?.loyaltyPoints ?? 0) >= 5000;
+
+    // For a full order return with store fault or VIP status, we refund full original shipping
+    const shippingRefundable =
+      isStoreFault || isVIP ? Number(order.shippingFee || 0) : 0;
+
     const totalAmount = this.calculateRefundAmount(
       order.items,
       dto.items.map((i) => ({ variantId: i.variantId, quantity: i.quantity })),
       order.discountAmount,
-      0, // shipping
+      shippingRefundable,
     );
 
     // 6) Create in transaction
@@ -282,6 +378,8 @@ export class ReturnsService {
           origin,
           createdBy: isStaff ? staffId : undefined,
           reason: dto.reason,
+          videoUrl: dto.videoUrl,
+          paymentInfo: dto.paymentInfo ? dto.paymentInfo : undefined,
           totalAmount,
           items: {
             create: dto.items.map((item) => ({
@@ -309,11 +407,8 @@ export class ReturnsService {
         },
       );
 
-      // Record idempotency
-      await this.recordIdempotency(tx, ret.id, idempotencyKey!, 'create', {
-        dto,
-        totalAmount,
-      });
+      // Note: No idempotency recording needed for CREATE here
+      // We check idempotency by querying returnRequest directly (see above)
 
       return ret;
     });
@@ -329,6 +424,28 @@ export class ReturnsService {
           data: { returnRequestId: result.id, orderId: order.id },
         })
         .catch(() => {});
+    }
+
+    // Notify all admins so they can review/approve the POS return
+    try {
+      const admins = await this.prisma.user.findMany({
+        where: { role: 'ADMIN' },
+      });
+      await Promise.all(
+        admins.map((a) =>
+          this.notificationsService
+            .create({
+              userId: a.id,
+              type: 'ORDER',
+              title: 'Yêu cầu trả hàng mới (POS)',
+              content: `Có yêu cầu trả hàng mới (${result.id}) từ POS cho đơn ${order.code}. Vui lòng kiểm tra và xét duyệt.`,
+              data: { returnRequestId: result.id, orderId: order.id },
+            })
+            .catch(() => {}),
+        ),
+      );
+    } catch (e) {
+      // don't block on notification failures
     }
 
     return result;
@@ -352,6 +469,7 @@ export class ReturnsService {
           },
         },
         order: { select: { id: true, code: true, finalAmount: true } },
+        shipments: true,
         refunds: {
           select: { id: true, amount: true, status: true, method: true },
         },
@@ -442,6 +560,36 @@ export class ReturnsService {
     });
   }
 
+  async handoverReturn(userId: string, id: string) {
+    const ret = await this.findReturnOrThrow(id);
+    if (ret.userId !== userId) throw new ForbiddenException();
+
+    // Handover is valid if in APPROVED (for automated) or RETURNING (for manual retry)
+    const VALID_HANDOVER: ReturnStatus[] = [
+      ReturnStatus.APPROVED,
+      ReturnStatus.RETURNING,
+    ];
+
+    if (!VALID_HANDOVER.includes(ret.status)) {
+      throw new BadRequestException(
+        'Không thể xác nhận bàn giao ở trạng thái hiện tại',
+      );
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const updated = await tx.returnRequest.update({
+        where: { id },
+        data: { status: ReturnStatus.RETURNING },
+      });
+
+      await this.createAudit(tx, id, userId, 'HANDOVER_CONFIRMED', {
+        previousStatus: ret.status,
+      });
+
+      return updated;
+    });
+  }
+
   // ─────────── ADMIN: LIST ALL ───────────
 
   async listAllReturns(
@@ -449,10 +597,17 @@ export class ReturnsService {
     take: number,
     status?: string,
     orderId?: string,
+    startDate?: string,
+    endDate?: string,
   ) {
     const where: any = {};
     if (status) where.status = status;
     if (orderId) where.orderId = orderId;
+    if (startDate || endDate) {
+      where.createdAt = {};
+      if (startDate) where.createdAt.gte = new Date(startDate);
+      if (endDate) where.createdAt.lte = new Date(endDate);
+    }
 
     const [data, total] = await Promise.all([
       this.prisma.returnRequest.findMany({
@@ -472,12 +627,13 @@ export class ReturnsService {
             },
           },
           order: {
-            select: { id: true, code: true, finalAmount: true, channel: true },
+            select: { id: true, code: true, finalAmount: true, channel: true, storeId: true },
           },
           user: {
             select: { id: true, fullName: true, email: true, phone: true },
           },
           staff: { select: { id: true, fullName: true } },
+          shipments: true,
           refunds: { select: { id: true, amount: true, status: true } },
         },
         orderBy: { createdAt: 'desc' },
@@ -505,20 +661,43 @@ export class ReturnsService {
       throw new BadRequestException('Yêu cầu không ở trạng thái có thể review');
     }
 
-    const newStatus =
-      dto.action === 'approve' ? ReturnStatus.APPROVED : ReturnStatus.REJECTED;
+    const isPosApprove = ret.origin === 'POS' && dto.action === 'approve';
+    const newStatus = isPosApprove
+      ? ReturnStatus.RECEIVED
+      : dto.action === 'approve'
+        ? ReturnStatus.APPROVED
+        : ReturnStatus.REJECTED;
+
     this.validateTransition(ret.status, newStatus);
 
     const updated = await this.prisma.$transaction(async (tx) => {
       const result = await tx.returnRequest.update({
         where: { id },
-        data: { status: newStatus, note: dto.note },
+        data: {
+          status: newStatus,
+          note: dto.note,
+          ...(isPosApprove && {
+            receivedAt: new Date(),
+            receivedLocation: 'POS',
+          }),
+        },
       });
 
       await this.createAudit(tx, id, adminId, dto.action.toUpperCase(), {
         previousStatus: ret.status,
         note: dto.note,
+        isPosJump: isPosApprove,
       });
+
+      if (isPosApprove) {
+        // Update quantities as received if jumping
+        for (const item of ret.items) {
+          await tx.returnItem.update({
+            where: { id: item.id },
+            data: { qtyReceived: item.quantity },
+          });
+        }
+      }
 
       return result;
     });
@@ -527,8 +706,9 @@ export class ReturnsService {
     if (ret.userId) {
       const msg =
         dto.action === 'approve'
-          ? 'Yêu cầu trả hàng đã được duyệt. Vui lòng gửi hàng về.'
+          ? 'Yêu cầu trả hàng đã được duyệt. Vui lòng gửi hàng về và cung cấp mã vận đơn.'
           : `Yêu cầu trả hàng bị từ chối. ${dto.note || ''}`;
+
       this.notificationsService
         .create({
           userId: ret.userId,
@@ -541,6 +721,38 @@ export class ReturnsService {
           data: { returnRequestId: id },
         })
         .catch(() => {});
+    }
+
+    // ─────────── AUTOMATED GHN PICKUP ───────────
+    if (
+      newStatus === ReturnStatus.APPROVED &&
+      ret.origin === 'ONLINE' &&
+      !ret.createdBy
+    ) {
+      try {
+        const pickupResult =
+          await this.shippingService.createGhnReturnPickup(id);
+        await this.prisma.returnAudit.create({
+          data: {
+            returnId: id,
+            actorId: adminId,
+            action: 'AUTOMATED_PICKUP_CREATED',
+            payload: { ...pickupResult, provider: 'GHN' },
+          },
+        });
+      } catch (err) {
+        console.error('Failed to create automated GHN pickup:', err);
+        await this.prisma.returnAudit.create({
+          data: {
+            returnId: id,
+            actorId: adminId,
+            action: 'AUTOMATED_PICKUP_FAILED',
+            payload: { message: err.message },
+          },
+        });
+        // We don't throw here to avoid rolling back the approval,
+        // but we might want to notify staff to retry manually.
+      }
     }
 
     return updated;
@@ -604,8 +816,9 @@ export class ReturnsService {
 
     // Check for seal integrity - reject if broken seal on perfume
     const hasUnsealedItem = dto.items.some((item) => item.sealIntact === false);
+    const allUnsealed = dto.items.every((item) => item.sealIntact === false);
 
-    const newStatus = hasUnsealedItem
+    const newStatus = allUnsealed
       ? ReturnStatus.REJECTED_AFTER_RETURN
       : ReturnStatus.RECEIVED;
 
@@ -629,12 +842,8 @@ export class ReturnsService {
           },
         });
 
-        // If received and seal intact → restock
-        if (
-          !hasUnsealedItem &&
-          dtoItem.sealIntact !== false &&
-          dtoItem.qtyReceived > 0
-        ) {
+        // If item seal is intact → restock per-item (not gated by hasUnsealedItem)
+        if (dtoItem.sealIntact !== false && dtoItem.qtyReceived > 0) {
           await tx.productVariant.update({
             where: { id: dtoItem.variantId },
             data: { stock: { increment: dtoItem.qtyReceived } },
@@ -739,6 +948,14 @@ export class ReturnsService {
     });
     if (!order) throw new NotFoundException('Order not found');
 
+    // Luxury policy: Refund shipping if store fault or VIP
+    const isStoreFault =
+      ret.reason?.includes('[DAMAGED]') || ret.reason?.includes('[WRONG_ITEM]');
+    const isVIP = ((ret as any).user?.loyaltyPoints || 0) >= 5000;
+
+    const shippingRefundable =
+      isStoreFault || isVIP ? Number(order.shippingFee || 0) : 0;
+
     const refundAmount = this.calculateRefundAmount(
       order.items,
       ret.items.map((ri) => ({
@@ -747,20 +964,15 @@ export class ReturnsService {
         qtyReceived: ri.qtyReceived,
       })),
       order.discountAmount,
-      0,
+      shippingRefundable,
     );
 
     if (refundAmount <= 0) {
       throw new BadRequestException('Số tiền hoàn trả phải lớn hơn 0');
     }
 
-    // Role limit: staff cannot refund more than defined threshold directly
-    const STAFF_REFUND_LIMIT = 1000000;
-    if (role === 'STAFF' && refundAmount > STAFF_REFUND_LIMIT) {
-      throw new ForbiddenException(
-        `Nhân viên không thể hoàn tiền vượt quá ${STAFF_REFUND_LIMIT.toLocaleString('vi-VN')}đ. Xin vui lòng liên hệ Admin.`,
-      );
-    }
+    // Role limit: Removing the STAFF_REFUND_LIMIT as Admin has already approved the return request at an earlier stage.
+    // If we wanted to keep some sanity check, we could, but the user explicitly requested removal.
 
     // Gateway or manual - stub gateway for now (PayOS refund if available)
     const isGateway = dto.method === 'gateway';
@@ -782,6 +994,16 @@ export class ReturnsService {
     }
 
     const result = await this.prisma.$transaction(async (tx) => {
+      // Get latest refund if retrying (not just ret.refunds[0] which might be old)
+      let attempts = 1;
+      if (ret.status === ReturnStatus.REFUND_FAILED) {
+        const latestRefund = await tx.refund.findFirst({
+          where: { returnRequestId: id },
+          orderBy: { createdAt: 'desc' },
+        });
+        attempts = (latestRefund?.attempts || 0) + 1;
+      }
+
       const refund = await tx.refund.create({
         data: {
           returnRequestId: id,
@@ -790,10 +1012,8 @@ export class ReturnsService {
           transactionId: dto.transactionId || gatewayRefundId,
           status: refundStatus,
           note: dto.note,
-          attempts:
-            ret.status === ReturnStatus.REFUND_FAILED
-              ? (ret.refunds[0]?.attempts || 0) + 1
-              : 1,
+          receiptImage: dto.receiptImage,
+          attempts,
         },
       });
 
@@ -811,9 +1031,25 @@ export class ReturnsService {
         },
       });
 
+      // Re-read order in transaction to ensure atomic update (avoid race condition)
+      const currentOrder = await tx.order.findUnique({
+        where: { id: ret.orderId },
+      });
+      if (!currentOrder)
+        throw new NotFoundException('Order not found in refund transaction');
+
+      const totalRefunded = currentOrder.refundAmount + refundAmount;
+      const newPaymentStatus =
+        totalRefunded >= currentOrder.finalAmount
+          ? 'REFUNDED'
+          : 'PARTIALLY_REFUNDED';
+
       await tx.order.update({
         where: { id: ret.orderId },
-        data: { paymentStatus: 'REFUNDED' },
+        data: {
+          paymentStatus: newPaymentStatus,
+          refundAmount: totalRefunded,
+        },
       });
 
       await this.createAudit(tx, id, adminId, 'REFUND_TRIGGERED', {
@@ -825,11 +1061,36 @@ export class ReturnsService {
       });
 
       // Record idempotency
-      await this.recordIdempotency(tx, id, idempotencyKey!, 'refund', {
-        dto,
-        refundAmount,
-        refundStatus,
-      });
+      if (idempotencyKey) {
+        await this.recordIdempotency(tx, id, idempotencyKey, 'refund', {
+          dto,
+          refundAmount,
+          refundStatus,
+        });
+      }
+
+      // Loyalty points reversal
+      if (ret.userId && refundStatus === RefundStatus.SUCCESS) {
+        const pointsToDeduct = Math.floor(refundAmount / 10000);
+        if (pointsToDeduct > 0) {
+          const orderRef = await tx.order.findUnique({
+            where: { id: ret.orderId },
+          });
+          const orderCodeStr = orderRef?.code || 'unknown';
+          await tx.loyaltyTransaction.create({
+            data: {
+              userId: ret.userId,
+              points: -pointsToDeduct,
+              reason: `Tru points do hoan tra don hang ${orderCodeStr}`,
+            },
+          });
+
+          await tx.user.update({
+            where: { id: ret.userId },
+            data: { loyaltyPoints: { decrement: pointsToDeduct } },
+          });
+        }
+      }
 
       // Stub retry queue
       if (

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../address/models/address.dart';
 import '../../address/providers/address_providers.dart';
@@ -6,11 +7,13 @@ import '../data/checkout_api_service.dart';
 import '../models/checkout_state.dart';
 import '../../cart/providers/cart_provider.dart';
 import '../../cart/providers/cart_selection_provider.dart';
+import '../../orders/providers/order_provider.dart';
 import '../../payment/models/payment_method.dart';
 import '../../payment/providers/payment_method_provider.dart';
 
 class CheckoutNotifier extends StateNotifier<CheckoutState> {
   final Ref _ref;
+  Timer? _paymentPollingTimer;
   CheckoutApiService get _api => _ref.read(checkoutApiServiceProvider);
 
   CheckoutNotifier({required Ref ref, PaymentMethod? initialPaymentMethod})
@@ -49,6 +52,10 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
       tax: 0,
       isCartLoading: cartState.isLoading,
       cartError: cartState.error,
+      promoCode: cartState.promoCode,
+      promoDiscount: cartState.promoDiscount,
+      promoDiscountType: cartState.promoDiscountType,
+      promoDiscountRaw: cartState.promoDiscountRaw,
     );
   }
 
@@ -105,11 +112,38 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
     try {
       final payment = await _api.getPaymentByOrderId(orderId);
       final status = (payment?['status'] ?? '').toString().trim().toUpperCase();
-      return status == 'PAID';
+      final isPaid = status == 'PAID' || status == 'COMPLETED';
+      
+      if (isPaid && !state.isPaymentSuccessful) {
+        state = state.copyWith(isPaymentSuccessful: true);
+        stopPollingPaymentStatus();
+        _ref.invalidate(orderProvider);
+      }
+      
+      return isPaid;
     } catch (e) {
-      state = state.copyWith(errorMessage: parseCheckoutError(e));
+      // Don't update error message during polling to avoid UI flickering
+      // state = state.copyWith(errorMessage: parseCheckoutError(e));
       return false;
     }
+  }
+
+  void startPollingPaymentStatus() {
+    _paymentPollingTimer?.cancel();
+    _paymentPollingTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
+      isOnlinePaymentPaid();
+    });
+  }
+
+  void stopPollingPaymentStatus() {
+    _paymentPollingTimer?.cancel();
+    _paymentPollingTimer = null;
+  }
+
+  @override
+  void dispose() {
+    stopPollingPaymentStatus();
+    super.dispose();
   }
 
   /// Creates the order and, for online payment, fetches a PayOS checkout URL.
@@ -139,6 +173,7 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
           isSubmitting: false,
           payosCheckoutUrl: checkoutUrl,
         );
+        startPollingPaymentStatus();
         return true;
       } catch (e) {
         state = state.copyWith(
@@ -169,6 +204,7 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
         shippingServiceId: address.serviceId,
         paymentMethod: isOnline ? 'ONLINE' : 'COD',
         shippingFee: state.shippingCost,
+        promotionCode: state.promoCode,
       );
 
       final orderId = orderData['id'] as String? ?? '';
@@ -192,6 +228,7 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
           isSubmitting: false,
           payosCheckoutUrl: checkoutUrl,
         );
+        startPollingPaymentStatus();
       } else {
         state = state.copyWith(isSubmitting: false, createdOrderId: orderId);
       }

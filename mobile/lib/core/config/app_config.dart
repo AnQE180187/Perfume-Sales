@@ -5,23 +5,23 @@
 class AppConfig {
   // ── Development Mode ──────────────────────────────────────────────
   /// Master flag – bật để sử dụng mock data và bypass authentication
-  static const bool isDevelopmentMode = true;
+  static const bool isDevelopmentMode = false;
 
   // ── Authentication ────────────────────────────────────────────────
-  /// Sử dụng mock auth provider thay vì Supabase Auth
-  static const bool useMockAuth = true;
+  /// Sử dụng mock auth provider thay vì backend Auth
+  static const bool useMockAuth = false;
 
   /// Bypass hoàn toàn auth guard trong router
   /// (cho phép vào mọi màn mà không cần đăng nhập)
-  static const bool bypassAuth = true;
+  static const bool bypassAuth = false;
 
   // ── Onboarding ────────────────────────────────────────────────────
   /// Bỏ qua màn onboarding khi phát triển UI
-  static const bool skipOnboarding = true;
+  static const bool skipOnboarding = false;
 
   // ── Mock Data ─────────────────────────────────────────────────────
-  /// Sử dụng mock order data thay vì Supabase
-  static const bool useMockOrders = true;
+  /// Sử dụng mock order data thay vì backend
+  static const bool useMockOrders = false;
 
   /// Mock user cho development (khi bypassAuth / useMockAuth = true)
   static const mockUser = {

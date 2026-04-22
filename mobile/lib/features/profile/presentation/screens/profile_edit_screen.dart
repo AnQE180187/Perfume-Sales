@@ -3,50 +3,48 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:dio/dio.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/widgets/app_input.dart';
-import '../../../../core/widgets/app_button.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../models/user_profile.dart';
 import '../../providers/profile_provider.dart';
 import '../../providers/profile_edit_provider.dart';
 
-/// Profile Edit Screen
-///
-/// Allows the user to update their personal information:
-/// full name, phone number, gender, and date of birth.
-/// Calls PATCH /users/me directly — no mock data.
 class ProfileEditScreen extends ConsumerWidget {
   const ProfileEditScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final profileAsync = ref.watch(profileProvider);
 
     return profileAsync.when(
       data: (profile) {
         if (profile == null) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Chỉnh sửa hồ sơ')),
-            body: const Center(child: Text('Vui lòng đăng nhập.')),
+            appBar: AppBar(title: Text(l10n.editProfile)),
+            body: Center(child: Text(l10n.pleaseLogin)),
           );
         }
         return _ProfileEditForm(profile: profile);
       },
       loading: () => Scaffold(
         backgroundColor: AppTheme.ivoryBackground,
-        appBar: _buildAppBar(context),
+        appBar: _buildAppBar(context, l10n),
         body: const Center(child: CircularProgressIndicator()),
       ),
       error: (e, _) => Scaffold(
         backgroundColor: AppTheme.ivoryBackground,
-        appBar: _buildAppBar(context),
-        body: Center(child: Text('Lỗi: $e')),
+        appBar: _buildAppBar(context, l10n),
+        body: Center(child: Text('${l10n.error}: $e')),
       ),
     );
   }
 
-  AppBar _buildAppBar(BuildContext context) {
+  AppBar _buildAppBar(BuildContext context, AppLocalizations l10n) {
     return AppBar(
       backgroundColor: AppTheme.ivoryBackground,
       elevation: 0,
@@ -57,7 +55,7 @@ class ProfileEditScreen extends ConsumerWidget {
         color: AppTheme.deepCharcoal,
       ),
       title: Text(
-        'Chỉnh sửa hồ sơ',
+        l10n.editProfile,
         style: GoogleFonts.playfairDisplay(
           fontSize: 18,
           fontWeight: FontWeight.w600,
@@ -87,12 +85,6 @@ class _ProfileEditFormState extends ConsumerState<_ProfileEditForm> {
   String? _selectedGender;
   DateTime? _selectedDob;
 
-  static const _genderOptions = [
-    ('male', 'Nam'),
-    ('female', 'Nữ'),
-    ('other', 'Khác'),
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -107,6 +99,19 @@ class _ProfileEditFormState extends ConsumerState<_ProfileEditForm> {
     );
   }
 
+  void _updateControllers(UserProfile profile) {
+    _nameController.text = profile.name;
+    _phoneController.text = profile.phone ?? '';
+    _selectedGender = profile.gender;
+    _selectedDob = profile.dateOfBirth;
+    if (_selectedDob != null) {
+      _dobController.text = DateFormat('dd/MM/yyyy').format(_selectedDob!);
+    } else {
+      _dobController.text = '';
+    }
+    setState(() {});
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -116,16 +121,16 @@ class _ProfileEditFormState extends ConsumerState<_ProfileEditForm> {
   }
 
   Future<void> _pickDate() async {
+    final l10n = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
       initialDate: _selectedDob ?? DateTime(now.year - 18),
       firstDate: DateTime(1900),
       lastDate: now,
-      locale: const Locale('vi', 'VN'),
-      helpText: 'Chọn ngày sinh',
-      cancelText: 'Hủy',
-      confirmText: 'Xác nhận',
+      helpText: l10n.birthdayHint,
+      cancelText: l10n.cancel,
+      confirmText: l10n.confirm,
     );
     if (picked != null) {
       setState(() {
@@ -135,23 +140,60 @@ class _ProfileEditFormState extends ConsumerState<_ProfileEditForm> {
     }
   }
 
+  Future<void> _changeAvatar() async {
+    final picker = ImagePicker();
+    final image = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 70,
+    );
+
+    if (image != null) {
+      try {
+        final updatedData = await ref.read(profileEditProvider.notifier).uploadAvatar(image.path);
+        if (mounted && updatedData != null) {
+          final updatedProfile = UserProfile.fromJson(updatedData);
+          _updateControllers(updatedProfile);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Cập nhật ảnh đại diện thành công')),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          String message = 'Upload thất bại';
+          if (e is DioException) {
+            final data = e.response?.data;
+            if (data is Map && data['message'] != null) {
+              message = data['message'].toString();
+            }
+          }
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(message)),
+          );
+        }
+      }
+    }
+  }
+
   Future<void> _save() async {
+    final l10n = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) return;
 
     try {
-      await ref
-          .read(profileEditProvider.notifier)
-          .save(
+      final updatedData = await ref.read(profileEditProvider.notifier).save(
             fullName: _nameController.text,
             phone: _phoneController.text,
             gender: _selectedGender,
             dateOfBirth: _selectedDob?.toIso8601String(),
           );
-      if (mounted) {
+      
+      if (mounted && updatedData != null) {
+        final updatedProfile = UserProfile.fromJson(updatedData);
+        _updateControllers(updatedProfile);
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Hồ sơ đã được cập nhật',
+              l10n.profileUpdated,
               style: GoogleFonts.montserrat(color: Colors.white),
             ),
             backgroundColor: AppTheme.accentGold,
@@ -159,18 +201,30 @@ class _ProfileEditFormState extends ConsumerState<_ProfileEditForm> {
             shape: RoundedRectangleBorder(borderRadius: AppRadius.cardBorder),
           ),
         );
-        Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
+        String message = 'Cập nhật thất bại';
+        if (e is DioException) {
+          final data = e.response?.data;
+          if (data is Map && data['message'] != null) {
+            if (data['message'] is List) {
+              message = (data['message'] as List).join(', ');
+            } else {
+              message = data['message'].toString();
+            }
+          }
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Cập nhật thất bại: $e',
+              message,
               style: GoogleFonts.montserrat(color: Colors.white),
             ),
-            backgroundColor: Colors.red.shade600,
+            backgroundColor: Colors.redAccent,
             behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: AppRadius.cardBorder),
           ),
         );
       }
@@ -179,25 +233,33 @@ class _ProfileEditFormState extends ConsumerState<_ProfileEditForm> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final saveState = ref.watch(profileEditProvider);
     final isLoading = saveState.isLoading;
+
+    final genderOptions = [
+      ('male', l10n.male),
+      ('female', l10n.female),
+      ('other', l10n.other),
+    ];
 
     return Scaffold(
       backgroundColor: AppTheme.ivoryBackground,
       appBar: AppBar(
-        backgroundColor: AppTheme.ivoryBackground,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
           onPressed: isLoading ? null : () => Navigator.pop(context),
           color: AppTheme.deepCharcoal,
         ),
         title: Text(
-          'Chỉnh sửa hồ sơ',
-          style: GoogleFonts.playfairDisplay(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
+          l10n.editProfile.toUpperCase(),
+          style: GoogleFonts.montserrat(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 2,
             color: AppTheme.deepCharcoal,
           ),
         ),
@@ -205,132 +267,195 @@ class _ProfileEditFormState extends ConsumerState<_ProfileEditForm> {
       ),
       body: Form(
         key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-          children: [
-            _AvatarSection(avatarUrl: widget.profile.avatarUrl),
-            const SizedBox(height: 32),
-            _SectionLabel('Thông tin cá nhân'),
-            const SizedBox(height: 16),
-            AppInput(
-              label: 'Họ và tên',
-              hint: 'Nhập họ và tên của bạn',
-              controller: _nameController,
-              prefixIcon: const Icon(Icons.person_outline_rounded, size: 20),
-              validator: (v) {
-                if (v == null || v.trim().isEmpty) {
-                  return 'Vui lòng nhập họ và tên';
-                }
-                return null;
-              },
-              textInputAction: TextInputAction.next,
-            ),
-            const SizedBox(height: 16),
-            AppInput(
-              label: 'Email',
-              hint: widget.profile.email,
-              initialValue: widget.profile.email,
-              readOnly: true,
-              enabled: false,
-              prefixIcon: const Icon(Icons.email_outlined, size: 20),
-              keyboardType: TextInputType.emailAddress,
-            ),
-            const SizedBox(height: 16),
-            AppInput(
-              label: 'Số điện thoại',
-              hint: 'Ví dụ: 0912345678',
-              controller: _phoneController,
-              prefixIcon: const Icon(Icons.phone_outlined, size: 20),
-              keyboardType: TextInputType.phone,
-              textInputAction: TextInputAction.next,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              validator: (v) {
-                if (v != null && v.isNotEmpty && v.length < 9) {
-                  return 'Số điện thoại không hợp lệ';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 24),
-            _SectionLabel('Thông tin bổ sung'),
-            const SizedBox(height: 16),
-            _GenderSelector(
-              selected: _selectedGender,
-              options: _genderOptions,
-              onChanged: (v) => setState(() => _selectedGender = v),
-            ),
-            const SizedBox(height: 16),
-            AppInput(
-              label: 'Ngày sinh',
-              hint: 'DD/MM/YYYY',
-              controller: _dobController,
-              readOnly: true,
-              prefixIcon: const Icon(Icons.cake_outlined, size: 20),
-              onTap: _pickDate,
-            ),
-            const SizedBox(height: 40),
-            AppButton(
-              text: 'Lưu thay đổi',
-              isLoading: isLoading,
-              onPressed: isLoading ? null : _save,
-            ),
-            const SizedBox(height: 24),
-          ],
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Watch current profile for updates if any parent changes
+              Consumer(
+                builder: (context, ref, _) {
+                  final profileAsync = ref.watch(profileProvider);
+                  final profile = profileAsync.value ?? widget.profile;
+                  
+                  return Column(
+                    children: [
+                      _AvatarSection(
+                        avatarUrl: profile.avatarUrl,
+                        onTap: isLoading ? null : _changeAvatar,
+                        isLoading: isLoading,
+                      ),
+                    ],
+                  );
+                },
+              ),
+              const SizedBox(height: 48),
+              
+              _SectionLabel(l10n.basicInfo),
+              const SizedBox(height: 24),
+              AppInput(
+                label: l10n.displayName,
+                hint: l10n.nameHint,
+                controller: _nameController,
+                prefixIcon: _GoldIcon(Icons.person_outline_rounded),
+                validator: (v) => (v == null || v.trim().isEmpty) ? l10n.enterName : null,
+              ),
+              const SizedBox(height: 20),
+              AppInput(
+                label: l10n.emailAddress,
+                hint: widget.profile.email,
+                readOnly: true,
+                enabled: false,
+                prefixIcon: _GoldIcon(Icons.alternate_email_rounded),
+              ),
+              const SizedBox(height: 20),
+              AppInput(
+                label: l10n.phone,
+                hint: l10n.phoneHint,
+                controller: _phoneController,
+                prefixIcon: _GoldIcon(Icons.phone_iphone_rounded),
+                keyboardType: TextInputType.phone,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              ),
+              
+              const SizedBox(height: 40),
+              _SectionLabel(l10n.moreDetails),
+              const SizedBox(height: 24),
+              _GenderSelector(
+                selected: _selectedGender,
+                options: genderOptions,
+                onChanged: (v) => setState(() => _selectedGender = v),
+              ),
+              const SizedBox(height: 24),
+              AppInput(
+                label: l10n.birthday,
+                hint: l10n.birthdayHint,
+                controller: _dobController,
+                readOnly: true,
+                prefixIcon: _GoldIcon(Icons.cake_outlined),
+                onTap: _pickDate,
+                suffixIcon: const Icon(Icons.calendar_today_outlined, size: 16, color: AppTheme.softTaupe),
+              ),
+              
+              const SizedBox(height: 56),
+              _PremiumSaveButton(
+                onPressed: isLoading ? null : _save,
+                isLoading: isLoading,
+                label: l10n.saveChanges,
+              ),
+              const SizedBox(height: 24),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-// ─── Sub-widgets ────────────────────────────────────────────────────────────
+class _GoldIcon extends StatelessWidget {
+  final IconData icon;
+  const _GoldIcon(this.icon);
 
-class _AvatarSection extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.only(left: 12, right: 8),
+      child: Icon(icon, size: 20, color: AppTheme.accentGold),
+    );
+  }
+}
+
+ class _AvatarSection extends StatelessWidget {
   final String? avatarUrl;
+  final VoidCallback? onTap;
+  final bool isLoading;
 
-  const _AvatarSection({this.avatarUrl});
+  const _AvatarSection({this.avatarUrl, this.onTap, this.isLoading = false});
 
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Stack(
-        alignment: Alignment.bottomRight,
-        children: [
-          Container(
-            width: 96,
-            height: 96,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: AppTheme.accentGold.withValues(alpha: 0.4),
-                width: 2.5,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppTheme.deepCharcoal.withValues(alpha: 0.08),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Stack(
+          alignment: Alignment.bottomRight,
+          children: [
+            Container(
+              width: 110,
+              height: 110,
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppTheme.accentGold.withValues(alpha: 0.3),
+                  width: 1,
                 ),
-              ],
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.deepCharcoal.withValues(alpha: 0.1),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: ClipOval(
+                  child: isLoading
+                      ? const Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppTheme.accentGold,
+                          ),
+                        )
+                      : avatarUrl != null
+                          ? Image.network(
+                              avatarUrl!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => _buildPlaceholder(),
+                            )
+                          : _buildPlaceholder(),
+                ),
+              ),
             ),
-            child: ClipOval(
-              child: avatarUrl != null
-                  ? Image.network(
-                      avatarUrl!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _buildPlaceholder(),
-                    )
-                  : _buildPlaceholder(),
-            ),
-          ),
-        ],
+            if (!isLoading)
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppTheme.deepCharcoal,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 8,
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.camera_alt_outlined,
+                  size: 16,
+                  color: AppTheme.accentGold,
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildPlaceholder() {
     return Container(
-      color: AppTheme.ivoryBackground,
-      child: Icon(Icons.person_outline, size: 40, color: AppTheme.mutedSilver),
+      color: Colors.white,
+      child: const Center(
+        child: Icon(
+          Icons.person_2_outlined,
+          size: 44,
+          color: AppTheme.softTaupe,
+        ),
+      ),
     );
   }
 }
@@ -343,12 +468,12 @@ class _SectionLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(
-      text,
+      text.toUpperCase(),
       style: GoogleFonts.montserrat(
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 0.8,
-        color: AppTheme.mutedSilver,
+        fontSize: 10,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 2,
+        color: AppTheme.accentGold,
       ),
     );
   }
@@ -367,24 +492,26 @@ class _GenderSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Giới tính',
+          l10n.gender,
           style: GoogleFonts.montserrat(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: AppTheme.deepCharcoal,
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.2,
+            color: AppTheme.mutedSilver,
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 14),
         Row(
           children: options
               .map(
                 (opt) => Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.only(right: 8),
+                    padding: const EdgeInsets.only(right: 12),
                     child: _GenderChip(
                       label: opt.$2,
                       value: opt.$1,
@@ -420,28 +547,91 @@ class _GenderChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(vertical: 10),
+        duration: const Duration(milliseconds: 250),
+        padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: isSelected
-              ? AppTheme.accentGold.withValues(alpha: 0.12)
-              : Colors.white,
-          borderRadius: AppRadius.inputBorder,
+          color: isSelected ? AppTheme.deepCharcoal : Colors.white,
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected
-                ? AppTheme.accentGold
-                : AppTheme.mutedSilver.withValues(alpha: 0.4),
-            width: isSelected ? 1.5 : 1.0,
+            color: isSelected ? AppTheme.accentGold.withValues(alpha: 0.5) : AppTheme.softTaupe.withValues(alpha: 0.3),
+            width: isSelected ? 1 : 0.5,
           ),
+          boxShadow: isSelected ? [
+            BoxShadow(
+              color: AppTheme.accentGold.withValues(alpha: 0.15),
+              blurRadius: 12,
+              spreadRadius: 2,
+            )
+          ] : [],
         ),
         child: Center(
           child: Text(
             label,
             style: GoogleFonts.montserrat(
-              fontSize: 13,
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-              color: isSelected ? AppTheme.accentGold : AppTheme.deepCharcoal,
+              fontSize: 12,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              color: isSelected ? Colors.white : AppTheme.deepCharcoal,
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PremiumSaveButton extends StatelessWidget {
+  final VoidCallback? onPressed;
+  final bool isLoading;
+  final String label;
+
+  const _PremiumSaveButton({this.onPressed, required this.isLoading, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 56,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        gradient: LinearGradient(
+          colors: onPressed == null ? [
+            AppTheme.softTaupe.withValues(alpha: 0.5),
+            AppTheme.softTaupe.withValues(alpha: 0.3),
+          ] : [
+            const Color(0xFFD4AF37),
+            AppTheme.accentGold,
+            const Color(0xFFFFDF00),
+          ],
+        ),
+        boxShadow: onPressed == null ? [] : [
+          BoxShadow(
+            color: AppTheme.accentGold.withValues(alpha: 0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(12),
+          child: Center(
+            child: isLoading
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.deepCharcoal),
+                  )
+                : Text(
+                    label,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: AppTheme.deepCharcoal,
+                      letterSpacing: 2,
+                    ),
+                  ),
           ),
         ),
       ),

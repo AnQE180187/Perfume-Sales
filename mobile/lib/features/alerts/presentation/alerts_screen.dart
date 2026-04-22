@@ -1,7 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../l10n/app_localizations.dart';
 
 import '../../../core/routing/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
@@ -38,48 +39,44 @@ class AlertsScreen extends ConsumerWidget {
                       Row(
                         children: [
                           Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'TRUNG TÂM THÔNG BÁO',
-                                  style: GoogleFonts.montserrat(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 2.2,
-                                    color: AppTheme.mutedSilver,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  'Thông báo của bạn',
-                                  style: GoogleFonts.playfairDisplay(
-                                    fontSize: 26,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppTheme.deepCharcoal,
-                                  ),
-                                ),
-                              ],
+                            child: Text(
+                              AppLocalizations.of(context)!.notifications,
+                              style: GoogleFonts.playfairDisplay(
+                                fontSize: 26,
+                                fontWeight: FontWeight.w700,
+                                color: AppTheme.deepCharcoal,
+                              ),
                             ),
                           ),
-                          _MarkAllReadButton(alertsAsync: alertsAsync),
+                          IconButton(
+                            onPressed: () => _showSettings(context, prefs),
+                            icon: const Icon(
+                              Icons.settings_outlined,
+                              color: AppTheme.deepCharcoal,
+                              size: 22,
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        'Theo dõi đơn hàng, ưu đãi riêng và hoạt động tài khoản.',
+                        AppLocalizations.of(context)!.notificationSubtitle,
                         style: GoogleFonts.montserrat(
                           fontSize: 13,
                           height: 1.6,
                           fontWeight: FontWeight.w500,
-                          color: AppTheme.deepCharcoal.withValues(alpha: 0.7),
+                          color: AppTheme.deepCharcoal,
                         ),
                       ),
                       const SizedBox(height: 18),
-                      _AlertsHeroCard(alertsAsync: alertsAsync),
-                      const SizedBox(height: 18),
-                      _NotificationPreferencesCard(prefs: prefs),
-                      const SizedBox(height: 18),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _AlertsSummaryCard(alertsAsync: alertsAsync),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
                       _FilterChipsRow(
                         activeFilter: prefs.activeFilter,
                         unreadCount:
@@ -88,7 +85,7 @@ class AlertsScreen extends ConsumerWidget {
                                 .length ??
                             0,
                       ),
-                      const SizedBox(height: 18),
+                      const SizedBox(height: 12),
                     ],
                   ),
                 ),
@@ -100,7 +97,7 @@ class AlertsScreen extends ConsumerWidget {
                   value: alertsAsync,
                   onRetry: () => ref.invalidate(alertsProvider),
                   loadingBuilder: () => Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
                     child: Column(
                       children: List.generate(
                         4,
@@ -150,6 +147,15 @@ class AlertsScreen extends ConsumerWidget {
     }
   }
 
+  void _showSettings(BuildContext context, AlertsPrefs prefs) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => _NotificationSettingsSheet(prefs: prefs),
+    );
+  }
+
   void _showDetail(BuildContext context, Alert alert) {
     showModalBottomSheet<void>(
       context: context,
@@ -181,11 +187,11 @@ class _EmptyAlertsView extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              'Không có thông báo nào',
+              AppLocalizations.of(context)!.noNotifications,
               style: GoogleFonts.playfairDisplay(
                 fontSize: 20,
                 fontWeight: FontWeight.w400,
-                color: AppTheme.deepCharcoal.withValues(alpha: 0.7),
+                color: AppTheme.deepCharcoal,
               ),
             ),
           ],
@@ -202,29 +208,30 @@ class _AlertsListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final todayAlerts = alerts.where((a) => a.isToday).toList();
-    final olderAlerts = alerts.where((a) => !a.isToday).toList();
+    final l10n = AppLocalizations.of(context)!;
+    final todayAlerts = alerts.where((a) => a.isToday(l10n)).toList();
+    final olderAlerts = alerts.where((a) => !a.isToday(l10n)).toList();
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (todayAlerts.isNotEmpty) ...[
-            _SectionLabel(title: 'Mới hôm nay'),
-            const SizedBox(height: 10),
+            _SectionLabel(title: AppLocalizations.of(context)!.latest),
+            const SizedBox(height: 14),
             for (final alert in todayAlerts) ...[
               _AlertCard(alert: alert, onTap: () => onTap(alert)),
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
             ],
           ],
           if (olderAlerts.isNotEmpty) ...[
-            if (todayAlerts.isNotEmpty) const SizedBox(height: 8),
-            _SectionLabel(title: 'Trước đó'),
-            const SizedBox(height: 10),
+            if (todayAlerts.isNotEmpty) const SizedBox(height: 12),
+            _SectionLabel(title: AppLocalizations.of(context)!.older),
+            const SizedBox(height: 14),
             for (final alert in olderAlerts) ...[
               _AlertCard(alert: alert, onTap: () => onTap(alert)),
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
             ],
           ],
         ],
@@ -249,7 +256,7 @@ class _MarkAllReadButton extends ConsumerWidget {
           ? null
           : () => ref.read(alertsProvider.notifier).markAllAsRead(),
       child: Text(
-        'Đánh dấu đã đọc',
+        AppLocalizations.of(context)!.markAllRead,
         style: GoogleFonts.montserrat(
           fontSize: 12,
           fontWeight: FontWeight.w700,
@@ -260,122 +267,170 @@ class _MarkAllReadButton extends ConsumerWidget {
   }
 }
 
-class _AlertsHeroCard extends StatelessWidget {
+class _AlertsSummaryCard extends StatelessWidget {
   final AsyncValue<List<Alert>> alertsAsync;
-  const _AlertsHeroCard({required this.alertsAsync});
+  const _AlertsSummaryCard({required this.alertsAsync});
 
   @override
   Widget build(BuildContext context) {
     final unread = alertsAsync.value?.where((a) => a.isUnread).length ?? 0;
 
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFFF5E8D5), Color(0xFFE0C79E)],
+          colors: [
+            const Color(0xFFF5E8D5),
+            const Color(0xFFE0C79E).withValues(alpha: 0.8),
+          ],
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.deepCharcoal.withValues(alpha: 0.06),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
+            color: AppTheme.accentGold.withValues(alpha: 0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
       child: Row(
         children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.4),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.notifications_none_rounded,
+              color: AppTheme.deepCharcoal,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.65),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Text(
-                    unread == 0 ? 'Bạn đã xem hết' : '$unread chưa đọc',
-                    style: GoogleFonts.montserrat(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.deepCharcoal,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
                 Text(
                   unread == 0
-                      ? 'Bạn đã cập nhật mọi thứ!'
-                      : 'Bạn có $unread thông báo mới đang chờ.',
-                  style: GoogleFonts.playfairDisplay(
-                    fontSize: 18,
-                    height: 1.2,
+                      ? AppLocalizations.of(context)!.allNotificationsRead
+                      : AppLocalizations.of(
+                          context,
+                        )!.unreadNotifications(unread),
+                  style: GoogleFonts.montserrat(
+                    fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: AppTheme.deepCharcoal,
                   ),
                 ),
+                if (unread > 0)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Text(
+                      AppLocalizations.of(context)!.updateNotifications,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w400,
+                        color: AppTheme.mutedSilver,
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
-          const SizedBox(width: 12),
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(14),
+          if (unread > 0)
+            Consumer(
+              builder: (context, ref, _) =>
+                  _MarkAllReadSummaryButton(unread: unread),
             ),
-            child: const Icon(
-              Icons.notifications_active_outlined,
-              color: AppTheme.deepCharcoal,
-              size: 22,
-            ),
-          ),
         ],
       ),
     );
   }
 }
 
-class _NotificationPreferencesCard extends ConsumerWidget {
+class _MarkAllReadSummaryButton extends ConsumerWidget {
+  final int unread;
+  const _MarkAllReadSummaryButton({required this.unread});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return GestureDetector(
+      onTap: () => ref.read(alertsProvider.notifier).markAllAsRead(),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: AppTheme.deepCharcoal.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          AppLocalizations.of(context)!.readAll,
+          style: GoogleFonts.montserrat(
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+            color: AppTheme.deepCharcoal,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NotificationSettingsSheet extends ConsumerWidget {
   final AlertsPrefs prefs;
-  const _NotificationPreferencesCard({required this.prefs});
+  const _NotificationSettingsSheet({required this.prefs});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notifier = ref.read(alertsPrefsProvider.notifier);
     return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
+      decoration: const BoxDecoration(
+        color: AppTheme.ivoryBackground,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppTheme.softTaupe.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(999),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            AppLocalizations.of(context)!.notificationSettings,
+            style: GoogleFonts.playfairDisplay(
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.deepCharcoal,
+            ),
+          ),
+          const SizedBox(height: 24),
           _PreferenceRow(
-            title: 'Cập nhật đơn hàng',
-            subtitle: 'Xác nhận giao hàng, chuẩn bị đơn và thanh toán',
+            title: AppLocalizations.of(context)!.orderUpdates,
+            subtitle: AppLocalizations.of(context)!.orderUpdatesSub,
             value: prefs.orderUpdatesEnabled,
             onChanged: notifier.toggleOrderUpdates,
           ),
-          Divider(color: AppTheme.softTaupe.withValues(alpha: 0.8), height: 28),
           _PreferenceRow(
-            title: 'Ưu đãi riêng',
-            subtitle: 'Ưu đãi thành viên, gói giới hạn và mã giảm giá',
+            title: AppLocalizations.of(context)!.offersAndGifts,
+            subtitle: AppLocalizations.of(context)!.offersAndGiftsSub,
             value: prefs.offerUpdatesEnabled,
             onChanged: notifier.toggleOfferUpdates,
           ),
-          Divider(color: AppTheme.softTaupe.withValues(alpha: 0.8), height: 28),
           _PreferenceRow(
-            title: 'Cảnh báo tài khoản',
-            subtitle: 'Thông báo có hàng lại và nhắc nhở hoạt động hồ sơ',
+            title: AppLocalizations.of(context)!.accountActivity,
+            subtitle: AppLocalizations.of(context)!.accountActivitySub,
             value: prefs.accountAlertsEnabled,
             onChanged: notifier.toggleAccountAlerts,
           ),
@@ -399,40 +454,45 @@ class _PreferenceRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: GoogleFonts.montserrat(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.deepCharcoal,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.deepCharcoal,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                style: GoogleFonts.montserrat(
-                  fontSize: 11,
-                  height: 1.5,
-                  fontWeight: FontWeight.w500,
-                  color: AppTheme.mutedSilver,
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w400,
+                    color: AppTheme.mutedSilver,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-        const SizedBox(width: 12),
-        Switch.adaptive(
-          value: value,
-          activeThumbColor: AppTheme.accentGold,
-          onChanged: onChanged,
-        ),
-      ],
+          Transform.scale(
+            scale: 0.8,
+            child: Switch.adaptive(
+              value: value,
+              activeTrackColor: AppTheme.accentGold.withValues(alpha: 0.4),
+              activeColor: AppTheme.accentGold,
+              onChanged: onChanged,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -449,33 +509,34 @@ class _FilterChipsRow extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final notifier = ref.read(alertsPrefsProvider.notifier);
     return SizedBox(
-      height: 40,
+      height: 34,
       child: ListView(
         scrollDirection: Axis.horizontal,
+        clipBehavior: Clip.none,
         children: [
           _Chip(
-            label: 'Tất cả',
+            label: AppLocalizations.of(context)!.filterAll,
             isSelected: activeFilter == AlertFilter.all,
             onTap: () => notifier.setFilter(AlertFilter.all),
           ),
           _Chip(
-            label: 'Chưa đọc',
+            label: AppLocalizations.of(context)!.filterUnread,
             count: unreadCount,
             isSelected: activeFilter == AlertFilter.unread,
             onTap: () => notifier.setFilter(AlertFilter.unread),
           ),
           _Chip(
-            label: 'Đơn hàng',
+            label: AppLocalizations.of(context)!.filterOrders,
             isSelected: activeFilter == AlertFilter.orders,
             onTap: () => notifier.setFilter(AlertFilter.orders),
           ),
           _Chip(
-            label: 'Ưu đãi',
+            label: AppLocalizations.of(context)!.filterOffers,
             isSelected: activeFilter == AlertFilter.offers,
             onTap: () => notifier.setFilter(AlertFilter.offers),
           ),
           _Chip(
-            label: 'Tài khoản',
+            label: AppLocalizations.of(context)!.filterAccount,
             isSelected: activeFilter == AlertFilter.account,
             onTap: () => notifier.setFilter(AlertFilter.account),
           ),
@@ -501,52 +562,59 @@ class _Chip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(right: 8),
-      child: Material(
-        color: isSelected ? AppTheme.deepCharcoal : Colors.white,
-        borderRadius: BorderRadius.circular(999),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(999),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  label,
-                  style: GoogleFonts.montserrat(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: isSelected ? Colors.white : AppTheme.deepCharcoal,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? AppTheme.deepCharcoal : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isSelected
+                  ? AppTheme.deepCharcoal
+                  : AppTheme.softTaupe.withValues(alpha: 0.4),
+              width: 0.8,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                style: GoogleFonts.montserrat(
+                  fontSize: 10,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  color: isSelected ? Colors.white : AppTheme.deepCharcoal,
+                ),
+              ),
+              if (count != null && count! > 0) ...[
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 1,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? AppTheme.accentGold
+                        : AppTheme.deepCharcoal.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    '$count',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 8,
+                      fontWeight: FontWeight.w700,
+                      color: isSelected
+                          ? AppTheme.deepCharcoal
+                          : AppTheme.deepCharcoal.withValues(alpha: 0.6),
+                    ),
                   ),
                 ),
-                if (count != null && count! > 0) ...[
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 7,
-                      vertical: 3,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? AppTheme.accentGold
-                          : AppTheme.ivoryBackground,
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Text(
-                      '$count',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 9,
-                        fontWeight: FontWeight.w700,
-                        color: isSelected
-                            ? AppTheme.deepCharcoal
-                            : AppTheme.accentGold,
-                      ),
-                    ),
-                  ),
-                ],
               ],
-            ),
+            ],
           ),
         ),
       ),
@@ -560,13 +628,16 @@ class _SectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      title,
-      style: GoogleFonts.montserrat(
-        fontSize: 11,
-        fontWeight: FontWeight.w700,
-        letterSpacing: 1.8,
-        color: AppTheme.mutedSilver,
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Text(
+        title,
+        style: GoogleFonts.montserrat(
+          fontSize: 9,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 1.5,
+          color: AppTheme.mutedSilver.withValues(alpha: 0.6),
+        ),
       ),
     );
   }
@@ -579,144 +650,127 @@ class _AlertCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: alert.isUnread
-          ? alert.accentColor.withValues(alpha: 0.06)
-          : Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: alert.isUnread
-                  ? alert.accentColor.withValues(alpha: 0.3)
-                  : AppTheme.softTaupe.withValues(alpha: 0.5),
+    final l10n = AppLocalizations.of(context)!;
+    final categoryIcon = _getCategoryIcon(alert.category);
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: alert.isUnread
+              ? const Color(0xFFFAF7F2) // Subtle cream
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Category Icon
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.03),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Icon(categoryIcon, size: 18, color: AppTheme.deepCharcoal),
             ),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Icon
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: alert.accentColor.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(alert.icon, size: 20, color: alert.accentColor),
-              ),
-              const SizedBox(width: 12),
-              // Content
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            alert.title,
-                            style: GoogleFonts.montserrat(
-                              fontSize: 13,
-                              fontWeight: alert.isUnread
-                                  ? FontWeight.w700
-                                  : FontWeight.w500,
-                              color: alert.isUnread
-                                  ? AppTheme.deepCharcoal
-                                  : AppTheme.deepCharcoal.withValues(
-                                      alpha: 0.7,
-                                    ),
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        if (alert.isUnread)
-                          Container(
-                            width: 8,
-                            height: 8,
-                            margin: const EdgeInsets.only(left: 6),
-                            decoration: BoxDecoration(
-                              color: alert.accentColor,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      alert.message,
-                      style: GoogleFonts.montserrat(
-                        fontSize: 12,
-                        height: 1.4,
-                        fontWeight: FontWeight.w400,
-                        color: AppTheme.deepCharcoal.withValues(alpha: 0.6),
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: alert.accentColor.withValues(alpha: 0.08),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            alert.categoryLabel,
-                            style: GoogleFonts.montserrat(
-                              fontSize: 9,
-                              fontWeight: FontWeight.w700,
-                              color: alert.accentColor,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          alert.timeLabel,
+            const SizedBox(width: 16),
+            // Content
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          alert.title,
                           style: GoogleFonts.montserrat(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w500,
-                            color: AppTheme.mutedSilver,
+                            fontSize: 14,
+                            fontWeight: alert.isUnread
+                                ? FontWeight.w700
+                                : FontWeight.w600,
+                            color: AppTheme.deepCharcoal,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (alert.isUnread)
+                        Container(
+                          width: 6,
+                          height: 6,
+                          margin: const EdgeInsets.only(left: 8),
+                          decoration: const BoxDecoration(
+                            color: AppTheme.accentGold,
+                            shape: BoxShape.circle,
                           ),
                         ),
-                        if (alert.actionLabel != null) ...[
-                          const Spacer(),
-                          Text(
-                            alert.actionLabel!,
-                            style: GoogleFonts.montserrat(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              color: alert.accentColor,
-                            ),
-                          ),
-                          const SizedBox(width: 2),
-                          Icon(
-                            Icons.chevron_right_rounded,
-                            size: 14,
-                            color: alert.accentColor,
-                          ),
-                        ],
-                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    alert.message,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 12,
+                      height: 1.5,
+                      fontWeight: FontWeight.w400,
+                      color: AppTheme.deepCharcoal,
                     ),
-                  ],
-                ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Text(
+                        Alert.formatTime(alert.createdAt, l10n),
+                        style: GoogleFonts.montserrat(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                          color: AppTheme.mutedSilver,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        '· ${Alert.getCategoryLabel(alert.category, l10n)}',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                          color: AppTheme.mutedSilver.withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
+  }
+
+  IconData _getCategoryIcon(AlertCategory category) {
+    switch (category) {
+      case AlertCategory.order:
+        return Icons.local_shipping_outlined;
+      case AlertCategory.offer:
+        return Icons.star_border_rounded;
+      case AlertCategory.account:
+        return Icons.notifications_none_rounded;
+    }
   }
 }
 
@@ -733,6 +787,7 @@ class _AlertDetailSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
       decoration: const BoxDecoration(
@@ -776,7 +831,7 @@ class _AlertDetailSheet extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              alert.timeLabel,
+              Alert.formatTime(alert.createdAt, l10n),
               style: GoogleFonts.montserrat(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
@@ -809,7 +864,7 @@ class _AlertDetailSheet extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    alert.actionLabel!,
+                    Alert.actionLabelFor(alert.category, l10n) ?? '',
                     style: GoogleFonts.montserrat(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,

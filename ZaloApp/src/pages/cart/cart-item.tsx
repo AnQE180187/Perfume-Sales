@@ -8,7 +8,7 @@ import { useDrag } from "@use-gesture/react";
 import { RemoveIcon } from "@/components/vectors";
 import { useAtom } from "jotai";
 import { selectedCartItemIdsState } from "@/state";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 const SWIPE_TO_DELTE_OFFSET = 80;
 
@@ -31,11 +31,6 @@ export default function CartItem(props: CartItemProps) {
         .join(" | "),
     [props.options]
   );
-
-  // update cart
-  useEffect(() => {
-    addToCart(quantity);
-  }, [quantity]);
 
   // swipe left to delete animation
   const [{ x }, api] = useSpring(() => ({ x: 0 }));
@@ -108,12 +103,13 @@ export default function CartItem(props: CartItemProps) {
             </div>
             <QuantityInput
               value={quantity}
-              onChange={(value) => {
+              onChange={async (value) => {
                 if (value <= 0) {
                   setQuantity(1);
                   api.start({ x: -SWIPE_TO_DELTE_OFFSET });
                 } else {
                   setQuantity(value);
+                  await addToCart(value);
                   if (value > quantity) {
                     api.start({ x: 0 });
                   }

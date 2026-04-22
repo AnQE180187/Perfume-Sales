@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/promotions_provider.dart';
+import 'package:intl/intl.dart';
 
 class PromoCodeSection extends ConsumerStatefulWidget {
   final TextEditingController controller;
@@ -64,6 +66,7 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
   }
 
   Widget _buildApplied() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -100,7 +103,7 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
                   ),
                 ),
                 Text(
-                  'Giảm ${(widget.promoDiscount * 100).toInt()}% đã được áp dụng',
+                  l10n.discountAppliedWithPercent((widget.promoDiscount * 100).toInt()),
                   style: GoogleFonts.montserrat(
                     fontSize: 11,
                     color: AppTheme.mutedSilver,
@@ -116,7 +119,7 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
               color: AppTheme.mutedSilver,
             ),
             onPressed: () => ref.read(cartProvider.notifier).removePromoCode(),
-            tooltip: 'Xóa mã',
+            tooltip: l10n.removeCode,
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
           ),
@@ -126,6 +129,7 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
   }
 
   Widget _buildExpandable() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -148,7 +152,7 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               child: Row(
                 children: [
-                  const Icon(
+                   const Icon(
                     Icons.local_offer_outlined,
                     color: AppTheme.accentGold,
                     size: 20,
@@ -156,7 +160,7 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      'Bạn có mã khuyến mãi?',
+                      l10n.havePromoCode,
                       style: GoogleFonts.montserrat(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
@@ -191,7 +195,7 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
                           controller: widget.controller,
                           textCapitalization: TextCapitalization.characters,
                           decoration: InputDecoration(
-                            hintText: 'Nhập mã giảm giá',
+                            hintText: l10n.enterPromoCode,
                             hintStyle: GoogleFonts.montserrat(
                               fontSize: 13,
                               color: AppTheme.mutedSilver,
@@ -260,7 +264,7 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
                                   ),
                                 )
                               : Text(
-                                  'Áp dụng',
+                                  l10n.apply,
                                   style: GoogleFonts.montserrat(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w600,
@@ -271,7 +275,7 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
                     ],
                   ),
                   const SizedBox(height: 16),
-                  _buildPublicPromos(),
+                  _buildPublicPromos(l10n),
                 ],
               ),
             ),
@@ -281,7 +285,7 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
     );
   }
 
-  Widget _buildPublicPromos() {
+  Widget _buildPublicPromos(AppLocalizations l10n) {
     final promosAsync = ref.watch(activePromotionsProvider);
     return promosAsync.when(
       loading: () => const Center(
@@ -301,7 +305,7 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'MÃ KHUYẾN MÃI CÓ SẴN',
+              l10n.availablePromoCodes,
               style: GoogleFonts.montserrat(
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
@@ -313,7 +317,7 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
             ...promos.map(
               (promo) => Padding(
                 padding: const EdgeInsets.only(bottom: 8),
-                child: _buildPromoItem(promo.code, promo.displayDescription),
+                child: _buildPromoItem(promo, l10n),
               ),
             ),
           ],
@@ -322,59 +326,149 @@ class _PromoCodeSectionState extends ConsumerState<PromoCodeSection>
     );
   }
 
-  Widget _buildPromoItem(String code, String desc) {
-    return InkWell(
+  Widget _buildPromoItem(Promotion promo, AppLocalizations l10n) {
+    final String code = promo.code;
+    final String desc = promo.displayDescription;
+    final bool isSelected = widget.promoCode == code;
+    final String expiryDate = DateFormat('dd/MM/yyyy').format(promo.endDate);
+
+    return GestureDetector(
       onTap: () {
         widget.controller.text = code;
         ref.read(cartProvider.notifier).applyPromoCode(code);
       },
-      borderRadius: BorderRadius.circular(10),
-      child: Container(
-        padding: const EdgeInsets.all(12),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
-          border: Border.all(color: AppTheme.softTaupe.withValues(alpha: 0.5)),
-          borderRadius: BorderRadius.circular(10),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppTheme.accentGold.withValues(alpha: 0.2),
+                    blurRadius: 15,
+                    spreadRadius: 2,
+                  )
+                ]
+              : [],
         ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppTheme.accentGold.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(4),
-                border: Border.all(
-                  color: AppTheme.accentGold.withValues(alpha: 0.3),
-                  width: 1,
-                ),
-              ),
-              child: Text(
-                code,
-                style: GoogleFonts.montserrat(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.accentGold,
-                ),
+        child: ClipPath(
+          clipper: _VoucherTicketClipper(),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(
+                color: isSelected
+                    ? AppTheme.accentGold
+                    : AppTheme.softTaupe.withValues(alpha: 0.2),
+                width: isSelected ? 1.5 : 1,
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                desc,
-                style: GoogleFonts.montserrat(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                  color: AppTheme.deepCharcoal,
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppTheme.ivoryBackground,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    isSelected ? Icons.verified_rounded : Icons.local_offer_outlined,
+                    color: AppTheme.accentGold,
+                    size: 20,
+                  ),
                 ),
-              ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        code.toUpperCase(),
+                        style: GoogleFonts.montserrat(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.5,
+                          color: AppTheme.deepCharcoal,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        desc,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.accentGold,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          const Icon(Icons.access_time_rounded, size: 10, color: AppTheme.mutedSilver),
+                          const SizedBox(width: 4),
+                          Text(
+                            l10n.validUntil(expiryDate),
+                            style: GoogleFonts.montserrat(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w500,
+                              color: AppTheme.mutedSilver,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                if (isSelected)
+                  const Icon(
+                    Icons.check_circle_rounded,
+                    color: AppTheme.accentGold,
+                    size: 22,
+                  )
+                else
+                  Text(
+                    l10n.useCode,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: AppTheme.accentGold,
+                      letterSpacing: 1,
+                    ),
+                  ),
+              ],
             ),
-            const Icon(
-              Icons.chevron_right,
-              size: 20,
-              color: AppTheme.mutedSilver,
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
+}
+
+class _VoucherTicketClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    const double radius = 8.0;
+    final path = Path();
+    path.lineTo(0.0, size.height / 2 - radius);
+    path.arcToPoint(
+      Offset(0.0, size.height / 2 + radius),
+      radius: const Radius.circular(radius),
+      clockwise: true,
+    );
+    path.lineTo(0.0, size.height);
+    path.lineTo(size.width, size.height);
+    path.lineTo(size.width, size.height / 2 + radius);
+    path.arcToPoint(
+      Offset(size.width, size.height / 2 - radius),
+      radius: const Radius.circular(radius),
+      clockwise: true,
+    );
+    path.lineTo(size.width, 0.0);
+    path.lineTo(0.0, 0.0);
+    path.close();
+    return path;
+  }
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }

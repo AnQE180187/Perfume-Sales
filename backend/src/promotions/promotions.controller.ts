@@ -33,19 +33,20 @@ export class PromotionsController {
 
   @Get('active')
   @UseGuards(JwtAuthGuard)
-  async findActive() {
-    return this.promotionsService.findActive();
+  async findActive(@Request() req) {
+    return this.promotionsService.findActive(req.user.userId);
   }
 
   @Get('public')
-  async findPublic() {
-    return this.promotionsService.findPublic();
+  @UseGuards(JwtAuthGuard)
+  async findPublic(@Request() req) {
+    return this.promotionsService.findPublic(req.user.userId);
   }
 
   @Get('redeemable')
   @UseGuards(JwtAuthGuard)
-  async findRedeemable() {
-    return this.promotionsService.findRedeemable();
+  async findRedeemable(@Request() req) {
+    return this.promotionsService.findRedeemable(req.user.userId);
   }
 
   @Get('my-promotions')

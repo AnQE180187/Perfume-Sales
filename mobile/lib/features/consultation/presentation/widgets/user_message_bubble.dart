@@ -15,20 +15,31 @@ class UserMessageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16, left: 48),
+      padding: const EdgeInsets.only(bottom: 20, left: 60),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          // Message Bubble
+          // Message Bubble - Minimalist Luxury
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
             decoration: BoxDecoration(
-              color: AppTheme.accentGold.withValues(alpha: 0.15),
+              color: AppTheme.creamWhite,
               borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
-                bottomLeft: Radius.circular(16),
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(4),
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
               ),
+              border: Border.all(
+                color: AppTheme.softTaupe.withValues(alpha: 0.5),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.02),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Text(
               message.text,
@@ -42,13 +53,14 @@ class UserMessageBubble extends StatelessWidget {
           ),
           
           // Timestamp
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           Text(
-            TimeFormatter.formatRelativeTime(message.timestamp),
+            TimeFormatter.formatRelativeTime(message.timestamp).toUpperCase(),
             style: GoogleFonts.montserrat(
-              fontSize: 11,
-              fontWeight: FontWeight.w400,
-              color: AppTheme.mutedSilver,
+              fontSize: 9,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
+              color: AppTheme.mutedSilver.withValues(alpha: 0.6),
             ),
           ),
         ],

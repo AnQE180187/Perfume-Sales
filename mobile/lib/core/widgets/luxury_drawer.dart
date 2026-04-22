@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../theme/app_theme.dart';
+import '../routing/app_routes.dart';
 import '../../features/auth/providers/auth_provider.dart';
+import 'package:perfume_gpt_app/l10n/app_localizations.dart';
 
 // ─── Menu item config ────────────────────────────────────────────────────────
 
@@ -21,34 +23,54 @@ class _MenuItem {
   });
 }
 
-const _primaryItems = [
-  _MenuItem(icon: Icons.spa_outlined, label: 'Hồ sơ mùi hương'),
-  _MenuItem(
-    icon: Icons.local_florist_outlined,
-    label: 'Thư viện nước hoa',
-    route: '/explore',
-  ),
-  _MenuItem(icon: Icons.diamond_outlined, label: 'Bộ sưu tập độc quyền'),
-];
-
-const _secondaryItems = [
-  _MenuItem(icon: Icons.book_outlined, label: 'Nhật ký mùi hương'),
-  _MenuItem(icon: Icons.support_agent_outlined, label: 'Hỗ trợ tư vấn'),
-];
-
-const _utilityItems = [
-  _MenuItem(icon: Icons.settings_outlined, label: 'Cài đặt'),
-  _MenuItem(
-    icon: Icons.logout_rounded,
-    label: 'Đăng xuất',
-    isDestructive: true,
-  ),
-];
-
 // ─── Luxury Drawer ───────────────────────────────────────────────────────────
 
 class LuxuryDrawer extends ConsumerWidget {
   const LuxuryDrawer({super.key});
+
+  List<_MenuItem> _getPrimaryItems(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return [
+      _MenuItem(
+        icon: Icons.workspace_premium_outlined,
+        label: l10n.scentClub,
+        route: AppRoutes.scentClub,
+      ),
+      _MenuItem(
+        icon: Icons.auto_awesome_mosaic_outlined,
+        label: l10n.brand,
+        route: AppRoutes.brands,
+      ),
+      _MenuItem(
+        icon: Icons.menu_book_outlined,
+        label: l10n.journal,
+        route: AppRoutes.journal,
+      ),
+      // removed scent quiz menu item per UX request
+    ];
+  }
+
+  List<_MenuItem> _getSecondaryItems(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return [
+      _MenuItem(
+        icon: Icons.history_edu_outlined,
+        label: l10n.brandStory,
+        route: AppRoutes.brandStory,
+      ),
+    ];
+  }
+
+  List<_MenuItem> _getUtilityItems(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return [
+      _MenuItem(
+        icon: Icons.logout_rounded,
+        label: l10n.logout,
+        isDestructive: true,
+      ),
+    ];
+  }
 
   void _onItemTap(BuildContext context, WidgetRef ref, _MenuItem item) {
     if (item.isDestructive) {
@@ -63,6 +85,7 @@ class LuxuryDrawer extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userProfile = ref.watch(userProfileProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Drawer(
       backgroundColor: AppTheme.creamWhite,
@@ -101,7 +124,7 @@ class LuxuryDrawer extends ConsumerWidget {
                       ),
                       const SizedBox(width: 10),
                       Text(
-                        'Tìm kiếm mùi hương...',
+                        l10n.searchHint,
                         style: GoogleFonts.montserrat(
                           fontSize: 13,
                           fontWeight: FontWeight.w400,
@@ -136,7 +159,7 @@ class LuxuryDrawer extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Primary discovery
-                    for (final item in _primaryItems)
+                    for (final item in _getPrimaryItems(context))
                       _DrawerMenuTile(
                         item: item,
                         onTap: () => _onItemTap(context, ref, item),
@@ -145,7 +168,7 @@ class LuxuryDrawer extends ConsumerWidget {
                     const SizedBox(height: 6),
 
                     // Secondary
-                    for (final item in _secondaryItems)
+                    for (final item in _getSecondaryItems(context))
                       _DrawerMenuTile(
                         item: item,
                         onTap: () => _onItemTap(context, ref, item),
@@ -165,7 +188,7 @@ class LuxuryDrawer extends ConsumerWidget {
                     ),
 
                     // Utility
-                    for (final item in _utilityItems)
+                    for (final item in _getUtilityItems(context))
                       _DrawerMenuTile(
                         item: item,
                         onTap: () => _onItemTap(context, ref, item),
@@ -223,11 +246,12 @@ class _UserProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final nameValue =
         profile?['full_name'] ?? profile?['fullName'] ?? profile?['name'];
     final name = nameValue is String && nameValue.trim().isNotEmpty
         ? nameValue.trim()
-        : 'Khách';
+        : l10n.guest;
 
     final avatarValue = profile?['avatar_url'] ?? profile?['avatarUrl'];
     final avatarUrl = avatarValue is String && avatarValue.trim().isNotEmpty
@@ -245,13 +269,13 @@ class _UserProfileHeader extends StatelessWidget {
 
     String tierLabel;
     if (loyaltyPoints >= 5000) {
-      tierLabel = 'THÀNH VIÊN BẠCH KIM';
+      tierLabel = l10n.memberPlatinum;
     } else if (loyaltyPoints >= 1000) {
-      tierLabel = 'THÀNH VIÊN VÀNG';
+      tierLabel = l10n.memberGold;
     } else if (loyaltyPoints >= 300) {
-      tierLabel = 'THÀNH VIÊN BẠC';
+      tierLabel = l10n.memberSilver;
     } else {
-      tierLabel = 'THÀNH VIÊN';
+      tierLabel = l10n.memberStandard;
     }
 
     return Column(
@@ -450,7 +474,7 @@ class _DrawerMenuTileState extends State<_DrawerMenuTile>
         )!;
         final textColor = Color.lerp(
           AppTheme.deepCharcoal,
-          AppTheme.deepCharcoal.withValues(alpha: 0.75),
+          AppTheme.deepCharcoal.withValues(alpha: 0.9),
           _iconTint.value,
         )!;
 

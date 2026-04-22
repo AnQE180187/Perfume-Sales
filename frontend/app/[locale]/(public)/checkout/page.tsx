@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslations, useLocale, useFormatter } from 'next-intl';
 import { Link, useRouter } from '@/lib/i18n';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import QRCode from 'qrcode';
 import {
@@ -24,8 +24,11 @@ import {
 import { AddressSelector } from '@/components/address/address-selector';
 import { UserAddress } from '@/services/address.service';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 type PaymentMethod = 'COD' | 'ONLINE' | null;
+const PAYMENT_TTL_SECONDS = 10 * 60;
+const PAYMENT_STATUS_POLL_MS = 3000;
 
 // QR Code Canvas Component
 function QRCodeCanvas({ qrCodeValue }: { qrCodeValue: string }) {
@@ -73,6 +76,7 @@ export default function CheckoutPage() {
     const t = useTranslations('checkout');
     const locale = useLocale();
     const router = useRouter();
+    const searchParams = useSearchParams();
     const format = useFormatter();
     const tFeatured = useTranslations('featured');
     const { isAuthenticated } = useAuth();
@@ -87,6 +91,9 @@ export default function CheckoutPage() {
     const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(null);
     const [orderId, setOrderId] = useState<string | null>(null);
     const [paymentData, setPaymentData] = useState<PayOSPaymentResponse | null>(null);
+    const [paymentExpiresAt, setPaymentExpiresAt] = useState<number | null>(null);
+    const [secondsLeft, setSecondsLeft] = useState<number>(PAYMENT_TTL_SECONDS);
+    const [paymentDetected, setPaymentDetected] = useState(false);
 
     // GHN shipping
     const [ghnEnabled, setGhnEnabled] = useState(false);
@@ -120,7 +127,13 @@ export default function CheckoutPage() {
             return;
         }
         cartService.getCart().then((c) => {
-            setCartItems(c.items);
+            const itemsParam = searchParams.get('items');
+            if (itemsParam) {
+                const selectedIds = itemsParam.split(',').map(id => parseInt(id));
+                setCartItems(c.items.filter(item => selectedIds.includes(item.id)));
+            } else {
+                setCartItems(c.items);
+            }
             setLoading(false);
         }).catch(() => setLoading(false));
 
@@ -188,6 +201,35 @@ export default function CheckoutPage() {
 
     const canProceedStep1 = Boolean(selectedAddress && (ghnEnabled ? selectedServiceId : true));
 
+    useEffect(() => {
+        if (!paymentExpiresAt) return;
+        const timer = window.setInterval(() => {
+            const next = Math.max(0, Math.floor((paymentExpiresAt - Date.now()) / 1000));
+            setSecondsLeft(next);
+        }, 1000);
+        return () => window.clearInterval(timer);
+    }, [paymentExpiresAt]);
+
+    const isPaymentExpired = paymentExpiresAt ? Date.now() >= paymentExpiresAt : false;
+    const countdownLabel = `${String(Math.floor(secondsLeft / 60)).padStart(2, '0')}:${String(secondsLeft % 60).padStart(2, '0')}`;
+
+    useEffect(() => {
+        if (step !== 3 || !orderId || paymentDetected) return;
+        const timer = window.setInterval(async () => {
+            try {
+                const payment = await paymentService.getPaymentByOrder(orderId);
+                if (payment?.status === 'PAID') {
+                    setPaymentDetected(true);
+                    window.clearInterval(timer);
+                    router.push(`/checkout/success?orderId=${orderId}`);
+                }
+            } catch {
+                // keep polling; backend may be syncing webhook/fallback
+            }
+        }, PAYMENT_STATUS_POLL_MS);
+        return () => window.clearInterval(timer);
+    }, [step, orderId, paymentDetected, router]);
+
     const handleApplyCoupon = async () => {
         if (!couponCode.trim()) return;
         setIsApplyingCoupon(true);
@@ -212,7 +254,7 @@ export default function CheckoutPage() {
     const handleCreateOrderIfNeeded = async (method: PaymentMethod): Promise<string | null> => {
         if (orderId) return orderId;
         if (!selectedAddress) {
-            alert(t('error_missing_address'));
+            toast.error(t('error_missing_address'));
             return null;
         }
 
@@ -233,11 +275,12 @@ export default function CheckoutPage() {
                         shippingFee,
                     }
                     : {}),
+                cartItemIds: cartItems.map(i => i.id),
             });
             setOrderId(order.id);
             return order.id;
         } catch (e: any) {
-            alert(e.response?.data?.message || e.message || t('error_create_order'));
+            toast.error(e.response?.data?.message || e.message || t('error_create_order'));
             return null;
         } finally {
             setSubmitting(false);
@@ -257,9 +300,11 @@ export default function CheckoutPage() {
             try {
                 const payment = await paymentService.createPayment(currentOrderId);
                 setPaymentData(payment);
+                setPaymentExpiresAt(Date.now() + PAYMENT_TTL_SECONDS * 1000);
+                setSecondsLeft(PAYMENT_TTL_SECONDS);
                 setStep(3);
             } catch (e: any) {
-                alert(e.message || t('error_create_payment'));
+                toast.error(e.message || t('error_create_payment'));
             } finally {
                 setSubmitting(false);
             }
@@ -276,20 +321,20 @@ export default function CheckoutPage() {
 
     return (
         <div className="min-h-screen bg-background transition-colors">
-            <main className="container mx-auto px-6 py-32 lg:py-40">
+            <main className="container-responsive py-24 lg:py-32">
                 <div className="max-w-7xl mx-auto">
-                    <div className="flex flex-col lg:flex-row justify-between items-start gap-16 lg:gap-24">
+                    <div className="flex flex-col lg:flex-row justify-between items-start gap-12 lg:gap-24">
                         {/* Main Checkout Flow */}
                         <div className="flex-1 w-full order-2 lg:order-1">
                             <Link
                                 href="/cart"
-                                className="inline-flex items-center gap-3 text-[10px] font-bold tracking-[.4em] uppercase text-stone-400 hover:text-luxury-black dark:hover:text-white transition-colors mb-16 group"
+                                className="inline-flex items-center gap-3 text-[10px] font-bold tracking-[.4em] uppercase text-stone-400 hover:text-luxury-black dark:hover:text-white transition-colors mb-8 lg:mb-16 group"
                             >
                                 <ArrowLeft size={16} className="group-hover:-translate-x-2 transition-transform" />
                                 {t('return_to_cart')}
                             </Link>
 
-                            <h1 className="text-5xl md:text-7xl font-serif text-luxury-black dark:text-white mb-16 tracking-tighter">
+                            <h1 className="text-fluid-4xl font-serif text-luxury-black dark:text-white mb-10 lg:mb-16 tracking-tighter">
                                 {t('page_title_part1')} <span className="italic uppercase">{t('page_title_part2')}</span>
                             </h1>
 
@@ -301,7 +346,7 @@ export default function CheckoutPage() {
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         exit={{ opacity: 0, y: -20 }}
-                                        className="space-y-10"
+                                        className="space-y-8 lg:space-y-10"
                                     >
                                         <div className="space-y-6">
                                             <div className="flex items-center justify-between pl-2">
@@ -318,7 +363,7 @@ export default function CheckoutPage() {
                                         </div>
 
                                         {ghnEnabled && services.length > 0 && (
-                                            <div className="space-y-4 p-8 bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-stone-100 dark:border-white/5 shadow-sm">
+                                            <div className="space-y-4 p-6 lg:p-8 bg-white dark:bg-zinc-900 rounded-[2rem] lg:rounded-[2.5rem] border border-stone-100 dark:border-white/5 shadow-sm">
                                                 <label className="text-[10px] font-bold tracking-widest uppercase text-stone-400 pl-2 flex items-center gap-2">
                                                     {t('shipping_service')}
                                                 </label>
@@ -329,7 +374,7 @@ export default function CheckoutPage() {
                                                                 key={s.service_id}
                                                                 onClick={() => setSelectedServiceId(s.service_id)}
                                                                 className={cn(
-                                                                    "p-6 rounded-2xl border-2 text-left transition-all group",
+                                                                    "p-5 lg:p-6 rounded-2xl border-2 text-left transition-all group",
                                                                     selectedServiceId === s.service_id
                                                                         ? "border-gold bg-gold/5"
                                                                         : "border-stone-100 dark:border-white/5 hover:border-gold/30"
@@ -364,7 +409,7 @@ export default function CheckoutPage() {
                                         <button
                                             onClick={() => setStep(2)}
                                             disabled={!canProceedStep1}
-                                            className="w-full py-6 bg-gold-btn-gradient text-white rounded-full font-bold tracking-[.4em] uppercase text-[10px] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="w-full py-5 lg:py-6 bg-luxury-black dark:bg-gold text-white rounded-full font-bold tracking-[.4em] uppercase text-[10px] shadow-2xl hover:scale-[1.02] active:scale-95 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             {t('continue_to_payment')}
                                             <ArrowRight size={16} className="inline ml-4 group-hover:translate-x-2 transition-transform" />
@@ -381,22 +426,22 @@ export default function CheckoutPage() {
                                         exit={{ opacity: 0, y: -20 }}
                                         className="space-y-8"
                                     >
-                                        <h2 className="text-2xl font-serif text-luxury-black dark:text-white mb-8">
+                                        <h2 className="text-fluid-2xl font-serif text-luxury-black dark:text-white lg:mb-8">
                                             {t.rich('payment_method_title', {
                                                 span: (chunks) => <span className="italic">{chunks}</span>
                                             })}
                                         </h2>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
                                             <button
                                                 onClick={() => handlePaymentMethodSelect('COD')}
                                                 disabled={submitting}
-                                                className="p-8 rounded-[3rem] border-2 border-stone-100 dark:border-white/5 bg-white dark:bg-zinc-900 flex flex-col items-center gap-6 text-center hover:border-gold transition-all group disabled:opacity-50 shadow-sm"
+                                                className="p-6 lg:p-8 rounded-[2rem] lg:rounded-[3rem] border-2 border-stone-100 dark:border-white/5 bg-white dark:bg-zinc-900 flex flex-col items-center gap-4 lg:gap-6 text-center hover:border-gold transition-all group disabled:opacity-50 shadow-sm"
                                             >
-                                                <div className="w-16 h-16 rounded-full bg-stone-50 dark:bg-zinc-800 flex items-center justify-center text-gold group-hover:bg-gold group-hover:text-white transition-all">
-                                                    {submitting && paymentMethod === 'COD' ? <Loader2 className="animate-spin" /> : <Wallet size={32} strokeWidth={1.5} />}
+                                                <div className="w-12 h-12 lg:w-16 lg:h-16 rounded-full bg-stone-50 dark:bg-zinc-800 flex items-center justify-center text-gold group-hover:bg-gold group-hover:text-white transition-all">
+                                                    {submitting && paymentMethod === 'COD' ? <Loader2 className="animate-spin" /> : <Wallet size={24} className="lg:w-8 lg:h-8" strokeWidth={1.5} />}
                                                 </div>
-                                                <div className="space-y-2">
+                                                <div className="space-y-1 lg:space-y-2">
                                                     <span className="block text-xs font-bold tracking-[.2em] uppercase text-luxury-black dark:text-white">
                                                         {t('cod_label')}
                                                     </span>
@@ -409,12 +454,12 @@ export default function CheckoutPage() {
                                             <button
                                                 onClick={() => handlePaymentMethodSelect('ONLINE')}
                                                 disabled={submitting}
-                                                className="p-8 rounded-[3rem] border-2 border-stone-100 dark:border-white/5 bg-white dark:bg-zinc-900 flex flex-col items-center gap-6 text-center hover:border-gold transition-all group disabled:opacity-50 shadow-sm"
+                                                className="p-6 lg:p-8 rounded-[2rem] lg:rounded-[3rem] border-2 border-stone-100 dark:border-white/5 bg-white dark:bg-zinc-900 flex flex-col items-center gap-4 lg:gap-6 text-center hover:border-gold transition-all group disabled:opacity-50 shadow-sm"
                                             >
-                                                <div className="w-16 h-16 rounded-full bg-stone-50 dark:bg-zinc-800 flex items-center justify-center text-gold group-hover:bg-gold group-hover:text-white transition-all">
-                                                    {submitting && paymentMethod === 'ONLINE' ? <Loader2 className="animate-spin" /> : <CreditCard size={32} strokeWidth={1.5} />}
+                                                <div className="w-12 h-12 lg:w-16 lg:h-16 rounded-full bg-stone-50 dark:bg-zinc-800 flex items-center justify-center text-gold group-hover:bg-gold group-hover:text-white transition-all">
+                                                    {submitting && paymentMethod === 'ONLINE' ? <Loader2 className="animate-spin" /> : <CreditCard size={24} className="lg:w-8 lg:h-8" strokeWidth={1.5} />}
                                                 </div>
-                                                <div className="space-y-2">
+                                                <div className="space-y-1 lg:space-y-2">
                                                     <span className="block text-xs font-bold tracking-[.2em] uppercase text-luxury-black dark:text-white">
                                                         {t('online_payment_label')}
                                                     </span>
@@ -444,14 +489,24 @@ export default function CheckoutPage() {
                                         className="space-y-8"
                                     >
                                         <div className="text-center space-y-4">
-                                            <h2 className="text-3xl font-serif text-luxury-black dark:text-white">
+                                            <h2 className="text-fluid-2xl font-serif text-luxury-black dark:text-white">
                                                 {t.rich('qr_title', {
                                                     span: (chunks) => <span className="italic">{chunks}</span>
                                                 })}
                                             </h2>
-                                            <p className="text-[10px] font-bold uppercase tracking-widest text-stone-400">
-                                                {t('qr_desc_scanning')}
-                                            </p>
+                                            <div className="px-4 space-y-2">
+                                                <p className="text-[9px] lg:text-[10px] font-bold uppercase tracking-widest text-stone-400">
+                                                    {t('qr_desc_scanning')}
+                                                </p>
+                                                <p className={`text-[9px] lg:text-[10px] font-bold uppercase tracking-widest ${isPaymentExpired ? 'text-red-500' : 'text-amber-500'}`}>
+                                                    Đơn thanh toán QR chỉ tồn tại trong 10 phút - còn lại {countdownLabel}
+                                                </p>
+                                                {paymentDetected && (
+                                                    <p className="text-[9px] lg:text-[10px] font-bold uppercase tracking-widest text-emerald-600">
+                                                        Đã nhận thanh toán, đang chuyển sang trang thành công...
+                                                    </p>
+                                                )}
+                                            </div>
                                         </div>
 
                                         <div className="flex flex-col items-center gap-8 p-12 bg-white dark:bg-zinc-900 rounded-[3rem] border border-stone-100 dark:border-white/5 shadow-2xl">
@@ -478,8 +533,10 @@ export default function CheckoutPage() {
                                             </div>
 
                                             <div className="flex items-center gap-3 py-3 px-6 bg-stone-50 dark:bg-white/5 rounded-full border border-stone-100 dark:border-white/5">
-                                                <Loader2 className="w-4 h-4 animate-spin text-gold" />
-                                                <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">{t('waiting_for_payment')}</span>
+                                                {!isPaymentExpired && <Loader2 className="w-4 h-4 animate-spin text-gold" />}
+                                                <span className={`text-[10px] font-bold uppercase tracking-widest ${isPaymentExpired ? 'text-red-500' : 'text-stone-400'}`}>
+                                                    {isPaymentExpired ? 'Thanh toán đã hết hạn, vui lòng tạo lại đơn mới' : t('waiting_for_payment')}
+                                                </span>
                                             </div>
                                         </div>
 
@@ -488,13 +545,16 @@ export default function CheckoutPage() {
                                                 {t('pay_via_payos_desc')}
                                             </p>
                                             <a
-                                                href={paymentData.checkoutUrl || '#'}
+                                                href={isPaymentExpired ? '#' : (paymentData.checkoutUrl || '#')}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="block w-full py-5 bg-gold text-white rounded-full font-bold tracking-[.3em] uppercase text-[10px] text-center hover:bg-gold/90 transition-all shadow-lg"
+                                                onClick={(e) => {
+                                                    if (isPaymentExpired) e.preventDefault();
+                                                }}
+                                                className={`block w-full py-5 rounded-full font-bold tracking-[.3em] uppercase text-[10px] text-center transition-all shadow-lg ${isPaymentExpired ? 'bg-stone-400 text-white cursor-not-allowed' : 'bg-gold text-white hover:bg-gold/90'}`}
                                             >
-                                                {t('pay_via_payos_btn')}
-                                                <ArrowRight size={16} className="inline ml-3" />
+                                                {isPaymentExpired ? 'ĐÃ HẾT HẠN THANH TOÁN' : t('pay_via_payos_btn')}
+                                                {!isPaymentExpired && <ArrowRight size={16} className="inline ml-3" />}
                                             </a>
                                         </div>
 
@@ -511,16 +571,16 @@ export default function CheckoutPage() {
 
                         {/* Order Summary Sidebar */}
                         <div className="w-full lg:w-[450px] sticky top-40 order-1 lg:order-2">
-                            <div className="bg-white dark:bg-zinc-900 rounded-[4rem] p-12 border border-stone-100 dark:border-white/5 shadow-2xl">
-                                <h3 className="text-2xl font-serif text-luxury-black dark:text-white uppercase tracking-[.2em] mb-12 pb-8 border-b border-stone-100 dark:border-white/5 italic">
+                            <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] lg:rounded-[4rem] p-8 lg:p-12 border border-stone-100 dark:border-white/5 shadow-2xl">
+                                <h3 className="text-xl lg:text-2xl font-serif text-luxury-black dark:text-white uppercase tracking-[.2em] mb-8 lg:mb-12 pb-6 lg:pb-8 border-b border-stone-100 dark:border-white/5 italic">
                                     {t('order_summary')}
                                 </h3>
 
-                                <div className="space-y-10 mb-12 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
+                                <div className="space-y-8 lg:space-y-10 mb-8 lg:mb-12 max-h-[40vh] lg:max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
                                     {cartItems.length > 0 ? (
                                         cartItems.map((item) => (
-                                            <div key={item.id} className="flex gap-6 group">
-                                                <div className="relative w-24 h-32 rounded-2xl overflow-hidden bg-stone-50 dark:bg-zinc-800 flex-shrink-0 border border-stone-100 dark:border-white/5">
+                                            <div key={item.id} className="flex gap-4 lg:gap-6 group">
+                                                <div className="relative w-20 h-28 lg:w-24 lg:h-32 rounded-xl lg:rounded-2xl overflow-hidden bg-stone-50 dark:bg-zinc-800 flex-shrink-0 border border-stone-100 dark:border-white/5">
                                                     {item.variant.product.images?.[0]?.url ? (
                                                         <img src={item.variant.product.images[0].url} alt={item.variant.product.name} className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-700" />
                                                     ) : (

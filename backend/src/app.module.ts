@@ -31,6 +31,8 @@ import { JournalsModule } from './journals/journals.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { QuizModule } from './quiz/quiz.module';
 import { ReturnsModule } from './returns/returns.module';
+import { AiPreferencesModule } from './ai-preferences/ai-preferences.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
@@ -65,6 +67,8 @@ import { ReturnsModule } from './returns/returns.module';
     NotificationsModule,
     QuizModule,
     ReturnsModule,
+    AiPreferencesModule,
+    AnalyticsModule,
   ],
 
   controllers: [AppController],

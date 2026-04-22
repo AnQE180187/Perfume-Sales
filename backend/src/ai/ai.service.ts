@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GoogleGenAI } from '@google/genai';
 import { PrismaService } from '../prisma/prisma.service';
+import { AnalyticsService } from '../analytics/analytics.service';
 
 @Injectable()
 export class AiService {
@@ -12,6 +13,7 @@ export class AiService {
   constructor(
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
+    private readonly analyticsService: AnalyticsService,
   ) {
     const apiKey = this.configService.get<string>('GEMINI_API_KEY');
     this.model =
@@ -23,27 +25,61 @@ export class AiService {
     this.ai = new GoogleGenAI({ apiKey });
   }
 
+  private async logRequest(
+    userId: string | null,
+    type: string,
+    request: any,
+    response: string | null,
+    status: 'SUCCESS' | 'FAILED',
+    duration?: number,
+    errorMessage?: string,
+  ) {
+    try {
+      await this.prisma.aiRequestLog.create({
+        data: {
+          userId,
+          type,
+          request: typeof request === 'string' ? request : JSON.stringify(request),
+          response,
+          status,
+          duration,
+          model: this.model,
+          errorMessage,
+        },
+      });
+    } catch (error) {
+      this.logger.error(`Failed to log AI request [${type}]`, error.message);
+    }
+  }
+
   // ──────────────────────────────────────────────────────
   // Review summarisation (called by ReviewsService)
   // ──────────────────────────────────────────────────────
   async summarizeProductReviews(productId: string): Promise<void> {
+    const startTime = Date.now();
     try {
       const reviews = await this.prisma.review.findMany({
         where: { productId, isHidden: false },
         select: { rating: true, content: true },
-        take: 100,
+        take: 50,
         orderBy: { createdAt: 'desc' },
       });
 
-      if (reviews.length === 0) return;
+      if (reviews.length < 3) return;
 
       const reviewTexts = reviews
-        .map((r) => `Rating: ${r.rating}/5. ${r.content ?? ''}`)
+        .map((r) => `[Rating: ${r.rating}/5] ${r.content ?? '(No text)'}`)
         .join('\n');
 
-      const prompt = `Summarize the following product reviews.
-Return a JSON object with keys: summary, pros, cons, keywords, sentiment.
-Only return the JSON, no markdown fences.
+      const prompt = `You are an expert fragrance critic. Summarize the following customer reviews for a perfume.
+Return a JSON object with the following structure:
+{
+  "summary": "A concise paragraph (2-3 sentences) summarizing the overall sentiment in Vietnamese",
+  "pros": "Bulleted list of pros in Vietnamese",
+  "cons": "Bulleted list of cons in Vietnamese",
+  "keywords": "Comma-separated keywords (scent notes, performance, etc.)",
+  "sentiment": "POSITIVE", "NEGATIVE", or "NEUTRAL"
+}
 
 Reviews:
 ${reviewTexts}`;
@@ -53,35 +89,59 @@ ${reviewTexts}`;
         contents: prompt,
       });
 
-      const text = response.text ?? '{}';
-      let parsed: Record<string, string> = {};
+      const text = response.text || '';
+      let parsed: any = null;
+
       try {
         const jsonMatch = text.match(/\{[\s\S]*\}/);
-        if (jsonMatch) parsed = JSON.parse(jsonMatch[0]);
-      } catch {
-        /* not valid JSON – use raw text */
+        if (jsonMatch) {
+          parsed = JSON.parse(jsonMatch[0]);
+        }
+      } catch (e) {
+        this.logger.error('Failed to parse AI JSON response', e);
       }
 
-      await this.prisma.reviewSummary.upsert({
-        where: { productId },
-        create: {
-          productId,
-          summary: parsed.summary ?? text,
-          pros: parsed.pros ?? '',
-          cons: parsed.cons ?? '',
-          keywords: parsed.keywords ?? '',
-          sentiment: parsed.sentiment ?? 'NEUTRAL',
-        },
-        update: {
-          summary: parsed.summary ?? text,
-          pros: parsed.pros ?? '',
-          cons: parsed.cons ?? '',
-          keywords: parsed.keywords ?? '',
-          sentiment: parsed.sentiment ?? 'NEUTRAL',
-        },
-      });
+      if (parsed) {
+        await this.prisma.reviewSummary.upsert({
+          where: { productId },
+          create: {
+            productId,
+            summary: parsed.summary || text.slice(0, 500),
+            pros: parsed.pros || '',
+            cons: parsed.cons || '',
+            keywords: parsed.keywords || '',
+            sentiment: parsed.sentiment || 'NEUTRAL',
+          },
+          update: {
+            summary: parsed.summary || text.slice(0, 500),
+            pros: parsed.pros || '',
+            cons: parsed.cons || '',
+            keywords: parsed.keywords || '',
+            sentiment: parsed.sentiment || 'NEUTRAL',
+          },
+        });
+        this.logger.log(`Updated AI summary for product ${productId}`);
+      }
+
+      await this.logRequest(
+        null,
+        'REVIEW_SUMMARY',
+        { productId, reviewCount: reviews.length },
+        text,
+        'SUCCESS',
+        Date.now() - startTime,
+      );
     } catch (error) {
       this.logger.error('Failed to summarize reviews', error);
+      await this.logRequest(
+        null,
+        'REVIEW_SUMMARY',
+        { productId },
+        null,
+        'FAILED',
+        Date.now() - startTime,
+        error.message,
+      );
     }
   }
 
@@ -160,10 +220,37 @@ ${reviewTexts}`;
   async perfumeConsult(
     userMessage: string,
     history: Array<{ role: string; text: string }>,
+    userId?: string,
+    dna?: {
+      preferredNotes: string[];
+      avoidedNotes: string[];
+      riskLevel: number;
+    },
   ): Promise<string> {
-    const catalog = await this.getProductCatalog();
+    const startTime = Date.now();
+    try {
+      const catalog = await this.getProductCatalog();
 
-    const systemPrompt = `You are "PerfumeGPT", an expert fragrance consultant for our perfume store.
+      let dnaContext = '';
+      if (dna) {
+        dnaContext = `
+═══════════════════════════════════════
+USER SCENT DNA PROFILE:
+- Preferred Notes: ${dna.preferredNotes.join(', ') || 'Any'}
+- Avoided Notes (STRICT EXCLUSION): ${dna.avoidedNotes.join(', ') || 'None'}
+- Adventure/Risk Level: ${dna.riskLevel} (0.0 = Very Safe, 1.0 = Very Bold)
+
+ADVICE STRATEGY:
+1. STRICTLY EXCLUDE any product that contains any of the "Avoided Notes".
+2. PRIORITIZE products with "Preferred Notes".
+3. If Adventure Level is LOW (< 0.4), recommend very safe, mass-appealing classics matching their preferred notes.
+4. If Adventure Level is HIGH (> 0.7), suggest unique or challenging fragrance combinations that might push their boundaries but still avoid their excluded notes.
+═══════════════════════════════════════
+`;
+      }
+
+      const systemPrompt = `You are "PerfumeGPT", an expert fragrance consultant for our perfume store.
+${dnaContext}
 
 IMPORTANT RULES:
 - You can ONLY recommend products that exist in our catalog below.
@@ -181,18 +268,42 @@ OUR PRODUCT CATALOG (${catalog ? 'available' : 'empty'}):
 ${catalog || '(No products currently in system)'}
 ═══════════════════════════════════════`;
 
-    const contents = [
-      systemPrompt,
-      ...history.map((h) => `${h.role}: ${h.text}`),
-      `USER: ${userMessage}`,
-    ].join('\n');
+      const contents = [
+        systemPrompt,
+        ...history.map((h) => `${h.role}: ${h.text}`),
+        `USER: ${userMessage}`,
+      ].join('\n');
 
-    const response = await this.ai.models.generateContent({
-      model: this.model,
-      contents,
-    });
+      const response = await this.ai.models.generateContent({
+        model: this.model,
+        contents,
+      });
 
-    return response.text ?? 'Sorry, I could not generate a response.';
+      const responseText = response.text ?? 'Sorry, I could not generate a response.';
+
+      await this.logRequest(
+        userId || null,
+        'PERFUME_CONSULT',
+        { message: userMessage, historyLength: history.length, hasDna: !!dna },
+        responseText,
+        'SUCCESS',
+        Date.now() - startTime,
+      );
+
+      return responseText;
+    } catch (error) {
+      this.logger.error('Failed to generate AI consultation', error);
+      await this.logRequest(
+        userId || null,
+        'PERFUME_CONSULT',
+        { message: userMessage },
+        null,
+        'FAILED',
+        Date.now() - startTime,
+        error.message,
+      );
+      return 'Sorry, I encountered an error. Please try again later.';
+    }
   }
 
   // ──────────────────────────────────────────────────────
@@ -201,50 +312,130 @@ ${catalog || '(No products currently in system)'}
   async marketingAdvise(
     adminMessage: string,
     history: Array<{ role: string; text: string }>,
+    adminUserId?: string,
   ): Promise<string> {
-    const systemPrompt = `You are "PerfumeGPT Marketing", a marketing advisor for a perfume shop.
-Rules:
-- Respond in the same language the admin writes in.
-- Give actionable marketing insights, promotions ideas, and strategy tips.
-- Be professional and data-oriented when possible.`;
+    const startTime = Date.now();
+    let contextStr = '';
+    try {
+      const [overview, topProducts, lowStock] = await Promise.all([
+        this.analyticsService.getOverview(),
+        this.analyticsService.getTopProducts(10),
+        this.analyticsService.getLowStockItems(10),
+      ]);
 
-    const contents = [
-      systemPrompt,
-      ...history.map((h) => `${h.role}: ${h.text}`),
-      `ADMIN: ${adminMessage}`,
-    ].join('\n');
+      const topProductsStr = topProducts
+        .map(
+          (p) =>
+            `- ${p.productName} (Đã bán: ${p.totalQuantity}, Doanh thu: ${p.totalRevenue.toLocaleString()} VND)`
+        )
+        .join('\n');
 
-    const response = await this.ai.models.generateContent({
-      model: this.model,
-      contents,
-    });
+      const lowStockStr = lowStock
+        .map(
+          (p) =>
+            `- ${p.productName} [${p.variantName}] - Chú ý: Chỉ còn ${p.stock} sản phẩm!`
+        )
+        .join('\n');
 
-    return response.text ?? 'Sorry, I could not generate a response.';
+      contextStr = `
+CURRENT STORE DATA (Last 30 Days):
+- Total Revenue: ${overview.totalRevenue.toLocaleString()} VND
+- Total Orders: ${overview.totalOrders}
+- Completed Orders: ${overview.completedOrders}
+- Cancelled Orders: ${overview.cancelledOrders}
+- New Customers Today: ${overview.newCustomersToday}
+- AI Consultations: ${overview.aiConsultations}
+
+TOP SELLING PRODUCTS (Last 30 Days):
+${topProductsStr || 'No data'}
+
+LOW STOCK ALERTS (Critical to restock):
+${lowStockStr || 'No data'}
+`;
+    } catch (e) {
+      this.logger.error('Failed to fetch analytics context for AI', e);
+    }
+
+    try {
+      const systemPrompt = `You are "PerfumeGPT Marketing", an expert strategic business consultant, retail manager, and chief marketing advisor for a luxury perfume brand called "PerfumeGPT".
+Your client is the Administrator (CEO) of the system.
+
+${contextStr}
+
+INSTRUCTIONS:
+1. Base your strategies strictly on the provided real-time data above.
+2. If the admin asks for restock advice, prioritize the "LOW STOCK ALERTS" and suggest ordering popular items from "TOP SELLING PRODUCTS".
+3. If asked about marketing strategy, suggest campaigns around the top-selling products or clearance strategies for slow-moving stock (if any).
+4. Always respond in a professional, high-end consulting tone (like a McKinsey/BCG consultant).
+5. You must answer in the same language as the admin.
+6. Format your advice clearly with bullet points, actionable steps, and data references. Make sure the numbers match system context exactly.`;
+
+      const contents = [
+        systemPrompt,
+        ...history.map((h) => `${h.role}: ${h.text}`),
+        `ADMIN: ${adminMessage}`,
+      ].join('\n');
+
+      const response = await this.ai.models.generateContent({
+        model: this.model,
+        contents,
+      });
+
+      const responseText = response.text ?? 'Sorry, I could not generate a response.';
+
+      await this.logRequest(
+        adminUserId || null,
+        'MARKETING_ADVISOR',
+        { message: adminMessage },
+        responseText,
+        'SUCCESS',
+        Date.now() - startTime,
+      );
+
+      return responseText;
+    } catch (error) {
+      this.logger.error('Failed to generate marketing advice', error);
+      await this.logRequest(
+        adminUserId || null,
+        'MARKETING_ADVISOR',
+        { message: adminMessage },
+        null,
+        'FAILED',
+        Date.now() - startTime,
+        error.message,
+      );
+      return 'Sorry, I encountered an error. Please try again later.';
+    }
   }
 
   // ──────────────────────────────────────────────────────
   // Quiz Consultant
   // ──────────────────────────────────────────────────────
-  async quizConsult(answers: {
-    gender?: string;
-    occasion?: string;
-    budgetMin?: number;
-    budgetMax?: number;
-    preferredFamily?: string;
-    longevity?: string;
-  }): Promise<Array<{ productId: string; name: string; reason: string; price: number }>> {
-    const catalog = await this.getProductCatalog();
+  async quizConsult(
+    answers: {
+      gender?: string;
+      occasion?: string;
+      budgetMin?: number;
+      budgetMax?: number;
+      preferredFamily?: string;
+      longevity?: string;
+    },
+    userId?: string,
+  ): Promise<Array<{ productId: string; name: string; reason: string; price: number }>> {
+    const startTime = Date.now();
+    try {
+      const catalog = await this.getProductCatalog();
 
-    const customerInfo: string[] = [];
-    if (answers.gender) customerInfo.push(`Giới tính: ${answers.gender}`);
-    if (answers.occasion) customerInfo.push(`Dịp sử dụng: ${answers.occasion}`);
-    if (answers.budgetMin && answers.budgetMax) {
-      customerInfo.push(`Ngân sách: ${answers.budgetMin.toLocaleString()} - ${answers.budgetMax.toLocaleString()} VND`);
-    }
-    if (answers.preferredFamily) customerInfo.push(`Gia đình hương: ${answers.preferredFamily}`);
-    if (answers.longevity) customerInfo.push(`Thời gian lưu hương: ${answers.longevity}`);
+      const customerInfo: string[] = [];
+      if (answers.gender) customerInfo.push(`Giới tính: ${answers.gender}`);
+      if (answers.occasion) customerInfo.push(`Dịp sử dụng: ${answers.occasion}`);
+      if (answers.budgetMin && answers.budgetMax) {
+        customerInfo.push(`Ngân sách: ${answers.budgetMin.toLocaleString()} - ${answers.budgetMax.toLocaleString()} VND`);
+      }
+      if (answers.preferredFamily) customerInfo.push(`Gia đình hương: ${answers.preferredFamily}`);
+      if (answers.longevity) customerInfo.push(`Thời gian lưu hương: ${answers.longevity}`);
 
-    const prompt = `Bạn là chuyên gia tư vấn nước hoa tại PerfumeGPT. Khách hàng đã trả lời khảo sát với thông tin sau:
+      const prompt = `Bạn là chuyên gia tư vấn nước hoa tại PerfumeGPT. Khách hàng đã trả lời khảo sát với thông tin sau:
 
 THÔNG TIN KHÁCH HÀNG:
 ${customerInfo.join('\n')}
@@ -258,21 +449,117 @@ YÊU CẦU:
 - Trả kết quả dạng JSON array: [{"productId": "<ID từ catalog>", "name": "<tên chính xác>", "reason": "<giải thích ngắn gọn bằng tiếng Việt>", "price": <giá thấp nhất số>}].
 - Chỉ trả JSON, không thêm text ngoài.`;
 
-    const response = await this.ai.models.generateContent({
-      model: this.model,
-      contents: prompt,
-    });
+      const response = await this.ai.models.generateContent({
+        model: this.model,
+        contents: prompt,
+      });
 
-    const text = response.text ?? '[]';
-    try {
-      const jsonMatch = text.match(/\[[\s\S]*\]/);
-      if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0]);
-        return Array.isArray(parsed) ? parsed.slice(0, 5) : [];
+      const text = response.text ?? '[]';
+      let results: any[] = [];
+      
+      try {
+        const jsonMatch = text.match(/\[[\s\S]*\]/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          results = Array.isArray(parsed) ? parsed.slice(0, 5) : [];
+        }
+      } catch (error) {
+        this.logger.error('Failed to parse quiz AI response', error);
       }
+
+      await this.logRequest(
+        userId || null,
+        'QUIZ_CONSULT',
+        answers,
+        text,
+        results.length > 0 ? 'SUCCESS' : 'FAILED',
+        Date.now() - startTime,
+      );
+
+      return results;
     } catch (error) {
-      this.logger.error('Failed to parse quiz AI response', error);
+      this.logger.error('Failed to generate quiz consultation', error);
+      await this.logRequest(
+        userId || null,
+        'QUIZ_CONSULT',
+        answers,
+        null,
+        'FAILED',
+        Date.now() - startTime,
+        error.message,
+      );
+      return [];
     }
-    return [];
+  }
+
+  async generateProductScentAnalysis(productId: string): Promise<string> {
+    const startTime = Date.now();
+    try {
+      const product = await this.prisma.product.findUnique({
+        where: { id: productId },
+        include: {
+          brand: true,
+          notes: { include: { note: true } },
+        },
+      });
+
+      if (!product) return '';
+
+      const notesStr = product.notes
+        .map((n) => `${n.note.type}: ${n.note.name}`)
+        .join(', ');
+
+      const prompt = `Bạn là một chuyên gia phê bình nước hoa cao cấp. Hãy viết một đoạn phân tích ngắn (khoảng 3-4 câu) về mùi hương của chai nước hoa này cho khách hàng.
+Sản phẩm: ${product.name} của thương hiệu ${product.brand.name}.
+Các nốt hương: ${notesStr}.
+Mô tả: ${product.description || 'N/A'}.
+
+YÊU CẦU:
+- Văn phong sang trọng, tinh tế, giàu hình ảnh cảm xúc.
+- Giải thích sự hòa quyện giữa các tầng hương mang lại trải nghiệm gì cho người dùng.
+- Trả về nội dung bằng Tiếng Việt.
+- Không dùng từ ngữ quá phổ thông, hãy làm khách hàng cảm thấy đây là một kiệt tác.
+- Chỉ trả về đoạn văn bản phân tích, không thêm tiêu đề hay định dạng code block.`;
+
+      const response = await this.ai.models.generateContent({
+        model: this.model,
+        contents: prompt,
+      });
+
+      const analysis = response.text || '';
+
+      if (analysis) {
+        await this.prisma.product.update({
+          where: { id: productId },
+          data: { scentAnalysis: analysis },
+        });
+      }
+
+      await this.logRequest(
+        null,
+        'SCENT_ANALYSIS',
+        { productId },
+        analysis,
+        analysis ? 'SUCCESS' : 'FAILED',
+        Date.now() - startTime,
+      );
+
+      return analysis;
+    } catch (error) {
+      this.logger.error(
+        `Failed to generate scent analysis for ${productId}`,
+        error,
+      );
+      await this.logRequest(
+        null,
+        'SCENT_ANALYSIS',
+        { productId },
+        null,
+        'FAILED',
+        Date.now() - startTime,
+        error.message,
+      );
+      return '';
+    }
   }
 }

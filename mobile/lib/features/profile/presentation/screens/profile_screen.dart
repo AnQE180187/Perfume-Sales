@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_theme.dart';
+import 'package:perfume_gpt_app/l10n/app_localizations.dart';
 import '../../../auth/providers/auth_provider.dart';
 import '../../../loyalty/services/loyalty_service.dart';
 import '../../providers/profile_provider.dart';
@@ -71,19 +72,20 @@ class ProfileScreen extends ConsumerWidget {
                   onShippingAddresses: () => _handleShippingAddresses(context),
                   onPaymentMethods: () => _handlePaymentMethods(context),
                   onAiPreferences: () => _handleAiPreferences(context),
-                  activeShipmentsText: '2 đang giao',
+                  onSettings: () => _handleSettings(context),
+                  activeShipmentsText: null,
                 ),
 
                 // Logout
                 LogoutSection(onLogout: () => _handleLogout(context, ref)),
 
                 // Bottom spacing for nav bar
-                const SizedBox(height: 100),
+                const SizedBox(height: 120),
               ],
             );
           },
           loading: () => _buildLoading(),
-          error: (error, stack) => _buildError(error),
+          error: (error, stack) => _buildError(error, context),
         ),
       ),
     );
@@ -112,14 +114,15 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   void _handleFindNextScent(BuildContext context, WidgetRef ref) {
-    // Navigate to AI consultation using GoRouter
-    context.push(AppRoutes.aiConsultation);
+    // Navigate to Explore screen using GoRouter
+    context.push(AppRoutes.explore);
   }
 
   void _handleViewScentProfile(BuildContext context, WidgetRef ref) {
     // TODO: Navigate to full scent profile screen
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Hồ sơ mùi hương chi tiết sẽ sớm có mặt')),
+      SnackBar(
+          content: Text(AppLocalizations.of(context)!.scentProfileSoon)),
     );
   }
 
@@ -141,27 +144,29 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   void _handleAiPreferences(BuildContext context) {
-    // TODO: Navigate to AI preferences screen
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Tùy chọn AI sẽ sớm có mặt')));
+    context.push(AppRoutes.aiPreferences);
+  }
+
+  void _handleSettings(BuildContext context) {
+    context.push(AppRoutes.settings);
   }
 
   Future<void> _handleLogout(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
     // Show confirmation dialog
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Đăng xuất'),
-        content: const Text('Bạn có chắc muốn đăng xuất không?'),
+        title: Text(l10n.logout),
+        content: Text(l10n.logoutConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Hủy'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Đăng xuất'),
+            child: Text(l10n.logout),
           ),
         ],
       ),
@@ -180,6 +185,7 @@ class ProfileScreen extends ConsumerWidget {
   // ============================================
 
   Widget _buildLoginRequired(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -187,13 +193,13 @@ class ProfileScreen extends ConsumerWidget {
           Icon(Icons.person_outline, size: 64, color: AppTheme.mutedSilver),
           const SizedBox(height: 16),
           Text(
-            'Vui lòng đăng nhập để xem hồ sơ của bạn',
+            l10n.loginToViewProfile,
             style: Theme.of(context).textTheme.bodyLarge,
           ),
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: () => context.go('/login'),
-            child: const Text('Đăng nhập'),
+            child: Text(l10n.login),
           ),
         ],
       ),
@@ -209,14 +215,14 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildError(Object error) {
+  Widget _buildError(Object error, BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.error_outline, size: 64, color: AppTheme.mutedSilver),
           const SizedBox(height: 16),
-          Text('Lỗi khi tải hồ sơ: $error'),
+          Text('${AppLocalizations.of(context)!.errorLoadingProfile}: $error'),
         ],
       ),
     );
@@ -288,8 +294,8 @@ class _LoyaltyCta extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Khách hàng thân thiết',
-                      style: TextStyle(
+                      AppLocalizations.of(context)!.loyaltyProgram,
+                      style: const TextStyle(
                         fontFamily: 'Montserrat',
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -299,7 +305,7 @@ class _LoyaltyCta extends ConsumerWidget {
                     const SizedBox(height: 2),
                     statusAsync.isLoading
                         ? Text(
-                            'Đang tải...',
+                            AppLocalizations.of(context)!.loading,
                             style: TextStyle(
                               fontFamily: 'Montserrat',
                               fontSize: 11,
@@ -308,8 +314,8 @@ class _LoyaltyCta extends ConsumerWidget {
                           )
                         : Text(
                             points > 0
-                                ? '$points điểm  •  Hạng $tier'
-                                : 'Bắt đầu tích điểm ngay',
+                                ? '$points ${AppLocalizations.of(context)!.pointsLabel}  •  ${AppLocalizations.of(context)!.tierLabel} ${AppLocalizations.of(context)!.localeName == 'vi' ? statusAsync.value!.tierNameVi : tier}'
+                                : AppLocalizations.of(context)!.startPoints,
                             style: TextStyle(
                               fontFamily: 'Montserrat',
                               fontSize: 11,

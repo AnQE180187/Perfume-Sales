@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../l10n/app_localizations.dart';
 import '../models/review.dart';
 import '../providers/review_provider.dart';
 
@@ -35,28 +36,29 @@ class _ReviewsScreenState extends ConsumerState<ReviewsScreen> {
     }
   }
 
-  String _timeAgo(DateTime dt) {
+  String _timeAgo(DateTime dt, AppLocalizations l10n) {
     final diff = DateTime.now().difference(dt);
     if (diff.inDays >= 365) {
       final y = (diff.inDays / 365).floor();
-      return '$y năm trước';
+      return l10n.yearsAgo(y);
     } else if (diff.inDays >= 30) {
       final m = (diff.inDays / 30).floor();
-      return '$m tháng trước';
+      return l10n.monthsAgo(m);
     } else if (diff.inDays >= 7) {
       final w = (diff.inDays / 7).floor();
-      return '$w tuần trước';
+      return l10n.weeksAgo(w);
     } else if (diff.inDays >= 1) {
-      return '${diff.inDays} ngày trước';
+      return l10n.daysAgo(diff.inDays);
     } else if (diff.inHours >= 1) {
-      return '${diff.inHours} giờ trước';
+      return l10n.hoursAgo(diff.inHours);
     } else {
-      return 'Vừa xong';
+      return l10n.justNow;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final statsAsync = ref.watch(reviewStatsProvider(widget.productId));
     final listAsync = ref.watch(reviewListProvider(widget.productId));
     final summaryAsync = ref.watch(reviewSummaryProvider(widget.productId));
@@ -71,7 +73,7 @@ class _ReviewsScreenState extends ConsumerState<ReviewsScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Đánh giá',
+          l10n.review,
           style: GoogleFonts.playfairDisplay(
             fontSize: 20,
             fontWeight: FontWeight.w600,
@@ -82,7 +84,6 @@ class _ReviewsScreenState extends ConsumerState<ReviewsScreen> {
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
-
         children: [
           // ── AI Insight Card ──────────────────────────────────────
           summaryAsync.when(
@@ -93,9 +94,7 @@ class _ReviewsScreenState extends ConsumerState<ReviewsScreen> {
               return _AiInsightCard(summary: text);
             },
           ),
-
           const SizedBox(height: 20),
-
           // ── Rating Summary ───────────────────────────────────────
           statsAsync.when(
             loading: () => const Center(
@@ -107,40 +106,33 @@ class _ReviewsScreenState extends ConsumerState<ReviewsScreen> {
             error: (_, __) => const SizedBox.shrink(),
             data: (stats) => _RatingSummary(stats: stats),
           ),
-
           const SizedBox(height: 24),
-
           // ── Filter Tabs ──────────────────────────────────────────
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
                 _FilterChipWidget(
-                  label: 'Tất cả đánh giá',
+                  label: l10n.allReviews,
                   isSelected: _activeFilter == _ReviewFilter.all,
-                  onTap: () =>
-                      setState(() => _activeFilter = _ReviewFilter.all),
+                  onTap: () => setState(() => _activeFilter = _ReviewFilter.all),
                 ),
                 const SizedBox(width: 8),
                 _FilterChipWidget(
-                  label: 'Có hình ảnh',
+                  label: l10n.withImages,
                   isSelected: _activeFilter == _ReviewFilter.withImages,
-                  onTap: () =>
-                      setState(() => _activeFilter = _ReviewFilter.withImages),
+                  onTap: () => setState(() => _activeFilter = _ReviewFilter.withImages),
                 ),
                 const SizedBox(width: 8),
                 _FilterChipWidget(
-                  label: 'Người mua xác thực',
+                  label: l10n.verifiedBuyer,
                   isSelected: _activeFilter == _ReviewFilter.verified,
-                  onTap: () =>
-                      setState(() => _activeFilter = _ReviewFilter.verified),
+                  onTap: () => setState(() => _activeFilter = _ReviewFilter.verified),
                 ),
               ],
             ),
           ),
-
           const SizedBox(height: 24),
-
           // ── Review List ─────────────────────────────────────────
           listAsync.when(
             loading: () => const Center(
@@ -153,7 +145,7 @@ class _ReviewsScreenState extends ConsumerState<ReviewsScreen> {
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 48),
                 child: Text(
-                  'Không thể tải đánh giá',
+                  l10n.failedLoadReviews,
                   style: GoogleFonts.montserrat(color: AppTheme.mutedSilver),
                 ),
               ),
@@ -173,7 +165,7 @@ class _ReviewsScreenState extends ConsumerState<ReviewsScreen> {
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          'Chưa có đánh giá nào',
+                          l10n.noReviewsYet,
                           style: GoogleFonts.montserrat(
                             color: AppTheme.mutedSilver,
                           ),
@@ -190,7 +182,7 @@ class _ReviewsScreenState extends ConsumerState<ReviewsScreen> {
                         padding: const EdgeInsets.only(bottom: 16),
                         child: _ReviewCard(
                           review: review,
-                          timeAgo: _timeAgo(review.createdAt),
+                          timeAgo: _timeAgo(review.createdAt, l10n),
                         ),
                       ),
                     )
@@ -203,10 +195,6 @@ class _ReviewsScreenState extends ConsumerState<ReviewsScreen> {
     );
   }
 }
-
-// ══════════════════════════════════════════════════════════════
-// Sub-widgets
-// ══════════════════════════════════════════════════════════════
 
 class _AiInsightCard extends StatefulWidget {
   final String summary;
@@ -221,6 +209,7 @@ class _AiInsightCardState extends State<_AiInsightCard> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isEmpty = widget.summary.trim().isEmpty;
     return Container(
       padding: const EdgeInsets.all(14),
@@ -250,7 +239,7 @@ class _AiInsightCardState extends State<_AiInsightCard> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'GÓC NHÌN PERFUMEGPT',
+                  l10n.perfumeGptInsight,
                   style: GoogleFonts.montserrat(
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
@@ -261,7 +250,7 @@ class _AiInsightCardState extends State<_AiInsightCard> {
                 const SizedBox(height: 6),
                 if (isEmpty)
                   Text(
-                    'Chưa có tổng hợp AI cho sản phẩm này.',
+                    l10n.noAiSummary,
                     style: GoogleFonts.montserrat(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
@@ -300,9 +289,10 @@ class _RatingSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (stats.total == 0) {
       return Text(
-        'Chưa có đánh giá nào cho sản phẩm này.',
+        l10n.noReviewsYet,
         style: GoogleFonts.montserrat(
           fontSize: 13,
           color: AppTheme.mutedSilver,
@@ -356,6 +346,7 @@ class _RatingLeft extends StatelessWidget {
   });
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
         Text(
@@ -394,7 +385,7 @@ class _RatingLeft extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Text(
-          '${stats.total} đánh giá đã xác thực',
+          l10n.verifiedReviewsCount(stats.total),
           style: GoogleFonts.montserrat(
             fontSize: 11,
             color: AppTheme.mutedSilver,
@@ -502,6 +493,7 @@ class _ReviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final name = review.user.fullName;
     final initial = name.isNotEmpty ? name[0].toUpperCase() : '?';
 
@@ -514,7 +506,6 @@ class _ReviewCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header: avatar + name/meta + stars
           Row(
             children: [
               CircleAvatar(
@@ -570,7 +561,7 @@ class _ReviewCard extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            'Người mua xác thực',
+                            l10n.verifiedBuyer,
                             style: GoogleFonts.montserrat(
                               fontSize: 10,
                               fontWeight: FontWeight.w500,
@@ -595,8 +586,6 @@ class _ReviewCard extends StatelessWidget {
               ),
             ],
           ),
-
-          // Content
           if (review.content != null && review.content!.isNotEmpty) ...[
             const SizedBox(height: 10),
             Text(
@@ -609,8 +598,6 @@ class _ReviewCard extends StatelessWidget {
               ),
             ),
           ],
-
-          // Images
           if (review.images.isNotEmpty) ...[
             const SizedBox(height: 10),
             SizedBox(
@@ -626,22 +613,11 @@ class _ReviewCard extends StatelessWidget {
                     width: 100,
                     height: 100,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      width: 100,
-                      height: 100,
-                      color: AppTheme.softTaupe.withValues(alpha: 0.3),
-                      child: const Icon(
-                        Icons.image_outlined,
-                        color: AppTheme.mutedSilver,
-                      ),
-                    ),
                   ),
                 ),
               ),
             ),
           ],
-
-          // Helpful
           if (review.helpfulCount > 0) ...[
             const SizedBox(height: 12),
             Row(
@@ -653,7 +629,7 @@ class _ReviewCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  '${review.helpfulCount} người thấy hữu ích',
+                  l10n.peopleFoundHelpful(review.helpfulCount),
                   style: GoogleFonts.montserrat(
                     fontSize: 11,
                     color: AppTheme.mutedSilver,

@@ -71,9 +71,9 @@ class ConfirmOrderSection extends StatelessWidget {
               ),
               Text(
                 formatVND(totalAmount),
-                style: GoogleFonts.playfairDisplay(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w700,
+                style: GoogleFonts.montserrat(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
                   letterSpacing: -0.5,
                   color: AppTheme.deepCharcoal,
                 ),

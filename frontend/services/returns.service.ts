@@ -25,6 +25,7 @@ export type CreateReturnDto = {
   orderId: string;
   items: ReturnItemDto[];
   reason?: string;
+  paymentInfo?: any;
   origin?: "ONLINE" | "POS";
 };
 
@@ -44,6 +45,18 @@ export type TriggerRefundDto = {
   method: "manual" | "cash" | "bank_transfer" | "gateway";
   transactionId?: string;
   note?: string;
+  receiptImage?: string;
+};
+
+export type Refund = {
+  id: string;
+  amount: number;
+  method: string;
+  status: string;
+  note?: string;
+  receiptImage?: string;
+  transactionId?: string;
+  createdAt?: string;
 };
 
 export type ReturnRequest = {
@@ -51,6 +64,7 @@ export type ReturnRequest = {
   orderId: string;
   status: ReturnStatus;
   reason?: string;
+  paymentInfo?: any;
   totalAmount?: number;
   refundAmount?: number;
   items: {
@@ -59,7 +73,37 @@ export type ReturnRequest = {
     quantity: number;
     reason?: string;
     images: string[];
+    qtyReceived?: number;
+    condition?: string;
+    variant?: {
+      id: string;
+      name: string;
+      volume?: string;
+      product?: {
+        id: string;
+        name: string;
+        images?: { id: number; url: string }[];
+      };
+    };
   }[];
+  refunds?: Refund[];
+  shipments?: {
+    id: string;
+    courier?: string;
+    trackingNumber?: string;
+    shippedAt?: string;
+    receivedAt?: string;
+    status?: string;
+  }[];
+  origin?: "ONLINE" | "POS";
+  order?: {
+    id: string;
+    code: string;
+    recipientName?: string;
+    phone?: string;
+    shippingAddress?: string;
+    channel?: string;
+  };
   // ... other fields
 };
 
@@ -87,15 +131,21 @@ export const returnsService = {
   cancelReturn(id: string, reason?: string) {
     return api.patch(`/returns/${id}/cancel`, { reason }).then((r) => r.data);
   },
+  
+  handoverReturn(id: string) {
+    return api.patch(`/returns/${id}/handover`).then((r) => r.data);
+  },
 
   // Admin endpoints (use with admin auth)
-  listAll(skip = 0, take = 20, status?: string, orderId?: string) {
+  listAll(skip = 0, take = 20, status?: string, orderId?: string, startDate?: string, endDate?: string) {
     const params = new URLSearchParams({
       skip: skip.toString(),
       take: take.toString(),
     });
     if (status) params.append("status", status);
     if (orderId) params.append("orderId", orderId);
+    if (startDate) params.append("startDate", startDate);
+    if (endDate) params.append("endDate", endDate);
     return api.get(`/returns/admin/all?${params}`).then((r) => r.data);
   },
 
@@ -125,8 +175,16 @@ export const returnsService = {
     return api.get(`/returns/admin/${id}/audits`).then((r) => r.data);
   },
 
+  getSuggestedRefund(id: string) {
+    return api.get<{ suggestedAmount: number }>(`/returns/admin/${id}/suggested-refund`).then((r) => r.data);
+  },
+
   getRefunds(id: string) {
     return api.get(`/returns/admin/${id}/refunds`).then((r) => r.data);
+  },
+
+  adminCancelReturn(id: string, reason?: string) {
+    return api.patch(`/returns/admin/${id}/cancel`, { reason }).then((r) => r.data);
   },
 
   posCreateReturn(dto: CreateReturnDto, idempotencyKey?: string) {

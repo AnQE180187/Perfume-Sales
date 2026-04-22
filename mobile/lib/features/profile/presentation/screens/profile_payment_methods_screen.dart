@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/luxury_button.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class ProfilePaymentMethodsScreen extends StatefulWidget {
   const ProfilePaymentMethodsScreen({super.key});
@@ -15,37 +16,35 @@ class ProfilePaymentMethodsScreen extends StatefulWidget {
 class _ProfilePaymentMethodsScreenState
     extends State<ProfilePaymentMethodsScreen> {
   late List<_SavedPaymentMethod> _methods;
+  bool _isInitialized = false;
 
-  static const List<_SavedPaymentMethod> _seedMethods = [
-    _SavedPaymentMethod(
-      id: 'payos-online',
-      type: _ManagedPaymentType.payos,
-      title: 'Thanh toán online qua PayOS',
-      subtitle: 'Mở cổng thanh toán bảo mật để quét QR hoặc chuyển khoản nhanh',
-      statusLabel: 'Đang bật',
-      details: 'Nhận biên nhận điện tử ngay sau khi hoàn tất thanh toán.',
-      isDefault: true,
-      isEnabled: true,
-      accentColor: Color(0xFFD4AF37),
-    ),
-    _SavedPaymentMethod(
-      id: 'cod',
-      type: _ManagedPaymentType.cod,
-      title: 'Thanh toán khi nhận hàng',
-      subtitle:
-          'Kiểm tra gói hàng rồi thanh toán trực tiếp cho đơn vị giao hàng',
-      statusLabel: 'Dự phòng',
-      details: 'Phù hợp khi bạn muốn giữ thanh toán đến lúc hàng giao tận nơi.',
-      isDefault: false,
-      isEnabled: true,
-      accentColor: Color(0xFF7E8F7A),
-    ),
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    _methods = _seedMethods;
+  void _initializeMethods(AppLocalizations l10n) {
+    if (_isInitialized) return;
+    _methods = [
+      _SavedPaymentMethod(
+        id: 'payos-online',
+        type: _ManagedPaymentType.payos,
+        title: l10n.payosTitle,
+        subtitle: l10n.payosSubtitle,
+        statusLabel: l10n.active,
+        details: l10n.payosDetails,
+        isDefault: true,
+        isEnabled: true,
+        accentColor: const Color(0xFFD4AF37),
+      ),
+      _SavedPaymentMethod(
+        id: 'cod',
+        type: _ManagedPaymentType.cod,
+        title: l10n.codTitle,
+        subtitle: l10n.codSubtitle,
+        statusLabel: l10n.standby,
+        details: l10n.codDetails,
+        isDefault: false,
+        isEnabled: true,
+        accentColor: const Color(0xFF7E8F7A),
+      ),
+    ];
+    _isInitialized = true;
   }
 
   _SavedPaymentMethod? get _defaultMethod {
@@ -56,6 +55,7 @@ class _ProfilePaymentMethodsScreenState
   }
 
   void _setDefault(String id) {
+    final l10n = AppLocalizations.of(context)!;
     setState(() {
       _methods = _methods
           .map((method) => method.copyWith(isDefault: method.id == id))
@@ -63,8 +63,8 @@ class _ProfilePaymentMethodsScreenState
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Đã cập nhật phương thức thanh toán ưu tiên'),
+      SnackBar(
+        content: Text(l10n.settingsSaved),
       ),
     );
   }
@@ -78,12 +78,12 @@ class _ProfilePaymentMethodsScreenState
     });
   }
 
-  Future<void> _editMethod(_SavedPaymentMethod method) async {
+  Future<void> _editMethod(_SavedPaymentMethod method, AppLocalizations l10n) async {
     final updatedMethod = await showModalBottomSheet<_SavedPaymentMethod>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _PaymentMethodSheet(method: method),
+      builder: (context) => _PaymentMethodSheet(method: method, l10n: l10n),
     );
 
     if (updatedMethod == null || !mounted) return;
@@ -101,13 +101,15 @@ class _ProfilePaymentMethodsScreenState
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Đã cập nhật ${updatedMethod.title.toLowerCase()}'),
+        content: Text(l10n.settingsSaved),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    _initializeMethods(l10n);
     final defaultMethod = _defaultMethod;
 
     return Scaffold(
@@ -135,7 +137,7 @@ class _ProfilePaymentMethodsScreenState
                           child: Column(
                             children: [
                               Text(
-                                'PHƯƠNG THỨC THANH TOÁN',
+                                l10n.paymentMethods.toUpperCase(),
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.montserrat(
                                   fontSize: 11,
@@ -146,7 +148,7 @@ class _ProfilePaymentMethodsScreenState
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Thiết lập thanh toán ưu tiên',
+                                l10n.setupPreferredPayment,
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.playfairDisplay(
                                   fontSize: 28,
@@ -162,7 +164,7 @@ class _ProfilePaymentMethodsScreenState
                     ),
                     const SizedBox(height: 14),
                     Text(
-                      'Chọn cách thanh toán mặc định cho đơn hàng tiếp theo. Màn này tập trung vào hai lựa chọn gọn nhất: COD và PayOS online.',
+                      l10n.paymentMethodsDesc,
                       style: GoogleFonts.montserrat(
                         fontSize: 13,
                         height: 1.6,
@@ -173,15 +175,15 @@ class _ProfilePaymentMethodsScreenState
                     const SizedBox(height: 18),
                     _PaymentHeroCard(
                       totalCount: _methods.length,
-                      defaultTitle: defaultMethod?.title ?? 'Chưa thiết lập',
+                      defaultTitle: defaultMethod?.title ?? l10n.noDefaultSet,
                       summary:
-                          defaultMethod?.details ??
-                          'Hãy chọn một phương thức để checkout nhanh hơn.',
+                          defaultMethod?.details ?? l10n.setDefaultDesc,
+                      l10n: l10n,
                     ),
                     const SizedBox(height: 18),
-                    const _PaymentSectionTitle(
-                      eyebrow: 'THIẾT LẬP ĐÃ LƯU',
-                      title: 'COD hoặc thanh toán online qua PayOS',
+                    _PaymentSectionTitle(
+                      eyebrow: l10n.currentPriority('').replaceAll(':', '').toUpperCase(),
+                      title: l10n.paymentMethodsComboTitle,
                     ),
                     const SizedBox(height: 14),
                   ],
@@ -200,11 +202,12 @@ class _ProfilePaymentMethodsScreenState
                           : () => _setDefault(method.id),
                       onToggleEnabled: (value) =>
                           _toggleEnabled(method.id, value),
-                      onEdit: () => _editMethod(method),
+                      onEdit: () => _editMethod(method, l10n),
+                      l10n: l10n,
                     ),
                     const SizedBox(height: 14),
                   ],
-                  const _PayOsInfoCard(),
+                  _PayOsInfoCard(l10n: l10n),
                 ],
               ),
             ),
@@ -216,12 +219,12 @@ class _ProfilePaymentMethodsScreenState
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 10, 20, 18),
           child: LuxuryButton(
-            text: 'Xác nhận thiết lập',
+            text: l10n.confirmSettings,
             trailingIcon: Icons.check_rounded,
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Thiết lập phương thức thanh toán đã được lưu'),
+                SnackBar(
+                  content: Text(l10n.settingsSaved),
                 ),
               );
             },
@@ -236,11 +239,13 @@ class _PaymentHeroCard extends StatelessWidget {
   final int totalCount;
   final String defaultTitle;
   final String summary;
+  final AppLocalizations l10n;
 
   const _PaymentHeroCard({
     required this.totalCount,
     required this.defaultTitle,
     required this.summary,
+    required this.l10n,
   });
 
   @override
@@ -277,7 +282,7 @@ class _PaymentHeroCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  '$totalCount lựa chọn thanh toán',
+                  l10n.paymentOptionsCount(totalCount),
                   style: GoogleFonts.montserrat(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
@@ -291,7 +296,7 @@ class _PaymentHeroCard extends StatelessWidget {
           ),
           const SizedBox(height: 18),
           Text(
-            'Ưu tiên hiện tại: $defaultTitle.',
+            l10n.currentPriority(defaultTitle),
             style: GoogleFonts.playfairDisplay(
               fontSize: 28,
               height: 1.05,
@@ -354,12 +359,14 @@ class _ManagedPaymentCard extends StatelessWidget {
   final VoidCallback? onSetDefault;
   final ValueChanged<bool> onToggleEnabled;
   final VoidCallback onEdit;
+  final AppLocalizations l10n;
 
   const _ManagedPaymentCard({
     required this.method,
     required this.onSetDefault,
     required this.onToggleEnabled,
     required this.onEdit,
+    required this.l10n,
   });
 
   @override
@@ -420,7 +427,7 @@ class _ManagedPaymentCard extends StatelessWidget {
                         ),
                         if (method.isDefault)
                           _ManagedStatusChip(
-                            label: 'Mặc định',
+                            label: l10n.defaultLabel,
                             color: method.accentColor,
                           ),
                         _ManagedStatusChip(
@@ -472,7 +479,7 @@ class _ManagedPaymentCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Kích hoạt phương thức',
+                      l10n.activateMethod,
                       style: GoogleFonts.montserrat(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
@@ -482,8 +489,8 @@ class _ManagedPaymentCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       method.type == _ManagedPaymentType.payos
-                          ? 'Cho phép thanh toán online bằng PayOS tại bước checkout.'
-                          : 'Giữ COD như một lựa chọn dự phòng khi nhận hàng.',
+                          ? l10n.payosSubtitle
+                          : l10n.codSubtitle,
                       style: GoogleFonts.montserrat(
                         fontSize: 11,
                         height: 1.5,
@@ -511,7 +518,7 @@ class _ManagedPaymentCard extends StatelessWidget {
                 OutlinedButton.icon(
                   onPressed: onSetDefault,
                   icon: const Icon(Icons.check_circle_outline, size: 16),
-                  label: const Text('Đặt mặc định'),
+                  label: Text(l10n.setDefault),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: method.accentColor,
                     side: BorderSide(color: method.accentColor),
@@ -523,7 +530,7 @@ class _ManagedPaymentCard extends StatelessWidget {
               TextButton.icon(
                 onPressed: onEdit,
                 icon: const Icon(Icons.tune_rounded, size: 16),
-                label: const Text('Chỉnh sửa'),
+                label: Text(l10n.edit),
                 style: TextButton.styleFrom(
                   foregroundColor: AppTheme.deepCharcoal,
                 ),
@@ -533,6 +540,15 @@ class _ManagedPaymentCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  IconData _iconForMethod(_ManagedPaymentType type) {
+    switch (type) {
+      case _ManagedPaymentType.payos:
+        return Icons.qr_code_scanner_rounded;
+      case _ManagedPaymentType.cod:
+        return Icons.local_shipping_outlined;
+    }
   }
 }
 
@@ -563,7 +579,8 @@ class _ManagedStatusChip extends StatelessWidget {
 }
 
 class _PayOsInfoCard extends StatelessWidget {
-  const _PayOsInfoCard();
+  final AppLocalizations l10n;
+  const _PayOsInfoCard({required this.l10n});
 
   @override
   Widget build(BuildContext context) {
@@ -577,7 +594,7 @@ class _PayOsInfoCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Ghi chú cho PayOS',
+            l10n.payosNoteTitle,
             style: GoogleFonts.playfairDisplay(
               fontSize: 20,
               fontWeight: FontWeight.w600,
@@ -586,7 +603,7 @@ class _PayOsInfoCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'PayOS phù hợp khi bạn muốn mở cổng thanh toán nhanh, quét QR ngân hàng hoặc nhận xác nhận tức thì. COD vẫn nên giữ bật như một phương án dự phòng khi cần.',
+            l10n.payosNote,
             style: GoogleFonts.montserrat(
               fontSize: 12,
               height: 1.6,
@@ -602,8 +619,9 @@ class _PayOsInfoCard extends StatelessWidget {
 
 class _PaymentMethodSheet extends StatefulWidget {
   final _SavedPaymentMethod method;
+  final AppLocalizations l10n;
 
-  const _PaymentMethodSheet({required this.method});
+  const _PaymentMethodSheet({required this.method, required this.l10n});
 
   @override
   State<_PaymentMethodSheet> createState() => _PaymentMethodSheetState();
@@ -641,7 +659,7 @@ class _PaymentMethodSheetState extends State<_PaymentMethodSheet> {
 
     if (subtitle.isEmpty || details.isEmpty || status.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng điền đủ thông tin cấu hình')),
+        SnackBar(content: Text(widget.l10n.fillAllFields)),
       );
       return;
     }
@@ -688,8 +706,8 @@ class _PaymentMethodSheetState extends State<_PaymentMethodSheet> {
                 const SizedBox(height: 18),
                 Text(
                   widget.method.type == _ManagedPaymentType.payos
-                      ? 'Chỉnh sửa PayOS online'
-                      : 'Chỉnh sửa COD',
+                      ? widget.l10n.editPayos
+                      : widget.l10n.editCod,
                   style: GoogleFonts.playfairDisplay(
                     fontSize: 26,
                     fontWeight: FontWeight.w600,
@@ -698,7 +716,7 @@ class _PaymentMethodSheetState extends State<_PaymentMethodSheet> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Tùy chỉnh mô tả, trạng thái hiển thị và mức ưu tiên của phương thức này trong hồ sơ.',
+                  widget.l10n.paymentEditDesc,
                   style: GoogleFonts.montserrat(
                     fontSize: 12,
                     height: 1.5,
@@ -709,40 +727,31 @@ class _PaymentMethodSheetState extends State<_PaymentMethodSheet> {
                 const SizedBox(height: 18),
                 _PaymentField(
                   controller: _subtitleController,
-                  label: 'Mô tả ngắn',
-                  hint: 'Mô tả cách dùng phương thức này',
+                  label: widget.l10n.shortDescription,
+                  hint: widget.l10n.shortDescription,
                 ),
                 const SizedBox(height: 12),
                 _PaymentField(
                   controller: _statusController,
-                  label: 'Nhãn trạng thái',
-                  hint: 'Ví dụ: Đang bật, Dự phòng',
+                  label: widget.l10n.statusLabel,
+                  hint: widget.l10n.statusLabel,
                 ),
                 const SizedBox(height: 12),
                 _PaymentField(
                   controller: _detailsController,
-                  label: 'Thông tin chi tiết',
-                  hint: 'Ghi chú hiển thị trong card phương thức thanh toán',
+                  label: widget.l10n.detailedInfo,
+                  hint: widget.l10n.detailedInfo,
                   maxLines: 3,
                 ),
                 const SizedBox(height: 12),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   title: Text(
-                    'Đặt làm mặc định',
+                    widget.l10n.setAsDefault,
                     style: GoogleFonts.montserrat(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                       color: AppTheme.deepCharcoal,
-                    ),
-                  ),
-                  subtitle: Text(
-                    'Phương thức này sẽ được ưu tiên hiển thị đầu tiên cho người dùng.',
-                    style: GoogleFonts.montserrat(
-                      fontSize: 11,
-                      height: 1.5,
-                      fontWeight: FontWeight.w500,
-                      color: AppTheme.mutedSilver,
                     ),
                   ),
                   trailing: Switch.adaptive(
@@ -755,20 +764,11 @@ class _PaymentMethodSheetState extends State<_PaymentMethodSheet> {
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   title: Text(
-                    'Đang kích hoạt',
+                    widget.l10n.isActive,
                     style: GoogleFonts.montserrat(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                       color: AppTheme.deepCharcoal,
-                    ),
-                  ),
-                  subtitle: Text(
-                    'Nếu tắt, phương thức này sẽ không xuất hiện như lựa chọn khuyến nghị.',
-                    style: GoogleFonts.montserrat(
-                      fontSize: 11,
-                      height: 1.5,
-                      fontWeight: FontWeight.w500,
-                      color: AppTheme.mutedSilver,
                     ),
                   ),
                   trailing: Switch.adaptive(
@@ -779,7 +779,7 @@ class _PaymentMethodSheetState extends State<_PaymentMethodSheet> {
                   onTap: () => setState(() => _isEnabled = !_isEnabled),
                 ),
                 const SizedBox(height: 12),
-                LuxuryButton(text: 'Lưu thay đổi', onPressed: _save),
+                LuxuryButton(text: widget.l10n.confirm, onPressed: _save),
               ],
             ),
           ),
@@ -808,42 +808,29 @@ class _PaymentField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          label,
+          label.toUpperCase(),
           style: GoogleFonts.montserrat(
-            fontSize: 11,
+            fontSize: 10,
             fontWeight: FontWeight.w700,
-            letterSpacing: 1.1,
-            color: AppTheme.mutedSilver,
+            color: AppTheme.deepCharcoal,
           ),
         ),
         const SizedBox(height: 8),
         TextField(
           controller: controller,
           maxLines: maxLines,
-          style: GoogleFonts.montserrat(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: AppTheme.deepCharcoal,
-          ),
+          style: GoogleFonts.montserrat(fontSize: 14),
           decoration: InputDecoration(
             hintText: hint,
+            hintStyle: GoogleFonts.montserrat(
+              fontSize: 14,
+              color: AppTheme.mutedSilver.withValues(alpha: 0.5),
+            ),
             filled: true,
-            fillColor: Colors.white,
+            fillColor: AppTheme.ivoryBackground,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(18),
-              borderSide: BorderSide(
-                color: AppTheme.softTaupe.withValues(alpha: 0.8),
-              ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(18),
-              borderSide: BorderSide(
-                color: AppTheme.softTaupe.withValues(alpha: 0.8),
-              ),
-            ),
-            focusedBorder: const OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(18)),
-              borderSide: BorderSide(color: AppTheme.accentGold),
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
             ),
           ),
         ),
@@ -878,6 +865,7 @@ class _SavedPaymentMethod {
   });
 
   _SavedPaymentMethod copyWith({
+    String? title,
     String? subtitle,
     String? statusLabel,
     String? details,
@@ -887,7 +875,7 @@ class _SavedPaymentMethod {
     return _SavedPaymentMethod(
       id: id,
       type: type,
-      title: title,
+      title: title ?? this.title,
       subtitle: subtitle ?? this.subtitle,
       statusLabel: statusLabel ?? this.statusLabel,
       details: details ?? this.details,
@@ -895,14 +883,5 @@ class _SavedPaymentMethod {
       isEnabled: isEnabled ?? this.isEnabled,
       accentColor: accentColor,
     );
-  }
-}
-
-IconData _iconForMethod(_ManagedPaymentType type) {
-  switch (type) {
-    case _ManagedPaymentType.payos:
-      return Icons.qr_code_2_rounded;
-    case _ManagedPaymentType.cod:
-      return Icons.local_shipping_outlined;
   }
 }

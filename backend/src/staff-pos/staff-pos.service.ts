@@ -15,6 +15,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { PaymentsService } from '../payments/payments.service';
 import { StoresService } from '../stores/stores.service';
+import { OrdersService } from '../orders/orders.service';
 
 import { LoyaltyService } from '../loyalty/loyalty.service';
 
@@ -25,6 +26,7 @@ export class StaffPosService {
     private readonly paymentsService: PaymentsService,
     private readonly storesService: StoresService,
     private readonly loyaltyService: LoyaltyService,
+    private readonly ordersService: OrdersService,
   ) { }
 
   /**
@@ -196,6 +198,24 @@ export class StaffPosService {
     };
   }
 
+  async searchCustomersByPhone(prefix: string) {
+    if (!prefix) return [];
+    return this.prisma.user.findMany({
+      where: {
+        phone: {
+          startsWith: prefix,
+        },
+      },
+      select: {
+        id: true,
+        fullName: true,
+        phone: true,
+        loyaltyPoints: true,
+      },
+      take: 5,
+    });
+  }
+
   async getOrder(staffUserId: string, orderId: string) {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
@@ -270,6 +290,7 @@ export class StaffPosService {
         finalAmount: 0,
         status: OrderStatus.PENDING,
         paymentStatus: PaymentStatus.PENDING,
+        isPosDraft: true,
       },
       include: {
         items: {
@@ -623,6 +644,109 @@ export class StaffPosService {
   }
 
   /**
+   * Save a local cart from mobile as a server-side draft (PENDING) order.
+   */
+  async saveAsDraft(
+    staffUserId: string,
+    role: string,
+    storeId: string,
+    items: { variantId: string; quantity: number }[],
+    customerPhone?: string,
+  ) {
+    if (!items || items.length === 0) {
+      throw new BadRequestException('Cart is empty');
+    }
+
+    await this.storesService.ensureStaffCanAccessStore(
+      staffUserId,
+      storeId,
+      role,
+    );
+
+    // Resolve customer
+    let customerId: string | undefined;
+    if (customerPhone) {
+      const customer = await this.prisma.user.findFirst({
+        where: { phone: customerPhone },
+      });
+      if (customer) customerId = customer.id;
+    }
+
+    // Validate stock & gather variant prices
+    const variantData: {
+      variantId: string;
+      quantity: number;
+      price: number;
+    }[] = [];
+
+    for (const item of items) {
+      if (item.quantity <= 0) continue;
+      const variant = await this.prisma.productVariant.findUnique({
+        where: { id: item.variantId },
+      });
+      if (!variant) {
+        throw new NotFoundException(`Variant ${item.variantId} not found`);
+      }
+
+      variantData.push({
+        variantId: item.variantId,
+        quantity: item.quantity,
+        price: variant.price,
+      });
+    }
+
+    const totalAmount = variantData.reduce(
+      (sum, v) => sum + v.price * v.quantity,
+      0,
+    );
+
+    const order = await this.prisma.$transaction(async (tx) => {
+      const newOrder = await tx.order.create({
+        data: {
+          code: `POS-${Date.now()}`,
+          staffId: staffUserId,
+          storeId,
+          userId: customerId ?? undefined,
+          phone: customerPhone ?? undefined,
+          channel: OrderChannel.POS,
+          totalAmount,
+          discountAmount: 0,
+          finalAmount: totalAmount,
+          status: OrderStatus.PENDING,
+          paymentStatus: PaymentStatus.PENDING,
+          isPosDraft: true,
+        },
+      });
+
+      for (const v of variantData) {
+        await tx.orderItem.create({
+          data: {
+            orderId: newOrder.id,
+            variantId: v.variantId,
+            quantity: v.quantity,
+            unitPrice: v.price,
+            totalPrice: v.price * v.quantity,
+          },
+        });
+      }
+      return newOrder;
+    });
+
+    return this.prisma.order.findUnique({
+      where: { id: order.id },
+      include: {
+        items: {
+          include: { variant: { include: { product: true } } },
+        },
+        store: true,
+        user: {
+          select: { id: true, fullName: true, phone: true, loyaltyPoints: true },
+        },
+      },
+    });
+  }
+
+  /**
    * One-shot checkout: create order + items + pay in a single transaction.
    * For CASH: order is created and paid immediately.
    * For QR: order is created (PENDING), returns a QR payment link.
@@ -738,20 +862,25 @@ export class StaffPosService {
       if (paymentMethod === 'CASH') {
         // Deduct store stock & log
         for (const v of variantData) {
-          await tx.storeStock.upsert({
+          const result = await tx.storeStock.updateMany({
             where: {
-              storeId_variantId: { storeId, variantId: v.variantId },
-            },
-            create: {
               storeId,
               variantId: v.variantId,
-              quantity: -v.quantity,
+              quantity: { gte: v.quantity },
             },
-            update: {
+            data: {
               quantity: { decrement: v.quantity },
               updatedAt: new Date(),
             },
           });
+
+          if (result.count === 0) {
+            const variant = await tx.productVariant.findUnique({ where: { id: v.variantId } });
+            throw new BadRequestException(
+              `Sản phẩm ${variant?.name || v.variantId} không đủ số lượng trong kho tại cửa hàng này.`,
+            );
+          }
+
           await tx.inventoryLog.create({
             data: {
               variantId: v.variantId,
@@ -801,6 +930,39 @@ export class StaffPosService {
               },
             });
           }
+        }
+      } else if (paymentMethod === 'QR') {
+        // --- STOCK RESERVATION FOR QR ---
+        for (const v of variantData) {
+          const result = await tx.storeStock.updateMany({
+            where: {
+              storeId,
+              variantId: v.variantId,
+              quantity: { gte: v.quantity },
+            },
+            data: {
+              quantity: { decrement: v.quantity },
+              updatedAt: new Date(),
+            },
+          });
+
+          if (result.count === 0) {
+            const variant = await tx.productVariant.findUnique({ where: { id: v.variantId } });
+            throw new BadRequestException(
+              `Sản phẩm ${variant?.name || v.variantId} không đủ số lượng trong kho tại cửa hàng này.`,
+            );
+          }
+
+          await tx.inventoryLog.create({
+            data: {
+              variantId: v.variantId,
+              staffId: staffUserId,
+              storeId,
+              type: InventoryLogType.SALE_POS,
+              quantity: -v.quantity,
+              reason: `POS order ${newOrder.code} (QR Reservation)`,
+            },
+          });
         }
       }
 
@@ -866,6 +1028,9 @@ export class StaffPosService {
           paymentStatus: PaymentStatus.FAILED,
         },
       });
+
+      // Return stock
+      await this.ordersService.restockOrderItems(order.id, tx);
     });
 
     return { success: true, orderId: order.id };

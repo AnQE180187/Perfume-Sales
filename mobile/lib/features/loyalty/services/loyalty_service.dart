@@ -60,6 +60,13 @@ class LoyaltyStatus {
     return 'Bronze';
   }
 
+  String get tierNameVi {
+    if (points >= 5000) return 'Bạch Kim';
+    if (points >= 2000) return 'Vàng';
+    if (points >= 500) return 'Bạc';
+    return 'Đồng';
+  }
+
   int get nextTierPoints {
     if (points < 500) return 500;
     if (points < 2000) return 2000;
@@ -84,6 +91,28 @@ class LoyaltyService {
     );
     return LoyaltyStatus.fromJson(response.data!);
   }
+
+  Future<List<dynamic>> getRedeemablePromotions() async {
+    final response = await _apiClient.get<List<dynamic>>(
+      '/promotions/redeemable',
+    );
+    return response.data!;
+  }
+
+  Future<List<dynamic>> getPublicPromotions() async {
+    final response = await _apiClient.get<List<dynamic>>(
+      '/promotions/public',
+    );
+    return response.data!;
+  }
+
+  Future<void> redeemPromotion(String promoId) async {
+    await _apiClient.post('/promotions/redeem/$promoId');
+  }
+
+  Future<void> claimPromotion(String promoId) async {
+    await _apiClient.post('/promotions/claim/$promoId');
+  }
 }
 
 int _readInt(dynamic v) {
@@ -104,4 +133,16 @@ final loyaltyServiceProvider = Provider<LoyaltyService>((ref) {
 
 final loyaltyStatusProvider = FutureProvider.autoDispose<LoyaltyStatus>((ref) {
   return ref.read(loyaltyServiceProvider).getStatus();
+});
+
+final redeemablePromotionsProvider =
+    FutureProvider.autoDispose<List<dynamic>>((ref) async {
+  final service = ref.read(loyaltyServiceProvider);
+  final results = await Future.wait([
+    service.getPublicPromotions(),
+    service.getRedeemablePromotions(),
+  ]);
+  
+  // Combine lists: public first, then redeemable
+  return [...results[0], ...results[1]];
 });

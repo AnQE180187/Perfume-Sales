@@ -1,15 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_theme.dart';
 
 class TrackingMapCard extends StatelessWidget {
   final String label;
+  final String? trackingCode;
 
-  const TrackingMapCard({super.key, required this.label});
+  const TrackingMapCard({
+    super.key,
+    required this.label,
+    this.trackingCode,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final code = trackingCode?.trim();
+    final canOpenGhn = code != null && code.isNotEmpty;
+    final ghnUrl = canOpenGhn ? 'https://donhang.ghn.vn/?order_code=$code' : '';
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -89,31 +99,69 @@ class TrackingMapCard extends StatelessWidget {
           // ── Label area ──
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppTheme.accentGold.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.qr_code_rounded,
-                    size: 20,
-                    color: AppTheme.accentGold,
-                  ),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppTheme.accentGold.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.qr_code_rounded,
+                        size: 20,
+                        color: AppTheme.accentGold,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        label,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.deepCharcoal,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    label,
-                    style: GoogleFonts.montserrat(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.deepCharcoal,
+                if (canOpenGhn) ...[
+                  const SizedBox(height: 10),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      onPressed: () async {
+                        final uri = Uri.parse(ghnUrl);
+                        await launchUrl(
+                          uri,
+                          mode: LaunchMode.externalApplication,
+                        );
+                      },
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        foregroundColor: AppTheme.accentGold,
+                      ),
+                      icon: const Icon(Icons.open_in_new_rounded, size: 16),
+                      label: Text(
+                        'Tra cứu GHN',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                ],
               ],
             ),
           ),

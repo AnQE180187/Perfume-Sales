@@ -11,6 +11,7 @@ model User {
   id            String                @id @default(cuid())
   email         String                @unique
   phone         String?               @unique
+  phoneVerified Boolean               @default(false)
   passwordHash  String?
   isActive      Boolean               @default(true)
   createdAt     DateTime              @default(now())
@@ -54,6 +55,8 @@ model User {
   returnRequests      ReturnRequest[]     @relation("CustomerReturns")
   staffReturnRequests ReturnRequest[]     @relation("StaffReturns")
   userPromotions            UserPromotion[]
+  aiPreference              UserAiPreference?
+  phoneOtps                PhoneOtpVerification[]
 }
 
 model UserAddress {
@@ -149,6 +152,18 @@ model QuizResult {
   user            User     @relation(fields: [userId], references: [id])
 }
 
+model UserAiPreference {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  riskLevel       Float    @default(0.3)
+  preferredNotes  String[]
+  avoidedNotes    String[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
 /// Product & catalog models
 model Brand {
   id          Int       @id @default(autoincrement())
@@ -180,6 +195,7 @@ model Product {
   isBestseller  Boolean            @default(false)
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
+  scentAnalysis String?            @db.Text
 
   brand         Brand              @relation(fields: [brandId], references: [id])
   category      Category?          @relation(fields: [categoryId], references: [id])
@@ -317,6 +333,7 @@ model Order {
   totalAmount         Int
   discountAmount      Int                  @default(0)
   finalAmount         Int
+  refundAmount        Int                  @default(0)
   status              OrderStatus          @default(PENDING)
   paymentStatus       PaymentStatus        @default(PENDING)
   channel             OrderChannel         @default(ONLINE)
@@ -328,6 +345,7 @@ model Order {
   shippingServiceId   Int?
   recipientName       String?
   phone               String?
+  isPosDraft          Boolean              @default(false)
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
   promotions      AppliedPromotion[]
@@ -537,14 +555,17 @@ model Notification {
 
 /// AI orchestration & logs
 model AiRequestLog {
-  id        String   @id @default(cuid())
-  userId    String?
-  type      String
-  request   String
-  response  String?
-  status    String?
-  createdAt DateTime @default(now())
-  user      User?    @relation(fields: [userId], references: [id])
+  id           String   @id @default(cuid())
+  userId       String?
+  type         String
+  request      String
+  response     String?
+  status       String?
+  duration     Int?      // Execution time in ms
+  model        String?   // AI model used
+  errorMessage String?   // Error details if failed
+  createdAt    DateTime @default(now())
+  user         User?    @relation(fields: [userId], references: [id])
 }
 
 /// Audit & system
@@ -573,6 +594,21 @@ model LoyaltyTransaction {
 
   @@index([phone])
   @@index([userId])
+}
+
+model PhoneOtpVerification {
+  id         String   @id @default(cuid())
+  userId     String
+  phone      String
+  otpHash    String
+  expiresAt  DateTime
+  consumedAt DateTime?
+  attempts   Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, phone, createdAt])
 }
 
 /// Chat & conversations
@@ -644,6 +680,7 @@ enum SenderType {
 
 enum MessageType {
   TEXT
+  IMAGE
   PRODUCT_CARD
   SYSTEM
   AI_RECOMMENDATION
@@ -669,6 +706,7 @@ enum PaymentStatus {
   PAID
   FAILED
   REFUNDED
+  PARTIALLY_REFUNDED
 }
 
 enum PaymentProvider {
@@ -707,6 +745,7 @@ enum InventoryLogType {
   IMPORT
   ADJUST
   SALE_POS
+  SALE_ONLINE
   RETURN
 }
 
@@ -832,11 +871,13 @@ model ReturnRequest {
   createdBy        String?          // staff/admin id if created by staff
   status           ReturnStatus     @default(REQUESTED)
   reason           String?
+  paymentInfo      Json?
   note             String?
   totalAmount      Int?             // cached refundable amount
   refundAmount     Int?             // actual refunded amount
   receivedAt       DateTime?
   receivedLocation ReceivedLocation?
+  videoUrl         String?
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 
@@ -879,6 +920,8 @@ model ReturnShipment {
   shippedAt        DateTime?
   receivedAt       DateTime?
   receivedLocation ReceivedLocation?
+  status           String?           // e.g. PENDING, SHIPPED, DELIVERED, FAILED
+  rawProviderData  String?           @db.Text
   createdAt        DateTime          @default(now())
 
   returnRequest    ReturnRequest @relation(fields: [returnRequestId], references: [id], onDelete: Cascade)
@@ -909,6 +952,7 @@ model Refund {
   attempts        Int          @default(0)
   error           Json?
   note            String?
+  receiptImage    String?
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 

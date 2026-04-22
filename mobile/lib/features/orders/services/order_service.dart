@@ -50,4 +50,26 @@ class OrderService {
         .map((it) => ShipmentInfo.fromJson(it.map((k, v) => MapEntry(k.toString(), v))))
         .toList();
   }
+
+  Future<void> cancelOrder(String orderId) async {
+    await _client.post(ApiEndpoints.cancelOrder(orderId));
+  }
+
+  Future<void> submitRefundBankInfo({
+    required String orderId,
+    required String bankName,
+    required String accountNumber,
+    required String accountHolder,
+    String? note,
+  }) async {
+    await _client.post(
+      ApiEndpoints.refundBankInfo(orderId),
+      data: {
+        'bankName': bankName,
+        'accountNumber': accountNumber,
+        'accountHolder': accountHolder,
+        'note': note,
+      },
+    );
+  }
 }

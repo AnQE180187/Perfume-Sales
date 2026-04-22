@@ -5,6 +5,15 @@ import { routing } from '@/lib/i18n';
 import { ThemeProvider } from '@/components/common/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
 import { beVietnamPro } from '@/lib/fonts';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    icons: {
+        icon: '/logo-dark.png',
+        shortcut: '/logo-dark.png',
+        apple: '/logo-dark.png',
+    },
+};
 
 /**
  * Root Layout for Locale-based routes
@@ -19,7 +28,7 @@ export default async function LocaleLayout({
 }) {
     const { locale } = await params;
 
-    if (!routing.locales.includes(locale as 'en' | 'vi')) {
+    if (!routing.locales.includes(locale as any)) {
         notFound();
     }
 

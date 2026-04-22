@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../core/routing/app_routes.dart';
+import '../../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 import '../../features/product/presentation/product_story_screen.dart';
 
@@ -31,6 +33,7 @@ class _ProductStorySectionState extends State<ProductStorySection> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final text = widget.description ?? _fallback;
 
     return Transform.translate(
@@ -46,7 +49,7 @@ class _ProductStorySectionState extends State<ProductStorySection> {
               children: [
                 Expanded(
                   child: Text(
-                    'The Story',
+                    l10n.theStory,
                     style: GoogleFonts.playfairDisplay(
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
@@ -54,35 +57,45 @@ class _ProductStorySectionState extends State<ProductStorySection> {
                     ),
                   ),
                 ),
-                GestureDetector(
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => ProductStoryScreen(
-                        productId: widget.productId,
-                        productName: widget.productName,
-                        imageUrl: widget.imageUrl,
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(8),
+                    onTap: () =>
+                        Navigator.of(context, rootNavigator: true).push(
+                          MaterialPageRoute(
+                            builder: (_) => ProductStoryScreen(
+                              productId: widget.productId,
+                              productName: widget.productName,
+                              imageUrl: widget.imageUrl,
+                            ),
+                          ),
+                        ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            l10n.fullStory,
+                            style: GoogleFonts.montserrat(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.accentGold,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(
+                            Icons.arrow_forward,
+                            size: 13,
+                            color: AppTheme.accentGold,
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Toàn bộ câu chuyện',
-                        style: GoogleFonts.montserrat(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.accentGold,
-                        ),
-                      ),
-                      const SizedBox(width: 2),
-                      const Icon(
-                        Icons.arrow_forward,
-                        size: 12,
-                        color: AppTheme.accentGold,
-                      ),
-                    ],
                   ),
                 ),
               ],
@@ -100,7 +113,7 @@ class _ProductStorySectionState extends State<ProductStorySection> {
                 style: GoogleFonts.montserrat(
                   fontSize: 13,
                   height: 1.65,
-                  color: AppTheme.deepCharcoal.withValues(alpha: 0.75),
+                  color: AppTheme.deepCharcoal,
                 ),
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
@@ -110,7 +123,7 @@ class _ProductStorySectionState extends State<ProductStorySection> {
                 style: GoogleFonts.montserrat(
                   fontSize: 13,
                   height: 1.65,
-                  color: AppTheme.deepCharcoal.withValues(alpha: 0.75),
+                  color: AppTheme.deepCharcoal,
                 ),
               ),
             ),
@@ -123,7 +136,7 @@ class _ProductStorySectionState extends State<ProductStorySection> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    _isExpanded ? 'Thu gọn' : 'Đọc thêm',
+                    _isExpanded ? l10n.readLess : l10n.readMore,
                     style: GoogleFonts.montserrat(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,

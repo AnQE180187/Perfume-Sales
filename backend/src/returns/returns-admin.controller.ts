@@ -31,12 +31,16 @@ export class ReturnsAdminController {
     @Query('take') take?: number,
     @Query('status') status?: string,
     @Query('orderId') orderId?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
   ) {
     return this.returnsService.listAllReturns(
       Number(skip) || 0,
       Number(take) || 20,
       status,
       orderId,
+      startDate,
+      endDate,
     );
   }
 
@@ -52,6 +56,11 @@ export class ReturnsAdminController {
     return this.returnsService.listAudits(id);
   }
 
+  @Get(':id/suggested-refund')
+  getSuggestedRefund(@Param('id') id: string) {
+    return this.returnsService.getSuggestedRefundAmount(id);
+  }
+
   /** Admin/Staff: xem refund history */
   @Get(':id/refunds')
   async getRefunds(@Param('id') id: string) {
@@ -59,6 +68,7 @@ export class ReturnsAdminController {
   }
 
   /** Admin: review (approve / reject) */
+  @Roles('ADMIN')
   @Patch(':id/review')
   async review(
     @Req() req: any,
@@ -120,6 +130,7 @@ export class ReturnsAdminController {
   }
 
   /** Staff (POS): tạo return cho khách tại quầy */
+  @Roles('STAFF')
   @Post('pos/create')
   async posCreate(@Req() req: any, @Body() dto: CreateReturnDto) {
     const idempotencyKey = req.headers['idempotency-key'] as string | undefined;

@@ -48,13 +48,13 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     loadReport();
   }
 
-  Future<void> loadReport({DateTime? date}) async {
+  Future<void> loadReport({DateTime? date, String? storeId}) async {
     final target = date ?? state.selectedDate;
     state = state.copyWith(isLoading: true, error: null, selectedDate: target);
     try {
       final dateStr =
           '${target.year}-${target.month.toString().padLeft(2, '0')}-${target.day.toString().padLeft(2, '0')}';
-      final report = await _service.getDailyReport(date: dateStr);
+      final report = await _service.getDailyReport(date: dateStr, storeId: storeId);
       state = DashboardState(report: report, selectedDate: target);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());

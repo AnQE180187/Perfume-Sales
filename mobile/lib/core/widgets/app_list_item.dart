@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
+import '../theme/app_text_style.dart';
 
 /// Standardized list row with optional leading widget, title, subtitle,
 /// trailing widget, and divider.
@@ -55,21 +56,13 @@ class AppListItem extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: GoogleFonts.montserrat(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.deepCharcoal,
-                        ),
+                        style: AppTextStyle.titleMd(color: AppTheme.deepCharcoal),
                       ),
                       if (subtitle != null) ...[
                         const SizedBox(height: 3),
                         Text(
                           subtitle!,
-                          style: GoogleFonts.montserrat(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
-                            color: AppTheme.mutedSilver,
-                          ),
+                          style: AppTextStyle.bodySm(color: AppTheme.mutedSilver),
                         ),
                       ],
                     ],

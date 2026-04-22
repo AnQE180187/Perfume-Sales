@@ -24,7 +24,7 @@ import { Request, Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post('register')
   async register(@Body() dto: RegisterDto) {
@@ -108,11 +108,21 @@ export class AuthController {
   @Get('google/callback')
   @UseGuards(GoogleAuthGuard)
   async googleAuthCallback(@Req() req: Request, @Res() res: Response) {
+    if (!req.user) {
+      // Detect locale from referer or default to 'en'
+      const referer = req.headers.referer || '';
+      const locale = referer.includes('/vi/') ? 'vi' : 'vi';
+
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const errorRedirectUrl = `${frontendUrl}/${locale}/login?error=oauth_failed`;
+      return res.redirect(errorRedirectUrl);
+    }
+
     const tokens = await this.authService.validateOAuthUser(req.user as any);
 
     // Detect locale from referer or default to 'en'
     const referer = req.headers.referer || '';
-    const locale = referer.includes('/vi/') ? 'vi' : 'en';
+    const locale = referer.includes('/vi/') ? 'vi' : 'vi';
 
     // Redirect to frontend with tokens
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
@@ -131,11 +141,21 @@ export class AuthController {
   @Get('facebook/callback')
   @UseGuards(FacebookAuthGuard)
   async facebookAuthCallback(@Req() req: Request, @Res() res: Response) {
+    if (!req.user) {
+      // Detect locale from referer or default to 'en'
+      const referer = req.headers.referer || '';
+      const locale = referer.includes('/vi/') ? 'vi' : 'vi';
+
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const errorRedirectUrl = `${frontendUrl}/${locale}/login?error=facebook_email_required`;
+      return res.redirect(errorRedirectUrl);
+    }
+
     const tokens = await this.authService.validateOAuthUser(req.user as any);
 
     // Detect locale from referer or default to 'en'
     const referer = req.headers.referer || '';
-    const locale = referer.includes('/vi/') ? 'vi' : 'en';
+    const locale = referer.includes('/vi/') ? 'vi' : 'vi';
 
     // Redirect to frontend with tokens
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';

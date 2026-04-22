@@ -18,9 +18,9 @@ class EnvConfig {
     // Fallback based on environment
     switch (environment) {
       case Environment.development:
-        return 'http://10.0.2.2:3000'; // Android emulator → localhost
+        return 'http://10.0.2.2:3000'; // Local backend for testing
       case Environment.production:
-        return 'https://your-production-api.com';
+        return 'https://api.perfumegpt.site'; // Deployed server
     }
   }
 
@@ -30,9 +30,16 @@ class EnvConfig {
   /// Full base URL including the API prefix.
   static String get fullBaseUrl => '$apiBaseUrl$apiPrefix';
 
+  /// Google Web Client ID for social login.
+  static String get googleWebClientId {
+    final clientId = dotenv.maybeGet('GOOGLE_WEB_CLIENT_ID');
+    if (clientId != null && clientId.isNotEmpty) return clientId;
+    return '703366728616-2vgef2fv3561b3aohkvbo0hmt44969ps.apps.googleusercontent.com';
+  }
+
   /// Connection timeout in milliseconds.
-  static const int connectTimeout = 15000;
+  static const int connectTimeout = 60000;
 
   /// Receive timeout in milliseconds.
-  static const int receiveTimeout = 15000;
+  static const int receiveTimeout = 60000;
 }

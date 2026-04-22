@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/currency_utils.dart';
 import '../../../cart/providers/cart_provider.dart';
@@ -18,31 +19,36 @@ class AiMessageBubble extends ConsumerStatefulWidget {
 }
 
 class _AiMessageBubbleState extends ConsumerState<AiMessageBubble> {
-  bool? _reaction; // null = none, true = liked, false = disliked
+  bool? _reaction;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 24),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // AI Avatar
           Container(
-            width: 36,
-            height: 36,
+            width: 32,
+            height: 32,
+            margin: const EdgeInsets.only(top: 4),
             decoration: BoxDecoration(
-              color: AppTheme.accentGold.withValues(alpha: 0.2),
+              gradient: AppTheme.getGoldGradient(),
               shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.accentGold.withValues(alpha: 0.2),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: const Center(
-              child: Text(
-                '✦',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.accentGold,
-                ),
+              child: Icon(
+                Icons.auto_awesome_rounded,
+                color: AppTheme.primaryDb,
+                size: 16,
               ),
             ),
           ),
@@ -53,70 +59,118 @@ class _AiMessageBubbleState extends ConsumerState<AiMessageBubble> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Text Bubble
+                // Text Bubble - Parchment Style
                 Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: const BoxDecoration(
-                    color: AppTheme.creamWhite,
-                    borderRadius: BorderRadius.only(
-                      topRight: Radius.circular(16),
-                      bottomLeft: Radius.circular(16),
-                      bottomRight: Radius.circular(16),
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: AppTheme.parchment,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(4),
+                      topRight: Radius.circular(20),
+                      bottomLeft: Radius.circular(20),
+                      bottomRight: Radius.circular(20),
                     ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 15,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
                   ),
-                  child: Text(
-                    widget.message.text,
-                    style: GoogleFonts.montserrat(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      height: 1.5,
-                      color: AppTheme.deepCharcoal,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.auto_awesome,
+                            size: 14,
+                            color: AppTheme.accentGold,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'AI Specialist',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1,
+                              color: AppTheme.accentGold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        widget.message.text,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          height: 1.6,
+                          color: AppTheme.deepCharcoal,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
 
-                // Product Recommendation Cards
+                // Product Recommendation Carousel
                 if (widget.message.recommendations != null &&
                     widget.message.recommendations!.isNotEmpty) ...[
-                  const SizedBox(height: 10),
-                  ...widget.message.recommendations!.map(
-                    (rec) => _RecommendationCard(rec: rec),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    height: 280, // Height for the carousel card
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.only(right: 20),
+                      itemCount: widget.message.recommendations!.length,
+                      itemBuilder: (context, index) {
+                        return _RecommendationCard(
+                          rec: widget.message.recommendations![index],
+                        );
+                      },
+                    ),
                   ),
                 ],
 
                 // Reactions + Timestamp
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    Text(
-                      TimeFormatter.formatRelativeTime(
-                        widget.message.timestamp,
+                const SizedBox(height: 12),
+                Padding(
+                  padding: const EdgeInsets.only(left: 4),
+                  child: Row(
+                    children: [
+                      Text(
+                        TimeFormatter.formatRelativeTime(
+                          widget.message.timestamp,
+                        ).toUpperCase(),
+                        style: GoogleFonts.montserrat(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.5,
+                          color: AppTheme.mutedSilver.withValues(alpha: 0.6),
+                        ),
                       ),
-                      style: GoogleFonts.montserrat(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w400,
-                        color: AppTheme.mutedSilver,
+                      const Spacer(),
+                      _ReactionBtn(
+                        icon: Icons.favorite_border_rounded,
+                        activeIcon: Icons.favorite_rounded,
+                        isActive: _reaction == true,
+                        onTap: () => setState(() {
+                          _reaction = _reaction == true ? null : true;
+                        }),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    _ReactionBtn(
-                      icon: Icons.thumb_up_outlined,
-                      activeIcon: Icons.thumb_up_rounded,
-                      isActive: _reaction == true,
-                      onTap: () => setState(() {
-                        _reaction = _reaction == true ? null : true;
-                      }),
-                    ),
-                    const SizedBox(width: 4),
-                    _ReactionBtn(
-                      icon: Icons.thumb_down_outlined,
-                      activeIcon: Icons.thumb_down_rounded,
-                      isActive: _reaction == false,
-                      onTap: () => setState(() {
-                        _reaction = _reaction == false ? null : false;
-                      }),
-                    ),
-                  ],
+                      const SizedBox(width: 8),
+                      _ReactionBtn(
+                        icon: Icons.sentiment_very_dissatisfied_rounded,
+                        activeIcon: Icons.sentiment_very_dissatisfied_rounded,
+                        isActive: _reaction == false,
+                        onTap: () => setState(() {
+                          _reaction = _reaction == false ? null : false;
+                        }),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -150,17 +204,19 @@ class _ReactionBtn extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(4),
+        padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
           color: isActive
-              ? AppTheme.accentGold.withValues(alpha: 0.15)
+              ? AppTheme.accentGold.withValues(alpha: 0.1)
               : Colors.transparent,
-          borderRadius: BorderRadius.circular(6),
+          shape: BoxShape.circle,
         ),
         child: Icon(
           isActive ? activeIcon : icon,
           size: 16,
-          color: isActive ? AppTheme.accentGold : AppTheme.mutedSilver,
+          color: isActive
+              ? AppTheme.accentGold
+              : AppTheme.mutedSilver.withValues(alpha: 0.6),
         ),
       ),
     );
@@ -168,7 +224,7 @@ class _ReactionBtn extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Product Recommendation Card (rich: image, brand, price, tags, CTA)
+// Product Recommendation Card (Premium Style for Carousel)
 // ---------------------------------------------------------------------------
 
 class _RecommendationCard extends ConsumerWidget {
@@ -177,126 +233,246 @@ class _RecommendationCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
+      width: 200,
+      margin: const EdgeInsets.only(right: 16),
       decoration: BoxDecoration(
-        color: AppTheme.ivoryBackground,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.3)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Image + Info row
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Product Image
-              _ProductImage(url: rec.imageUrl),
-
-              // Info
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (rec.brand.isNotEmpty)
-                        Text(
-                          rec.brand.toUpperCase(),
-                          style: GoogleFonts.montserrat(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.8,
-                            color: AppTheme.mutedSilver,
-                          ),
-                        ),
-                      const SizedBox(height: 3),
-                      Text(
-                        rec.name,
-                        style: GoogleFonts.playfairDisplay(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.deepCharcoal,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      if (rec.price > 0)
-                        Text(
-                          formatVND(rec.price),
-                          style: GoogleFonts.montserrat(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.accentGold,
-                          ),
-                        ),
-                      if (rec.tags.isNotEmpty) ...[
-                        const SizedBox(height: 6),
-                        Wrap(
-                          spacing: 6,
-                          runSpacing: 4,
-                          children: rec.tags
-                              .take(3)
-                              .map((tag) => _Tag(label: tag))
-                              .toList(),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          // Reason
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-            child: Text(
-              rec.reason,
-              style: GoogleFonts.montserrat(
-                fontSize: 12,
-                color: AppTheme.mutedSilver,
-                height: 1.4,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-
-          // CTA Buttons
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
-            child: Row(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Product Image with soft gold price tag
+            Stack(
               children: [
-                // Add to Cart
-                if (rec.variantId.isNotEmpty)
-                  Expanded(
-                    child: _CtaButton(
-                      label: 'Thêm vào giỏ',
-                      icon: Icons.shopping_bag_outlined,
-                      filled: true,
-                      onTap: () => _addToCart(context, ref),
+                _ProductImage(url: rec.imageUrl),
+                if (rec.price > 0)
+                  Positioned(
+                    top: 12,
+                    right: 12,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppTheme.parchment.withValues(alpha: 0.9),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppTheme.accentGold.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Text(
+                        formatVND(rec.price),
+                        style: GoogleFonts.montserrat(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.accentGold,
+                        ),
+                      ),
                     ),
                   ),
-                if (rec.variantId.isNotEmpty) const SizedBox(width: 8),
-                // View Detail
-                Expanded(
-                  child: _CtaButton(
-                    label: 'Xem chi tiết',
-                    icon: Icons.visibility_outlined,
-                    filled: false,
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      context.push('/product/${rec.productId}');
-                    },
+              ],
+            ),
+
+            // Info
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (rec.brand.isNotEmpty)
+                      Text(
+                        rec.brand.toUpperCase(),
+                        style: GoogleFonts.montserrat(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 1,
+                          color: AppTheme.mutedSilver.withValues(alpha: 0.7),
+                        ),
+                      ),
+                    const SizedBox(height: 4),
+                    Text(
+                      rec.name,
+                      style: GoogleFonts.playfairDisplay(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.deepCharcoal,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => _showAiInsight(context),
+                        child: Text(
+                          rec.reason,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 11,
+                            color: AppTheme.mutedSilver,
+                            height: 1.4,
+                            fontStyle: FontStyle.italic,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Add to Cart invitation style
+                    GestureDetector(
+                      onTap: () => _addToCart(context, ref),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        decoration: BoxDecoration(
+                          gradient: AppTheme.getGoldGradient(),
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.accentGold.withValues(alpha: 0.2),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.shopping_bag_outlined,
+                              size: 14,
+                              color: AppTheme.primaryDb,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              l10n.addToBagInvite,
+                              style: GoogleFonts.montserrat(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: AppTheme.primaryDb,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showAiInsight(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.5,
+        decoration: const BoxDecoration(
+          color: AppTheme.parchment,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(40)),
+        ),
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppTheme.softTaupe.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 32),
+            Row(
+              children: [
+                const Icon(
+                  Icons.auto_awesome,
+                  color: AppTheme.accentGold,
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'AI SPECIALIST INSIGHT',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 2,
+                    color: AppTheme.accentGold,
                   ),
                 ),
               ],
             ),
-          ),
-        ],
+            const SizedBox(height: 16),
+            Text(
+              rec.name,
+              style: GoogleFonts.playfairDisplay(
+                fontSize: 24,
+                fontWeight: FontWeight.w800,
+                color: AppTheme.deepCharcoal,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Text(
+                  rec.reason,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 15,
+                    height: 1.8,
+                    color: AppTheme.deepCharcoal,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.deepCharcoal,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: Text(
+                  'ĐÃ HIỂU',
+                  style: GoogleFonts.montserrat(
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -332,39 +508,22 @@ class _ProductImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (url.isNotEmpty) {
-      return ClipRRect(
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(14),
-          bottomLeft: Radius.circular(14),
-        ),
-        child: Image.network(
-          url,
-          width: 80,
-          height: 100,
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _placeholder(),
-        ),
-      );
-    }
-    return _placeholder();
+    return Container(
+      height: 140,
+      width: double.infinity,
+      decoration: const BoxDecoration(color: Color(0xFFF9F9F9)),
+      child: url.isNotEmpty
+          ? Image.network(
+              url,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => _placeholder(),
+            )
+          : _placeholder(),
+    );
   }
 
-  Widget _placeholder() => Container(
-    width: 80,
-    height: 100,
-    decoration: const BoxDecoration(
-      color: Color(0xFFF5F1ED),
-      borderRadius: BorderRadius.only(
-        topLeft: Radius.circular(14),
-        bottomLeft: Radius.circular(14),
-      ),
-    ),
-    child: const Icon(
-      Icons.spa_outlined,
-      size: 28,
-      color: AppTheme.mutedSilver,
-    ),
+  Widget _placeholder() => const Center(
+    child: Icon(Icons.spa_outlined, size: 32, color: AppTheme.softTaupe),
   );
 }
 
