@@ -12,8 +12,18 @@ import 'core/providers/settings_provider.dart';
 import 'core/config/app_config.dart';
 import 'features/auth/providers/auth_provider.dart';
 
+import 'package:flutter/services.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Immersive UI
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.light,
+    systemNavigationBarColor: Colors.transparent,
+    systemNavigationBarIconBrightness: Brightness.light,
+  ));
 
   // Load environment variables before any provider/widget can touch EnvConfig.
   try {

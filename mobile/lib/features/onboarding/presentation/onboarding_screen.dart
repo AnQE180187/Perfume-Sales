@@ -11,15 +11,13 @@ import 'package:perfume_gpt_app/l10n/app_localizations.dart';
 class _SlideData {
   final String title;
   final String subtitle;
-  final IconData icon;
-  final List<Color> gradientColors;
+  final String bgImagePath;
   final Color accentColor;
 
   const _SlideData({
     required this.title,
     required this.subtitle,
-    required this.icon,
-    required this.gradientColors,
+    required this.bgImagePath,
     required this.accentColor,
   });
 }
@@ -94,34 +92,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
       _SlideData(
         title: l10n.onboarding1Title,
         subtitle: l10n.onboarding1Subtitle,
-        icon: Icons.spa_outlined,
-        gradientColors: [
-          const Color(0xFFFDF6EE),
-          const Color(0xFFF5E6D0),
-          const Color(0xFFEDD5B3),
-        ],
+        bgImagePath: 'assets/images/onboarding_bg_1.png',
         accentColor: const Color(0xFFD4A574),
       ),
       _SlideData(
         title: l10n.onboarding2Title,
         subtitle: l10n.onboarding2Subtitle,
-        icon: Icons.auto_awesome_outlined,
-        gradientColors: [
-          const Color(0xFFF0EDE8),
-          const Color(0xFFE0D8CC),
-          const Color(0xFFD0C4B0),
-        ],
+        bgImagePath: 'assets/images/onboarding_bg_2.png',
         accentColor: const Color(0xFFB8A080),
       ),
       _SlideData(
         title: l10n.onboarding3Title,
         subtitle: l10n.onboarding3Subtitle,
-        icon: Icons.diamond_outlined,
-        gradientColors: [
-          const Color(0xFFF2ECF9),
-          const Color(0xFFE8DEEF),
-          const Color(0xFFD5C4E0),
-        ],
+        bgImagePath: 'assets/images/onboarding_bg_3.png',
         accentColor: const Color(0xFFAA8EC4),
       ),
     ];
@@ -131,21 +114,48 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
     return Scaffold(
       body: Stack(
         children: [
-          // ── Animated gradient background ──
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 700),
-            curve: Curves.easeInOut,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: slide.gradientColors,
+          // ── Cinematic Background Image ──
+          Positioned.fill(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 1000),
+              layoutBuilder: (child, List<Widget> previousChildren) {
+                return Stack(
+                  children: [
+                    ...previousChildren,
+                    if (child != null) child,
+                  ],
+                );
+              },
+              child: Image.asset(
+                slide.bgImagePath,
+                key: ValueKey(slide.bgImagePath),
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
               ),
             ),
           ),
 
-          // ── Decorative circles ──
-          ..._buildDecorativeElements(size, slide),
+          // ── Gradient Overlay for Readability ──
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.4),
+                    Colors.transparent,
+                    Colors.transparent,
+                    Colors.black.withValues(alpha: 0.8),
+                  ],
+                  stops: const [0.0, 0.3, 0.6, 1.0],
+                ),
+              ),
+            ),
+          ),
+
+
 
           // ── Page swipe area (invisible, for gesture) ──
           PageView.builder(
@@ -168,7 +178,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                       fontSize: 14,
                       fontWeight: FontWeight.w300,
                       letterSpacing: 8,
-                      color: AppTheme.mutedSilver,
+                      color: Colors.white.withValues(alpha: 0.7),
                     ),
                   ),
                   if (_currentPage < slides.length - 1)
@@ -185,7 +195,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                           letterSpacing: 2,
-                          color: AppTheme.mutedSilver,
+                          color: Colors.white.withValues(alpha: 0.7),
                         ),
                       ),
                     ),
@@ -194,22 +204,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
             ),
           ),
 
-          // ── Center icon ──
-          Positioned(
-            top: size.height * 0.18,
-            left: 0,
-            right: 0,
-            child: AnimatedBuilder(
-              animation: _floatAnim,
-              builder: (context, child) {
-                return Transform.translate(
-                  offset: Offset(0, _floatAnim.value),
-                  child: child,
-                );
-              },
-              child: _buildCenterVisual(slide, size),
-            ),
-          ),
+
 
           // ── Bottom content ──
           Positioned(
@@ -232,10 +227,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                     Text(
                       slide.title,
                       style: GoogleFonts.playfairDisplay(
-                        fontSize: 34,
+                        fontSize: 38,
                         fontWeight: FontWeight.w700,
-                        height: 1.15,
-                        color: AppTheme.deepCharcoal,
+                        height: 1.1,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withValues(alpha: 0.3),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -244,10 +246,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                     Text(
                       slide.subtitle,
                       style: GoogleFonts.montserrat(
-                        fontSize: 15,
+                        fontSize: 16,
                         fontWeight: FontWeight.w300,
                         height: 1.6,
-                        color: AppTheme.mutedSilver,
+                        color: Colors.white.withValues(alpha: 0.85),
                       ),
                     ),
                     const SizedBox(height: 36),
@@ -264,95 +266,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
     );
   }
 
-  Widget _buildCenterVisual(_SlideData slide, Size size) {
-    return Center(
-      child: Container(
-        width: size.width * 0.52,
-        height: size.width * 0.52,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: RadialGradient(
-            colors: [
-              slide.accentColor.withValues(alpha: 0.15),
-              slide.accentColor.withValues(alpha: 0.05),
-              Colors.transparent,
-            ],
-          ),
-        ),
-        child: Center(
-          child: Container(
-            width: size.width * 0.32,
-            height: size.width * 0.32,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withValues(alpha: 0.6),
-              boxShadow: [
-                BoxShadow(
-                  color: slide.accentColor.withValues(alpha: 0.2),
-                  blurRadius: 40,
-                  spreadRadius: 10,
-                ),
-              ],
-            ),
-            child: Icon(slide.icon, size: 48, color: slide.accentColor),
-          ),
-        ),
-      ),
-    );
-  }
-
-  List<Widget> _buildDecorativeElements(Size size, _SlideData slide) {
-    return [
-      // Top-right circle
-      Positioned(
-        top: -size.width * 0.2,
-        right: -size.width * 0.15,
-        child: Container(
-          width: size.width * 0.6,
-          height: size.width * 0.6,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: slide.accentColor.withValues(alpha: 0.06),
-          ),
-        ),
-      ),
-      // Bottom-left circle
-      Positioned(
-        bottom: -size.width * 0.1,
-        left: -size.width * 0.2,
-        child: Container(
-          width: size.width * 0.5,
-          height: size.width * 0.5,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: slide.accentColor.withValues(alpha: 0.04),
-          ),
-        ),
-      ),
-      // Small floating accent
-      AnimatedBuilder(
-        animation: _floatAnim,
-        builder: (context, child) {
-          return Positioned(
-            top: size.height * 0.12,
-            right: size.width * 0.12,
-            child: Transform.rotate(
-              angle: _floatAnim.value * math.pi / 180,
-              child: Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: slide.accentColor.withValues(alpha: 0.3),
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    ];
-  }
-
   Widget _buildIndicators(int count) {
     return Row(
       children: List.generate(count, (i) {
@@ -366,8 +279,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(2),
             color: isActive
-                ? AppTheme.champagneGold
-                : AppTheme.deepCharcoal.withValues(alpha: 0.15),
+                ? AppTheme.accentGold
+                : Colors.white.withValues(alpha: 0.25),
           ),
         );
       }),
@@ -396,7 +309,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
             foregroundColor: Colors.white,
             elevation: 0,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(30),
             ),
             textStyle: GoogleFonts.montserrat(
               fontSize: 14,
@@ -404,7 +317,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
               letterSpacing: 2,
             ),
           ),
-          child: Text(l10n.beginJourney),
+          child: Text(l10n.beginJourney.toUpperCase()),
         ),
       );
     }
@@ -420,30 +333,31 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
                 curve: Curves.easeInOutCubic,
               ),
               style: OutlinedButton.styleFrom(
-                side: BorderSide(
-                  color: AppTheme.deepCharcoal.withValues(alpha: 0.15),
+                side: const BorderSide(
+                  color: Colors.white,
+                  width: 1.5,
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(30),
                 ),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    l10n.next,
+                    l10n.next.toUpperCase(),
                     style: GoogleFonts.montserrat(
                       fontSize: 14,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                       letterSpacing: 2,
-                      color: AppTheme.deepCharcoal,
+                      color: Colors.white,
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Icon(
+                  const SizedBox(width: 12),
+                  const Icon(
                     Icons.arrow_forward_rounded,
                     size: 18,
-                    color: AppTheme.deepCharcoal,
+                    color: Colors.white,
                   ),
                 ],
               ),

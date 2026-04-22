@@ -1920,11 +1920,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get musky => 'Musky';
 
   @override
-  String get discoverYourScentSignature => 'Discover Your\nScent Signature';
+  String get discoverYourScentSignature => 'Let the Angel\nFind Your Signature';
 
   @override
   String get quizIntroDescription =>
-      'Answer 5 quick questions and our AI will find the ideal scent for your personality.';
+      'Begin an olfactory journey with the Perfume Angel to discover the scent that perfectly reflects your identity.';
 
   @override
   String get startNow => 'START NOW';
@@ -1938,31 +1938,34 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get auraAnalysis => 'AURA ANALYSIS...';
+  String get auraAnalysis => 'THE ANGEL IS SENSING...';
 
   @override
   String get personalizingScentExperience =>
-      'Personalizing your olfactory experience';
+      'Guiding your soul to the realm of scents...';
 
   @override
-  String get processingOlfactoryData => 'Processing olfactory data...';
+  String get processingOlfactoryData =>
+      'Understanding your heart\'s desires...';
 
   @override
-  String get matchingResonantNotes => 'Matching resonant notes...';
+  String get matchingResonantNotes =>
+      'Seeking resonance from a million notes...';
 
   @override
   String get identifyingPersonalSignature =>
-      'Identifying personal signature...';
+      'Sketching your unique scent signature...';
 
   @override
-  String get completingAuraAlgorithm => 'Completing Aura algorithm...';
+  String get completingAuraAlgorithm =>
+      'Wrapping your unique fragrance gift...';
 
   @override
-  String get yourScentSignature => 'Your Scent Signature';
+  String get yourScentSignature => 'The Angel\'s Gift';
 
   @override
   String get resultsDescription =>
-      'Based on your preferences, the Aura algorithm has selected the most suitable scents.';
+      'From thousands of notes, the Angel has meticulously selected the most exquisite scents uniquely for your soul.';
 
   @override
   String get noRecommendations => 'No matching recommendations found.';
@@ -2241,12 +2244,110 @@ class AppLocalizationsEn extends AppLocalizations {
   String get paymentCodDesc => 'Cash on delivery';
 
   @override
+  String get welcomeTitle => 'HELLO!';
+
+  @override
+  String get welcomeSubtitle =>
+      'I am the Perfume Angel, your companion in finding your \"destined scent\".';
+
+  @override
+  String get aiScentDnaDiscover => 'Discover Scent DNA';
+
+  @override
+  String get aiScentDnaDiscoverSub => 'AI will analyze your preferences';
+
+  @override
+  String get giftConsultation => 'Gift Consultation';
+
+  @override
+  String get giftConsultationSub => 'Find the perfect gift for your loved ones';
+
+  @override
+  String get aiCrafting => 'The Scent Deity is crafting...';
+
+  @override
+  String get aiMolecularProcessing => 'Molecular processing...';
+
+  @override
+  String get promptAnalyzeDna => 'Help me analyze my scent DNA';
+
+  @override
+  String get promptGiftSearch => 'I want to find perfume as a gift';
+
+  @override
+  String get chatInputHint => 'Tell me what you are looking for...';
+
+  @override
+  String get chipSurprise => 'Surprise Me';
+
+  @override
+  String get chipSurprisePrompt => 'Give me a surprise scent recommendation';
+
+  @override
+  String get chipUnder1m => 'Under 1M';
+
+  @override
+  String get chipUnder1mPrompt => 'Suggest perfumes under 1 million VND';
+
+  @override
+  String get chipNight => 'Evening Scent';
+
+  @override
+  String get chipNightPrompt => 'Scent suitable for evening occasion';
+
+  @override
+  String get chipGift => 'Gift Ideas';
+
+  @override
+  String get chipGiftPrompt => 'Suggest perfumes for gifting';
+
+  @override
+  String get chipCheaper => 'More affordable';
+
+  @override
+  String get chipCheaperPrompt => 'Suggest similar but more affordable options';
+
+  @override
+  String get chipSweeter => 'Sweeter';
+
+  @override
+  String get chipSweeterPrompt => 'Suggest a sweeter scent';
+
+  @override
+  String get chipOffice => 'Office Wear';
+
+  @override
+  String get chipOfficePrompt => 'Suggest perfumes suitable for work';
+
+  @override
+  String get chipMasculine => 'More masculine';
+
+  @override
+  String get chipMasculinePrompt => 'Suggest a more masculine perfume';
+
+  @override
+  String get chipFeminine => 'More feminine';
+
+  @override
+  String get chipFemininePrompt => 'Suggest a more feminine perfume';
+
+  @override
   String get paymentPayosDesc => 'Scan QR or bank transfer';
 
   @override
   String earnPoints(int points) {
     return 'Earn $points reward points on this order';
   }
+
+  @override
+  String get homeAiBannerTitle => 'Ask the Angel';
+
+  @override
+  String get homeAiBannerDesc =>
+      'Let the Angel guide you to your destined scent today.';
+
+  @override
+  String get askNow => 'ASK NOW';
 
   @override
   String dnaMatch(int percent) {

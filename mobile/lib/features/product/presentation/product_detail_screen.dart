@@ -9,6 +9,7 @@ import '../../../core/widgets/product_size_selector.dart';
 import '../../../core/widgets/ai_scent_analysis_card.dart';
 import '../../../core/widgets/product_bottom_cta.dart';
 import '../../../core/widgets/luxury_button.dart';
+import '../../../core/widgets/luxury_notification.dart';
 import 'package:perfume_gpt_app/l10n/app_localizations.dart';
 import '../../cart/providers/cart_provider.dart';
 import '../../cart/providers/cart_selection_provider.dart';
@@ -661,54 +662,13 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                           .addItemByVariant(variant.id, quantity: 1);
 
                       if (!context.mounted) return;
-                      final l10nAfter = AppLocalizations.of(context)!;
-                      messenger.clearSnackBars();
-                      messenger.showSnackBar(
-                        SnackBar(
-                          content: Row(
-                            children: [
-                              const Icon(
-                                Icons.check_circle_rounded,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  '${l10nAfter.addedToCart} ${product.name}',
-                                  style: const TextStyle(fontSize: 13),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              GestureDetector(
-                                onTap: () {
-                                  messenger.hideCurrentSnackBar();
-                                  if (context.mounted) {
-                                    context.push('/cart');
-                                  }
-                                },
-                                child: Text(
-                                  l10nAfter.viewCart,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 13,
-                                    decoration: TextDecoration.underline,
-                                    decorationColor: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          behavior: SnackBarBehavior.floating,
-                          backgroundColor: const Color(0xFF2E7D32),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                          duration: const Duration(seconds: 3),
-                        ),
+                      LuxuryNotification.showSuccess(
+                        context,
+                        message: AppLocalizations.of(context)!.addedToCart,
+                        subMessage: product.name,
+                        imageUrl: product.imageUrl,
+                        actionLabel: AppLocalizations.of(context)!.viewCart,
+                        onAction: () => context.push('/cart'),
                       );
                     } catch (error) {
                       if (!context.mounted) return;

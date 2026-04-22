@@ -157,7 +157,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
           state = state.copyWith(
             conversations: convos,
             activeConversationId: latest.id,
-            messages: history.isEmpty ? [_welcomeMessage()] : history,
+            messages: history,
             isInitializing: false,
           );
         }
@@ -166,7 +166,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
         if (mounted) {
           state = state.copyWith(
             conversations: convos,
-            messages: [_welcomeMessage()],
+            messages: [],
             isInitializing: false,
             clearConversation: true,
           );
@@ -176,7 +176,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
       if (mounted) {
         state = state.copyWith(
           isInitializing: false,
-          messages: [_welcomeMessage()],
+          messages: [],
           sendError: e.toString(),
         );
       }
@@ -197,7 +197,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
       await _connectSocket(conversationId);
       if (mounted) {
         state = state.copyWith(
-          messages: history.isEmpty ? [_welcomeMessage()] : history,
+          messages: history,
           isInitializing: false,
         );
       }
@@ -213,7 +213,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
     if (!mounted) return;
     _socketService.disconnect();
     state = state.copyWith(
-      messages: [_welcomeMessage()],
+      messages: [],
       clearConversation: true,
       clearError: true,
     );
@@ -330,7 +330,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
         _socketService.disconnect();
         state = state.copyWith(
           conversations: updatedConvos,
-          messages: [_welcomeMessage()],
+          messages: [],
           clearConversation: true,
         );
       } else {

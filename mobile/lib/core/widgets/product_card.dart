@@ -184,39 +184,42 @@ class _FeaturedCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  Text(
+                    product.brand.toUpperCase(),
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.5,
+                      color: AppTheme.deepCharcoal,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (product.scentFamily != null) ...[
+                    const SizedBox(height: 2),
                     Text(
-                      product.brand.toUpperCase(),
-                      style: GoogleFonts.playfairDisplay(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1.5,
+                      product.scentFamily!,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w500,
+                        color: AppTheme.accentGold,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 6),
+                  SizedBox(
+                    height: 34,
+                    child: Text(
+                      product.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        height: 1.25,
                         color: AppTheme.deepCharcoal,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (product.scentFamily != null) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        product.scentFamily!,
-                        style: GoogleFonts.montserrat(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w500,
-                          color: AppTheme.accentGold,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ],
-                  const SizedBox(height: 6),
-                  Text(
-                    product.name,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.montserrat(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      height: 1.25,
-                      color: AppTheme.deepCharcoal,
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -432,15 +435,18 @@ class _GridCard extends StatelessWidget {
                     ),
                   ],
                   const SizedBox(height: 6),
-                  Text(
-                    product.name,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.montserrat(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      height: 1.25,
-                      color: AppTheme.deepCharcoal,
+                  SizedBox(
+                    height: 34,
+                    child: Text(
+                      product.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        height: 1.25,
+                        color: AppTheme.deepCharcoal,
+                      ),
                     ),
                   ),
                   if (product.notes.isNotEmpty) ...[
@@ -745,7 +751,7 @@ class _LuxuryBadge extends StatelessWidget {
             border: Border.all(color: Colors.white.withOpacity(0.5), width: 1.2),
           ),
           child: const Icon(
-            Icons.auto_awesome,
+            Icons.auto_awesome_rounded,
             size: 14,
             color: AppTheme.accentGold,
           ),
@@ -755,31 +761,104 @@ class _LuxuryBadge extends StatelessWidget {
   }
 }
 
-class _FavoriteButton extends StatelessWidget {
+class _FavoriteButton extends StatefulWidget {
   final bool isFavorite;
   final VoidCallback? onTap;
 
   const _FavoriteButton({required this.isFavorite, this.onTap});
 
   @override
+  State<_FavoriteButton> createState() => _FavoriteButtonState();
+}
+
+class _FavoriteButtonState extends State<_FavoriteButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+    _scaleAnimation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.4), weight: 50),
+      TweenSequenceItem(tween: Tween(begin: 1.4, end: 1.0), weight: 50),
+    ]).animate(_controller);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleTap() {
+    if (widget.onTap != null) {
+      if (!widget.isFavorite) {
+        _controller.forward(from: 0.0);
+        _showFavoriteNotification(context);
+      }
+      widget.onTap!();
+    }
+  }
+
+  void _showFavoriteNotification(BuildContext context) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.favorite, color: Color(0xFFD32F2F), size: 16),
+            const SizedBox(width: 10),
+            Text(
+              'Đã thêm vào mục yêu thích',
+              style: GoogleFonts.montserrat(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.deepCharcoal,
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: AppTheme.creamWhite,
+        behavior: SnackBarBehavior.floating,
+        elevation: 10,
+        margin: const EdgeInsets.fromLTRB(40, 0, 40, 40),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30),
+          side: BorderSide(color: AppTheme.softTaupe.withOpacity(0.1)),
+        ),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-          child: Container(
-            padding: const EdgeInsets.all(6.0),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.15),
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white.withOpacity(0.2)),
-            ),
-            child: Icon(
-              isFavorite ? Icons.favorite : Icons.favorite_border,
-              size: 18,
-              color: isFavorite ? const Color(0xFFD32F2F) : AppTheme.creamWhite,
+      onTap: _handleTap,
+      child: ScaleTransition(
+        scale: _scaleAnimation,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+            child: Container(
+              padding: const EdgeInsets.all(6.0),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.15),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white.withOpacity(0.2)),
+              ),
+              child: Icon(
+                widget.isFavorite ? Icons.favorite : Icons.favorite_border,
+                size: 18,
+                color: widget.isFavorite ? const Color(0xFFD32F2F) : AppTheme.creamWhite,
+              ),
             ),
           ),
         ),

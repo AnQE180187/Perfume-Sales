@@ -20,11 +20,19 @@ class CartSelectionState {
 class CartSelectionNotifier extends StateNotifier<CartSelectionState> {
   CartSelectionNotifier() : super(const CartSelectionState());
 
-  void initFromCart(List<String> allItemIds) {
-    if (state.selectedIds.isEmpty && allItemIds.isNotEmpty) {
+  void syncWithAvailableItems(List<String> availableIds) {
+    final updated = state.selectedIds.where((id) => availableIds.contains(id)).toSet();
+    
+    // If we have no selection but there are available items, select all
+    if (updated.isEmpty && availableIds.isNotEmpty) {
       state = CartSelectionState(
-        selectedIds: allItemIds.toSet(),
+        selectedIds: availableIds.toSet(),
         selectAll: true,
+      );
+    } else {
+      state = state.copyWith(
+        selectedIds: updated,
+        selectAll: updated.length == availableIds.length && availableIds.isNotEmpty,
       );
     }
   }

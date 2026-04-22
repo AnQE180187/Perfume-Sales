@@ -42,6 +42,9 @@ class ScentRepository {
     if (n.contains('cam') || n.contains('citrus')) {
       return {'icon': Icons.wb_sunny_outlined, 'color': const Color(0xFFC7A86A)};
     }
+    if (n.contains('trái cây') || n.contains('fruity') || n.contains('quả')) {
+      return {'icon': Icons.bakery_dining_outlined, 'color': const Color(0xFFE9967A)};
+    }
     if (n.contains('xạ') || n.contains('musk')) {
       return {'icon': Icons.blur_on_outlined, 'color': const Color(0xFF6C7A89)};
     }

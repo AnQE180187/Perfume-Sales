@@ -49,12 +49,15 @@ class AppAsyncWidget<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return value.when(
-      loading: () => loadingBuilder?.call() ?? const ShimmerCard(),
-      error: (error, stack) =>
-          errorBuilder?.call(error, stack) ??
-          AppErrorWidget(message: _fallbackMessage(error), onRetry: onRetry),
-      data: dataBuilder,
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      child: value.when(
+        loading: () => loadingBuilder?.call() ?? const ShimmerCard(),
+        error: (error, stack) =>
+            errorBuilder?.call(error, stack) ??
+            AppErrorWidget(message: _fallbackMessage(error), onRetry: onRetry),
+        data: dataBuilder,
+      ),
     );
   }
 

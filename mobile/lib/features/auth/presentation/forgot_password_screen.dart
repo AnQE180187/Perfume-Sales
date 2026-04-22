@@ -16,39 +16,99 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   final _emailController = TextEditingController();
   bool _isLoading = false;
   bool _emailSent = false;
+  String? _error;
+  String? _devToken;
+
+  @override
+  void initState() {
+    super.initState();
+    _emailController.addListener(_clearError);
+  }
 
   @override
   void dispose() {
+    _emailController.removeListener(_clearError);
     _emailController.dispose();
     super.dispose();
+  }
+
+  void _clearError() {
+    if (_error != null) setState(() => _error = null);
   }
 
   Future<void> _handleSubmit() async {
     final email = _emailController.text.trim();
     if (email.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Vui lòng nhập email')));
+      setState(() => _error = 'Vui lòng nhập địa chỉ email của bạn');
       return;
     }
 
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
     try {
-      await ref.read(authControllerProvider.notifier).forgotPassword(email);
+      final result = await ref
+          .read(authControllerProvider.notifier)
+          .forgotPassword(email);
+
       if (mounted) {
         setState(() {
           _isLoading = false;
           _emailSent = true;
+          _devToken = result['resetToken'] as String?;
         });
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _isLoading = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Lỗi: $e')));
+        setState(() {
+          _isLoading = false;
+          final errStr = e.toString().toLowerCase();
+          if (errStr.contains('not found') || errStr.contains('404')) {
+            _error = 'Email này chưa được đăng ký trong hệ thống.';
+          } else {
+            _error = 'Không thể gửi yêu cầu. Vui lòng kiểm tra lại kết nối.';
+          }
+        });
       }
     }
+  }
+
+  Widget _buildErrorBanner() {
+    if (_error == null) return const SizedBox.shrink();
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2D0A0A).withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.error_outline, color: Colors.redAccent, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              _error!,
+              style: GoogleFonts.montserrat(
+                color: const Color(0xFFFFD1D1),
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -112,6 +172,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           ),
         ),
         const SizedBox(height: 32),
+        _buildErrorBanner(),
         TextField(
           controller: _emailController,
           keyboardType: TextInputType.emailAddress,
@@ -236,14 +297,48 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             height: 1.5,
           ),
         ),
+        if (_devToken != null) ...[
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.amber.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
+            ),
+            child: Column(
+              children: [
+                const Text(
+                  'DEBUG TOKEN (Development Mode)',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.amber,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SelectableText(
+                  _devToken!,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.sourceCodePro(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
         const SizedBox(height: 16),
         Text(
-          'Nếu bạn có mã token, hãy nhấn bên dưới để đặt lại.',
+          'Vui lòng nhấn vào liên kết trong email để mở trình duyệt và tiến hành đặt lại mật khẩu của bạn.',
           textAlign: TextAlign.center,
           style: GoogleFonts.montserrat(
-            fontSize: 13,
+            fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: const Color(0xFF999999),
+            color: const Color(0xFF666666),
+            height: 1.5,
           ),
         ),
         const SizedBox(height: 32),
@@ -259,9 +354,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                 borderRadius: BorderRadius.circular(30),
               ),
             ),
-            onPressed: () => context.push('/reset-password'),
+            onPressed: () => context.pop(),
             child: Text(
-              'Nhập mã đặt lại',
+              'Quay lại đăng nhập',
               style: GoogleFonts.montserrat(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -271,17 +366,6 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        TextButton(
-          onPressed: () => context.pop(),
-          child: Text(
-            'Quay lại đăng nhập',
-            style: GoogleFonts.montserrat(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: const Color(0xFFD4AF37),
-            ),
-          ),
-        ),
       ],
     );
   }

@@ -160,18 +160,21 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                     itemBuilder: (context, index) {
                       final product = products[index];
                       final isFav = wishlistIds.contains(product.id);
-                      return ProductCard(
-                        product: product,
-                        variant: ProductCardVariant.grid,
-                        badge: (product.rating ?? 0) >= 4.9
-                            ? AppLocalizations.of(context)!.topRated
-                            : null,
-                        isFavorite: isFav,
-                        heroTag: 'explore_${product.id}',
-                        onTap: () => context.push('/product/${product.id}?heroTag=explore_${product.id}'),
-                        onFavoriteToggle: () {
-                          ref.read(wishlistProvider.notifier).toggle(product);
-                        },
+                      return _StaggeredEntrance(
+                        index: index,
+                        child: ProductCard(
+                          product: product,
+                          variant: ProductCardVariant.grid,
+                          badge: (product.rating ?? 0) >= 4.9
+                              ? AppLocalizations.of(context)!.topRated
+                              : null,
+                          isFavorite: isFav,
+                          heroTag: 'explore_${product.id}',
+                          onTap: () => context.push('/product/${product.id}?heroTag=explore_${product.id}'),
+                          onFavoriteToggle: () {
+                            ref.read(wishlistProvider.notifier).toggle(product);
+                          },
+                        ),
                       );
                     },
                   ),
@@ -181,6 +184,32 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _StaggeredEntrance extends StatelessWidget {
+  final int index;
+  final Widget child;
+
+  const _StaggeredEntrance({required this.index, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.0, end: 1.0),
+      duration: Duration(milliseconds: 400 + (index * 100).clamp(0, 400)),
+      curve: Curves.easeOutQuint,
+      builder: (context, value, child) {
+        return Opacity(
+          opacity: value,
+          child: Transform.translate(
+            offset: Offset(0, 30 * (1 - value)),
+            child: child,
+          ),
+        );
+      },
+      child: child,
     );
   }
 }

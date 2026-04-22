@@ -207,12 +207,21 @@ class CheckoutScreen extends ConsumerWidget {
 
     if (!success) {
       final errorMessage = ref.read(checkoutProvider).errorMessage;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(errorMessage ?? l10n.orderConfirmError),
-          backgroundColor: Colors.red,
-        ),
-      );
+      final isStockError = errorMessage?.contains('hết hàng') ??
+          errorMessage?.toLowerCase().contains('số lượng') ??
+          false;
+
+      if (isStockError) {
+        _showStockErrorDialog(context, errorMessage!);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage ?? l10n.orderConfirmError),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
       return;
     }
 
@@ -283,6 +292,89 @@ class CheckoutScreen extends ConsumerWidget {
     ref.invalidate(cartSelectionProvider);
     ref.invalidate(activePromotionsProvider);
     context.go(AppRoutes.orderSuccess);
+  }
+
+  void _showStockErrorDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: AppTheme.ivoryBackground,
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFEF3F2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.inventory_2_outlined,
+                  color: Color(0xFFD92D20),
+                  size: 32,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'LỖI THANH TOÁN',
+                style: GoogleFonts.montserrat(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.5,
+                  color: AppTheme.mutedSilver,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Sản phẩm đã hết hàng',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.playfairDisplay(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.deepCharcoal,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.montserrat(
+                  fontSize: 14,
+                  height: 1.5,
+                  fontWeight: FontWeight.w500,
+                  color: AppTheme.mutedSilver,
+                ),
+              ),
+              const SizedBox(height: 32),
+              LuxuryButton(
+                text: 'QUAY LẠI GIỎ HÀNG',
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  context.go(AppRoutes.cart);
+                },
+              ),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(
+                  'ĐÓNG',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.mutedSilver,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

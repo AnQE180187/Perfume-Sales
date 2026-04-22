@@ -1920,11 +1920,12 @@ class AppLocalizationsVi extends AppLocalizations {
   String get musky => 'Xạ hương';
 
   @override
-  String get discoverYourScentSignature => 'Khám phá Chữ ký\nMùi hương của Bạn';
+  String get discoverYourScentSignature =>
+      'Hãy để Thiên thần\ntìm thấy Signature của bạn';
 
   @override
   String get quizIntroDescription =>
-      'Hãy trả lời 5 câu hỏi nhanh để AI của chúng tôi tìm ra mùi hương lý tưởng nhất dành riêng cho cá tính của bạn.';
+      'Bắt đầu hành trình khứu giác cùng Thiên thần nước hoa để tìm ra mùi hương phản ánh đúng bản sắc của bạn.';
 
   @override
   String get startNow => 'BẮT ĐẦU NGAY';
@@ -1938,30 +1939,33 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get auraAnalysis => 'PHÂN TÍCH AURA...';
+  String get auraAnalysis => 'THIÊN THẦN ĐANG CẢM NHẬN...';
 
   @override
   String get personalizingScentExperience =>
-      'Đang cá nhân hóa trải nghiệm khứu giác của bạn';
+      'Dẫn lối tâm hồn bạn đến với miền hương vị...';
 
   @override
-  String get processingOlfactoryData => 'Đang xử lý dữ liệu khứu giác...';
+  String get processingOlfactoryData => 'Đang thấu hiểu tâm tư của bạn...';
 
   @override
-  String get matchingResonantNotes => 'Đối chiếu nốt hương cộng hưởng...';
+  String get matchingResonantNotes =>
+      'Tìm kiếm sự cộng hưởng từ triệu nốt hương...';
 
   @override
-  String get identifyingPersonalSignature => 'Xác định chữ ký cá nhân...';
+  String get identifyingPersonalSignature =>
+      'Phác họa chữ ký mùi hương độc bản...';
 
   @override
-  String get completingAuraAlgorithm => 'Hoàn tất thuật toán Aura...';
+  String get completingAuraAlgorithm =>
+      'Gói ghém món quà hương thơm riêng biệt...';
 
   @override
-  String get yourScentSignature => 'Chữ ký Mùi hương của Bạn';
+  String get yourScentSignature => 'Món quà của Thiên thần';
 
   @override
   String get resultsDescription =>
-      'Dựa trên sở thích của bạn, thuật toán Aura đã tinh tuyển những mùi hương phù hợp nhất.';
+      'Giữa hàng vạn nốt hương, Thiên thần đã chọn lọc ra những mùi hương tuyệt mỹ nhất dành riêng cho tâm hồn bạn.';
 
   @override
   String get noRecommendations => 'Không tìm thấy đề xuất phù hợp.';
@@ -2243,12 +2247,110 @@ class AppLocalizationsVi extends AppLocalizations {
   String get paymentCodDesc => 'Thanh toán khi nhận hàng';
 
   @override
+  String get welcomeTitle => 'CHÀO BẠN!';
+
+  @override
+  String get welcomeSubtitle =>
+      'Tôi là Thiên thần Nước hoa, người đồng hành giúp bạn tìm thấy \"mùi hương định mệnh\".';
+
+  @override
+  String get aiScentDnaDiscover => 'Khám phá DNA mùi hương';
+
+  @override
+  String get aiScentDnaDiscoverSub => 'AI sẽ phân tích sở thích của bạn';
+
+  @override
+  String get giftConsultation => 'Tư vấn quà tặng';
+
+  @override
+  String get giftConsultationSub => 'Tìm món quà hoàn hảo cho người thân';
+
+  @override
+  String get aiCrafting => 'Thần hương đang pha chế...';
+
+  @override
+  String get aiMolecularProcessing => 'Molecular processing...';
+
+  @override
+  String get promptAnalyzeDna => 'Hãy giúp tôi phân tích DNA mùi hương của tôi';
+
+  @override
+  String get promptGiftSearch => 'Tôi muốn tìm mua nước hoa làm quà tặng';
+
+  @override
+  String get chatInputHint => 'Nhắn nhủ điều bạn đang tìm kiếm...';
+
+  @override
+  String get chipSurprise => 'Gợi ý bất ngờ';
+
+  @override
+  String get chipSurprisePrompt => 'Gợi ý cho tôi một mùi hương bất ngờ';
+
+  @override
+  String get chipUnder1m => 'Dưới 1 triệu';
+
+  @override
+  String get chipUnder1mPrompt => 'Gợi ý nước hoa dưới 1 triệu đồng';
+
+  @override
+  String get chipNight => 'Hương buổi tối';
+
+  @override
+  String get chipNightPrompt => 'Mùi hương phù hợp cho buổi tối';
+
+  @override
+  String get chipGift => 'Quà tặng';
+
+  @override
+  String get chipGiftPrompt => 'Gợi ý nước hoa làm quà tặng';
+
+  @override
+  String get chipCheaper => 'Rẻ hơn';
+
+  @override
+  String get chipCheaperPrompt => 'Gợi ý tương tự nhưng rẻ hơn';
+
+  @override
+  String get chipSweeter => 'Ngọt hơn';
+
+  @override
+  String get chipSweeterPrompt => 'Gợi ý mùi hương ngọt hơn';
+
+  @override
+  String get chipOffice => 'Đi làm';
+
+  @override
+  String get chipOfficePrompt => 'Gợi ý nước hoa phù hợp đi làm';
+
+  @override
+  String get chipMasculine => 'Nam tính hơn';
+
+  @override
+  String get chipMasculinePrompt => 'Gợi ý nước hoa nam tính hơn';
+
+  @override
+  String get chipFeminine => 'Nữ tính hơn';
+
+  @override
+  String get chipFemininePrompt => 'Gợi ý nước hoa nữ tính hơn';
+
+  @override
   String get paymentPayosDesc => 'Quét mã QR hoặc chuyển khoản ngân hàng';
 
   @override
   String earnPoints(int points) {
     return 'Tích lũy $points điểm khi mua sản phẩm này';
   }
+
+  @override
+  String get homeAiBannerTitle => 'Hỏi ý kiến Thiên thần';
+
+  @override
+  String get homeAiBannerDesc =>
+      'Hãy để Thiên thần dẫn lối bạn đến với mùi hương định mệnh hôm nay.';
+
+  @override
+  String get askNow => 'HỎI NGAY';
 
   @override
   String dnaMatch(int percent) {

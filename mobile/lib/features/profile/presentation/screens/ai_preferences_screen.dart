@@ -274,6 +274,9 @@ class _AiPreferencesScreenState extends ConsumerState<AiPreferencesScreen>
       children: [
         ...notes.map((note) => Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width - 48,
+          ),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.8),
             borderRadius: BorderRadius.circular(12),
@@ -282,7 +285,14 @@ class _AiPreferencesScreenState extends ConsumerState<AiPreferencesScreen>
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(note, style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w600, color: color)),
+              Flexible(
+                child: Text(
+                  note, 
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w600, color: color)
+                ),
+              ),
               const SizedBox(width: 6),
               GestureDetector(onTap: () => onRemove(note), child: Icon(Icons.close_rounded, size: 14, color: color.withValues(alpha: 0.4))),
             ],

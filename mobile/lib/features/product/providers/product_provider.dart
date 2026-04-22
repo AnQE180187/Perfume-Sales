@@ -12,7 +12,9 @@ final productServiceProvider = Provider<ProductService>((ref) {
 final productsProvider = FutureProvider<List<Product>>((ref) async {
   if (AppConfig.useRealAPI) {
     final repository = ref.watch(productRepositoryProvider);
-    return await repository.getProducts(take: 20);
+    // Tăng giới hạn lên 100 để lấy toàn bộ sản phẩm
+    final rawList = await repository.getProducts(take: 100);
+    return rawList;
   }
 
   final service = ref.watch(productServiceProvider);
