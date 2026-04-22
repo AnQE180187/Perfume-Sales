@@ -22,6 +22,7 @@ export default function CollectionPage() {
     const searchParams = useSearchParams();
     const brandParam = searchParams.get('brand');
     const [selectedBrand, setSelectedBrand] = useState<string | null>(brandParam || null);
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [selectedScent, setSelectedScent] = useState<string | null>(null);
     const [gender, setGender] = useState<'MALE' | 'FEMALE' | 'UNISEX' | null>(null);
     const [priceRange, setPriceRange] = useState<'P1' | 'P2' | 'P3' | 'P4' | null>(null);
@@ -76,7 +77,18 @@ export default function CollectionPage() {
         const items = Array.from(
             new Set(
                 products
-                    .map(p => (p as any).scentFamily?.name || p.category?.name)
+                    .map(p => p.scentFamily?.name)
+                    .filter(Boolean) as string[]
+            )
+        ).sort((a, b) => a.localeCompare(b));
+        return items;
+    }, [products]);
+
+    const categoryItems = useMemo(() => {
+        const items = Array.from(
+            new Set(
+                products
+                    .map(p => p.category?.name)
                     .filter(Boolean) as string[]
             )
         ).sort((a, b) => a.localeCompare(b));
@@ -95,11 +107,14 @@ export default function CollectionPage() {
             filtered = filtered.filter(p => p.brand?.name === selectedBrand);
         }
 
+        if (selectedCategory) {
+            filtered = filtered.filter(p => p.category?.name === selectedCategory);
+        }
+
         if (selectedScent) {
             filtered = filtered.filter(p => {
-                const sf = (p as any).scentFamily?.name;
-                const cat = p.category?.name;
-                return sf === selectedScent || cat === selectedScent;
+                const sf = p.scentFamily?.name;
+                return sf === selectedScent;
             });
         }
 
@@ -147,11 +162,11 @@ export default function CollectionPage() {
         });
 
         return sorted;
-    }, [products, searchQuery, selectedBrand, selectedScent, gender, priceRange, selectedSeason, sort]);
+    }, [products, searchQuery, selectedBrand, selectedCategory, selectedScent, gender, priceRange, selectedSeason, sort]);
 
     useEffect(() => {
         setPage(1);
-    }, [searchQuery, selectedBrand, selectedScent, gender, priceRange, selectedSeason, sort]);
+    }, [searchQuery, selectedBrand, selectedCategory, selectedScent, gender, priceRange, selectedSeason, sort]);
 
     const totalPages = Math.max(1, Math.ceil(visibleProducts.length / pageSize));
     const pageStart = (page - 1) * pageSize;
@@ -198,6 +213,29 @@ export default function CollectionPage() {
                             className={`w-full text-left px-3 py-2.5 rounded-xl text-sm transition-colors ${selectedBrand === b ? 'bg-gold/10 text-gold' : 'hover:bg-secondary/40'}`}
                         >
                             {b}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            <div>
+                <h2 className="text-xs font-bold tracking-[0.2em] uppercase text-foreground mb-4">Danh mục</h2>
+                <div className="flex flex-wrap gap-2">
+                    <button
+                        type="button"
+                        onClick={() => setSelectedCategory(null)}
+                        className={`px-4 py-2 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-colors ${selectedCategory === null ? 'bg-foreground text-background border-foreground' : 'border-border text-muted-foreground hover:text-foreground'}`}
+                    >
+                        Tất cả
+                    </button>
+                    {categoryItems.map((c) => (
+                        <button
+                            key={c}
+                            type="button"
+                            onClick={() => setSelectedCategory(c)}
+                            className={`px-4 py-2 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-colors ${selectedCategory === c ? 'bg-foreground text-background border-foreground' : 'border-border text-muted-foreground hover:text-foreground'}`}
+                        >
+                            {c}
                         </button>
                     ))}
                 </div>
@@ -275,6 +313,7 @@ export default function CollectionPage() {
                     setSearchQuery('');
                     setBrandQuery('');
                     setSelectedBrand(null);
+                    setSelectedCategory(null);
                     setSelectedScent(null);
                     setGender(null);
                     setPriceRange(null);
