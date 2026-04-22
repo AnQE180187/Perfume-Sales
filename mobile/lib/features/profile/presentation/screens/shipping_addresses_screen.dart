@@ -14,44 +14,39 @@ class ShippingAddressesScreen extends StatefulWidget {
 }
 
 class _ShippingAddressesScreenState extends State<ShippingAddressesScreen> {
-  late List<_ShippingAddressItem> _addresses;
-
-  static const List<_ShippingAddressItem> _seedAddresses = [
+  List<_ShippingAddressItem> _getSeedAddresses(AppLocalizations l10n) => [
     _ShippingAddressItem(
       id: 'home',
-      label: 'Nhà riêng',
+      label: l10n.homeLabel,
       recipientName: 'Mia Tran',
       phoneNumber: '0909 245 118',
       addressLine: '12 Nguyen Hue, Ben Nghe Ward, District 1, Ho Chi Minh City',
-      note: 'Giao giờ hành chính, gọi trước 10 phút.',
+      note: l10n.localeName == 'vi' ? 'Giao giờ hành chính, gọi trước 10 phút.' : 'Deliver during office hours, call 10 mins before.',
       isDefault: true,
-      accentColor: Color(0xFFD4AF37),
+      accentColor: const Color(0xFFD4AF37),
     ),
     _ShippingAddressItem(
       id: 'office',
-      label: 'Văn phòng',
+      label: l10n.officeLabel,
       recipientName: 'Mia Tran',
       phoneNumber: '0918 200 456',
       addressLine:
           'Floor 8, 81 Le Duan, Ben Nghe Ward, District 1, Ho Chi Minh City',
-      note: 'Nhận tại lễ tân, ghi chú tên công ty Solenne Studio.',
-      accentColor: Color(0xFF7E8F7A),
-    ),
-    _ShippingAddressItem(
-      id: 'gift',
-      label: 'Quà tặng',
-      recipientName: 'Linh Nguyen',
-      phoneNumber: '0935 620 882',
-      addressLine: '28 Tran Phu, Hai Chau District, Da Nang',
-      note: 'Thêm thiệp chúc mừng và gói quà tối màu.',
-      accentColor: Color(0xFFB9824A),
+      note: l10n.localeName == 'vi' ? 'Nhận tại lễ tân, ghi chú tên công ty Solenne Studio.' : 'Pick up at reception, note company name Solenne Studio.',
+      accentColor: const Color(0xFF7E8F7A),
     ),
   ];
 
+  bool _initialized = false;
+  late List<_ShippingAddressItem> _addresses;
+
   @override
-  void initState() {
-    super.initState();
-    _addresses = _seedAddresses;
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _addresses = _getSeedAddresses(AppLocalizations.of(context)!);
+      _initialized = true;
+    }
   }
 
   _ShippingAddressItem? get _defaultAddress {
@@ -751,7 +746,7 @@ class _AddressFormSheetState extends State<_AddressFormSheet> {
                 _AddressField(
                   controller: _labelController,
                   label: widget.l10n.addressLabel,
-                  hint: 'Ví dụ: ${widget.l10n.homeLabel}, ${widget.l10n.officeLabel}',
+                  hint: '${widget.l10n.homeLabel}, ${widget.l10n.officeLabel}...',
                 ),
                 const SizedBox(height: 12),
                 _AddressField(

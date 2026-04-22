@@ -65,13 +65,13 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen>
     final l10n = AppLocalizations.of(context)!;
     switch (s) {
       case WishlistSort.newest:
-        return l10n.localeName == 'vi' ? 'Mới nhất' : 'Newest';
+        return l10n.sortNewest;
       case WishlistSort.priceLow:
-        return l10n.localeName == 'vi' ? 'Giá tăng' : 'Price ↑';
+        return l10n.sortPriceLow;
       case WishlistSort.priceHigh:
-        return l10n.localeName == 'vi' ? 'Giá giảm' : 'Price ↓';
+        return l10n.sortPriceHigh;
       case WishlistSort.name:
-        return l10n.localeName == 'vi' ? 'Tên A-Z' : 'Name A-Z';
+        return l10n.sortName;
     }
   }
 
@@ -97,8 +97,7 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen>
             Padding(
               padding: const EdgeInsets.all(20),
               child: Text(
-                AppLocalizations.of(context)!.localeName == 'vi'
-                    ? 'SẮP XẾP THEO' : 'SORT BY',
+                AppLocalizations.of(context)!.sortBy,
                 style: GoogleFonts.montserrat(
                   fontSize: 12, fontWeight: FontWeight.w700,
                   letterSpacing: 1.5,
@@ -136,9 +135,7 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            AppLocalizations.of(context)!.localeName == 'vi'
-                ? 'Sản phẩm chưa có phiên bản'
-                : 'No variant available',
+            AppLocalizations.of(context)!.noVariantAvailable,
             style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500),
           ),
           backgroundColor: AppTheme.deepCharcoal,
@@ -162,9 +159,7 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen>
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                AppLocalizations.of(context)!.localeName == 'vi'
-                    ? 'Đã thêm vào giỏ hàng'
-                    : 'Added to cart',
+                AppLocalizations.of(context)!.addedToCart,
                 style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w600),
               ),
             ),
@@ -191,16 +186,14 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen>
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                AppLocalizations.of(context)!.localeName == 'vi'
-                    ? 'Đã xóa khỏi yêu thích'
-                    : 'Removed from wishlist',
+                AppLocalizations.of(context)!.removedFromWishlist,
                 style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w500),
               ),
             ),
           ],
         ),
         action: SnackBarAction(
-          label: AppLocalizations.of(context)!.localeName == 'vi' ? 'HOÀN TÁC' : 'UNDO',
+          label: AppLocalizations.of(context)!.undo,
           textColor: AppTheme.accentGold,
           onPressed: () {
             ref.read(wishlistProvider.notifier).toggle(product);
@@ -294,9 +287,7 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen>
                   ),
                   if (count > 0)
                     Text(
-                      l10n.localeName == 'vi'
-                          ? '$count sản phẩm'
-                          : '$count ${count == 1 ? 'item' : 'items'}',
+                      l10n.itemsCount(count),
                       style: GoogleFonts.montserrat(
                         fontSize: 12, fontWeight: FontWeight.w500,
                         color: AppTheme.mutedSilver,
@@ -442,8 +433,7 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen>
                           color: Colors.white, size: 24),
                       const SizedBox(height: 4),
                       Text(
-                        AppLocalizations.of(context)!.localeName == 'vi'
-                            ? 'Xóa' : 'Remove',
+                        AppLocalizations.of(context)!.remove,
                         style: GoogleFonts.montserrat(
                           fontSize: 10, fontWeight: FontWeight.w600,
                           color: Colors.white,

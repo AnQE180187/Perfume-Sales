@@ -4,6 +4,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../product/models/product.dart';
 import '../../../../core/widgets/product_card.dart';
 import 'package:go_router/go_router.dart';
+import 'package:perfume_gpt_app/l10n/app_localizations.dart';
 
 class RecentlyViewedSection extends StatelessWidget {
   final List<Product> products;
@@ -13,6 +14,7 @@ class RecentlyViewedSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (products.isEmpty) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context)!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -20,12 +22,12 @@ class RecentlyViewedSection extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
           child: Text(
-            'SẢN PHẨM VỪA XEM',
+            l10n.recentlyViewed,
             style: GoogleFonts.montserrat(
               fontSize: 12,
               fontWeight: FontWeight.w700,
               letterSpacing: 1.2,
-              color: AppTheme.deepCharcoal.withOpacity(0.5),
+              color: AppTheme.deepCharcoal.withValues(alpha: 0.5),
             ),
           ),
         ),
