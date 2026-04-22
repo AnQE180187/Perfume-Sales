@@ -15,6 +15,7 @@ import '../../cart/providers/cart_provider.dart';
 import '../../cart/providers/cart_selection_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
 import '../../profile/providers/ai_preferences_provider.dart';
+import '../providers/recently_viewed_provider.dart';
 import '../providers/product_provider.dart';
 import '../models/product.dart';
 import '../../../core/widgets/product_price_section.dart';
@@ -142,6 +143,11 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
           ),
         ),
         data: (product) {
+          // Track recently viewed
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ref.read(recentlyViewedProvider.notifier).addProduct(product);
+          });
+
           final images = (product.images != null && product.images!.isNotEmpty)
               ? product.images!
               : [product.imageUrl];

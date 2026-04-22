@@ -16,6 +16,11 @@ class ProfileEditNotifier extends AsyncNotifier<void> {
     required String phone,
     String? gender,
     String? dateOfBirth,
+    String? address,
+    String? city,
+    String? country,
+    double? minBudget,
+    double? maxBudget,
   }) async {
     state = const AsyncLoading();
     try {
@@ -25,11 +30,17 @@ class ProfileEditNotifier extends AsyncNotifier<void> {
         phone: phone.trim().isEmpty ? null : phone.trim(),
         gender: gender,
         dateOfBirth: dateOfBirth,
+        address: address,
+        city: city,
+        country: country,
+        minBudget: minBudget,
+        maxBudget: maxBudget,
       );
 
       // Push the fresh data back into the auth cache so that every provider
       // that watches userProfileProvider automatically rebuilds.
       ref.read(authStateProvider.notifier).markAuthenticated(profile: updated);
+      ref.invalidate(userProfileProvider);
 
       state = const AsyncData(null);
       return updated;
@@ -47,6 +58,7 @@ class ProfileEditNotifier extends AsyncNotifier<void> {
 
       // Refresh auth cache
       ref.read(authStateProvider.notifier).markAuthenticated(profile: updated);
+      ref.invalidate(userProfileProvider);
 
       state = const AsyncData(null);
       return updated;

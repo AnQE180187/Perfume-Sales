@@ -7,10 +7,16 @@ import 'package:perfume_gpt_app/l10n/app_localizations.dart';
 import '../../../auth/providers/auth_provider.dart';
 import '../../../loyalty/services/loyalty_service.dart';
 import '../../providers/profile_provider.dart';
-import '../sections/profile_header_section.dart';
+import '../../providers/achievements_provider.dart';
+import '../../../product/providers/recently_viewed_provider.dart';
+import '../widgets/animated_profile_header.dart';
+import '../widgets/profile_completion_progress.dart';
+import '../widgets/achievement_badges.dart';
+import '../widgets/recently_viewed_section.dart';
 import '../sections/user_identity_section.dart';
 import '../sections/olfactory_signature_section.dart';
 import '../sections/account_actions_section.dart';
+import '../sections/logout_section.dart';
 
 /// Profile Screen - Refactored
 ///
@@ -32,61 +38,77 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profileAsync = ref.watch(profileProvider);
+    final recentlyViewed = ref.watch(recentlyViewedProvider);
+    final achievements = ref.watch(achievementsProvider);
 
     return Scaffold(
       backgroundColor: AppTheme.ivoryBackground,
-      body: SafeArea(
-        child: profileAsync.when(
-          data: (profile) {
-            if (profile == null) {
-              return _buildLoginRequired(context);
-            }
+      body: profileAsync.when(
+        data: (profile) {
+          if (profile == null) {
+            return _buildLoginRequired(context);
+          }
 
-            return ListView(
-              padding: EdgeInsets.zero,
-              children: [
-                // Header (now scrollable)
-                ProfileHeaderSection(
+          return CustomScrollView(
+            slivers: [
+              // Animated Header
+              SliverPersistentHeader(
+                delegate: AnimatedProfileHeader(
+                  profile: profile,
                   onBack: () => _handleBack(context),
+                  onSettings: () => _handleSettings(context),
                   onEdit: () => _handleEdit(context, ref),
                 ),
+                pinned: true,
+              ),
 
-                // User identity
-                UserIdentitySection(profile: profile),
+              SliverToBoxAdapter(
+                child: Column(
+                  children: [
+                    // Profile Completion
+                    ProfileCompletionProgress(profile: profile),
 
-                // Loyalty CTA
-                _LoyaltyCta(onTap: () => _handleLoyalty(context)),
+                    // Achievement Badges
+                    AchievementBadges(achievements: achievements),
 
-                // AI Olfactory Signature
-                if (profile.hasAiProfile)
-                  OlfactorySignatureSection(
-                    olfactoryTags: profile.olfactoryTags,
-                    onFindNextScent: () => _handleFindNextScent(context, ref),
-                    onViewScentProfile: () =>
-                        _handleViewScentProfile(context, ref),
-                  ),
+                    // Recently Viewed
+                    RecentlyViewedSection(products: recentlyViewed),
 
-                // Account actions
-                AccountActionsSection(
-                  onMyOrders: () => _handleMyOrders(context),
-                  onShippingAddresses: () => _handleShippingAddresses(context),
-                  onPaymentMethods: () => _handlePaymentMethods(context),
-                  onAiPreferences: () => _handleAiPreferences(context),
-                  onSettings: () => _handleSettings(context),
-                  activeShipmentsText: null,
+                    // Loyalty CTA
+                    _LoyaltyCta(onTap: () => _handleLoyalty(context)),
+
+                    // AI Olfactory Signature
+                    if (profile.hasAiProfile)
+                      OlfactorySignatureSection(
+                        olfactoryTags: profile.olfactoryTags,
+                        onFindNextScent: () => _handleFindNextScent(context, ref),
+                        onViewScentProfile: () =>
+                            _handleViewScentProfile(context, ref),
+                      ),
+
+                    // Account actions
+                    AccountActionsSection(
+                      onMyOrders: () => _handleMyOrders(context),
+                      onShippingAddresses: () => _handleShippingAddresses(context),
+                      onPaymentMethods: () => _handlePaymentMethods(context),
+                      onAiPreferences: () => _handleAiPreferences(context),
+                      onSettings: () => _handleSettings(context),
+                      activeShipmentsText: null,
+                    ),
+
+                    // Logout
+                    LogoutSection(onLogout: () => _handleLogout(context, ref)),
+
+                    // Bottom spacing
+                    const SizedBox(height: 120),
+                  ],
                 ),
-
-                // Logout
-                LogoutSection(onLogout: () => _handleLogout(context, ref)),
-
-                // Bottom spacing for nav bar
-                const SizedBox(height: 120),
-              ],
-            );
-          },
-          loading: () => _buildLoading(),
-          error: (error, stack) => _buildError(error, context),
-        ),
+              ),
+            ],
+          );
+        },
+        loading: () => _buildLoading(),
+        error: (error, stack) => _buildError(error, context),
       ),
     );
   }

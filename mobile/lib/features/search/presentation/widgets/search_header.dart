@@ -6,16 +6,20 @@ import '../../../../core/theme/app_theme.dart';
 class SearchHeader extends StatelessWidget {
   final TextEditingController controller;
   final ValueChanged<String> onChanged;
+  final ValueChanged<String>? onSubmitted;
   final VoidCallback onClear;
   final VoidCallback onBack;
+  final VoidCallback onVoiceSearch;
   final bool showClearButton;
 
   const SearchHeader({
     super.key,
     required this.controller,
     required this.onChanged,
+    this.onSubmitted,
     required this.onClear,
     required this.onBack,
+    required this.onVoiceSearch,
     required this.showClearButton,
   });
 
@@ -77,6 +81,8 @@ class SearchHeader extends StatelessWidget {
                         fontWeight: FontWeight.w500,
                       ),
                       onChanged: onChanged,
+                      onSubmitted: onSubmitted,
+                      textInputAction: TextInputAction.search,
                     ),
                   ),
                   if (showClearButton)
@@ -97,7 +103,15 @@ class SearchHeader extends StatelessWidget {
                           ),
                         ),
                       ),
+                    )
+                  else
+                    IconButton(
+                      icon: const Icon(Icons.mic_rounded, color: AppTheme.accentGold, size: 20),
+                      onPressed: onVoiceSearch,
+                      padding: const EdgeInsets.only(right: 8),
+                      constraints: const BoxConstraints(),
                     ),
+                  const SizedBox(width: 8),
                 ],
               ),
             ),

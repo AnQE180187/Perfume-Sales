@@ -111,21 +111,27 @@ final userProfileProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
   final isAuthenticated = ref.watch(authStateProvider);
   if (!isAuthenticated) return null;
 
-  final cachedProfile = ref.watch(_authProfileStateProvider);
-  if (cachedProfile != null) return cachedProfile;
-
   final repository = ref.watch(authRepositoryProvider);
-  final profile = await repository.getProfile();
-  ref.read(_authProfileStateProvider.notifier).state = profile;
+  try {
+    final profile = await repository.getProfile();
+    
+    // Update synchronous cache
+    ref.read(_authProfileStateProvider.notifier).state = profile;
 
-  final currentUser = ref.read(_authUserStateProvider);
-  if (currentUser == null) {
-    ref.read(_authUserStateProvider.notifier).state = AuthUser.fromJson(
-      profile,
-    );
+    final currentUser = ref.read(_authUserStateProvider);
+    if (currentUser == null) {
+      ref.read(_authUserStateProvider.notifier).state = AuthUser.fromJson(
+        profile,
+      );
+    }
+
+    return profile;
+  } catch (e) {
+    // If API fails, fall back to cached profile if available
+    final cached = ref.read(_authProfileStateProvider);
+    if (cached != null) return cached;
+    rethrow;
   }
-
-  return profile;
 });
 
 class AuthNotifier extends StateNotifier<AsyncValue<void>> {
@@ -262,7 +268,10 @@ class AuthNotifier extends StateNotifier<AsyncValue<void>> {
   }
 
   Future<Map<String, dynamic>> resendVerification() async {
-    return _repository.resendVerification();
+    final result = await _repository.resendVerification();
+    // Refresh profile in case it was already verified or just updated
+    _ref.invalidate(userProfileProvider);
+    return result;
   }
 
   Future<void> logout() async {

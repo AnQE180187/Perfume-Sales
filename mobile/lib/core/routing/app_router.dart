@@ -48,8 +48,10 @@ import '../widgets/main_shell.dart';
 final routerProvider = Provider<GoRouter>((ref) {
   final isLoggedIn = ref.watch(authStateProvider);
   final hasSeenOnboarding = ref.watch(onboardingProvider);
-  final profile = ref.watch(userProfileRawProvider);
-  final userRole = (profile?['role'] as String?)?.toUpperCase() ?? '';
+  // Only watch the role and basic info to avoid rebuilds on every profile change (like points/avatar)
+  final userRole = ref.watch(userProfileRawProvider.select(
+    (p) => (p?['role'] as String?)?.toUpperCase() ?? '',
+  ));
 
   return GoRouter(
     initialLocation: '/',

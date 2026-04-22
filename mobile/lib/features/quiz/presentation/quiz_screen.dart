@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/glass_container.dart';
 import '../providers/quiz_provider.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../../../l10n/app_localizations.dart';
 
 class QuizScreen extends ConsumerStatefulWidget {

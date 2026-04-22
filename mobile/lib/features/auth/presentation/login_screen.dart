@@ -100,8 +100,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
         } else if (serverError == 'Account is deactivated') {
           message = 'Tài khoản của bạn đã bị vô hiệu hóa.';
         } else if (e.toString().contains('401')) {
-          // Thêm fallback cho mã 401 nếu string match thất bại
           message = 'Email hoặc mật khẩu không chính xác. Vui lòng kiểm tra lại.';
+        } else if (e.toString().contains('400') || e.toString().contains('bad syntax') || e.toString().contains('email must be an email')) {
+          message = 'Email không đúng định dạng hay gì đó bạn hãy nâng cấp đi';
         }
         
         setState(() => _errorMessage = message);

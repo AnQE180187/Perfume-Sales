@@ -57,6 +57,7 @@ model User {
   userPromotions            UserPromotion[]
   aiPreference              UserAiPreference?
   phoneOtps                PhoneOtpVerification[]
+  profileCompletionBonusClaimed Boolean @default(false)
 }
 
 model UserAddress {

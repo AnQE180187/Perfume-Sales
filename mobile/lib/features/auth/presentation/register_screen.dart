@@ -116,6 +116,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> with SingleTick
         
         if (e.toString().contains('already in use') || e.toString().contains('409')) {
           message = 'Email hoặc số điện thoại đã được sử dụng. Vui lòng chọn thông tin khác.';
+        } else if (e.toString().contains('400') || e.toString().contains('bad syntax') || e.toString().contains('email must be an email')) {
+          message = 'Email không đúng định dạng. Vui lòng cung cấp email hợp lệ.';
         }
         
         setState(() => _errorMessage = message);
