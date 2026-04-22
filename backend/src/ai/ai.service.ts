@@ -35,10 +35,38 @@ export class AiService {
     this.ai = new GoogleGenAI({ apiKey });
   }
 
+  private async logRequest(
+    userId: string | null,
+    type: string,
+    request: any,
+    response: string | null,
+    status: 'SUCCESS' | 'FAILED',
+    duration?: number,
+    errorMessage?: string,
+  ) {
+    try {
+      await this.prisma.aiRequestLog.create({
+        data: {
+          userId,
+          type,
+          request: typeof request === 'string' ? request : JSON.stringify(request),
+          response,
+          status,
+          duration,
+          model: this.model,
+          errorMessage,
+        },
+      });
+    } catch (error) {
+      this.logger.error(`Failed to log AI request [${type}]`, error.message);
+    }
+  }
+
   // ──────────────────────────────────────────────────────
   // Review summarisation (called by ReviewsService)
   // ──────────────────────────────────────────────────────
   async summarizeProductReviews(productId: string): Promise<void> {
+    const startTime = Date.now();
     try {
       const reviews = await this.prisma.review.findMany({
         where: { productId, isHidden: false },
@@ -47,7 +75,7 @@ export class AiService {
         orderBy: { createdAt: 'desc' },
       });
 
-      if (reviews.length < 3) return; // Need at least 3 reviews to make sense
+      if (reviews.length < 3) return;
 
       const reviewTexts = reviews
         .map((r) => `[Rating: ${r.rating}/5] ${r.content ?? '(No text)'}`)
@@ -75,7 +103,6 @@ ${reviewTexts}`;
       let parsed: any = null;
 
       try {
-        // Find JSON in response (handles potential markdown fences)
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           parsed = JSON.parse(jsonMatch[0]);
@@ -105,8 +132,26 @@ ${reviewTexts}`;
         });
         this.logger.log(`Updated AI summary for product ${productId}`);
       }
+
+      await this.logRequest(
+        null,
+        'REVIEW_SUMMARY',
+        { productId, reviewCount: reviews.length },
+        text,
+        'SUCCESS',
+        Date.now() - startTime,
+      );
     } catch (error) {
       this.logger.error('Failed to summarize reviews', error);
+      await this.logRequest(
+        null,
+        'REVIEW_SUMMARY',
+        { productId },
+        null,
+        'FAILED',
+        Date.now() - startTime,
+        error.message,
+      );
     }
   }
 
@@ -329,17 +374,20 @@ ${reviewTexts}`;
   async perfumeConsult(
     userMessage: string,
     history: Array<{ role: string; text: string }>,
+    userId?: string,
     dna?: {
       preferredNotes: string[];
       avoidedNotes: string[];
       riskLevel: number;
     },
   ): Promise<string> {
-    const catalog = await this.getProductCatalog();
+    const startTime = Date.now();
+    try {
+      const catalog = await this.getProductCatalog();
 
-    let dnaContext = '';
-    if (dna) {
-      dnaContext = `
+      let dnaContext = '';
+      if (dna) {
+        dnaContext = `
 ═══════════════════════════════════════
 USER SCENT DNA PROFILE:
 - Preferred Notes: ${dna.preferredNotes.join(', ') || 'Any'}
@@ -353,7 +401,7 @@ ADVICE STRATEGY:
 4. If Adventure Level is HIGH (> 0.7), suggest unique or challenging fragrance combinations that might push their boundaries but still avoid their excluded notes.
 ═══════════════════════════════════════
 `;
-    }
+      }
 
     const systemPrompt = `You are "PerfumeGPT", an expert fragrance consultant for our luxury perfume store.
 ${dnaContext}
@@ -419,24 +467,42 @@ OUT-OF-STOCK LIST (${catalog.outOfStockCount} products – DO NOT recommend thes
 ${catalog.outOfStockCatalog || '(None)'}
 ═══════════════════════════════════════`;
 
-    const contents = [
-      systemPrompt,
-      ...history.map((h) => `${h.role}: ${h.text}`),
-      `USER: ${userMessage}`,
-    ].join('\n');
+      const contents = [
+        systemPrompt,
+        ...history.map((h) => `${h.role}: ${h.text}`),
+        `USER: ${userMessage}`,
+      ].join('\n');
 
-    const response = await this.ai.models.generateContent({
-      model: this.model,
-      contents,
-    });
+      const response = await this.ai.models.generateContent({
+        model: this.model,
+        contents,
+      });
 
-    const rawResponse =
-      response.text ?? 'Sorry, I could not generate a response.';
+      const responseText = response.text ?? 'Sorry, I could not generate a response.';
 
-    // ── Post-check: Cross-validate recommendations against live DB ──
-    const validatedResponse = await this.postCheckRecommendations(rawResponse);
+      await this.logRequest(
+        userId || null,
+        'PERFUME_CONSULT',
+        { message: userMessage, historyLength: history.length, hasDna: !!dna },
+        responseText,
+        'SUCCESS',
+        Date.now() - startTime,
+      );
 
-    return validatedResponse;
+      return responseText;
+    } catch (error) {
+      this.logger.error('Failed to generate AI consultation', error);
+      await this.logRequest(
+        userId || null,
+        'PERFUME_CONSULT',
+        { message: userMessage },
+        null,
+        'FAILED',
+        Date.now() - startTime,
+        error.message,
+      );
+      return 'Sorry, I encountered an error. Please try again later.';
+    }
   }
 
   // ──────────────────────────────────────────────────────
@@ -445,7 +511,9 @@ ${catalog.outOfStockCatalog || '(None)'}
   async marketingAdvise(
     adminMessage: string,
     history: Array<{ role: string; text: string }>,
+    adminUserId?: string,
   ): Promise<string> {
+    const startTime = Date.now();
     let contextStr = '';
     try {
       const [overview, topProducts, lowStock] = await Promise.all([
@@ -487,7 +555,8 @@ ${lowStockStr || 'No data'}
       this.logger.error('Failed to fetch analytics context for AI', e);
     }
 
-    const systemPrompt = `You are "PerfumeGPT Marketing", an expert strategic business consultant, retail manager, and chief marketing advisor for a luxury perfume brand called "PerfumeGPT".
+    try {
+      const systemPrompt = `You are "PerfumeGPT Marketing", an expert strategic business consultant, retail manager, and chief marketing advisor for a luxury perfume brand called "PerfumeGPT".
 Your client is the Administrator (CEO) of the system.
 
 ${contextStr}
@@ -500,43 +569,72 @@ INSTRUCTIONS:
 5. You must answer in the same language as the admin.
 6. Format your advice clearly with bullet points, actionable steps, and data references. Make sure the numbers match system context exactly.`;
 
-    const contents = [
-      systemPrompt,
-      ...history.map((h) => `${h.role}: ${h.text}`),
-      `ADMIN: ${adminMessage}`,
-    ].join('\n');
+      const contents = [
+        systemPrompt,
+        ...history.map((h) => `${h.role}: ${h.text}`),
+        `ADMIN: ${adminMessage}`,
+      ].join('\n');
 
-    const response = await this.ai.models.generateContent({
-      model: this.model,
-      contents,
-    });
+      const response = await this.ai.models.generateContent({
+        model: this.model,
+        contents,
+      });
 
-    return response.text ?? 'Sorry, I could not generate a response.';
+      const responseText = response.text ?? 'Sorry, I could not generate a response.';
+
+      await this.logRequest(
+        adminUserId || null,
+        'MARKETING_ADVISOR',
+        { message: adminMessage },
+        responseText,
+        'SUCCESS',
+        Date.now() - startTime,
+      );
+
+      return responseText;
+    } catch (error) {
+      this.logger.error('Failed to generate marketing advice', error);
+      await this.logRequest(
+        adminUserId || null,
+        'MARKETING_ADVISOR',
+        { message: adminMessage },
+        null,
+        'FAILED',
+        Date.now() - startTime,
+        error.message,
+      );
+      return 'Sorry, I encountered an error. Please try again later.';
+    }
   }
 
   // ──────────────────────────────────────────────────────
   // Quiz Consultant
   // ──────────────────────────────────────────────────────
-  async quizConsult(answers: {
-    gender?: string;
-    occasion?: string;
-    budgetMin?: number;
-    budgetMax?: number;
-    preferredFamily?: string;
-    longevity?: string;
-  }): Promise<Array<{ productId: string; name: string; reason: string; price: number }>> {
-    const catalog = await this.getProductCatalog();
+  async quizConsult(
+    answers: {
+      gender?: string;
+      occasion?: string;
+      budgetMin?: number;
+      budgetMax?: number;
+      preferredFamily?: string;
+      longevity?: string;
+    },
+    userId?: string,
+  ): Promise<Array<{ productId: string; name: string; reason: string; price: number }>> {
+    const startTime = Date.now();
+    try {
+      const catalog = await this.getProductCatalog();
 
-    const customerInfo: string[] = [];
-    if (answers.gender) customerInfo.push(`Giới tính: ${answers.gender}`);
-    if (answers.occasion) customerInfo.push(`Dịp sử dụng: ${answers.occasion}`);
-    if (answers.budgetMin && answers.budgetMax) {
-      customerInfo.push(`Ngân sách: ${answers.budgetMin.toLocaleString()} - ${answers.budgetMax.toLocaleString()} VND`);
-    }
-    if (answers.preferredFamily) customerInfo.push(`Gia đình hương: ${answers.preferredFamily}`);
-    if (answers.longevity) customerInfo.push(`Thời gian lưu hương: ${answers.longevity}`);
+      const customerInfo: string[] = [];
+      if (answers.gender) customerInfo.push(`Giới tính: ${answers.gender}`);
+      if (answers.occasion) customerInfo.push(`Dịp sử dụng: ${answers.occasion}`);
+      if (answers.budgetMin && answers.budgetMax) {
+        customerInfo.push(`Ngân sách: ${answers.budgetMin.toLocaleString()} - ${answers.budgetMax.toLocaleString()} VND`);
+      }
+      if (answers.preferredFamily) customerInfo.push(`Gia đình hương: ${answers.preferredFamily}`);
+      if (answers.longevity) customerInfo.push(`Thời gian lưu hương: ${answers.longevity}`);
 
-    const prompt = `Bạn là chuyên gia tư vấn nước hoa tại PerfumeGPT. Khách hàng đã trả lời khảo sát với thông tin sau:
+      const prompt = `Bạn là chuyên gia tư vấn nước hoa tại PerfumeGPT. Khách hàng đã trả lời khảo sát với thông tin sau:
 
 THÔNG TIN KHÁCH HÀNG:
 ${customerInfo.join('\n')}
@@ -559,10 +657,10 @@ YÊU CẦU:
 - Trả kết quả dạng JSON array: [{"productId": "<ID từ catalog>", "name": "<tên chính xác>", "reason": "<giải thích ngắn gọn bằng tiếng Việt>", "price": <giá thấp nhất số>}].
 - Chỉ trả JSON, không thêm text ngoài.`;
 
-    const response = await this.ai.models.generateContent({
-      model: this.model,
-      contents: prompt,
-    });
+      const response = await this.ai.models.generateContent({
+        model: this.model,
+        contents: prompt,
+      });
 
     const text = response.text ?? '[]';
     let results: Array<{ productId: string; name: string; reason: string; price: number }> = [];
@@ -573,6 +671,17 @@ YÊU CẦU:
         const parsed = JSON.parse(jsonMatch[0]);
         results = Array.isArray(parsed) ? parsed.slice(0, 5) : [];
       }
+
+      await this.logRequest(
+        userId || null,
+        'QUIZ_CONSULT',
+        answers,
+        text,
+        results.length > 0 ? 'SUCCESS' : 'FAILED',
+        Date.now() - startTime,
+      );
+
+      return results;
     } catch (error) {
       this.logger.error('Failed to parse quiz AI response', error);
       return [];
@@ -611,6 +720,7 @@ YÊU CẦU:
   }
 
   async generateProductScentAnalysis(productId: string): Promise<string> {
+    const startTime = Date.now();
     try {
       const product = await this.prisma.product.findUnique({
         where: { id: productId },
@@ -652,11 +762,29 @@ YÊU CẦU:
         });
       }
 
+      await this.logRequest(
+        null,
+        'SCENT_ANALYSIS',
+        { productId },
+        analysis,
+        analysis ? 'SUCCESS' : 'FAILED',
+        Date.now() - startTime,
+      );
+
       return analysis;
     } catch (error) {
       this.logger.error(
         `Failed to generate scent analysis for ${productId}`,
         error,
+      );
+      await this.logRequest(
+        null,
+        'SCENT_ANALYSIS',
+        { productId },
+        null,
+        'FAILED',
+        Date.now() - startTime,
+        error.message,
       );
       return '';
     }
