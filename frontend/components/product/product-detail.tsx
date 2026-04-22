@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ShoppingBag, Heart, ShieldCheck, Sparkles, BrainCircuit } from 'lucide-react';
+import { ShoppingBag, Heart, ShieldCheck, Sparkles, BrainCircuit, ChevronLeft, ChevronRight, ZoomIn, X } from 'lucide-react';
 import { type Product, type ProductVariant } from '@/services/product.service';
 import { cartService } from '@/services/cart.service';
 import { favoriteService } from '@/services/favorite.service';
@@ -25,6 +25,7 @@ export default function ProductDetail({ product }: { product: Product }) {
         product.variants?.[0] || null
     );
     const [activeImageIndex, setActiveImageIndex] = useState(0);
+    const [isZoomed, setIsZoomed] = useState(false);
     const [loading, setLoading] = useState(false);
     const [favoriteLoading, setFavoriteLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -106,25 +107,74 @@ export default function ProductDetail({ product }: { product: Product }) {
         }
     };
 
+    const handleNextImage = (e?: React.MouseEvent) => {
+        e?.stopPropagation();
+        if (product.images && activeImageIndex < product.images.length - 1) {
+            setActiveImageIndex(a => a + 1);
+        }
+    };
+
+    const handlePrevImage = (e?: React.MouseEvent) => {
+        e?.stopPropagation();
+        if (product.images && activeImageIndex > 0) {
+            setActiveImageIndex(a => a - 1);
+        }
+    };
+
     return (
         <div className="space-y-16 lg:space-y-24">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-20">
                 {/* Visual Section */}
                 <div className="space-y-4 lg:space-y-6">
-                    <div className="aspect-[4/5] glass rounded-[2.5rem] lg:rounded-[3rem] border-border overflow-hidden relative group shadow-2xl">
+                    <div
+                        className="aspect-[4/5] glass rounded-[2.5rem] lg:rounded-[3rem] border-border overflow-hidden relative group shadow-2xl cursor-zoom-in"
+                        onClick={() => {
+                            if (product.images?.length) setIsZoomed(true);
+                        }}
+                    >
                         {product.images?.length ? (
-                            <img
-                                src={product.images[activeImageIndex]?.url || product.images[0].url}
-                                alt={product.name}
-                                className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-110"
-                            />
+                            <>
+                                <AnimatePresence mode="wait">
+                                    <motion.img
+                                        key={activeImageIndex}
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        transition={{ duration: 0.2 }}
+                                        src={product.images[activeImageIndex]?.url || product.images[0].url}
+                                        alt={product.name}
+                                        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                                    />
+                                </AnimatePresence>
+                                {/* Navigation Arrows */}
+                                {activeImageIndex > 0 && (
+                                    <button
+                                        onClick={handlePrevImage}
+                                        className="absolute left-4 lg:left-6 top-1/2 -translate-y-1/2 w-10 h-10 lg:w-12 lg:h-12 flex items-center justify-center rounded-full glass border border-white/20 bg-black/20 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/40 z-20"
+                                    >
+                                        <ChevronLeft className="w-5 h-5 lg:w-6 lg:h-6" />
+                                    </button>
+                                )}
+                                {activeImageIndex < product.images.length - 1 && (
+                                    <button
+                                        onClick={handleNextImage}
+                                        className="absolute right-4 lg:right-6 top-1/2 -translate-y-1/2 w-10 h-10 lg:w-12 lg:h-12 flex items-center justify-center rounded-full glass border border-white/20 bg-black/20 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/40 z-20"
+                                    >
+                                        <ChevronRight className="w-5 h-5 lg:w-6 lg:h-6" />
+                                    </button>
+                                )}
+                                {/* Zoom Icon */}
+                                <div className="absolute top-6 right-6 w-10 h-10 rounded-full glass border border-white/20 bg-black/20 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 pointer-events-none">
+                                    <ZoomIn className="w-5 h-5" />
+                                </div>
+                            </>
                         ) : (
                             <div className="w-full h-full bg-secondary/20 flex items-center justify-center font-heading text-gold/30 uppercase tracking-[0.5em] text-[10px]">
                                 {t('visual_data_unavailable')}
                             </div>
                         )}
-                        <div className="absolute inset-0 bg-linear-to-tr from-gold/10 via-transparent to-transparent opacity-0 lg:group-hover:opacity-100 transition-opacity duration-1000" />
-                        <div className="absolute inset-x-0 bottom-0 p-8 lg:p-12 text-center bg-linear-to-t from-background/80 to-transparent backdrop-blur-[2px]">
+                        <div className="absolute inset-0 bg-linear-to-tr from-gold/10 via-transparent to-transparent opacity-0 lg:group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none" />
+                        <div className="absolute inset-x-0 bottom-0 p-8 lg:p-12 text-center bg-linear-to-t from-background/80 to-transparent backdrop-blur-[2px] pointer-events-none">
                             <span className="text-gold font-heading tracking-[0.5em] uppercase text-[9px] lg:text-[10px] animate-pulse inline-flex items-center gap-3">
                                 <Sparkles className="w-3 h-3 lg:w-4 lg:h-4" /> {t('neural_scanning_active')}
                             </span>
@@ -308,7 +358,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                             <div className="absolute inset-0 bg-gold/5 opacity-0 group-hover/ai:opacity-100 transition-opacity" />
                             <div className="w-12 h-12 rounded-2xl bg-gold/10 flex items-center justify-center shrink-0 group-hover/ai:scale-110 transition-transform relative">
                                 <BrainCircuit className="w-6 h-6 text-gold" />
-                                <motion.div 
+                                <motion.div
                                     animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.2, 0.5] }}
                                     transition={{ duration: 2, repeat: Infinity }}
                                     className="absolute inset-0 bg-gold/20 rounded-2xl -z-10"
@@ -345,6 +395,61 @@ export default function ProductDetail({ product }: { product: Product }) {
                 <ReviewSummaryView productId={product.id} />
                 <ReviewList productId={product.id} />
             </div>
+
+            {/* Fullscreen Zoom Modal */}
+            <AnimatePresence>
+                {isZoomed && product.images?.length && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-xl flex flex-col items-center justify-center p-4 lg:p-12"
+                    >
+                        <button
+                            onClick={() => setIsZoomed(false)}
+                            className="absolute top-6 right-6 lg:top-10 lg:right-10 w-12 h-12 flex items-center justify-center rounded-full glass border border-border/50 text-foreground hover:bg-secondary/20 transition-colors z-50"
+                        >
+                            <X className="w-6 h-6" />
+                        </button>
+
+                        <div className="relative w-full max-w-6xl aspect-auto h-full max-h-[85vh] flex items-center justify-center">
+                            <AnimatePresence mode="wait">
+                                <motion.img
+                                    key={activeImageIndex}
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.95 }}
+                                    transition={{ duration: 0.3 }}
+                                    src={product.images[activeImageIndex]?.url}
+                                    alt={product.name}
+                                    className="w-auto h-auto max-w-full max-h-full object-contain drop-shadow-2xl"
+                                />
+                            </AnimatePresence>
+
+                            {activeImageIndex > 0 && (
+                                <button
+                                    onClick={handlePrevImage}
+                                    className="absolute left-0 lg:-left-12 top-1/2 -translate-y-1/2 w-12 h-12 lg:w-16 lg:h-16 flex items-center justify-center rounded-full glass border border-border/20 bg-background/50 text-foreground hover:bg-secondary/40 transition-colors z-50"
+                                >
+                                    <ChevronLeft className="w-6 h-6 lg:w-8 lg:h-8" />
+                                </button>
+                            )}
+                            {activeImageIndex < product.images.length - 1 && (
+                                <button
+                                    onClick={handleNextImage}
+                                    className="absolute right-0 lg:-right-12 top-1/2 -translate-y-1/2 w-12 h-12 lg:w-16 lg:h-16 flex items-center justify-center rounded-full glass border border-border/20 bg-background/50 text-foreground hover:bg-secondary/40 transition-colors z-50"
+                                >
+                                    <ChevronRight className="w-6 h-6 lg:w-8 lg:h-8" />
+                                </button>
+                            )}
+                        </div>
+
+                        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center justify-center px-6 py-3 rounded-full glass border border-border/50 text-[10px] uppercase tracking-widest font-bold text-foreground">
+                            {activeImageIndex + 1} / {product.images.length}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
