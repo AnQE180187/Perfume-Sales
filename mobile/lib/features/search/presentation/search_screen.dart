@@ -10,6 +10,7 @@ import '../../scent/data/scent_repository.dart';
 import '../../product/data/product_repository.dart';
 import '../../scent/models/scent_family.dart';
 import '../../product/models/brand.dart';
+import '../../product/models/category.dart';
 import '../providers/search_provider.dart';
 import 'widgets/search_header.dart';
 
@@ -37,7 +38,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
   // Client-side filter state (scent/occasion/price are UI-only filters)
   String? _selectedScent;
-  String? _selectedOccasion;
+  String? _selectedCategory;
   String? _selectedPrice;
 
   static const _scentOptions = [
@@ -51,7 +52,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     'Musk',
     'Amber',
   ];
-  static const _occasionOptions = ['Daily', 'Office', 'Date', 'Party'];
+
   static const _priceOptions = ['<1M', '1-3M', '>3M'];
 
   bool get _hasActiveFilters {
@@ -59,7 +60,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     return state.scentFamily != null ||
         state.selectedNote != null ||
         state.brandId != null ||
-        state.occasion != null ||
+        state.categoryId != null ||
         state.priceRange != null;
   }
 
@@ -110,6 +111,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final searchState = ref.watch(searchProvider);
     final scentFamiliesAsync = ref.watch(scentFamiliesProvider);
     final brandsAsync = ref.watch(brandsProvider);
+    final categoriesAsync = ref.watch(categoriesProvider);
     final scentNotesAsync = ref.watch(scentNotesProvider);
     
     final filteredResults = searchState.results;
@@ -117,7 +119,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final selectedBrand = searchState.brandName;
     final selectedScent = searchState.scentFamily;
     final selectedNote = searchState.selectedNote;
-    final selectedOccasion = searchState.occasion;
+    final selectedCategory = searchState.categoryName;
     final selectedPrice = searchState.priceRange;
 
     return Scaffold(
@@ -227,15 +229,25 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                         ),
                         const SizedBox(width: 10),
                         _DropdownChip(
-                          label: selectedOccasion ?? l10n.usageOccasion,
-                          isSelected: selectedOccasion != null,
-                          onTap: () => _showFilterPicker(
-                            context,
-                            title: l10n.usageOccasion,
-                            options: _occasionOptions,
-                            selected: selectedOccasion,
-                            onSelect: (v) => ref.read(searchProvider.notifier).setOccasion(v),
-                          ),
+                          label: selectedCategory ?? l10n.category,
+                          isSelected: selectedCategory != null,
+                          onTap: () {
+                            final categories = categoriesAsync.maybeWhen(
+                              data: (data) => data,
+                              orElse: () => <Category>[],
+                            );
+                            _showFilterPicker(
+                              context,
+                              title: l10n.category,
+                              options: categories.map((c) => c.name).toList(),
+                              selected: selectedCategory,
+                              onSelect: (name) {
+                                final c = categories.firstWhere((c) => c.name == name);
+                                ref.read(searchProvider.notifier).setCategory(c.name, id: c.id);
+                              },
+                              isLoading: categoriesAsync.isLoading,
+                            );
+                          },
                         ),
                         const SizedBox(width: 10),
                         _DropdownChip(

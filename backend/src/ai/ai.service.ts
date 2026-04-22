@@ -665,27 +665,24 @@ YÊU CẦU:
     const text = response.text ?? '[]';
     let results: Array<{ productId: string; name: string; reason: string; price: number }> = [];
 
-    try {
-      const jsonMatch = text.match(/\[[\s\S]*\]/);
-      if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0]);
-        results = Array.isArray(parsed) ? parsed.slice(0, 5) : [];
+      try {
+        const jsonMatch = text.match(/\[[\s\S]*\]/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          results = Array.isArray(parsed) ? parsed.slice(0, 5) : [];
+        }
+
+        await this.logRequest(
+          userId || null,
+          'QUIZ_CONSULT',
+          answers,
+          text,
+          results.length > 0 ? 'SUCCESS' : 'FAILED',
+          Date.now() - startTime,
+        );
+      } catch (error) {
+        this.logger.error('Failed to parse quiz AI response', error);
       }
-
-      await this.logRequest(
-        userId || null,
-        'QUIZ_CONSULT',
-        answers,
-        text,
-        results.length > 0 ? 'SUCCESS' : 'FAILED',
-        Date.now() - startTime,
-      );
-
-      return results;
-    } catch (error) {
-      this.logger.error('Failed to parse quiz AI response', error);
-      return [];
-    }
 
     // ── Post-check: Validate quiz recommendations against live DB ──
     if (results.length > 0) {
@@ -716,7 +713,11 @@ YÊU CẦU:
       }
     }
 
-    return results;
+      return results;
+    } catch (error) {
+      this.logger.error('Failed during quiz consultation', error);
+      return [];
+    }
   }
 
   async generateProductScentAnalysis(productId: string): Promise<string> {
