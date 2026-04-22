@@ -39,9 +39,15 @@ class ProductRepository {
       minPrice: minPrice,
       maxPrice: maxPrice,
     );
-    return rawList
-        .map((json) => Product.fromJson(json as Map<String, dynamic>))
-        .toList();
+    return rawList.map((json) {
+      try {
+        return Product.fromJson(json as Map<String, dynamic>);
+      } catch (e) {
+        // Log error and skip this product instead of failing the whole list
+        print('Error parsing product: $e');
+        return null;
+      }
+    }).whereType<Product>().toList();
   }
 
   /// Fetch a single product by its ID.

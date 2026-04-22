@@ -391,41 +391,61 @@ class _TiersCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final tiers = [
-      _TierInfo(l10n.localeName == 'vi' ? 'Đồng' : 'Bronze', 0, Icons.shield_rounded, const Color(0xFFCD7F32)),
-      _TierInfo(l10n.localeName == 'vi' ? 'Bạc' : 'Silver', 500, Icons.shield_rounded, const Color(0xFFA8A9AD)),
-      _TierInfo(l10n.localeName == 'vi' ? 'Vàng' : 'Gold', 2000, Icons.workspace_premium_rounded, AppTheme.accentGold),
-      _TierInfo(l10n.localeName == 'vi' ? 'Bạch Kim' : 'Platinum', 5000, Icons.diamond_rounded, const Color(0xFFAEC6CF)),
+      _TierInfo(
+        l10n.localeName == 'vi' ? 'Đồng' : 'Bronze',
+        0,
+        Icons.shield_rounded,
+        const [Color(0xFF804A00), Color(0xFFCD7F32), Color(0xFF804A00)],
+      ),
+      _TierInfo(
+        l10n.localeName == 'vi' ? 'Bạc' : 'Silver',
+        500,
+        Icons.verified_rounded,
+        const [Color(0xFF757575), Color(0xFFE0E0E0), Color(0xFF757575)],
+      ),
+      _TierInfo(
+        l10n.localeName == 'vi' ? 'Vàng' : 'Gold',
+        2000,
+        Icons.workspace_premium_rounded,
+        const [Color(0xFFB8860B), Color(0xFFFFD700), Color(0xFFB8860B)],
+      ),
+      _TierInfo(
+        l10n.localeName == 'vi' ? 'Bạch Kim' : 'Platinum',
+        5000,
+        Icons.diamond_rounded,
+        const [Color(0xFFAEC6CF), Color(0xFFE5E4E2), Color(0xFFAEC6CF)],
+      ),
     ];
 
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 8),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+            color: AppTheme.deepCharcoal.withValues(alpha: 0.04),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
           ),
         ],
       ),
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Connection Line
+          // Connection Line - More subtle and luxury
           Positioned(
-            top: 26,
+            top: 30,
             left: 40,
             right: 40,
             child: Container(
-              height: 2,
+              height: 1.5,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    AppTheme.softTaupe.withValues(alpha: 0.2),
-                    AppTheme.accentGold.withValues(alpha: 0.2),
-                    AppTheme.softTaupe.withValues(alpha: 0.2),
+                    AppTheme.softTaupe.withValues(alpha: 0.1),
+                    AppTheme.accentGold.withValues(alpha: 0.3),
+                    AppTheme.softTaupe.withValues(alpha: 0.1),
                   ],
                 ),
               ),
@@ -444,62 +464,73 @@ class _TiersCard extends StatelessWidget {
                       alignment: Alignment.center,
                       children: [
                         if (isActive)
-                          _PulsingHalo(color: tier.color),
-                        Container(
-                          width: 52,
-                          height: 52,
+                          _PulsingHalo(color: tier.colors[1]),
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 500),
+                          width: 60,
+                          height: 60,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             gradient: LinearGradient(
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
-                              colors: isUnlocked ? [
-                                tier.color.withValues(alpha: 0.8),
-                                tier.color,
-                                tier.color.withValues(alpha: 0.6),
-                              ] : [
-                                AppTheme.softTaupe.withValues(alpha: 0.2),
-                                AppTheme.softTaupe.withValues(alpha: 0.1),
+                              colors: isUnlocked ? tier.colors : [
+                                const Color(0xFFE0E0E0).withValues(alpha: 0.4),
+                                const Color(0xFFF5F5F5).withValues(alpha: 0.4),
                               ],
                             ),
                             boxShadow: isUnlocked ? [
                               BoxShadow(
-                                color: tier.color.withValues(alpha: 0.3),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
+                                color: tier.colors[0].withValues(alpha: 0.4),
+                                blurRadius: 12,
+                                offset: const Offset(0, 6),
                               ),
                               BoxShadow(
-                                color: Colors.white.withValues(alpha: 0.5),
+                                color: Colors.white.withValues(alpha: 0.8),
                                 blurRadius: 2,
                                 offset: const Offset(-2, -2),
                               ),
                             ] : [],
+                            border: Border.all(
+                              color: isUnlocked ? Colors.white.withValues(alpha: 0.3) : Colors.transparent,
+                              width: 1.5,
+                            ),
                           ),
-                          child: Icon(
-                            tier.icon,
-                            size: 24,
-                            color: isUnlocked ? AppTheme.creamWhite : AppTheme.mutedSilver.withValues(alpha: 0.3),
+                          child: Container(
+                            margin: const EdgeInsets.all(2),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isUnlocked ? tier.colors[0].withValues(alpha: 0.2) : Colors.transparent,
+                                width: 0.5,
+                              ),
+                            ),
+                            child: Icon(
+                              tier.icon,
+                              size: 28,
+                              color: isUnlocked ? Colors.white : AppTheme.mutedSilver.withValues(alpha: 0.3),
+                            ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
                     Text(
                       tier.name.toUpperCase(),
                       style: GoogleFonts.montserrat(
-                        fontSize: 9,
-                        fontWeight: isActive ? FontWeight.w800 : FontWeight.w500,
+                        fontSize: 10,
+                        fontWeight: isActive ? FontWeight.w800 : FontWeight.w600,
                         color: isActive ? AppTheme.deepCharcoal : AppTheme.mutedSilver,
-                        letterSpacing: 1,
+                        letterSpacing: 1.2,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 4),
                     Text(
                       tier.minPoints == 0 ? l10n.defaultTier : '${tier.minPoints} pts',
                       style: GoogleFonts.montserrat(
-                        fontSize: 8,
-                        fontWeight: FontWeight.w400,
-                        color: AppTheme.mutedSilver.withValues(alpha: 0.6),
+                        fontSize: 9,
+                        fontWeight: FontWeight.w500,
+                        color: AppTheme.mutedSilver.withValues(alpha: 0.5),
                       ),
                     ),
                   ],
@@ -513,24 +544,53 @@ class _TiersCard extends StatelessWidget {
   }
 }
 
-class _PulsingHalo extends StatelessWidget {
+class _PulsingHalo extends StatefulWidget {
   final Color color;
   const _PulsingHalo({required this.color});
 
   @override
+  State<_PulsingHalo> createState() => _PulsingHaloState();
+}
+
+class _PulsingHaloState extends State<_PulsingHalo> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat();
+    _animation = Tween<double>(begin: 0.8, end: 1.2).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 64,
-      height: 64,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.2),
-            blurRadius: 15,
-            spreadRadius: 5,
-          ),
-        ],
+    return ScaleTransition(
+      scale: _animation,
+      child: Container(
+        width: 72,
+        height: 72,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: widget.color.withValues(alpha: 0.25),
+              blurRadius: 20,
+              spreadRadius: 8,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -540,9 +600,9 @@ class _TierInfo {
   final String name;
   final int minPoints;
   final IconData icon;
-  final Color color;
+  final List<Color> colors;
 
-  const _TierInfo(this.name, this.minPoints, this.icon, this.color);
+  const _TierInfo(this.name, this.minPoints, this.icon, this.colors);
 }
 
 // ──────────────────────────────────────────────
@@ -681,65 +741,94 @@ class _TransactionHistory extends StatelessWidget {
   }
 }
 
-class _TransactionTile extends StatelessWidget {
+class _TransactionTile extends StatefulWidget {
   final LoyaltyTransaction tx;
-
   const _TransactionTile({required this.tx});
+
+  @override
+  State<_TransactionTile> createState() => _TransactionTileState();
+}
+
+class _TransactionTileState extends State<_TransactionTile> {
+  bool _isExpanded = false;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isEarn = tx.points > 0;
+    final isEarn = widget.tx.points > 0;
     
-    final readableReason = tx.reason
+    final readableReason = widget.tx.reason
         .replaceAll('_', ' ')
         .replaceAll('EARNED FROM ORDER', l10n.orderEarnedPoints)
         .replaceAll('REDEEMED FOR DISCOUNT', l10n.redeemedDiscount)
         .replaceAll('Tru points do hoan tra', l10n.returnedRefundPoints);
 
-    final dateStr = '${tx.createdAt.day.toString().padLeft(2, '0')}/${tx.createdAt.month.toString().padLeft(2, '0')}/${tx.createdAt.year}';
+    final dateStr = '${widget.tx.createdAt.day.toString().padLeft(2, '0')}/${widget.tx.createdAt.month.toString().padLeft(2, '0')}/${widget.tx.createdAt.year}';
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      child: Row(
-        children: [
-          _CoinIcon(isEarn: isEarn),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return InkWell(
+      onTap: () => setState(() => _isExpanded = !_isExpanded),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Column(
+          children: [
+            Row(
               children: [
-                Text(
-                  readableReason,
-                  style: GoogleFonts.montserrat(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.deepCharcoal,
+                _CoinIcon(isEarn: isEarn),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        readableReason,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.deepCharcoal,
+                          height: 1.3,
+                        ),
+                        maxLines: _isExpanded ? 10 : 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        dateStr,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 10,
+                          color: AppTheme.mutedSilver,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  dateStr,
-                  style: GoogleFonts.montserrat(
-                    fontSize: 10,
-                    color: AppTheme.mutedSilver,
-                    letterSpacing: 0.5,
-                  ),
+                const SizedBox(width: 8),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '${isEarn ? '+' : ''}${widget.tx.points}',
+                      style: GoogleFonts.playfairDisplay(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: isEarn ? const Color(0xFFB8860B) : AppTheme.mutedSilver,
+                      ),
+                    ),
+                    AnimatedRotation(
+                      turns: _isExpanded ? 0.5 : 0,
+                      duration: const Duration(milliseconds: 200),
+                      child: Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        size: 16,
+                        color: AppTheme.mutedSilver.withValues(alpha: 0.5),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ),
-          Text(
-            '${isEarn ? '+' : ''}${tx.points}',
-            style: GoogleFonts.playfairDisplay(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: isEarn ? const Color(0xFFB8860B) : AppTheme.mutedSilver,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

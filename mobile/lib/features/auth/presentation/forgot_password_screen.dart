@@ -16,24 +16,38 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   final _emailController = TextEditingController();
   bool _isLoading = false;
   bool _emailSent = false;
+  String? _error;
   String? _devToken;
 
   @override
+  void initState() {
+    super.initState();
+    _emailController.addListener(_clearError);
+  }
+
+  @override
   void dispose() {
+    _emailController.removeListener(_clearError);
     _emailController.dispose();
     super.dispose();
+  }
+
+  void _clearError() {
+    if (_error != null) setState(() => _error = null);
   }
 
   Future<void> _handleSubmit() async {
     final email = _emailController.text.trim();
     if (email.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Vui lòng nhập email')));
+      setState(() => _error = 'Vui lòng nhập địa chỉ email của bạn');
       return;
     }
 
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
     try {
       final result = await ref
           .read(authControllerProvider.notifier)
@@ -43,18 +57,58 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         setState(() {
           _isLoading = false;
           _emailSent = true;
-          // Capture dev token from response if provided by backend (development mode)
           _devToken = result['resetToken'] as String?;
         });
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _isLoading = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Lỗi: $e')));
+        setState(() {
+          _isLoading = false;
+          final errStr = e.toString().toLowerCase();
+          if (errStr.contains('not found') || errStr.contains('404')) {
+            _error = 'Email này chưa được đăng ký trong hệ thống.';
+          } else {
+            _error = 'Không thể gửi yêu cầu. Vui lòng kiểm tra lại kết nối.';
+          }
+        });
       }
     }
+  }
+
+  Widget _buildErrorBanner() {
+    if (_error == null) return const SizedBox.shrink();
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2D0A0A).withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.error_outline, color: Colors.redAccent, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              _error!,
+              style: GoogleFonts.montserrat(
+                color: const Color(0xFFFFD1D1),
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -118,6 +172,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           ),
         ),
         const SizedBox(height: 32),
+        _buildErrorBanner(),
         TextField(
           controller: _emailController,
           keyboardType: TextInputType.emailAddress,

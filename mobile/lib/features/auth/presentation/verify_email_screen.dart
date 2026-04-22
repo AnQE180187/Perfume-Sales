@@ -17,10 +17,12 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
   bool _isLoading = false;
   bool _verified = false;
   bool _resending = false;
+  String? _error;
 
   @override
   void initState() {
     super.initState();
+    _tokenController.addListener(_clearError);
     if (widget.token != null && widget.token!.isNotEmpty) {
       _tokenController.text = widget.token!;
       _autoVerify();
@@ -29,8 +31,13 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
 
   @override
   void dispose() {
+    _tokenController.removeListener(_clearError);
     _tokenController.dispose();
     super.dispose();
+  }
+
+  void _clearError() {
+    if (_error != null) setState(() => _error = null);
   }
 
   Future<void> _autoVerify() async {
@@ -41,13 +48,15 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
   Future<void> _handleVerify() async {
     final token = _tokenController.text.trim();
     if (token.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng nhập mã xác thực')),
-      );
+      setState(() => _error = 'Vui lòng nhập mã xác thực');
       return;
     }
 
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
     try {
       await ref.read(authControllerProvider.notifier).verifyEmail(token);
       if (mounted) {
@@ -58,12 +67,53 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _isLoading = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Xác thực thất bại: $e')));
+        setState(() {
+          _isLoading = false;
+          final errStr = e.toString().toLowerCase();
+          if (errStr.contains('invalid') || errStr.contains('400')) {
+            _error = 'Mã xác thực không chính xác hoặc đã hết hạn.';
+          } else {
+            _error = 'Xác thực thất bại. Vui lòng thử lại.';
+          }
+        });
       }
     }
+  }
+
+  Widget _buildErrorBanner() {
+    if (_error == null) return const SizedBox.shrink();
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2D0A0A).withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.error_outline, color: Colors.redAccent, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              _error!,
+              style: GoogleFonts.montserrat(
+                color: const Color(0xFFFFD1D1),
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _handleResend() async {
@@ -151,6 +201,7 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
           ),
         ),
         const SizedBox(height: 32),
+        _buildErrorBanner(),
         TextField(
           controller: _tokenController,
           style: GoogleFonts.montserrat(

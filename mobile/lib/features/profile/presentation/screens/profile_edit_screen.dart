@@ -84,6 +84,7 @@ class _ProfileEditFormState extends ConsumerState<_ProfileEditForm> {
 
   String? _selectedGender;
   DateTime? _selectedDob;
+  String? _error;
 
   @override
   void initState() {
@@ -97,6 +98,13 @@ class _ProfileEditFormState extends ConsumerState<_ProfileEditForm> {
           ? DateFormat('dd/MM/yyyy').format(_selectedDob!)
           : '',
     );
+    
+    _nameController.addListener(_clearError);
+    _phoneController.addListener(_clearError);
+  }
+
+  void _clearError() {
+    if (_error != null) setState(() => _error = null);
   }
 
   void _updateControllers(UserProfile profile) {
@@ -148,27 +156,30 @@ class _ProfileEditFormState extends ConsumerState<_ProfileEditForm> {
     );
 
     if (image != null) {
+      setState(() => _error = null);
       try {
         final updatedData = await ref.read(profileEditProvider.notifier).uploadAvatar(image.path);
         if (mounted && updatedData != null) {
           final updatedProfile = UserProfile.fromJson(updatedData);
           _updateControllers(updatedProfile);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Cập nhật ảnh đại diện thành công')),
+            SnackBar(
+              content: const Text('Cập nhật ảnh đại diện thành công'),
+              backgroundColor: Colors.green.shade600,
+              behavior: SnackBarBehavior.floating,
+            ),
           );
         }
       } catch (e) {
         if (mounted) {
-          String message = 'Upload thất bại';
-          if (e is DioException) {
-            final data = e.response?.data;
-            if (data is Map && data['message'] != null) {
-              message = data['message'].toString();
+          setState(() {
+            final errStr = e.toString().toLowerCase();
+            if (errStr.contains('too large')) {
+              _error = 'Kích thước ảnh quá lớn. Vui lòng chọn ảnh nhỏ hơn.';
+            } else {
+              _error = 'Không thể tải ảnh lên. Vui lòng thử lại sau.';
             }
-          }
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(message)),
-          );
+          });
         }
       }
     }
@@ -177,6 +188,8 @@ class _ProfileEditFormState extends ConsumerState<_ProfileEditForm> {
   Future<void> _save() async {
     final l10n = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _error = null);
 
     try {
       final updatedData = await ref.read(profileEditProvider.notifier).save(
@@ -194,7 +207,7 @@ class _ProfileEditFormState extends ConsumerState<_ProfileEditForm> {
           SnackBar(
             content: Text(
               l10n.profileUpdated,
-              style: GoogleFonts.montserrat(color: Colors.white),
+              style: GoogleFonts.montserrat(color: Colors.white, fontWeight: FontWeight.w500),
             ),
             backgroundColor: AppTheme.accentGold,
             behavior: SnackBarBehavior.floating,
@@ -204,31 +217,58 @@ class _ProfileEditFormState extends ConsumerState<_ProfileEditForm> {
       }
     } catch (e) {
       if (mounted) {
-        String message = 'Cập nhật thất bại';
-        if (e is DioException) {
-          final data = e.response?.data;
-          if (data is Map && data['message'] != null) {
-            if (data['message'] is List) {
-              message = (data['message'] as List).join(', ');
-            } else {
-              message = data['message'].toString();
+        setState(() {
+          String message = 'Cập nhật thất bại. Vui lòng kiểm tra lại thông tin.';
+          if (e is DioException) {
+            final data = e.response?.data;
+            if (data is Map && data['message'] != null) {
+              if (data['message'] is List) {
+                message = (data['message'] as List).join(', ');
+              } else {
+                message = data['message'].toString();
+              }
             }
           }
-        }
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              message,
-              style: GoogleFonts.montserrat(color: Colors.white),
-            ),
-            backgroundColor: Colors.redAccent,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: AppRadius.cardBorder),
-          ),
-        );
+          _error = message;
+        });
       }
     }
+  }
+
+  Widget _buildErrorBanner() {
+    if (_error == null) return const SizedBox.shrink();
+    return Container(
+      margin: const EdgeInsets.only(top: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2D0A0A).withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.error_outline, color: Colors.redAccent, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              _error!,
+              style: GoogleFonts.montserrat(
+                color: const Color(0xFFFFD1D1),
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -289,6 +329,7 @@ class _ProfileEditFormState extends ConsumerState<_ProfileEditForm> {
                   );
                 },
               ),
+              _buildErrorBanner(),
               const SizedBox(height: 48),
               
               _SectionLabel(l10n.basicInfo),

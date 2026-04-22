@@ -19,13 +19,29 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
   bool _isLoading = false;
   bool _showPassword = false;
   bool _resetDone = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _tokenController.addListener(_clearError);
+    _passwordController.addListener(_clearError);
+    _confirmController.addListener(_clearError);
+  }
 
   @override
   void dispose() {
+    _tokenController.removeListener(_clearError);
+    _passwordController.removeListener(_clearError);
+    _confirmController.removeListener(_clearError);
     _tokenController.dispose();
     _passwordController.dispose();
     _confirmController.dispose();
     super.dispose();
+  }
+
+  void _clearError() {
+    if (_error != null) setState(() => _error = null);
   }
 
   Future<void> _handleReset() async {
@@ -34,25 +50,23 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
     final confirm = _confirmController.text.trim();
 
     if (token.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng điền đầy đủ thông tin')),
-      );
+      setState(() => _error = 'Vui lòng điền đầy đủ thông tin');
       return;
     }
     if (password.length < 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Mật khẩu phải có ít nhất 6 ký tự')),
-      );
+      setState(() => _error = 'Mật khẩu phải có ít nhất 6 ký tự');
       return;
     }
     if (password != confirm) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Mật khẩu xác nhận không khớp')),
-      );
+      setState(() => _error = 'Mật khẩu xác nhận không khớp');
       return;
     }
 
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
     try {
       await ref
           .read(authControllerProvider.notifier)
@@ -65,12 +79,53 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _isLoading = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Lỗi: $e')));
+        setState(() {
+          _isLoading = false;
+          final errStr = e.toString().toLowerCase();
+          if (errStr.contains('expired') || errStr.contains('invalid')) {
+            _error = 'Mã token không hợp lệ hoặc đã hết hạn.';
+          } else {
+            _error = 'Đã xảy ra lỗi. Vui lòng thử lại sau.';
+          }
+        });
       }
     }
+  }
+
+  Widget _buildErrorBanner() {
+    if (_error == null) return const SizedBox.shrink();
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2D0A0A).withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.error_outline, color: Colors.redAccent, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              _error!,
+              style: GoogleFonts.montserrat(
+                color: const Color(0xFFFFD1D1),
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -134,7 +189,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
           ),
         ),
         const SizedBox(height: 32),
-
+        _buildErrorBanner(),
         // Token field
         TextField(
           controller: _tokenController,
