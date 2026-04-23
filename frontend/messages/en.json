@@ -200,27 +200,31 @@
     "member_no": "Member No. {no} / VIP"
   },
   "discovery": {
-    "title": "The AI <span>Discovery</span> Process",
-    "step1_title": "Bio-Mapping",
-    "step1_desc": "Our AI analyzes 147 data points from your sensory preferences and lifestyle.",
-    "step2_title": "Synthesis",
-    "step2_desc": "A unique molecular formula is generated, blending over 200 rare ingredients.",
-    "step3_title": "Manifestation",
-    "step3_desc": "Hand-poured in Grasse, France, and shipped to your doorstep in obsidian glass.",
-    "methodology": "The Methodology",
+    "title": "AI-Powered Fragrance Shopping",
+    "subtitle": "A personalized shopping experience that helps you find your perfect scent without the hassle of trying dozens of products.",
+    "step1_title": "Share Your Preferences",
+    "step1_desc": "Simply answer a few short questions, and our AI will capture your unique style.",
+    "step2_title": "Data Analysis",
+    "step2_desc": "Our system cross-references your preferences with thousands of authentic perfumes to find the perfect match.",
+    "step3_title": "Get Matches & Shop",
+    "step3_desc": "Receive a curated list of perfumes. Shop with confidence, and we'll deliver them straight to your door.",
+    "methodology": "How It Works",
     "phase": "Phase",
-    "begin_profile": "Begin My Neural Profile",
+    "begin_profile": "Begin Your Scent Journey",
     "steps": [
       {
-        "label": "Neural Analysis"
+        "label": "Short Quiz"
       },
       {
-        "label": "Olfactory Synthesis"
+        "label": "AI Filtering"
       },
       {
-        "label": "Curation"
+        "label": "Perfect Match"
       }
-    ]
+    ],
+    "final_badge": "A Refined Experience",
+    "final_title": "Find your true signature scent quickly and accurately.",
+    "final_desc": "We simplify the selection process, turning a complex search into an effortless, time-saving, and highly personalized shopping journey."
   },
   "auth": {
     "login": {

@@ -82,8 +82,8 @@
     "clear_filters": "Xóa Bộ Lọc",
     "previous": "Trước",
     "next": "Tiếp",
-    "odyssey": "Hành Trình",
-    "catalog": "Danh mục",
+    "odyssey": "Trang Chủ",
+    "catalog": "Bộ Sưu Tập",
     "admin_dashboard": "Quản Trị Viên",
     "staff_dashboard": "Nhân Viên",
     "curation": "Tuyển Chọn",
@@ -165,12 +165,12 @@
     }
   },
   "hero": {
-    "badge": "Nước Hoa Cao Cấp",
+    "badge": "PerfumeGPT",
     "title": "Bản Sắc Của Bạn, Kết Tinh Thành Hương Thơm.",
     "subtitle": "Được gợi ý bởi AI dựa trên phong cách sống, cảm xúc và sở thích cá nhân của bạn.",
     "cta": "Tìm Nước Hoa Của Tôi",
     "explore": "Xem Bộ Sưu Tập →",
-    "scroll_to_discover": "Cuộn Xuống"
+    "scroll_to_discover": "Cuộn Xuống Để Khám Phá Thêm"
   },
   "story": {
     "badge": "Câu Chuyện Của Chúng Tôi",
@@ -201,27 +201,31 @@
     "member_no": "Thành viên số {no} / VIP"
   },
   "discovery": {
-    "title": "Cách Chúng Tôi Gợi Ý Nước Hoa",
-    "step1_title": "Tìm Hiểu Sở Thích",
-    "step1_desc": "AI phân tích phong cách sống, lối sống và các mùi hương bạn đã thích trước đây.",
-    "step2_title": "Ghép Cặp Mùi Hương",
-    "step2_desc": "Tạo ra công thức phù hợp từ những nguyên liệu tự nhiên chất lượng cao.",
-    "step3_title": "Hoàn Thiện & Giao Hàng",
-    "step3_desc": "Sản phẩm được ủ và đóng gói thủ công tại Grasse, giao đến tận tay bạn.",
-    "methodology": "Quy Trình",
+    "title": "Trải Nghiệm Mua Sắm Cá Nhân Hóa",
+    "subtitle": "Trải nghiệm mua sắm được cá nhân hóa giúp bạn dễ dàng tìm thấy mùi hương chân ái mà không cần phải thử nghiệm quá nhiều.",
+    "step1_title": "Chia Sẻ Sở Thích",
+    "step1_desc": "Chỉ cần trả lời vài câu hỏi ngắn, AI của chúng tôi sẽ ghi nhận phong cách riêng của bạn.",
+    "step2_title": "Phân Tích Dữ Liệu",
+    "step2_desc": "Hệ thống sẽ đối chiếu sở thích của bạn với hàng ngàn mẫu nước hoa chính hãng để tìm ra độ tương thích hoàn hảo.",
+    "step3_title": "Nhận Gợi Ý & Mua Sắm",
+    "step3_desc": "Nhận danh sách nước hoa dành riêng cho bạn. Tự tin lựa chọn và đặt hàng, chúng tôi sẽ giao hàng tận tay.",
+    "methodology": "Hướng Dẫn",
     "phase": "Bước",
     "begin_profile": "Bắt Đầu Tìm Nước Hoa",
     "steps": [
       {
-        "label": "Trả Lời Câu Hỏi"
+        "label": "Khảo Sát Ngắn"
       },
       {
-        "label": "AI Phân Tích"
+        "label": "AI Xử Lý"
       },
       {
         "label": "Nhận Gợi Ý"
       }
-    ]
+    ],
+    "final_badge": "Trải Nghiệm Tinh Tế",
+    "final_title": "Tìm thấy mùi hương chân ái một cách nhanh chóng và chính xác.",
+    "final_desc": "Chúng tôi biến quá trình tìm kiếm phức tạp thành một trải nghiệm mua sắm nhẹ nhàng, tiết kiệm thời gian và đầy tính cá nhân hóa."
   },
   "auth": {
     "login": {
@@ -409,10 +413,10 @@
       "no_results_title": "Chưa Tìm Thấy Kết Quả Phù Hợp",
       "no_results_desc": "Hệ thống chưa tìm thấy sản phẩm phù hợp. Hãy thử điều chỉnh lựa chọn của bạn.",
       "retake": "Thực Hiện Lại Bước",
-      "ai_picked": "Giám Tuyển Bởi Perfume GPT",
+      "ai_picked": "Gợi Ý Bởi Perfume GPT",
       "title": "Bản Vẽ Khứu Giác Của Bạn (Blueprint)",
       "subtitle": "Dựa trên hồ sơ AI, hệ thống của chúng tôi đã tuyển chọn những sản phẩm này với mức độ phù hợp 98.4%.",
-      "view_detail": "Thưởng Lãm Chi Tiết"
+      "view_detail": "Xem chi tiết"
     },
     "elite_series": "Dòng Cao Cấp",
     "rating_label": "Đánh Giá: {rating}/5",
@@ -446,11 +450,11 @@
     "archived_hash": "Mã Lưu Trữ #",
     "rating_label": "Mức Độ Phù Hợp: {rating}/5",
     "select_size": "Lựa Chọn Dung Tích",
-    "select_olfactory_volume": "Lựa Chọn Thể Tích Khứu Giác (Volume)",
+    "select_olfactory_volume": "Lựa Chọn Thể Tích",
     "olfactory_structure": "Kiến Trúc Tầng Hương",
-    "top_notes": "Nốt Hương Đầu (Làn Gió Đầu)",
-    "heart_notes": "Nốt Hương Giữa (Trái Tim Của Độ Lưu Hương)",
-    "base_notes": "Nốt Hương Cuối (Dấu Ấn Lưu Lại)",
+    "top_notes": "Nốt Hương Đầu",
+    "heart_notes": "Nốt Hương Giữa",
+    "base_notes": "Nốt Hương Cuối",
     "technical_specifications": "Thông Số Tuyển Chọn",
     "concentration": "Nồng Độ Mùi Hương",
     "longevity": "Độ Lưu Hương",
@@ -547,7 +551,7 @@
       "consultation": "Tư Vấn AI",
       "journal": "Tạp Chí",
       "subscription": "Gói Hội Viên",
-      "boutiques": "Cửa Hàng",
+      "boutiques": "Thương Hiệu",
       "gifting": "Quà Tặng"
     },
     "support_labels": {

@@ -85,12 +85,11 @@ export default function AiQuizPage() {
           {q.options.map(opt => {
             const isSelected = answers[q.id] === opt.value;
             return (
-              <div 
+              <div
                 key={opt.value}
                 onClick={() => handleSelect(q.id, opt.value)}
-                className={`w-full p-4 rounded-xl border-2 text-left font-medium transition-all duration-200 active:scale-95 flex items-center justify-between ${
-                  isSelected ? 'border-primary bg-primary/5 text-primary' : 'border-gray-100 bg-white text-gray-700'
-                }`}
+                className={`w-full p-4 rounded-xl border-2 text-left font-medium transition-all duration-200 active:scale-95 flex items-center justify-between ${isSelected ? 'border-primary bg-primary/5 text-primary' : 'border-gray-100 bg-white text-gray-700'
+                  }`}
               >
                 {opt.label}
                 {isSelected && <Sparkles size={16} />}
@@ -104,36 +103,36 @@ export default function AiQuizPage() {
 
   const renderResults = () => (
     <div className="bg-gray-50 min-h-full px-4 py-8">
-       <div className="text-center mb-8">
-         <Sparkles className="text-primary mx-auto mb-3" size={32} />
-         <h1 className="text-xl font-bold text-gray-800">Kết quả phân tích AI</h1>
-         <p className="text-sm text-gray-500 mt-2">Dựa trên DNA mùi hương của bạn, đây là những ứng viên sáng giá nhất.</p>
-       </div>
-       {loading ? (
-         <div className="flex flex-col items-center justify-center p-10 opacity-70">
-           <RefreshCw className="animate-spin text-primary mb-4" size={30} />
-           <p className="text-sm text-gray-500 font-semibold animate-pulse">Trí tuệ nhân tạo đang phân tích...</p>
-         </div>
-       ) : (
-         <div className="space-y-4">
-           {results.map((rec, i) => (
-             <div onClick={() => rec.productId && navigate(`/product/${rec.productId}`)} key={i} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex gap-4 active:scale-[0.98] transition-transform">
-               <div className="w-24 h-24 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0">
-                 {rec.imageUrl ? <img src={rec.imageUrl} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gray-200" />}
-               </div>
-               <div className="flex-1 min-w-0 flex flex-col justify-center">
-                 <div className="text-xs text-primary font-bold tracking-widest mb-1">{rec.brand || 'PERFUMEGPT'}</div>
-                 <h3 className="font-semibold text-gray-800 text-sm truncate">{rec.name}</h3>
-                 <p className="text-xs text-gray-500 my-1 line-clamp-2 leading-relaxed bg-primary/5 rounded p-1.5">{rec.reason}</p>
-                 <div className="font-bold text-sm mt-1">{rec.price ? formatPrice(rec.price) : 'Xem chi tiết'}</div>
-               </div>
-             </div>
-           ))}
-           <button onClick={() => { setStep(0); setAnswers({}); }} className="w-full mt-6 py-3 border border-primary text-primary rounded-xl font-semibold opacity-80 hover:opacity-100">
-             Làm lại bài kiểm tra
-           </button>
-         </div>
-       )}
+      <div className="text-center mb-8">
+        <Sparkles className="text-primary mx-auto mb-3" size={32} />
+        <h1 className="text-xl font-bold text-gray-800">Kết quả phân tích AI</h1>
+        <p className="text-sm text-gray-500 mt-2">Dựa trên DNA mùi hương của bạn, đây là những ứng viên sáng giá nhất.</p>
+      </div>
+      {loading ? (
+        <div className="flex flex-col items-center justify-center p-10 opacity-70">
+          <RefreshCw className="animate-spin text-primary mb-4" size={30} />
+          <p className="text-sm text-gray-500 font-semibold animate-pulse">Trí tuệ nhân tạo đang phân tích...</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {results.map((rec, i) => (
+            <div onClick={() => rec.productId && navigate(`/product/${rec.productId}`)} key={i} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex gap-4 active:scale-[0.98] transition-transform">
+              <div className="w-24 h-24 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0">
+                {rec.imageUrl ? <img src={rec.imageUrl} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gray-200" />}
+              </div>
+              <div className="flex-1 min-w-0 flex flex-col justify-center">
+                <div className="text-xs text-primary font-bold tracking-widest mb-1">{rec.brand || 'PERFUMEGPT'}</div>
+                <h3 className="font-semibold text-gray-800 text-sm truncate">{rec.name}</h3>
+                <p className="text-xs text-gray-500 my-1 line-clamp-2 leading-relaxed bg-primary/5 rounded p-1.5">{rec.reason}</p>
+                <div className="font-bold text-sm mt-1">{rec.price ? formatPrice(rec.price) : 'Xem chi tiết'}</div>
+              </div>
+            </div>
+          ))}
+          <button onClick={() => { setStep(0); setAnswers({}); }} className="w-full mt-6 py-3 border border-primary text-primary rounded-xl font-semibold opacity-80 hover:opacity-100">
+            Làm lại bài kiểm tra
+          </button>
+        </div>
+      )}
     </div>
   );
 

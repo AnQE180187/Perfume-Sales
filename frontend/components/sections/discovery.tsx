@@ -38,7 +38,7 @@ export const Discovery = () => {
                         </h2>
 
                         <p className="mt-6 max-w-xl text-base leading-8 text-muted-foreground md:text-lg">
-                            Hành trình khám phá được chia thành từng bước rõ ràng để người dùng dễ hiểu, dễ theo dõi và dễ bắt đầu.
+                            {t('subtitle')}
                         </p>
 
                         <div className="mt-10">
@@ -84,13 +84,12 @@ export const Discovery = () => {
                             transition={{ duration: 0.55, delay: 0.3 }}
                             className="rounded-[2rem] border border-gold/18 bg-[linear-gradient(135deg,rgba(197,160,89,0.14),rgba(197,160,89,0.04))] p-6 shadow-[0_20px_60px_-42px_rgba(197,160,89,0.3)] md:col-span-2 md:p-7"
                         >
-                            <p className="text-sm font-medium text-gold">Kết quả cuối cùng</p>
+                            <p className="text-sm font-medium text-gold">{t('final_badge')}</p>
                             <h3 className="mt-2 text-2xl leading-tight text-foreground md:text-3xl">
-                                Người dùng nhận được trải nghiệm có hướng dẫn thay vì phải tự lần trong quá nhiều lựa chọn.
+                                {t('final_title')}
                             </h3>
                             <p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground md:text-base">
-                                Home mới tập trung vào khả năng đọc nhanh, hiểu nhanh và chọn hành động nhanh, trong khi vẫn giữ được không khí cao cấp của một
-                                thương hiệu nước hoa.
+                                {t('final_desc')}
                             </p>
                         </motion.div>
                     </div>

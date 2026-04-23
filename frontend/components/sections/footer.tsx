@@ -45,19 +45,16 @@ export const Footer = () => {
     const t = useTranslations('footer');
 
     const exploreLinks = [
-        { label: t('navigation_labels.products'), href: '/products' },
-        { label: t('navigation_labels.consultation'), href: '/consultation' },
+        { label: t('navigation_labels.products'), href: '/collection' },
+        { label: t('navigation_labels.consultation'), href: '/quiz' },
         { label: t('navigation_labels.journal'), href: '/journal' },
         { label: t('navigation_labels.boutiques'), href: '/boutiques' },
-        { label: t('navigation_labels.gifting'), href: '/gifting' },
     ];
 
     const aboutLinks = [
         { label: t('support_labels.story'), href: '/story' },
-        { label: t('support_labels.ingredients'), href: '/ingredients' },
         { label: t('support_labels.terms'), href: '/terms' },
         { label: t('support_labels.privacy'), href: '/privacy' },
-        { label: t('support_labels.support'), href: '/support' },
     ];
 
     const socialLinks = [

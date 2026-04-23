@@ -308,29 +308,29 @@ export function QuizForm({ onSubmit, isSubmitting }: QuizFormProps) {
   return (
     <div className="mx-auto w-full max-w-[1440px]">
       <div className="grid gap-5 xl:grid-cols-[320px_minmax(0,1fr)]">
-        <aside className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,17,20,0.96),rgba(9,11,14,0.98))] p-5 shadow-[0_34px_90px_-52px_rgba(0,0,0,0.88)] xl:sticky xl:top-24 xl:self-start sm:p-6">
+        <aside className="relative overflow-hidden rounded-[2rem] border border-border bg-card p-5 shadow-[0_20px_60px_-40px_rgba(0,0,0,0.06)] dark:shadow-[0_34px_90px_-52px_rgba(0,0,0,0.88)] xl:sticky xl:top-24 xl:self-start sm:p-6">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(197,160,89,0.14),transparent_30%)]" />
 
-          <div className="relative rounded-[1.7rem] border border-[#c5a059]/18 bg-[#121519]/90 p-5">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#c5a059]/18 bg-[#c5a059]/10 px-3 py-1.5 text-sm font-medium text-[#d7b168]">
+          <div className="relative rounded-[1.7rem] border border-gold/20 bg-secondary p-5">
+            <div className="inline-flex items-center gap-2 rounded-full border border-gold/20 bg-gold/10 px-3 py-1.5 text-sm font-medium text-gold">
               <Sparkles size={14} />
               {helperCopy.progressLabel}
             </div>
 
             <div className="mt-5 flex items-end justify-between gap-4">
               <div>
-                <p className="text-sm text-[#9f9a92]">{helperCopy.currentLabel}</p>
-                <p className="mt-1 font-heading text-5xl leading-none tracking-[-0.04em] text-[#f8f2e9]">
+                <p className="text-sm text-muted-foreground">{helperCopy.currentLabel}</p>
+                <p className="mt-1 font-heading text-5xl leading-none tracking-[-0.04em] text-foreground">
                   {String(step + 1).padStart(2, '0')}
                 </p>
               </div>
-              <div className="rounded-[1.25rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-right">
-                <p className="text-[11px] uppercase tracking-[0.24em] text-[#8f8a81]">{t('step_label')}</p>
-                <p className="mt-2 text-lg font-semibold text-[#f7f2ea]">{totalSteps}</p>
+              <div className="rounded-[1.25rem] border border-border bg-secondary px-4 py-3 text-right">
+                <p className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground">{t('step_label')}</p>
+                <p className="mt-2 text-lg font-semibold text-foreground">{totalSteps}</p>
               </div>
             </div>
 
-            <div className="mt-5 h-2 overflow-hidden rounded-full bg-white/8">
+            <div className="mt-5 h-2 overflow-hidden rounded-full bg-secondary">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${progress}%` }}
@@ -339,18 +339,18 @@ export function QuizForm({ onSubmit, isSubmitting }: QuizFormProps) {
               />
             </div>
 
-            <div className="mt-4 flex items-center justify-between gap-3 text-sm text-[#9f9a92]">
+            <div className="mt-4 flex items-center justify-between gap-3 text-sm text-muted-foreground">
               <span>
                 {completedCount}/{totalSteps} {helperCopy.completedLabel.toLowerCase()}
               </span>
               <span>{Math.round(progress)}%</span>
             </div>
 
-            <p className="mt-4 text-sm leading-7 text-[#b8b2a8]">{helperCopy.durationLabel}</p>
+            <p className="mt-4 text-sm leading-7 text-muted-foreground">{helperCopy.durationLabel}</p>
           </div>
 
           <div className="relative mt-5">
-            <p className="mb-3 text-[11px] uppercase tracking-[0.28em] text-[#8f8a81]">
+            <p className="mb-3 text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
               {helperCopy.stageLabel}
             </p>
 
@@ -366,20 +366,20 @@ export function QuizForm({ onSubmit, isSubmitting }: QuizFormProps) {
                     whileHover={{ x: 4 }}
                     className={`rounded-[1.45rem] border px-4 py-4 transition-all duration-300 ${
                       isCurrent
-                        ? 'border-[#c5a059]/35 bg-[#15181d] shadow-[0_22px_55px_-38px_rgba(197,160,89,0.45)]'
+                        ? 'border-gold/20 bg-secondary border-gold shadow-[0_20px_40px_-20px_rgba(197,160,89,0.25)] dark:shadow-[0_22px_55px_-38px_rgba(197,160,89,0.45)]'
                         : isDone
-                          ? 'border-white/8 bg-white/[0.04]'
-                          : 'border-white/6 bg-transparent opacity-75'
+                          ? 'border-border bg-secondary'
+                          : 'border-border bg-transparent opacity-75'
                     }`}
                   >
                     <div className="flex items-start gap-3">
                       <div
                         className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[1rem] ${
                           isCurrent
-                            ? 'bg-[#d7b168] text-[#14161a]'
+                            ? 'bg-gold text-luxury-black'
                             : isDone
                               ? 'bg-emerald-500 text-white'
-                              : 'bg-white/[0.06] text-[#9f9a92]'
+                              : 'bg-secondary text-muted-foreground'
                         }`}
                       >
                         {isDone ? <Check size={18} strokeWidth={2.2} /> : <Icon size={18} strokeWidth={1.75} />}
@@ -387,14 +387,14 @@ export function QuizForm({ onSubmit, isSubmitting }: QuizFormProps) {
 
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-[11px] uppercase tracking-[0.22em] text-[#8f8a81]">
+                          <span className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
                             {t('step_label')} {item.id}
                           </span>
                         </div>
-                        <p className="mt-2 text-sm font-semibold leading-6 text-[#f6f1e8]">
+                        <p className="mt-2 text-sm font-semibold leading-6 text-foreground">
                           {t(item.titleKey)}
                         </p>
-                        <p className="mt-1 text-sm leading-6 text-[#8f8a81]">{t(item.subtitleKey)}</p>
+                        <p className="mt-1 text-sm leading-6 text-muted-foreground">{t(item.subtitleKey)}</p>
                       </div>
                     </div>
                   </motion.div>
@@ -403,20 +403,20 @@ export function QuizForm({ onSubmit, isSubmitting }: QuizFormProps) {
             </div>
           </div>
 
-          <div className="relative mt-5 rounded-[1.7rem] border border-white/10 bg-white/[0.04] p-5">
-            <p className="text-sm font-semibold text-[#f7f2ea]">{helperCopy.selectionsLabel}</p>
-            <p className="mt-2 text-sm leading-7 text-[#9f9a92]">{helperCopy.summaryHint}</p>
+          <div className="relative mt-5 rounded-[1.7rem] border border-border bg-secondary p-5">
+            <p className="text-sm font-semibold text-foreground">{helperCopy.selectionsLabel}</p>
+            <p className="mt-2 text-sm leading-7 text-muted-foreground">{helperCopy.summaryHint}</p>
 
             <div className="mt-4 space-y-3">
               {selectionSummary.map((item) => (
-                <div key={item.id} className="flex items-start justify-between gap-4 rounded-[1rem] bg-black/10 px-3 py-3">
+                <div key={item.id} className="flex items-start justify-between gap-4 rounded-[1rem] bg-secondary px-3 py-3">
                   <div>
-                    <p className="text-sm text-[#8f8a81]">{item.title}</p>
-                    <p className="mt-1 text-sm font-medium leading-6 text-[#f7f2ea]">{item.value}</p>
+                    <p className="text-sm text-muted-foreground">{item.title}</p>
+                    <p className="mt-1 text-sm font-medium leading-6 text-foreground">{item.value}</p>
                   </div>
                   <span
                     className={`mt-1 inline-flex h-2.5 w-2.5 rounded-full ${
-                      item.completed ? 'bg-emerald-400 shadow-[0_0_10px_rgba(74,222,128,0.5)]' : 'bg-white/20'
+                      item.completed ? 'bg-emerald-400 shadow-[0_0_10px_rgba(74,222,128,0.5)]' : 'bg-secondary-foreground/20'
                     }`}
                   />
                 </div>
@@ -425,34 +425,34 @@ export function QuizForm({ onSubmit, isSubmitting }: QuizFormProps) {
           </div>
         </aside>
 
-        <section className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(14,16,19,0.96),rgba(9,10,13,0.98))] shadow-[0_36px_90px_-54px_rgba(0,0,0,0.88)]">
+        <section className="relative overflow-hidden rounded-[2rem] border border-border bg-card shadow-[0_20px_60px_-40px_rgba(0,0,0,0.06)] dark:shadow-[0_36px_90px_-54px_rgba(0,0,0,0.88)]">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(197,160,89,0.11),transparent_28%)]" />
 
-          <div className="relative border-b border-white/8 px-6 py-6 lg:px-8 lg:py-7">
+          <div className="relative border-b border-border px-6 py-6 lg:px-8 lg:py-7">
             <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
               <div className="max-w-3xl">
-                <div className="inline-flex items-center gap-2 rounded-full border border-[#c5a059]/18 bg-[#c5a059]/10 px-3 py-1.5 text-sm font-medium text-[#d7b168]">
+                <div className="inline-flex items-center gap-2 rounded-full border border-gold/20 bg-gold/10 px-3 py-1.5 text-sm font-medium text-gold">
                   <CurrentStepIcon size={14} />
                   {t('step_label')} {currentStep.id} / {totalSteps}
                 </div>
 
-                <h2 className="mt-5 font-heading text-[clamp(2.5rem,4.5vw,4.4rem)] leading-[0.94] tracking-[-0.05em] text-[#f8f2e9]">
+                <h2 className="mt-5 font-heading text-[clamp(2.5rem,4.5vw,4.4rem)] leading-[0.94] tracking-[-0.05em] text-foreground">
                   {t(currentStep.titleKey)}
                 </h2>
-                <p className="mt-4 max-w-2xl text-base leading-8 text-[#c7c1b6]">{t(currentStep.subtitleKey)}</p>
+                <p className="mt-4 max-w-2xl text-base leading-8 text-muted-foreground">{t(currentStep.subtitleKey)}</p>
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2 xl:min-w-[360px]">
-                <div className="rounded-[1.45rem] border border-white/10 bg-white/[0.04] px-4 py-4">
-                  <p className="text-[11px] uppercase tracking-[0.24em] text-[#8f8a81]">{helperCopy.pendingLabel}</p>
-                  <p className="mt-3 text-sm font-medium leading-7 text-[#f3ede4]">
+                <div className="rounded-[1.45rem] border border-border bg-secondary px-4 py-4">
+                  <p className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground">{helperCopy.pendingLabel}</p>
+                  <p className="mt-3 text-sm font-medium leading-7 text-foreground">
                     {isSubmitting ? helperCopy.submittingLabel : currentSelectionLabel}
                   </p>
                 </div>
 
-                <div className="rounded-[1.45rem] border border-white/10 bg-white/[0.04] px-4 py-4">
-                  <p className="text-[11px] uppercase tracking-[0.24em] text-[#8f8a81]">{helperCopy.nextLabel}</p>
-                  <p className="mt-3 text-sm font-medium leading-7 text-[#f3ede4]">
+                <div className="rounded-[1.45rem] border border-border bg-secondary px-4 py-4">
+                  <p className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground">{helperCopy.nextLabel}</p>
+                  <p className="mt-3 text-sm font-medium leading-7 text-foreground">
                     {nextStep ? t(nextStep.titleKey) : helperCopy.nextFallback}
                   </p>
                 </div>
@@ -472,29 +472,29 @@ export function QuizForm({ onSubmit, isSubmitting }: QuizFormProps) {
                     key={item.id}
                     className={`flex min-w-[140px] items-center gap-3 rounded-[1.35rem] border px-4 py-3 ${
                       isCurrent
-                        ? 'border-[#c5a059]/35 bg-[#171b20]'
+                        ? 'border-gold/20 bg-secondary border-gold'
                         : isDone
                           ? 'border-emerald-500/20 bg-emerald-500/8'
-                          : 'border-white/8 bg-white/[0.03]'
+                          : 'border-border bg-secondary'
                     }`}
                   >
                     <div
                       className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
                         isCurrent
-                          ? 'bg-[#d7b168] text-[#14161a]'
+                          ? 'bg-gold text-luxury-black'
                           : isDone
                             ? 'bg-emerald-500 text-white'
-                            : 'bg-white/[0.06] text-[#8f8a81]'
+                            : 'bg-secondary text-muted-foreground'
                       }`}
                     >
                       {isDone ? <Check size={16} strokeWidth={2.2} /> : <Icon size={16} strokeWidth={1.8} />}
                     </div>
 
                     <div className="min-w-0">
-                      <p className="text-[11px] uppercase tracking-[0.22em] text-[#8f8a81]">
+                      <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
                         {t('step_label')} {item.id}
                       </p>
-                      <p className="mt-1 truncate text-sm font-medium text-[#f6f1e8]">{t(item.titleKey)}</p>
+                      <p className="mt-1 truncate text-sm font-medium text-foreground">{t(item.titleKey)}</p>
                     </div>
                   </div>
                 );
@@ -527,14 +527,14 @@ export function QuizForm({ onSubmit, isSubmitting }: QuizFormProps) {
                         disabled={isSubmitting}
                         className={`group relative flex min-h-[210px] flex-col rounded-[1.7rem] border p-5 text-left transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50 ${
                           isSelected
-                            ? 'border-[#c5a059]/50 bg-[linear-gradient(180deg,rgba(197,160,89,0.14),rgba(20,23,28,0.96))] shadow-[0_28px_65px_-40px_rgba(197,160,89,0.45)]'
-                            : 'border-white/10 bg-white/[0.03] hover:border-[#c5a059]/26 hover:bg-white/[0.05] hover:shadow-[0_30px_70px_-46px_rgba(0,0,0,0.9)]'
+                            ? 'border-gold/20 bg-card border-gold shadow-[0_20px_50px_-20px_rgba(197,160,89,0.2)] dark:shadow-[0_28px_65px_-40px_rgba(197,160,89,0.45)]'
+                            : 'border-border bg-secondary hover:border-gold/20 hover:bg-secondary hover:shadow-[0_30px_70px_-46px_rgba(0,0,0,0.9)]'
                         }`}
                       >
                         <div className="flex items-start justify-between gap-4">
                           <div
                             className={`flex h-14 w-14 items-center justify-center rounded-[1.15rem] ${
-                              isSelected ? 'bg-[#d7b168] text-[#14161a]' : 'bg-white/[0.06] text-[#f7f2ea]'
+                              isSelected ? 'bg-gold text-luxury-black' : 'bg-secondary text-foreground'
                             }`}
                           >
                             {Icon ? <Icon size={24} strokeWidth={1.65} /> : null}
@@ -542,29 +542,29 @@ export function QuizForm({ onSubmit, isSubmitting }: QuizFormProps) {
 
                           <div className="flex items-center gap-2">
                             {isSelected ? (
-                              <span className="inline-flex items-center rounded-full border border-[#c5a059]/25 bg-[#c5a059]/14 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-[#e1bf7a]">
+                              <span className="inline-flex items-center rounded-full border border-gold/20 bg-gold/10 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-gold">
                                 {helperCopy.selectedLabel}
                               </span>
                             ) : null}
 
-                            <span className="inline-flex rounded-full border border-white/10 bg-black/20 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-[#8f8a81]">
+                            <span className="inline-flex rounded-full border border-border bg-secondary px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
                               {String(index + 1).padStart(2, '0')}
                             </span>
                           </div>
                         </div>
 
                         <div className="mt-7 flex-1">
-                          <p className="text-xl font-semibold leading-8 text-[#f8f2e9]">{opt.label}</p>
-                          <p className="mt-3 text-sm leading-7 text-[#a8a298]">{supportText}</p>
+                          <p className="text-xl font-semibold leading-8 text-foreground">{opt.label}</p>
+                          <p className="mt-3 text-sm leading-7 text-muted-foreground">{supportText}</p>
                         </div>
 
-                        <div className="mt-6 flex items-center justify-between border-t border-white/8 pt-4">
-                          <span className="text-sm text-[#8f8a81]">
+                        <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
+                          <span className="text-sm text-muted-foreground">
                             {isSelected ? helperCopy.selectedLabel : `${t('step_label')} ${currentStep.id}`}
                           </span>
                           <span
                             className={`h-2.5 w-2.5 rounded-full ${
-                              isSelected ? 'bg-[#d7b168]' : 'bg-white/20 group-hover:bg-[#c5a059]/60'
+                              isSelected ? 'bg-gold' : 'bg-secondary-foreground/20 group-hover:bg-gold/60'
                             }`}
                           />
                         </div>
@@ -573,19 +573,19 @@ export function QuizForm({ onSubmit, isSubmitting }: QuizFormProps) {
                   })}
                 </div>
 
-                <div className="mt-8 flex flex-col gap-4 border-t border-white/8 pt-6 sm:flex-row sm:items-center sm:justify-between">
+                <div className="mt-8 flex flex-col gap-4 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <p className="text-sm leading-7 text-[#c7c1b6]">
+                    <p className="text-sm leading-7 text-muted-foreground">
                       {isSubmitting ? helperCopy.submittingLabel : helperCopy.pickHint}
                     </p>
-                    <p className="mt-1 text-sm leading-7 text-[#8f8a81]">{helperCopy.backHint}</p>
+                    <p className="mt-1 text-sm leading-7 text-muted-foreground">{helperCopy.backHint}</p>
                   </div>
 
                   {step > 0 ? (
                     <button
                       onClick={handleBack}
                       disabled={isSubmitting}
-                      className="inline-flex min-h-12 items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-5 text-sm font-medium text-[#f1ebdf] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#c5a059]/30 hover:text-[#d7b168] disabled:opacity-50"
+                      className="inline-flex min-h-12 items-center gap-2 rounded-full border border-border bg-secondary px-5 text-sm font-medium text-foreground transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/20 hover:text-gold disabled:opacity-50"
                     >
                       <ArrowLeft size={16} />
                       {t('prev_step')}

@@ -7,8 +7,12 @@ import {
   ShieldCheck,
   ShoppingBag,
   Sparkles,
+  ChevronLeft,
+  ChevronRight,
+  ZoomIn,
+  X,
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useFormatter, useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -82,6 +86,7 @@ export default function ProductDetail({ product }: { product: Product }) {
 
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(product.variants?.[0] || null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [isZoomed, setIsZoomed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -155,6 +160,20 @@ export default function ProductDetail({ product }: { product: Product }) {
     }
   };
 
+  const handleNextImage = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (product.images && activeImageIndex < product.images.length - 1) {
+      setActiveImageIndex((i) => i + 1);
+    }
+  };
+
+  const handlePrevImage = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (product.images && activeImageIndex > 0) {
+      setActiveImageIndex((i) => i - 1);
+    }
+  };
+
   const formatCurrency = (amount: number) =>
     format.number(amount, {
       style: 'currency',
@@ -162,37 +181,72 @@ export default function ProductDetail({ product }: { product: Product }) {
       maximumFractionDigits: 0,
     });
 
+  const getGenderLabel = (g?: string | null) => {
+    if (!g) return 'Unisex';
+    const upper = g.toUpperCase();
+    if (upper === 'MALE' || upper === 'NAM' || upper === 'MEN') return isVi ? 'Nam' : 'Male';
+    if (upper === 'FEMALE' || upper === 'NỮ' || upper === 'NU' || upper === 'WOMEN') return isVi ? 'Nữ' : 'Female';
+    return 'Unisex';
+  };
+
   const rating = 4.5;
   const activeImage = product.images?.[activeImageIndex]?.url || product.images?.[0]?.url;
-  const scentFamily = product.scentFamily?.name || product.category?.name || 'Signature';
-  const gender = product.gender || 'Unisex';
+  const scentFamily = product.scentFamily?.name || 'Signature';
+  const gender = getGenderLabel(product.gender);
   const availability = selectedVariant?.stock && selectedVariant.stock > 0 ? labels.inStock : labels.outOfStock;
   const descriptionText = product.description || t('fallback_description');
   const canExpandDescription = descriptionText.length > 360;
+
+  type NoteType = 'TOP' | 'MIDDLE' | 'BASE';
+  type ProductNoteEntry = {
+    note?: { name?: string; type?: string | null } | null;
+    name?: string | null;
+    type?: string | null;
+    noteType?: string | null;
+    layer?: string | null;
+  };
+
+  const normalizeNoteType = (value?: string | null): NoteType | null => {
+    if (!value) return null;
+    const normalized = value
+      .trim()
+      .toUpperCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[\s_-]+/g, '');
+    if (normalized === 'TOP' || normalized === 'HEAD' || normalized === 'TOPNOTE' || normalized === 'HUONGDAU') return 'TOP';
+    if (normalized === 'MIDDLE' || normalized === 'MID' || normalized === 'HEART' || normalized === 'MIDDLENOTE' || normalized === 'HEARTNOTE' || normalized === 'HUONGGIUA') return 'MIDDLE';
+    if (normalized === 'BASE' || normalized === 'BOTTOM' || normalized === 'BASENOTE' || normalized === 'HUONGCUOI') return 'BASE';
+    return null;
+  };
+
+  const resolveNoteName = (entry: ProductNoteEntry) => (entry.note?.name || entry.name || '').trim();
+  const resolveNoteType = (entry: ProductNoteEntry) =>
+    normalizeNoteType(entry.note?.type || entry.type || entry.noteType || entry.layer);
 
   const noteGroups = [
     {
       type: 'TOP' as const,
       label: t('top_notes'),
-      icon: <Sparkles className="h-4 w-4 text-gold" />,
+      icon: <Sparkles className="h-6 w-6 text-gold" />,
     },
     {
       type: 'MIDDLE' as const,
       label: t('heart_notes'),
-      icon: <Heart className="h-4 w-4 text-gold" />,
+      icon: <Heart className="h-6 w-6 text-gold" />,
     },
     {
       type: 'BASE' as const,
       label: t('base_notes'),
-      icon: <ShieldCheck className="h-4 w-4 text-gold" />,
+      icon: <ShieldCheck className="h-6 w-6 text-gold" />,
     },
   ]
     .map((group) => ({
       ...group,
       items:
-        product.notes
-          ?.filter((entry) => entry.note?.type === group.type)
-          .map((entry) => entry.note?.name)
+        (product.notes as ProductNoteEntry[] | undefined)
+          ?.filter((entry) => resolveNoteType(entry) === group.type)
+          .map(resolveNoteName)
           .filter(Boolean) || [],
     }))
     .filter((group) => group.items.length > 0);
@@ -221,20 +275,54 @@ export default function ProductDetail({ product }: { product: Product }) {
       <div className="grid gap-10 xl:grid-cols-[minmax(0,1.02fr)_minmax(420px,0.98fr)] xl:items-start">
         <div className="space-y-6 xl:sticky xl:top-28">
           <div className="overflow-hidden rounded-[2.6rem] border border-black/6 bg-[linear-gradient(180deg,rgba(255,255,255,0.9),rgba(246,239,230,0.72))] shadow-[0_30px_90px_-48px_rgba(15,23,42,0.45)] dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))]">
-            <div className="relative aspect-[4/5] overflow-hidden">
+            <div 
+              className="relative aspect-[4/5] overflow-hidden group cursor-zoom-in"
+              onClick={() => {
+                if (product.images?.length) setIsZoomed(true);
+              }}
+            >
               {activeImage ? (
-                <img
-                  src={activeImage}
-                  alt={product.name}
-                  className="h-full w-full object-cover transition-transform duration-700 hover:scale-[1.03]"
-                />
+                <>
+                  <AnimatePresence mode="wait">
+                    <motion.img
+                      key={activeImageIndex}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      src={activeImage}
+                      alt={product.name}
+                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                    />
+                  </AnimatePresence>
+
+                  {activeImageIndex > 0 && (
+                    <button
+                      onClick={handlePrevImage}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white/50 text-foreground opacity-0 backdrop-blur transition-all hover:bg-white group-hover:opacity-100 dark:border-white/10 dark:bg-black/50 dark:hover:bg-black z-20"
+                    >
+                      <ChevronLeft className="h-5 w-5" />
+                    </button>
+                  )}
+                  {product.images && activeImageIndex < product.images.length - 1 && (
+                    <button
+                      onClick={handleNextImage}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white/50 text-foreground opacity-0 backdrop-blur transition-all hover:bg-white group-hover:opacity-100 dark:border-white/10 dark:bg-black/50 dark:hover:bg-black z-20"
+                    >
+                      <ChevronRight className="h-5 w-5" />
+                    </button>
+                  )}
+                  <div className="pointer-events-none absolute right-6 top-6 flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white/50 text-foreground opacity-0 backdrop-blur transition-opacity group-hover:opacity-100 dark:border-white/10 dark:bg-black/50 z-20">
+                    <ZoomIn className="h-5 w-5" />
+                  </div>
+                </>
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-secondary/20 px-6 text-center text-sm font-medium text-muted-foreground">
                   {t('visual_data_unavailable')}
                 </div>
               )}
 
-              <div className="absolute inset-x-0 top-0 flex items-center justify-between p-5">
+              <div className="absolute inset-x-0 top-0 flex items-center justify-between p-5 pointer-events-none z-10">
                 <span className="rounded-full bg-black/75 px-3 py-1.5 text-xs font-medium text-white backdrop-blur">
                   {product.brand?.name || t('elite_series')}
                 </span>
@@ -243,9 +331,8 @@ export default function ProductDetail({ product }: { product: Product }) {
                 </span>
               </div>
 
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent p-6 text-white md:p-8">
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent p-6 text-white md:p-8 pointer-events-none z-10">
                 <p className="text-sm font-medium text-gold">{labels.gallery}</p>
-                <p className="mt-2 max-w-md text-sm leading-7 text-white/85">{labels.craftsmanshipDesc}</p>
               </div>
             </div>
           </div>
@@ -433,7 +520,6 @@ export default function ProductDetail({ product }: { product: Product }) {
 
             <div className="rounded-[2.2rem] border border-black/6 bg-card p-6 shadow-[0_20px_60px_-42px_rgba(15,23,42,0.25)] dark:border-white/10">
               <p className="text-sm font-medium text-gold">{labels.craftsmanship}</p>
-              <p className="mt-4 text-base leading-8 text-muted-foreground">{labels.craftsmanshipDesc}</p>
               <div className="mt-6 grid gap-4">
                 <div className="flex gap-4 rounded-[1.4rem] border border-black/6 bg-background p-4 dark:border-white/10">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gold/12 text-gold">
@@ -472,15 +558,16 @@ export default function ProductDetail({ product }: { product: Product }) {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.35 }}
-                    className="rounded-[1.8rem] border border-black/6 bg-background p-5 dark:border-white/10"
+                    className="flex flex-col items-center text-center rounded-[2rem] border border-black/6 bg-background p-6 md:p-8 dark:border-white/10"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gold/12">
-                        {group.icon}
-                      </div>
-                      <h3 className="text-base font-semibold text-foreground">{group.label}</h3>
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gold/10 mb-5">
+                      {group.icon}
                     </div>
-                    <p className="mt-4 text-sm leading-7 text-muted-foreground">{group.items.join(', ')}</p>
+                    <h3 className="text-base md:text-lg font-semibold text-foreground leading-snug">
+                      {group.label}
+                    </h3>
+                    <div className="my-4 h-[2px] w-12 bg-gold/20" />
+                    <p className="text-sm leading-7 text-muted-foreground">{group.items.join(', ')}</p>
                   </motion.div>
                 ))}
               </div>
@@ -499,6 +586,60 @@ export default function ProductDetail({ product }: { product: Product }) {
           <ReviewList productId={product.id} />
         </div>
       </section>
+
+      <AnimatePresence>
+        {isZoomed && product.images?.length && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background/95 p-4 backdrop-blur-xl md:p-12"
+          >
+            <button
+              onClick={() => setIsZoomed(false)}
+              className="absolute right-6 top-6 z-50 flex h-12 w-12 items-center justify-center rounded-full border border-border/50 text-foreground transition-colors hover:bg-secondary/20 md:right-10 md:top-10"
+            >
+              <X className="h-6 w-6" />
+            </button>
+
+            <div className="relative flex h-full max-h-[85vh] w-full max-w-6xl items-center justify-center">
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={activeImageIndex}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                  src={product.images[activeImageIndex]?.url}
+                  alt={product.name}
+                  className="max-h-full max-w-full object-contain drop-shadow-2xl"
+                />
+              </AnimatePresence>
+
+              {activeImageIndex > 0 && (
+                <button
+                  onClick={handlePrevImage}
+                  className="absolute left-0 top-1/2 z-50 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-border/20 bg-background/50 text-foreground transition-colors hover:bg-secondary/40 md:-left-12 md:h-16 md:w-16"
+                >
+                  <ChevronLeft className="h-6 w-6 md:h-8 md:w-8" />
+                </button>
+              )}
+              {activeImageIndex < product.images.length - 1 && (
+                <button
+                  onClick={handleNextImage}
+                  className="absolute right-0 top-1/2 z-50 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full border border-border/20 bg-background/50 text-foreground transition-colors hover:bg-secondary/40 md:-right-12 md:h-16 md:w-16"
+                >
+                  <ChevronRight className="h-6 w-6 md:h-8 md:w-8" />
+                </button>
+              )}
+            </div>
+
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full border border-border/50 bg-background/50 px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-foreground backdrop-blur z-50">
+              {activeImageIndex + 1} / {product.images.length}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
