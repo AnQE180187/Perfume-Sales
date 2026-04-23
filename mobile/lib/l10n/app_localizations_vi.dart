@@ -268,7 +268,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get joinTheAtelier => 'Gia nhập Xưởng';
 
   @override
-  String get fullName => 'HỌ VÀ TÊN';
+  String get fullName => 'Họ và tên';
 
   @override
   String get phoneOptional => 'SỐ ĐIỆN THOẠI (KHÔNG BẮT BUỘC)';
@@ -357,7 +357,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get appearance => 'GIAO DIỆN';
 
   @override
-  String get language => 'NGÔN NGỮ';
+  String get language => 'Ngôn ngữ';
 
   @override
   String get concierge => 'DỊCH VỤ HỖ TRỢ';
@@ -1086,7 +1086,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get settings => 'Cài đặt';
 
   @override
-  String get appSettings => 'ỨNG DỤNG';
+  String get appSettings => 'THÔNG TIN ỨNG DỤNG';
 
   @override
   String get support => 'HỖ TRỢ';
@@ -1107,7 +1107,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get privacyPolicy => 'Chính sách bảo mật';
 
   @override
-  String get termsOfService => 'Điều khoản dịch vụ';
+  String get termsOfService => 'Điều khoản sử dụng';
 
   @override
   String get version => 'Phiên bản';
@@ -1185,7 +1185,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get tierLabel => 'Hạng';
 
   @override
-  String get logoutConfirm => 'Bạn có chắc muốn đăng xuất không?';
+  String get logoutConfirm => 'Bạn có chắc chắn muốn đăng xuất?';
 
   @override
   String get errorLoadingProfile => 'Lỗi khi tải hồ sơ';
@@ -1677,7 +1677,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get recipientName => 'Tên người nhận';
 
   @override
-  String get recipientNameHint => 'Nhập tên người nhận';
+  String get recipientNameHint => 'Nhập họ và tên người nhận';
 
   @override
   String get phone => 'Số điện thoại';
@@ -1686,7 +1686,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get phoneHint => 'Nhập số điện thoại';
 
   @override
-  String get deliveryNote => 'Ghi chú giao hàng';
+  String get deliveryNote => 'Ghi chú giao hàng (Tùy chọn)';
 
   @override
   String get location => 'Vị trí';
@@ -1704,7 +1704,8 @@ class AppLocalizationsVi extends AppLocalizations {
   String get specificAddress => 'Địa chỉ cụ thể';
 
   @override
-  String get specificAddressHint => 'Số nhà, tên đường...';
+  String get specificAddressHint =>
+      'Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố';
 
   @override
   String get otherOptions => 'Tùy chọn khác';
@@ -1713,7 +1714,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get ghnService => 'Dịch vụ GHN';
 
   @override
-  String get noteHint => 'Chỉ dẫn giao hàng...';
+  String get noteHint => 'Ví dụ: Giao giờ hành chính, gọi trước khi đến...';
 
   @override
   String get setDefaultAddress => 'Đặt làm địa chỉ mặc định';
@@ -1920,11 +1921,12 @@ class AppLocalizationsVi extends AppLocalizations {
   String get musky => 'Xạ hương';
 
   @override
-  String get discoverYourScentSignature => 'Khám phá Chữ ký\nMùi hương của Bạn';
+  String get discoverYourScentSignature =>
+      'Hãy để Thiên thần\ntìm thấy Signature của bạn';
 
   @override
   String get quizIntroDescription =>
-      'Hãy trả lời 5 câu hỏi nhanh để AI của chúng tôi tìm ra mùi hương lý tưởng nhất dành riêng cho cá tính của bạn.';
+      'Bắt đầu hành trình khứu giác cùng Thiên thần nước hoa để tìm ra mùi hương phản ánh đúng bản sắc của bạn.';
 
   @override
   String get startNow => 'BẮT ĐẦU NGAY';
@@ -1938,30 +1940,33 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get auraAnalysis => 'PHÂN TÍCH AURA...';
+  String get auraAnalysis => 'THIÊN THẦN ĐANG CẢM NHẬN...';
 
   @override
   String get personalizingScentExperience =>
-      'Đang cá nhân hóa trải nghiệm khứu giác của bạn';
+      'Dẫn lối tâm hồn bạn đến với miền hương vị...';
 
   @override
-  String get processingOlfactoryData => 'Đang xử lý dữ liệu khứu giác...';
+  String get processingOlfactoryData => 'Đang thấu hiểu tâm tư của bạn...';
 
   @override
-  String get matchingResonantNotes => 'Đối chiếu nốt hương cộng hưởng...';
+  String get matchingResonantNotes =>
+      'Tìm kiếm sự cộng hưởng từ triệu nốt hương...';
 
   @override
-  String get identifyingPersonalSignature => 'Xác định chữ ký cá nhân...';
+  String get identifyingPersonalSignature =>
+      'Phác họa chữ ký mùi hương độc bản...';
 
   @override
-  String get completingAuraAlgorithm => 'Hoàn tất thuật toán Aura...';
+  String get completingAuraAlgorithm =>
+      'Gói ghém món quà hương thơm riêng biệt...';
 
   @override
-  String get yourScentSignature => 'Chữ ký Mùi hương của Bạn';
+  String get yourScentSignature => 'Món quà của Thiên thần';
 
   @override
   String get resultsDescription =>
-      'Dựa trên sở thích của bạn, thuật toán Aura đã tinh tuyển những mùi hương phù hợp nhất.';
+      'Giữa hàng vạn nốt hương, Thiên thần đã chọn lọc ra những mùi hương tuyệt mỹ nhất dành riêng cho tâm hồn bạn.';
 
   @override
   String get noRecommendations => 'Không tìm thấy đề xuất phù hợp.';
@@ -2243,12 +2248,110 @@ class AppLocalizationsVi extends AppLocalizations {
   String get paymentCodDesc => 'Thanh toán khi nhận hàng';
 
   @override
+  String get welcomeTitle => 'CHÀO BẠN!';
+
+  @override
+  String get welcomeSubtitle =>
+      'Tôi là Thiên thần Nước hoa, người đồng hành giúp bạn tìm thấy \"mùi hương định mệnh\".';
+
+  @override
+  String get aiScentDnaDiscover => 'Khám phá DNA mùi hương';
+
+  @override
+  String get aiScentDnaDiscoverSub => 'AI sẽ phân tích sở thích của bạn';
+
+  @override
+  String get giftConsultation => 'Tư vấn quà tặng';
+
+  @override
+  String get giftConsultationSub => 'Tìm món quà hoàn hảo cho người thân';
+
+  @override
+  String get aiCrafting => 'Thần hương đang pha chế...';
+
+  @override
+  String get aiMolecularProcessing => 'Molecular processing...';
+
+  @override
+  String get promptAnalyzeDna => 'Hãy giúp tôi phân tích DNA mùi hương của tôi';
+
+  @override
+  String get promptGiftSearch => 'Tôi muốn tìm mua nước hoa làm quà tặng';
+
+  @override
+  String get chatInputHint => 'Nhắn nhủ điều bạn đang tìm kiếm...';
+
+  @override
+  String get chipSurprise => 'Gợi ý bất ngờ';
+
+  @override
+  String get chipSurprisePrompt => 'Gợi ý cho tôi một mùi hương bất ngờ';
+
+  @override
+  String get chipUnder1m => 'Dưới 1 triệu';
+
+  @override
+  String get chipUnder1mPrompt => 'Gợi ý nước hoa dưới 1 triệu đồng';
+
+  @override
+  String get chipNight => 'Hương buổi tối';
+
+  @override
+  String get chipNightPrompt => 'Mùi hương phù hợp cho buổi tối';
+
+  @override
+  String get chipGift => 'Quà tặng';
+
+  @override
+  String get chipGiftPrompt => 'Gợi ý nước hoa làm quà tặng';
+
+  @override
+  String get chipCheaper => 'Rẻ hơn';
+
+  @override
+  String get chipCheaperPrompt => 'Gợi ý tương tự nhưng rẻ hơn';
+
+  @override
+  String get chipSweeter => 'Ngọt hơn';
+
+  @override
+  String get chipSweeterPrompt => 'Gợi ý mùi hương ngọt hơn';
+
+  @override
+  String get chipOffice => 'Đi làm';
+
+  @override
+  String get chipOfficePrompt => 'Gợi ý nước hoa phù hợp đi làm';
+
+  @override
+  String get chipMasculine => 'Nam tính hơn';
+
+  @override
+  String get chipMasculinePrompt => 'Gợi ý nước hoa nam tính hơn';
+
+  @override
+  String get chipFeminine => 'Nữ tính hơn';
+
+  @override
+  String get chipFemininePrompt => 'Gợi ý nước hoa nữ tính hơn';
+
+  @override
   String get paymentPayosDesc => 'Quét mã QR hoặc chuyển khoản ngân hàng';
 
   @override
   String earnPoints(int points) {
     return 'Tích lũy $points điểm khi mua sản phẩm này';
   }
+
+  @override
+  String get homeAiBannerTitle => 'Hỏi ý kiến Thiên thần';
+
+  @override
+  String get homeAiBannerDesc =>
+      'Hãy để Thiên thần dẫn lối bạn đến với mùi hương định mệnh hôm nay.';
+
+  @override
+  String get askNow => 'HỎI NGAY';
 
   @override
   String dnaMatch(int percent) {
@@ -2479,12 +2582,12 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String currentDefaultIs(Object label) {
+  String currentDefaultIs(String label) {
     return 'Địa chỉ mặc định hiện tại là $label.';
   }
 
   @override
-  String priorityRecipient(Object name) {
+  String priorityRecipient(String name) {
     return 'Người nhận ưu tiên: $name.';
   }
 
@@ -2506,7 +2609,7 @@ class AppLocalizationsVi extends AppLocalizations {
       'Hãy tạo địa chỉ đầu tiên để checkout có thể tự động điền thông tin nhận hàng.';
 
   @override
-  String deliveryTipWithAddress(Object label) {
+  String deliveryTipWithAddress(String label) {
     return 'Địa chỉ mặc định hiện tại là $label. Nếu đây là địa chỉ công ty, hãy luôn điền người nhận và ghi chú quầy lễ tân để shipper giao thuận lợi hơn.';
   }
 
@@ -2537,7 +2640,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get addressUpdatedSuccess => 'Đã cập nhật địa chỉ giao hàng';
 
   @override
-  String addressDeletedSuccess(Object label) {
+  String addressDeletedSuccess(String label) {
     return 'Đã xóa địa chỉ $label';
   }
 
@@ -2576,4 +2679,225 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get seeLess => 'Thu gọn';
+
+  @override
+  String get helpCenterTitle => 'TRUNG TÂM TRỢ GIÚP';
+
+  @override
+  String get howCanWeHelp => 'CHÚNG TÔI CÓ THỂ GIÚP GÌ CHO BẠN?';
+
+  @override
+  String get searchIssueHint => 'Tìm kiếm vấn đề của bạn...';
+
+  @override
+  String get faqTitle => 'CÂU HỎI THƯỜNG GẶP';
+
+  @override
+  String get catOrders => 'Đơn hàng';
+
+  @override
+  String get catPayments => 'Thanh toán';
+
+  @override
+  String get catShipping => 'Vận chuyển';
+
+  @override
+  String get catAiConsult => 'AI Tư vấn';
+
+  @override
+  String get catAccount => 'Tài khoản';
+
+  @override
+  String get faq1Question => 'Làm thế nào để đổi trả sản phẩm?';
+
+  @override
+  String get faq1Answer =>
+      'Bạn có thể gửi yêu cầu đổi trả trong vòng 7 ngày kể từ khi nhận hàng. Vui lòng vào mục \"Đơn hàng của tôi\", chọn đơn hàng cần đổi trả và nhấn \"Yêu cầu hoàn trả\".';
+
+  @override
+  String get faq2Question => 'Thuật toán AI gợi ý mùi hương hoạt động ra sao?';
+
+  @override
+  String get faq2Answer =>
+      'Perfume GPT sử dụng hệ thống thần kinh nhân tạo kết hợp với dữ liệu về 147 điểm cảm quan và lối sống của bạn để phối hợp các phân tử mùi hương phù hợp nhất với bản sắc riêng của bạn.';
+
+  @override
+  String get faq3Question => 'Perfume GPT có giao hàng quốc tế không?';
+
+  @override
+  String get faq3Answer =>
+      'Hiện tại chúng tôi hỗ trợ giao hàng tại Việt Nam và các quốc gia khu vực Đông Nam Á. Chúng tôi đang mở rộng mạng lưới giao hàng toàn cầu trong thời gian tới.';
+
+  @override
+  String get contactTitle => 'LIÊN HỆ';
+
+  @override
+  String get supportChannels => 'KÊNH HỖ TRỢ TRỰC TUYẾN';
+
+  @override
+  String get liveChat => 'Trò chuyện trực tiếp';
+
+  @override
+  String get responseTime5m => 'Thời gian phản hồi ~ 5 phút';
+
+  @override
+  String get sendEmail => 'Gửi Email cho chúng tôi';
+
+  @override
+  String get hotline247 => 'Hotline hỗ trợ 24/7';
+
+  @override
+  String get freeHotline => 'Miễn phí';
+
+  @override
+  String get sendMessage => 'GỬI LỜI NHẮN CHO CHÚNG TÔI';
+
+  @override
+  String get messageContent => 'Nội dung tin nhắn';
+
+  @override
+  String get sendRequest => 'Gửi yêu cầu';
+
+  @override
+  String get sortNewest => 'Mới nhất';
+
+  @override
+  String get sortPriceLow => 'Giá tăng';
+
+  @override
+  String get sortPriceHigh => 'Giá giảm';
+
+  @override
+  String get sortName => 'Tên A-Z';
+
+  @override
+  String get sortBy => 'SẮP XẾP THEO';
+
+  @override
+  String get noVariantAvailable => 'Sản phẩm chưa có phiên bản';
+
+  @override
+  String get removedFromWishlist => 'Đã xóa khỏi yêu thích';
+
+  @override
+  String get undo => 'HOÀN TÁC';
+
+  @override
+  String get remove => 'Xóa';
+
+  @override
+  String itemsCount(int count) {
+    return '$count sản phẩm';
+  }
+
+  @override
+  String get achWelcomeTitle => 'Bước Chân Đầu';
+
+  @override
+  String get achWelcomeDesc => 'Tham gia cộng đồng yêu nước hoa PerfumeGPT';
+
+  @override
+  String get achExplorerTitle => 'Nhà Thám Hiểm';
+
+  @override
+  String get achExplorerDesc => 'Hoàn thành hồ sơ mùi hương AI (Quiz)';
+
+  @override
+  String get achNoteMasterTitle => 'Bậc Thầy Nốt Hương';
+
+  @override
+  String get achNoteMasterDesc => 'Khám phá hơn 5 nốt hương đặc trưng';
+
+  @override
+  String get achShopperTitle => 'Người Mua Tinh Hoa';
+
+  @override
+  String get achShopperDesc => 'Thực hiện đơn hàng đầu tiên của bạn';
+
+  @override
+  String get achReviewerTitle => 'Vua Đánh Giá';
+
+  @override
+  String get achReviewerDesc => 'Để lại ít nhất 3 đánh giá chi tiết';
+
+  @override
+  String get achievementsHeader => 'THÀNH TỰU ĐÃ ĐẠT';
+
+  @override
+  String get addressLabel => 'Nhãn địa chỉ';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get subject => 'Chủ đề';
+
+  @override
+  String get message => 'Tin nhắn';
+
+  @override
+  String get settingsTitle => 'CÀI ĐẶT';
+
+  @override
+  String get accountSettings => 'THIẾT LẬP TÀI KHOẢN';
+
+  @override
+  String get security => 'Bảo mật';
+
+  @override
+  String get aboutUs => 'Về chúng tôi';
+
+  @override
+  String get deleteAccount => 'Xóa tài khoản';
+
+  @override
+  String get deleteAccountConfirm =>
+      'Hành động này không thể hoàn tác. Bạn có chắc chắn muốn xóa tài khoản?';
+
+  @override
+  String get recentlyViewed => 'SẢN PHẨM VỪA XEM';
+
+  @override
+  String get isHelpful => 'THÔNG TIN NÀY CÓ HỮU ÍCH KHÔNG?';
+
+  @override
+  String get yes => 'Có';
+
+  @override
+  String get help => 'Trợ giúp';
+
+  @override
+  String get artOrdersTitle => 'Quy trình đặt hàng & Theo dõi';
+
+  @override
+  String get artOrdersContent =>
+      'Sau khi chọn được mùi hương ưng ý, bạn có thể thực hiện đặt hàng theo các bước sau:\n• Thêm sản phẩm vào giỏ hàng.\n• Kiểm tra lại số lượng và dung tích.\n• Tiến hành thanh toán và điền thông tin địa chỉ.\nMọi đơn hàng sẽ được xử lý trong vòng 24h.';
+
+  @override
+  String get artPaymentsTitle => 'Phương thức thanh toán & Bảo mật';
+
+  @override
+  String get artPaymentsContent =>
+      'Perfume GPT hiện hỗ trợ 2 phương thức thanh toán chính để đảm bảo tính an toàn và tiện lợi:\n• Chuyển khoản qua PayOS (Hỗ trợ tất cả ngân hàng nội địa qua QR Code).\n• Thanh toán khi nhận hàng (COD).\nMọi thông tin giao dịch của bạn đều được mã hóa và bảo mật tuyệt đối qua cổng thanh toán PayOS.';
+
+  @override
+  String get artShippingTitle => 'Chính sách vận chuyển & Phí';
+
+  @override
+  String get artShippingContent =>
+      'Chúng tôi hợp tác cùng đơn vị vận chuyển Giao Hàng Nhanh (GHN) để mang sản phẩm đến tay bạn nhanh nhất có thể:\n• Nội thành: 1-2 ngày làm việc.\n• Ngoại thành: 3-5 ngày làm việc.\nPhí vận chuyển sẽ được tự động tính toán dựa trên khối lượng sản phẩm và địa chỉ nhận hàng của bạn qua hệ thống GHN.';
+
+  @override
+  String get artAiTitle => 'Về hệ thống tư vấn AI của Perfume GPT';
+
+  @override
+  String get artAiContent =>
+      'Hệ thống AI của chúng tôi không chỉ là một bộ lọc đơn giản. Nó là kết quả của sự hợp tác giữa các chuyên gia mùi hương và kỹ sư công nghệ:\n• Phân tích 5 chiều: Cần thiết, Phong cách, Môi trường, Cảm xúc và Ký ức.\n• Cập nhật liên tục từ dữ liệu khách hàng thực tế.\nĐộ chính xác lên đến 98% cho lần đầu tiên sử dụng.';
+
+  @override
+  String get artAccountTitle => 'Quản lý tài khoản & Bảo mật';
+
+  @override
+  String get artAccountContent =>
+      'Để đảm bảo quyền lợi và tích lũy điểm thưởng, bạn nên duy trì tài khoản của mình:\n• Cập nhật thông tin cá nhân trong mục Hồ sơ.\n• Bật xác thực 2 lớp để tăng cường bảo mật.\nNếu quên mật khẩu, vui lòng chọn \"Quên mật khẩu\" tại màn hình đăng nhập để nhận mã khôi phục.';
 }

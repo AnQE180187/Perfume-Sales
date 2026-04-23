@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/glass_container.dart';
 import '../providers/quiz_provider.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../../../l10n/app_localizations.dart';
 
 class QuizScreen extends ConsumerStatefulWidget {
@@ -18,7 +19,7 @@ class QuizScreen extends ConsumerStatefulWidget {
 class _QuizScreenState extends ConsumerState<QuizScreen>
     with SingleTickerProviderStateMixin {
   bool _showIntro = true;
-  late AnimationController _analysisController;
+  late AnimationController _angelController;
 
   final _iconMap = <String, IconData>{
     'person': Icons.person_outline_rounded,
@@ -48,15 +49,15 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   @override
   void initState() {
     super.initState();
-    _analysisController = AnimationController(
+    _angelController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 4),
-    );
+      duration: const Duration(milliseconds: 4000),
+    )..repeat();
   }
 
   @override
   void dispose() {
-    _analysisController.dispose();
+    _angelController.dispose();
     super.dispose();
   }
 
@@ -65,11 +66,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
     final quizState = ref.watch(quizProvider);
     final l10n = AppLocalizations.of(context)!;
 
-    if (quizState.isAnalyzing && !_analysisController.isAnimating) {
-      _analysisController.repeat();
-    } else if (!quizState.isAnalyzing && _analysisController.isAnimating) {
-      _analysisController.stop();
-    }
+    // The controller is now started in initState and runs continuously for the angel animations.
 
     return Scaffold(
       backgroundColor: AppTheme.ivoryBackground,
@@ -154,24 +151,59 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   }
 
   Widget _buildIntro(AppLocalizations l10n, {Key? key}) {
-    return Padding(
+    return SingleChildScrollView(
       key: key,
       padding: const EdgeInsets.all(32),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            width: 90,
-            height: 90,
-            decoration: BoxDecoration(
-              color: AppTheme.accentGold.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(30),
-            ),
-            child: const Icon(
-              Icons.auto_awesome_rounded,
-              color: AppTheme.accentGold,
-              size: 40,
-            ),
+          AnimatedBuilder(
+            animation: _angelController,
+            builder: (context, child) {
+              return Transform.translate(
+                offset: Offset(0, 10 * math.sin(_angelController.value * 2 * math.pi)),
+                child: ShaderMask(
+                  shaderCallback: (Rect bounds) {
+                    return LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Colors.white.withValues(alpha: 0.1),
+                        Colors.white.withValues(alpha: 0.8),
+                        Colors.white.withValues(alpha: 0.1),
+                      ],
+                      stops: const [0.0, 0.5, 1.0],
+                      transform: _ShimmerGradientTransform(_angelController.value),
+                    ).createShader(bounds);
+                  },
+                  blendMode: BlendMode.srcOver,
+                  child: Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      color: AppTheme.accentGold.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(40),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.accentGold.withValues(alpha: 0.2),
+                          blurRadius: 30,
+                          spreadRadius: 10,
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(40),
+                      child: Image.asset(
+                        'assets/images/perfume_angel.png',
+                        width: 120,
+                        height: 120,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
           const SizedBox(height: 40),
           Text(
@@ -264,9 +296,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
         break;
       case 2:
         questionText = l10n.q3Text;
-        optionTitles = questionRaw.options
-            .map((o) => o.title)
-            .toList(); // Budget values are fine as is
+        optionTitles = ['< 500K', '500K – 1M', '1M – 2M', '2M – 5M', '> 5M'];
         break;
       case 3:
         questionText = l10n.q4Text;
@@ -343,6 +373,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
                   fontSize: 28,
                   fontWeight: FontWeight.w700,
                   color: AppTheme.deepCharcoal,
+                  height: 1.2,
                 ),
               ),
             ],
@@ -446,8 +477,9 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   }
 
   Widget _buildAnalyzing(AppLocalizations l10n, {Key? key}) {
-    return Center(
+    return SingleChildScrollView(
       key: key,
+      padding: const EdgeInsets.symmetric(vertical: 40),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -455,34 +487,59 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
             width: 200,
             height: 200,
             child: AnimatedBuilder(
-              animation: _analysisController,
+              animation: _angelController,
               builder: (context, child) {
                 return CustomPaint(
-                  painter: AuraAnalysisPainter(_analysisController.value),
-                  child: const Center(
-                    child: Icon(
-                      Icons.auto_awesome_rounded,
-                      color: AppTheme.accentGold,
-                      size: 50,
+                  painter: AuraAnalysisPainter(_angelController.value),
+                  child: Center(
+                    child: Transform.translate(
+                      offset: Offset(0, 8 * math.sin(_angelController.value * 2 * math.pi)),
+                      child: Container(
+                        width: 110,
+                        height: 110,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.accentGold.withValues(alpha: 0.3),
+                              blurRadius: 20,
+                              spreadRadius: 5,
+                            ),
+                          ],
+                        ),
+                        child: ClipOval(
+                          child: Image.asset(
+                            'assets/images/perfume_angel.png',
+                            width: 110,
+                            height: 110,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 );
               },
             ),
           ),
-          const SizedBox(height: 50),
-          Text(
-            l10n.auraAnalysis,
-            style: GoogleFonts.playfairDisplay(
-              fontSize: 24,
-              fontWeight: FontWeight.w700,
-              color: AppTheme.accentGold,
-              letterSpacing: 3,
+          const SizedBox(height: 30),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 40),
+            child: Text(
+              l10n.auraAnalysis,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.playfairDisplay(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.accentGold,
+                letterSpacing: 2,
+              ),
             ),
           ),
           const SizedBox(height: 12),
           Text(
             l10n.personalizingScentExperience,
+            textAlign: TextAlign.center,
             style: GoogleFonts.montserrat(
               fontSize: 12,
               fontWeight: FontWeight.w400,
@@ -561,10 +618,50 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
       padding: const EdgeInsets.symmetric(vertical: 40),
       child: Column(
         children: [
-          const Icon(
-            Icons.check_circle_outline_rounded,
-            color: AppTheme.accentGold,
-            size: 80,
+          AnimatedBuilder(
+            animation: _angelController,
+            builder: (context, child) {
+              return Transform.translate(
+                offset: Offset(0, 12 * math.sin(_angelController.value * 2 * math.pi)),
+                child: ShaderMask(
+                  shaderCallback: (Rect bounds) {
+                    return LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Colors.white.withValues(alpha: 0.1),
+                        Colors.white.withValues(alpha: 1.0),
+                        Colors.white.withValues(alpha: 0.1),
+                      ],
+                      stops: const [0.0, 0.5, 1.0],
+                      transform: _ShimmerGradientTransform(_angelController.value),
+                    ).createShader(bounds);
+                  },
+                  blendMode: BlendMode.srcOver,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.accentGold.withValues(alpha: 0.2),
+                          blurRadius: 40,
+                          spreadRadius: 15,
+                        ),
+                      ],
+                    ),
+                    child: ClipOval(
+                      child: Image.asset(
+                        'assets/images/perfume_angel.png',
+                        width: 140,
+                        height: 140,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
           const SizedBox(height: 24),
           Text(
@@ -898,4 +995,18 @@ class AuraAnalysisPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+class _ShimmerGradientTransform extends GradientTransform {
+  final double progress;
+  const _ShimmerGradientTransform(this.progress);
+
+  @override
+  Matrix4? transform(Rect bounds, {TextDirection? textDirection}) {
+    return Matrix4.translationValues(
+      -bounds.width + (bounds.width * 2 * progress),
+      0,
+      0,
+    );
+  }
 }

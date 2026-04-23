@@ -5,6 +5,7 @@ class CartItem {
   final String productImage;
   final double price;
   final int quantity;
+  final int stock;
   final String? size; // 30ML, 50ML, 100ML
   final String? variant; // EDP, EDT, Parfum
   
@@ -15,11 +16,14 @@ class CartItem {
     required this.productImage,
     required this.price,
     required this.quantity,
+    this.stock = 0,
     this.size,
     this.variant,
   });
 
   double get subtotal => price * quantity;
+  bool get isOutOfStock => stock <= 0;
+  bool get hasInsufficientStock => stock < quantity;
 
   CartItem copyWith({
     String? id,
@@ -28,6 +32,7 @@ class CartItem {
     String? productImage,
     double? price,
     int? quantity,
+    int? stock,
     String? size,
     String? variant,
   }) {
@@ -38,6 +43,7 @@ class CartItem {
       productImage: productImage ?? this.productImage,
       price: price ?? this.price,
       quantity: quantity ?? this.quantity,
+      stock: stock ?? this.stock,
       size: size ?? this.size,
       variant: variant ?? this.variant,
     );
@@ -51,6 +57,7 @@ class CartItem {
       'product_image': productImage,
       'price': price,
       'quantity': quantity,
+      'stock': stock,
       'size': size,
       'variant': variant,
     };
@@ -64,6 +71,7 @@ class CartItem {
       productImage: json['product_image'] as String,
       price: (json['price'] as num).toDouble(),
       quantity: json['quantity'] as int,
+      stock: (json['stock'] as num?)?.toInt() ?? 0,
       size: json['size'] as String?,
       variant: json['variant'] as String?,
     );

@@ -30,6 +30,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> with SingleTick
   bool _showPassword = false;
   bool _showConfirmPassword = false;
   bool _acceptedTerms = false;
+  String? _errorMessage;
   
   late AnimationController _pulseController;
 
@@ -45,6 +46,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> with SingleTick
     _emailFocus.addListener(() => setState(() {}));
     _passwordFocus.addListener(() => setState(() {}));
     _confirmPasswordFocus.addListener(() => setState(() {}));
+
+    _fullNameController.addListener(_clearError);
+    _emailController.addListener(_clearError);
+    _passwordController.addListener(_clearError);
+    _confirmPasswordController.addListener(_clearError);
+  }
+
+  void _clearError() {
+    if (_errorMessage != null) {
+      setState(() => _errorMessage = null);
+    }
   }
 
   @override
@@ -78,17 +90,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> with SingleTick
     final confirmPassword = _confirmPasswordController.text.trim();
 
     if (fullName.isEmpty || email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.pleaseFillFields)));
+      setState(() => _errorMessage = l10n.pleaseFillFields);
       return;
     }
 
     if (password != confirmPassword) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Mật khẩu xác nhận không khớp.')));
+      setState(() => _errorMessage = 'Mật khẩu xác nhận không khớp.');
       return;
     }
 
     if (!_acceptedTerms) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.pleaseAcceptTerms)));
+      setState(() => _errorMessage = l10n.pleaseAcceptTerms);
       return;
     }
 
@@ -100,7 +112,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> with SingleTick
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${l10n.accessDenied}: $e')));
+        String message = '${l10n.accessDenied}: $e';
+        
+        if (e.toString().contains('already in use') || e.toString().contains('409')) {
+          message = 'Email hoặc số điện thoại đã được sử dụng. Vui lòng chọn thông tin khác.';
+        } else if (e.toString().contains('400') || e.toString().contains('bad syntax') || e.toString().contains('email must be an email')) {
+          message = 'Email không đúng định dạng. Vui lòng cung cấp email hợp lệ.';
+        }
+        
+        setState(() => _errorMessage = message);
       }
     }
   }
@@ -169,6 +189,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> with SingleTick
                       ),
                       
                       const SizedBox(height: 48),
+
+                      if (_errorMessage != null) _buildErrorBanner(_errorMessage!),
 
                       // Full Name Input
                       _buildInputField(
@@ -259,12 +281,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> with SingleTick
                           _buildSocialButton(
                             icon: FontAwesomeIcons.google,
                             color: const Color(0xFFDB4437),
-                            onPressed: _showSocialNotSupported,
-                          ),
-                          const SizedBox(width: 24),
-                          _buildSocialButton(
-                            icon: FontAwesomeIcons.facebookF,
-                            color: const Color(0xFF1877F2),
                             onPressed: _showSocialNotSupported,
                           ),
                         ],
@@ -559,6 +575,68 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> with SingleTick
           ),
         );
       }
+    );
+  }
+
+  Widget _buildErrorBanner(String message) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2C1515).withOpacity(0.9), // Deep dark red obsidian
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFD32F2F).withOpacity(0.1),
+            blurRadius: 10,
+            spreadRadius: 2,
+          ),
+        ],
+        border: Border.all(
+          color: const Color(0xFFE57373).withOpacity(0.4),
+          width: 0.5,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: const Color(0xFFD32F2F).withOpacity(0.2),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.warning_amber_rounded,
+              color: Color(0xFFEF9A9A),
+              size: 16,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              message,
+              style: GoogleFonts.montserrat(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFFFFEBEE),
+                letterSpacing: 0.2,
+              ),
+            ),
+          ),
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => setState(() => _errorMessage = null),
+              borderRadius: BorderRadius.circular(20),
+              child: const Padding(
+                padding: EdgeInsets.all(4.0),
+                child: Icon(Icons.close, color: Colors.white70, size: 14),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

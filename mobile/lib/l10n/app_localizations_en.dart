@@ -269,7 +269,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get joinTheAtelier => 'Join the Atelier';
 
   @override
-  String get fullName => 'FULL NAME';
+  String get fullName => 'Full Name';
 
   @override
   String get phoneOptional => 'PHONE NUMBER (OPTIONAL)';
@@ -358,7 +358,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appearance => 'APPEARANCE';
 
   @override
-  String get language => 'LANGUAGE';
+  String get language => 'Language';
 
   @override
   String get concierge => 'CONCIERGE';
@@ -1087,7 +1087,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settings => 'Settings';
 
   @override
-  String get appSettings => 'APP';
+  String get appSettings => 'APP INFORMATION';
 
   @override
   String get support => 'SUPPORT';
@@ -1677,16 +1677,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipientName => 'Recipient Name';
 
   @override
-  String get recipientNameHint => 'Enter recipient name';
+  String get recipientNameHint => 'Enter recipient\'s full name';
 
   @override
-  String get phone => 'Phone';
+  String get phone => 'Phone Number';
 
   @override
   String get phoneHint => 'Enter phone number';
 
   @override
-  String get deliveryNote => 'Delivery Note';
+  String get deliveryNote => 'Delivery Note (Optional)';
 
   @override
   String get location => 'Location';
@@ -1704,7 +1704,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get specificAddress => 'Specific Address';
 
   @override
-  String get specificAddressHint => 'House number, street...';
+  String get specificAddressHint =>
+      'House number, street name, ward, district, city';
 
   @override
   String get otherOptions => 'Other Options';
@@ -1713,7 +1714,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ghnService => 'GHN Service';
 
   @override
-  String get noteHint => 'Delivery instructions...';
+  String get noteHint =>
+      'Example: Deliver during office hours, call before arriving...';
 
   @override
   String get setDefaultAddress => 'Set as default address';
@@ -1920,11 +1922,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get musky => 'Musky';
 
   @override
-  String get discoverYourScentSignature => 'Discover Your\nScent Signature';
+  String get discoverYourScentSignature => 'Let the Angel\nFind Your Signature';
 
   @override
   String get quizIntroDescription =>
-      'Answer 5 quick questions and our AI will find the ideal scent for your personality.';
+      'Begin an olfactory journey with the Perfume Angel to discover the scent that perfectly reflects your identity.';
 
   @override
   String get startNow => 'START NOW';
@@ -1938,31 +1940,34 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get auraAnalysis => 'AURA ANALYSIS...';
+  String get auraAnalysis => 'THE ANGEL IS SENSING...';
 
   @override
   String get personalizingScentExperience =>
-      'Personalizing your olfactory experience';
+      'Guiding your soul to the realm of scents...';
 
   @override
-  String get processingOlfactoryData => 'Processing olfactory data...';
+  String get processingOlfactoryData =>
+      'Understanding your heart\'s desires...';
 
   @override
-  String get matchingResonantNotes => 'Matching resonant notes...';
+  String get matchingResonantNotes =>
+      'Seeking resonance from a million notes...';
 
   @override
   String get identifyingPersonalSignature =>
-      'Identifying personal signature...';
+      'Sketching your unique scent signature...';
 
   @override
-  String get completingAuraAlgorithm => 'Completing Aura algorithm...';
+  String get completingAuraAlgorithm =>
+      'Wrapping your unique fragrance gift...';
 
   @override
-  String get yourScentSignature => 'Your Scent Signature';
+  String get yourScentSignature => 'The Angel\'s Gift';
 
   @override
   String get resultsDescription =>
-      'Based on your preferences, the Aura algorithm has selected the most suitable scents.';
+      'From thousands of notes, the Angel has meticulously selected the most exquisite scents uniquely for your soul.';
 
   @override
   String get noRecommendations => 'No matching recommendations found.';
@@ -2241,12 +2246,110 @@ class AppLocalizationsEn extends AppLocalizations {
   String get paymentCodDesc => 'Cash on delivery';
 
   @override
+  String get welcomeTitle => 'HELLO!';
+
+  @override
+  String get welcomeSubtitle =>
+      'I am the Perfume Angel, your companion in finding your \"destined scent\".';
+
+  @override
+  String get aiScentDnaDiscover => 'Discover Scent DNA';
+
+  @override
+  String get aiScentDnaDiscoverSub => 'AI will analyze your preferences';
+
+  @override
+  String get giftConsultation => 'Gift Consultation';
+
+  @override
+  String get giftConsultationSub => 'Find the perfect gift for your loved ones';
+
+  @override
+  String get aiCrafting => 'The Scent Deity is crafting...';
+
+  @override
+  String get aiMolecularProcessing => 'Molecular processing...';
+
+  @override
+  String get promptAnalyzeDna => 'Help me analyze my scent DNA';
+
+  @override
+  String get promptGiftSearch => 'I want to find perfume as a gift';
+
+  @override
+  String get chatInputHint => 'Tell me what you are looking for...';
+
+  @override
+  String get chipSurprise => 'Surprise Me';
+
+  @override
+  String get chipSurprisePrompt => 'Give me a surprise scent recommendation';
+
+  @override
+  String get chipUnder1m => 'Under 1M';
+
+  @override
+  String get chipUnder1mPrompt => 'Suggest perfumes under 1 million VND';
+
+  @override
+  String get chipNight => 'Evening Scent';
+
+  @override
+  String get chipNightPrompt => 'Scent suitable for evening occasion';
+
+  @override
+  String get chipGift => 'Gift Ideas';
+
+  @override
+  String get chipGiftPrompt => 'Suggest perfumes for gifting';
+
+  @override
+  String get chipCheaper => 'More affordable';
+
+  @override
+  String get chipCheaperPrompt => 'Suggest similar but more affordable options';
+
+  @override
+  String get chipSweeter => 'Sweeter';
+
+  @override
+  String get chipSweeterPrompt => 'Suggest a sweeter scent';
+
+  @override
+  String get chipOffice => 'Office Wear';
+
+  @override
+  String get chipOfficePrompt => 'Suggest perfumes suitable for work';
+
+  @override
+  String get chipMasculine => 'More masculine';
+
+  @override
+  String get chipMasculinePrompt => 'Suggest a more masculine perfume';
+
+  @override
+  String get chipFeminine => 'More feminine';
+
+  @override
+  String get chipFemininePrompt => 'Suggest a more feminine perfume';
+
+  @override
   String get paymentPayosDesc => 'Scan QR or bank transfer';
 
   @override
   String earnPoints(int points) {
     return 'Earn $points reward points on this order';
   }
+
+  @override
+  String get homeAiBannerTitle => 'Ask the Angel';
+
+  @override
+  String get homeAiBannerDesc =>
+      'Let the Angel guide you to your destined scent today.';
+
+  @override
+  String get askNow => 'ASK NOW';
 
   @override
   String dnaMatch(int percent) {
@@ -2465,30 +2568,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ctaStoryBtn => 'DISCOVER MY SCENT';
 
   @override
-  String get manageDeliveryPoints => 'Manage Delivery Points';
+  String get manageDeliveryPoints => 'MANAGE DELIVERY POINTS';
 
   @override
   String get shippingAddressDesc =>
-      'Select a default address for future orders, or save separate gift/office addresses for faster checkouts.';
+      'Store your delivery locations for the fastest and most convenient checkout process.';
 
   @override
   String savedAddressesCount(int count) {
-    return '$count saved addresses';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count saved addresses',
+      one: '1 saved address',
+    );
+    return '$_temp0';
   }
 
   @override
-  String currentDefaultIs(Object label) {
-    return 'Current default is $label.';
+  String currentDefaultIs(String label) {
+    return 'Current default is $label';
   }
 
   @override
-  String priorityRecipient(Object name) {
-    return 'Priority recipient: $name.';
+  String priorityRecipient(String name) {
+    return 'Priority recipient: $name';
   }
 
   @override
-  String get canChangeBeforeCheckout =>
-      'You can quickly change delivery destination before final checkout.';
+  String get canChangeBeforeCheckout => '. You can change it before checkout.';
 
   @override
   String get savedAddressesUpper => 'SAVED ADDRESSES';
@@ -2497,46 +2605,46 @@ class AppLocalizationsEn extends AppLocalizations {
   String get readyForDeliveryScenario => 'Ready for any delivery scenario';
 
   @override
-  String get deliveryTipsTitle => 'Delivery Tips';
+  String get deliveryTipsTitle => 'DELIVERY TIPS';
 
   @override
   String get deliveryTipNoAddress =>
-      'Create your first address so checkout can automatically fill your recipient info.';
+      'Set a default address to receive optimal shipping suggestions from Perfume GPT.';
 
   @override
-  String deliveryTipWithAddress(Object label) {
-    return 'Current default is $label. If this is an office, always include floor and company name for smoother delivery.';
+  String deliveryTipWithAddress(String label) {
+    return 'Perfume GPT will prioritize suggesting the best time slots and shipping methods for your $label.';
   }
 
   @override
-  String get addressFormTitleAdd => 'Add Shipping Address';
+  String get addressFormTitleAdd => 'Add Address';
 
   @override
-  String get addressFormTitleEdit => 'Edit Shipping Address';
+  String get addressFormTitleEdit => 'Edit Address';
 
   @override
   String get addressFormSubtitle =>
-      'Save delivery info for faster and more accurate checkout.';
+      'Please provide accurate information to ensure your order is delivered to the right person at the right time.';
 
   @override
   String get setAsDefaultAddressDesc =>
-      'This address will be prioritized and pre-filled during checkout.';
+      'This address will be automatically selected when you proceed to checkout.';
 
   @override
-  String get errorRequiredFields => 'Please fill all required fields';
+  String get errorRequiredFields => 'Please fill in all required fields';
 
   @override
   String get defaultAddressUpdated => 'Default address updated';
 
   @override
-  String get addressAddedSuccess => 'New shipping address added';
+  String get addressAddedSuccess => 'New address added successfully';
 
   @override
-  String get addressUpdatedSuccess => 'Shipping address updated';
+  String get addressUpdatedSuccess => 'Address updated successfully';
 
   @override
-  String addressDeletedSuccess(Object label) {
-    return 'Address $label deleted';
+  String addressDeletedSuccess(String label) {
+    return 'Deleted address $label';
   }
 
   @override
@@ -2574,4 +2682,231 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get seeLess => 'See less';
+
+  @override
+  String get helpCenterTitle => 'HELP CENTER';
+
+  @override
+  String get howCanWeHelp => 'HOW CAN WE HELP YOU?';
+
+  @override
+  String get searchIssueHint => 'Search your issue...';
+
+  @override
+  String get faqTitle => 'FREQUENTLY ASKED QUESTIONS';
+
+  @override
+  String get catOrders => 'Orders';
+
+  @override
+  String get catPayments => 'Payments';
+
+  @override
+  String get catShipping => 'Shipping';
+
+  @override
+  String get catAiConsult => 'AI Consulting';
+
+  @override
+  String get catAccount => 'Account';
+
+  @override
+  String get faq1Question => 'How to return products?';
+
+  @override
+  String get faq1Answer =>
+      'You can send a return request within 7 days of receiving the items. Go to \"My Orders\", select the order, and press \"Request Return\".';
+
+  @override
+  String get faq2Question => 'How does the AI recommendation algorithm work?';
+
+  @override
+  String get faq2Answer =>
+      'Perfume GPT uses a neural system combined with data from 147 sensory points and your lifestyle to coordinate the perfect scent molecules for your identity.';
+
+  @override
+  String get faq3Question => 'Does Perfume GPT ship internationally?';
+
+  @override
+  String get faq3Answer =>
+      'Currently we support shipping in Vietnam and Southeast Asian countries. We are expanding our global network soon.';
+
+  @override
+  String get contactTitle => 'CONTACT';
+
+  @override
+  String get supportChannels => 'ONLINE SUPPORT CHANNELS';
+
+  @override
+  String get liveChat => 'Live Chat';
+
+  @override
+  String get responseTime5m => 'Response time ~ 5 mins';
+
+  @override
+  String get sendEmail => 'Send us an Email';
+
+  @override
+  String get hotline247 => '24/7 Support Hotline';
+
+  @override
+  String get freeHotline => 'Free';
+
+  @override
+  String get sendMessage => 'SEND US A MESSAGE';
+
+  @override
+  String get messageContent => 'Message Content';
+
+  @override
+  String get sendRequest => 'Send Request';
+
+  @override
+  String get sortNewest => 'Newest';
+
+  @override
+  String get sortPriceLow => 'Price ↑';
+
+  @override
+  String get sortPriceHigh => 'Price ↓';
+
+  @override
+  String get sortName => 'Name A-Z';
+
+  @override
+  String get sortBy => 'SORT BY';
+
+  @override
+  String get noVariantAvailable => 'No variant available';
+
+  @override
+  String get removedFromWishlist => 'Removed from wishlist';
+
+  @override
+  String get undo => 'UNDO';
+
+  @override
+  String get remove => 'Remove';
+
+  @override
+  String itemsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get achWelcomeTitle => 'First Step';
+
+  @override
+  String get achWelcomeDesc => 'Join the PerfumeGPT fragrance community';
+
+  @override
+  String get achExplorerTitle => 'Scent Explorer';
+
+  @override
+  String get achExplorerDesc => 'Complete your AI Scent Profile (Quiz)';
+
+  @override
+  String get achNoteMasterTitle => 'Note Master';
+
+  @override
+  String get achNoteMasterDesc => 'Discover more than 5 characteristic notes';
+
+  @override
+  String get achShopperTitle => 'Elite Shopper';
+
+  @override
+  String get achShopperDesc => 'Place your first order';
+
+  @override
+  String get achReviewerTitle => 'Review King';
+
+  @override
+  String get achReviewerDesc => 'Leave at least 3 detailed reviews';
+
+  @override
+  String get achievementsHeader => 'ACHIEVEMENTS';
+
+  @override
+  String get addressLabel => 'Address Label';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get subject => 'Subject';
+
+  @override
+  String get message => 'Message';
+
+  @override
+  String get settingsTitle => 'SETTINGS';
+
+  @override
+  String get accountSettings => 'ACCOUNT SETTINGS';
+
+  @override
+  String get security => 'Security';
+
+  @override
+  String get aboutUs => 'About Us';
+
+  @override
+  String get deleteAccount => 'Delete Account';
+
+  @override
+  String get deleteAccountConfirm =>
+      'This action cannot be undone. Are you sure you want to delete your account?';
+
+  @override
+  String get recentlyViewed => 'RECENTLY VIEWED';
+
+  @override
+  String get isHelpful => 'WAS THIS INFORMATION HELPFUL?';
+
+  @override
+  String get yes => 'Yes';
+
+  @override
+  String get help => 'Help';
+
+  @override
+  String get artOrdersTitle => 'Ordering Process & Tracking';
+
+  @override
+  String get artOrdersContent =>
+      'After choosing your favorite scent, you can place an order by following these steps:\n• Add product to cart.\n• Check quantity and volume.\n• Proceed to checkout and fill in address information.\nAll orders will be processed within 24h.';
+
+  @override
+  String get artPaymentsTitle => 'Payment Methods & Security';
+
+  @override
+  String get artPaymentsContent =>
+      'Perfume GPT currently supports 2 main payment methods to ensure safety and convenience:\n• Bank Transfer via PayOS (Supports all domestic banks via QR Code).\n• Cash on Delivery (COD).\nAll your transaction information is encrypted and securely protected via PayOS payment gateway.';
+
+  @override
+  String get artShippingTitle => 'Shipping Policy & Fees';
+
+  @override
+  String get artShippingContent =>
+      'We partner with Giao Hàng Nhanh (GHN) to deliver products to you as quickly as possible:\n• Urban areas: 1-2 business days.\n• Suburbs/Other: 3-5 business days.\nShipping fees will be automatically calculated based on product weight and your delivery address via GHN system.';
+
+  @override
+  String get artAiTitle => 'About Perfume GPT AI Consulting System';
+
+  @override
+  String get artAiContent =>
+      'Our AI system is not just a simple filter. It is the result of collaboration between fragrance experts and technology engineers:\n• 5-dimensional analysis: Essential, Style, Environment, Emotion, and Memory.\n• Continuous updates from actual customer data.\nAccuracy up to 98% for first-time use.';
+
+  @override
+  String get artAccountTitle => 'Account Management & Security';
+
+  @override
+  String get artAccountContent =>
+      'To ensure benefits and accumulate reward points, you should maintain your account:\n• Update personal information in Profile.\n• Turn on 2-factor authentication for enhanced security.\nIf you forget your password, please select \"Forgot Password\" at the login screen to receive a recovery code.';
 }

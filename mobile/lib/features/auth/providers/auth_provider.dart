@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import '../../../core/config/env.dart';
 import '../data/auth_repository.dart';
 
@@ -112,21 +111,27 @@ final userProfileProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
   final isAuthenticated = ref.watch(authStateProvider);
   if (!isAuthenticated) return null;
 
-  final cachedProfile = ref.watch(_authProfileStateProvider);
-  if (cachedProfile != null) return cachedProfile;
-
   final repository = ref.watch(authRepositoryProvider);
-  final profile = await repository.getProfile();
-  ref.read(_authProfileStateProvider.notifier).state = profile;
+  try {
+    final profile = await repository.getProfile();
+    
+    // Update synchronous cache
+    ref.read(_authProfileStateProvider.notifier).state = profile;
 
-  final currentUser = ref.read(_authUserStateProvider);
-  if (currentUser == null) {
-    ref.read(_authUserStateProvider.notifier).state = AuthUser.fromJson(
-      profile,
-    );
+    final currentUser = ref.read(_authUserStateProvider);
+    if (currentUser == null) {
+      ref.read(_authUserStateProvider.notifier).state = AuthUser.fromJson(
+        profile,
+      );
+    }
+
+    return profile;
+  } catch (e) {
+    // If API fails, fall back to cached profile if available
+    final cached = ref.read(_authProfileStateProvider);
+    if (cached != null) return cached;
+    rethrow;
   }
-
-  return profile;
 });
 
 class AuthNotifier extends StateNotifier<AsyncValue<void>> {
@@ -236,53 +241,6 @@ class AuthNotifier extends StateNotifier<AsyncValue<void>> {
     }
   }
 
-  Future<void> signInWithFacebook() async {
-    state = const AsyncValue.loading();
-    try {
-      final result = await FacebookAuth.instance.login(
-        permissions: ['email', 'public_profile'],
-      );
-      if (result.status == LoginStatus.cancelled) {
-        state = const AsyncValue.data(null);
-        return;
-      }
-      if (result.status != LoginStatus.success || result.accessToken == null) {
-        throw Exception('Đăng nhập Facebook thất bại');
-      }
-
-      final fbToken = result.accessToken!.tokenString;
-      final userData = await FacebookAuth.instance.getUserData(
-        fields: 'id,name,email,picture.type(large)',
-      );
-
-      final email = userData['email'] as String?;
-      if (email == null) {
-        throw Exception('Tài khoản Facebook cần có email công khai');
-      }
-
-      final profile = await _repository.socialLogin(
-        provider: 'facebook',
-        token: fbToken,
-        email: email,
-        providerId: userData['id'] as String,
-        fullName: userData['name'] as String?,
-        avatarUrl: (userData['picture']?['data']?['url']) as String?,
-      );
-
-      Map<String, dynamic>? userProfile;
-      try {
-        userProfile = await _repository.getProfile();
-      } catch (_) {}
-
-      _ref
-          .read(authStateProvider.notifier)
-          .markAuthenticated(profile: userProfile ?? profile);
-      state = const AsyncValue.data(null);
-    } catch (e, stack) {
-      state = AsyncValue.error(e, stack);
-      rethrow;
-    }
-  }
 
   Future<Map<String, dynamic>> forgotPassword(String email) async {
     return _repository.forgotPassword(email: email);
@@ -310,7 +268,10 @@ class AuthNotifier extends StateNotifier<AsyncValue<void>> {
   }
 
   Future<Map<String, dynamic>> resendVerification() async {
-    return _repository.resendVerification();
+    final result = await _repository.resendVerification();
+    // Refresh profile in case it was already verified or just updated
+    _ref.invalidate(userProfileProvider);
+    return result;
   }
 
   Future<void> logout() async {

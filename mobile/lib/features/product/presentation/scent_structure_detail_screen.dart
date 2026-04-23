@@ -290,11 +290,14 @@ class _ScentLayerTimelineItem extends StatelessWidget {
 
   Widget _buildTag(BuildContext context, String note) {
     final bgColor = _getTagColor(note);
+    final availableWidth = MediaQuery.of(context).size.width - 120; // Accounts for timeline node and padding
+    
     return InkWell(
       onTap: () => context.push('/search?note=$note'),
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        constraints: BoxConstraints(maxWidth: availableWidth),
         decoration: BoxDecoration(
           color: bgColor,
           borderRadius: BorderRadius.circular(12),
@@ -305,6 +308,8 @@ class _ScentLayerTimelineItem extends StatelessWidget {
         ),
         child: Text(
           note,
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
           style: GoogleFonts.montserrat(
             fontSize: 11,
             fontWeight: FontWeight.w500,

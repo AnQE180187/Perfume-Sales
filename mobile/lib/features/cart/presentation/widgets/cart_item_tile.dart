@@ -11,6 +11,7 @@ class CartItemTile extends StatelessWidget {
   final ValueChanged<bool> onSelectChanged;
   final ValueChanged<int> onQuantityChanged;
   final VoidCallback onRemove;
+  final VoidCallback? onLimitReached;
 
   const CartItemTile({
     super.key,
@@ -19,6 +20,7 @@ class CartItemTile extends StatelessWidget {
     required this.onSelectChanged,
     required this.onQuantityChanged,
     required this.onRemove,
+    this.onLimitReached,
   });
 
   bool get isSample => item.price == 0;
@@ -53,10 +55,14 @@ class CartItemTile extends StatelessWidget {
             children: [
               _Checkbox(
                 isSelected: isSelected,
-                onTap: () => onSelectChanged(!isSelected),
+                isEnabled: !item.isOutOfStock,
+                onTap: item.isOutOfStock ? null : () => onSelectChanged(!isSelected),
               ),
               const SizedBox(width: 10),
-              _ProductImage(imageUrl: item.productImage),
+              _ProductImage(
+                imageUrl: item.productImage,
+                isOutOfStock: item.isOutOfStock,
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: _ProductDetails(
@@ -64,6 +70,7 @@ class CartItemTile extends StatelessWidget {
                   isSample: isSample,
                   onQuantityChanged: onQuantityChanged,
                   onRemove: onRemove,
+                  onLimitReached: onLimitReached,
                 ),
               ),
             ],
@@ -105,28 +112,36 @@ class _SwipeBg extends StatelessWidget {
 
 class _Checkbox extends StatelessWidget {
   final bool isSelected;
-  final VoidCallback onTap;
+  final bool isEnabled;
+  final VoidCallback? onTap;
 
-  const _Checkbox({required this.isSelected, required this.onTap});
+  const _Checkbox({
+    required this.isSelected,
+    this.isEnabled = true,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        width: 22,
-        height: 22,
-        decoration: BoxDecoration(
-          color: isSelected ? AppTheme.accentGold : Colors.transparent,
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: isSelected ? AppTheme.accentGold : AppTheme.softTaupe,
-            width: 1.5,
+      child: Opacity(
+        opacity: isEnabled ? 1.0 : 0.4,
+        child: Container(
+          width: 22,
+          height: 22,
+          decoration: BoxDecoration(
+            color: isSelected ? AppTheme.accentGold : Colors.transparent,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: isSelected ? AppTheme.accentGold : AppTheme.softTaupe,
+              width: 1.5,
+            ),
           ),
+          child: isSelected
+              ? const Icon(Icons.check, color: Colors.white, size: 14)
+              : null,
         ),
-        child: isSelected
-            ? const Icon(Icons.check, color: Colors.white, size: 14)
-            : null,
       ),
     );
   }
@@ -134,7 +149,8 @@ class _Checkbox extends StatelessWidget {
 
 class _ProductImage extends StatelessWidget {
   final String imageUrl;
-  const _ProductImage({required this.imageUrl});
+  final bool isOutOfStock;
+  const _ProductImage({required this.imageUrl, this.isOutOfStock = false});
 
   @override
   Widget build(BuildContext context) {
@@ -148,14 +164,27 @@ class _ProductImage extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
-        child: Image.network(
-          imageUrl,
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => const Center(
-            child: Icon(
-              Icons.spa_outlined,
-              color: AppTheme.softTaupe,
-              size: 28,
+        child: ColorFiltered(
+          colorFilter: isOutOfStock
+              ? const ColorFilter.matrix([
+                  0.2126, 0.7152, 0.0722, 0, 0,
+                  0.2126, 0.7152, 0.0722, 0, 0,
+                  0.2126, 0.7152, 0.0722, 0, 0,
+                  0,      0,      0,      1, 0,
+                ]) // Grayscale
+              : const ColorFilter.mode(Colors.transparent, BlendMode.multiply),
+          child: Opacity(
+            opacity: isOutOfStock ? 0.6 : 1.0,
+            child: Image.network(
+              imageUrl,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => const Center(
+                child: Icon(
+                  Icons.spa_outlined,
+                  color: AppTheme.softTaupe,
+                  size: 28,
+                ),
+              ),
             ),
           ),
         ),
@@ -169,12 +198,14 @@ class _ProductDetails extends StatelessWidget {
   final bool isSample;
   final ValueChanged<int> onQuantityChanged;
   final VoidCallback onRemove;
+  final VoidCallback? onLimitReached;
 
   const _ProductDetails({
     required this.item,
     required this.isSample,
     required this.onQuantityChanged,
     required this.onRemove,
+    this.onLimitReached,
   });
 
   bool get _hasVariantInfo =>
@@ -230,6 +261,29 @@ class _ProductDetails extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
         ],
+        if (item.isOutOfStock) ...[
+          const SizedBox(height: 4),
+          Text(
+            'HẾT HÀNG',
+            style: GoogleFonts.montserrat(
+              fontSize: 9,
+              fontWeight: FontWeight.w800,
+              color: const Color(0xFFD92D20), // Red 600
+              letterSpacing: 0.5,
+            ),
+          ),
+        ] else if (item.hasInsufficientStock) ...[
+          const SizedBox(height: 4),
+          Text(
+            'CHỈ CÒN ${item.stock} SẢN PHẨM',
+            style: GoogleFonts.montserrat(
+              fontSize: 9,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFFF79009), // Orange 600
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
         const SizedBox(height: 12),
         Row(
           crossAxisAlignment: CrossAxisAlignment.end,
@@ -261,9 +315,15 @@ class _ProductDetails extends StatelessWidget {
             _InlineQty(
               quantity: item.quantity,
               canDecrease: item.quantity > 1,
-              canIncrease: !isSample || item.quantity < 1,
+              canIncrease: (!isSample || item.quantity < 1) && item.quantity < item.stock,
               onDecrease: () => onQuantityChanged(item.quantity - 1),
-              onIncrease: () => onQuantityChanged(item.quantity + 1),
+              onIncrease: () {
+                if (!isSample && item.quantity >= item.stock) {
+                  onLimitReached?.call();
+                } else if (!isSample || item.quantity < 1) {
+                  onQuantityChanged(item.quantity + 1);
+                }
+              },
             ),
           ],
         ),
@@ -350,7 +410,7 @@ class _InlineQty extends StatelessWidget {
           _QtyBtn(
             icon: Icons.add_rounded,
             active: canIncrease,
-            onTap: canIncrease ? onIncrease : null,
+            onTap: onIncrease, // Make it clickable even if limit reached to trigger callback
           ),
         ],
       ),

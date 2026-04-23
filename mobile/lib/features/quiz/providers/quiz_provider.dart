@@ -114,9 +114,11 @@ class QuizState {
 
 class QuizNotifier extends StateNotifier<QuizState> {
   final QuizService _service;
+  final Ref _ref;
 
-  QuizNotifier({required QuizService service})
+  QuizNotifier({required QuizService service, required Ref ref})
       : _service = service,
+        _ref = ref,
         super(const QuizState());
 
   Future<void> selectOption(int optionIndex) async {
@@ -167,6 +169,10 @@ class QuizNotifier extends StateNotifier<QuizState> {
           await Future.delayed(Duration(seconds: 3 - elapsed));
         }
 
+        // IMPORTANT: Invalidate profile to refresh 'hasAiProfile' status
+        // Refresh profile to show new points and AI status immediately.
+        _ref.invalidate(userProfileProvider);
+
         state = state.copyWith(
           isAnalyzing: false,
           isComplete: true,
@@ -210,5 +216,5 @@ final quizServiceProvider = Provider<QuizService>((ref) {
 
 final quizProvider = StateNotifierProvider.autoDispose<QuizNotifier, QuizState>((ref) {
   final service = ref.watch(quizServiceProvider);
-  return QuizNotifier(service: service);
+  return QuizNotifier(service: service, ref: ref);
 });

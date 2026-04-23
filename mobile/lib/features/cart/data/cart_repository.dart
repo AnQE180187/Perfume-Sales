@@ -73,6 +73,7 @@ class CartRepository {
     final itemId = raw['id'];
     final quantity = raw['quantity'];
     final price = variant['price'];
+    final stock = variant['stock'];
 
     return CartItem(
       id: itemId?.toString() ?? '',
@@ -81,6 +82,7 @@ class CartRepository {
       productImage: imageUrl,
       price: price is num ? price.toDouble() : 0,
       quantity: quantity is num ? quantity.toInt() : 1,
+      stock: stock is num ? stock.toInt() : 0,
       size: variant['name']?.toString(),
       variant: variant['name']?.toString(),
     );

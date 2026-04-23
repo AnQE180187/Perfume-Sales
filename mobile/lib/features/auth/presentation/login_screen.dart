@@ -23,6 +23,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
 
   bool _isSignIn = true;
   bool _showPassword = false;
+  String? _errorMessage;
   late AnimationController _pulseController;
 
   @override
@@ -32,8 +33,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
        vsync: this,
        duration: const Duration(seconds: 2),
     )..repeat(reverse: true);
+    
     _emailFocus.addListener(() => setState(() {}));
     _passwordFocus.addListener(() => setState(() {}));
+
+    _emailController.addListener(_clearError);
+    _passwordController.addListener(_clearError);
+  }
+
+  void _clearError() {
+    if (_errorMessage != null) {
+      setState(() => _errorMessage = null);
+    }
   }
 
   @override
@@ -51,7 +62,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
       await loginFn();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Đăng nhập thất bại: $e')));
+        String message = 'Đăng nhập thất bại: $e';
+        if (e.toString().contains('ApiException: 10')) {
+          message = 'Lỗi cấu hình Google (Error 10). Vui lòng kiểm tra mã SHA-1 trong Firebase.';
+        }
+        setState(() => _errorMessage = message);
       }
     }
   }
@@ -62,7 +77,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
     final password = _passwordController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.pleaseProvideCredentials)));
+      setState(() => _errorMessage = l10n.pleaseProvideCredentials);
       return;
     }
 
@@ -70,7 +85,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
       await ref.read(authControllerProvider.notifier).login(email, password);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${l10n.accessDenied}: $e')));
+        String message = '${l10n.accessDenied}: $e';
+        
+        // Trích xuất lỗi từ backend nếu là DioException
+        String? serverError;
+        if (e.toString().contains('Invalid credentials')) {
+          serverError = 'Invalid credentials';
+        } else if (e.toString().contains('Account is deactivated')) {
+          serverError = 'Account is deactivated';
+        }
+
+        if (serverError == 'Invalid credentials') {
+          message = 'Email hoặc mật khẩu không chính xác. Vui lòng kiểm tra lại.';
+        } else if (serverError == 'Account is deactivated') {
+          message = 'Tài khoản của bạn đã bị vô hiệu hóa.';
+        } else if (e.toString().contains('401')) {
+          message = 'Email hoặc mật khẩu không chính xác. Vui lòng kiểm tra lại.';
+        } else if (e.toString().contains('400') || e.toString().contains('bad syntax') || e.toString().contains('email must be an email')) {
+          message = 'Email không đúng định dạng hay gì đó bạn hãy nâng cấp đi';
+        }
+        
+        setState(() => _errorMessage = message);
       }
     }
   }
@@ -147,6 +182,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
                   _buildAuthToggle(),
 
                   const SizedBox(height: 32),
+
+                  if (_errorMessage != null) _buildErrorBanner(_errorMessage!),
 
                   // Neumorphic Email Input
                   _buildInputField(
@@ -230,12 +267,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
                         icon: FontAwesomeIcons.google,
                         color: const Color(0xFFDB4437),
                         onPressed: () => _handleSocialLogin(ref.read(authControllerProvider.notifier).signInWithGoogle),
-                      ),
-                      const SizedBox(width: 24),
-                      _buildSocialButton(
-                        icon: FontAwesomeIcons.facebookF,
-                        color: const Color(0xFF1877F2),
-                        onPressed: () => _handleSocialLogin(ref.read(authControllerProvider.notifier).signInWithFacebook),
                       ),
                     ],
                   ),
@@ -510,6 +541,68 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
           ),
         );
       }
+    );
+  }
+
+  Widget _buildErrorBanner(String message) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2C1515).withOpacity(0.9), // Deep dark red obsidian
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFD32F2F).withOpacity(0.1),
+            blurRadius: 10,
+            spreadRadius: 2,
+          ),
+        ],
+        border: Border.all(
+          color: const Color(0xFFE57373).withOpacity(0.4),
+          width: 0.5,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: const Color(0xFFD32F2F).withOpacity(0.2),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.warning_amber_rounded,
+              color: Color(0xFFEF9A9A),
+              size: 16,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              message,
+              style: GoogleFonts.montserrat(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFFFFEBEE),
+                letterSpacing: 0.2,
+              ),
+            ),
+          ),
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => setState(() => _errorMessage = null),
+              borderRadius: BorderRadius.circular(20),
+              child: const Padding(
+                padding: EdgeInsets.all(4.0),
+                child: Icon(Icons.close, color: Colors.white70, size: 14),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

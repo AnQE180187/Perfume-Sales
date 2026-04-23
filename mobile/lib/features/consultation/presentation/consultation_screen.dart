@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+import 'dart:ui' as ui;
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -144,24 +146,26 @@ class _ConsultationScreenState extends ConsumerState<ConsultationScreen>
                           color: AppTheme.accentGold,
                         ),
                       )
-                    : ListView.builder(
-                        controller: _scrollController,
-                        physics: const BouncingScrollPhysics(), // High-end feel
-                        padding: const EdgeInsets.fromLTRB(20, 80, 20, 200), // Increased safe area for top/bottom scrolling
-                        itemCount:
-                            chatState.messages.length +
-                            (chatState.isSending ? 1 : 0),
-                        itemBuilder: (context, index) {
-                          // Typing indicator
-                          if (index == chatState.messages.length) {
-                            return const _TypingIndicator();
-                          }
-                          final message = chatState.messages[index];
-                          return message.isAI
-                              ? AiMessageBubble(message: message)
-                              : UserMessageBubble(message: message);
-                        },
-                      ),
+                    : chatState.messages.isEmpty
+                        ? _WelcomeArea(onStart: (p) {
+                            _messageController.text = p;
+                            _sendMessage();
+                          })
+                        : ListView.builder(
+                            controller: _scrollController,
+                            physics: const BouncingScrollPhysics(),
+                            padding: const EdgeInsets.fromLTRB(20, 80, 20, 200),
+                            itemCount: chatState.messages.length + (chatState.isSending ? 1 : 0),
+                            itemBuilder: (context, index) {
+                              if (index == chatState.messages.length) {
+                                return const _TypingIndicator();
+                              }
+                              final message = chatState.messages[index];
+                              return message.isAI
+                                  ? AiMessageBubble(message: message)
+                                  : UserMessageBubble(message: message);
+                            },
+                          ),
               ),
 
               //  Error banner
@@ -251,7 +255,7 @@ class _ConsultationScreenState extends ConsumerState<ConsultationScreen>
                                 minLines: 1,
                                 maxLines: 4,
                                 decoration: InputDecoration(
-                                  hintText: 'Nhắn nhủ điều bạn đang tìm kiếm...',
+                                  hintText: l10n.chatInputHint,
                                   border: InputBorder.none,
                                   enabledBorder: InputBorder.none,
                                   focusedBorder: InputBorder.none,
@@ -312,9 +316,9 @@ class _ConsultationScreenState extends ConsumerState<ConsultationScreen>
                                         ),
                                       )
                                     : const Icon(
-                                        Icons.auto_awesome,
+                                        Icons.auto_awesome_rounded,
                                         color: AppTheme.primaryDb,
-                                        size: 20,
+                                        size: 22,
                                       ),
                               ),
                             ),
@@ -434,10 +438,11 @@ class _ChatHeader extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: const Icon(
-                  Icons.auto_awesome_rounded,
-                  color: AppTheme.primaryDb,
-                  size: 20,
+                child: ClipOval(
+                  child: Image.asset(
+                    'assets/images/perfume_angel.png',
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
               Positioned(
@@ -552,64 +557,301 @@ class _TypingIndicatorState extends State<_TypingIndicator>
     _controller.dispose();
     super.dispose();
   }
-
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.only(bottom: 24, left: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            children: [
-              SizedBox(
-                width: 40,
-                height: 40,
-                child: AnimatedBuilder(
-                  animation: _controller,
-                  builder: (context, child) {
-                    return Stack(
-                      children: _particles.map((p) {
-                        final progress = (_controller.value + p.delay) % 1.0;
-                        return Positioned(
-                          left: 20 + p.xOffset * progress,
-                          bottom: 20 + 40 * progress,
-                          child: Opacity(
-                            opacity: (1.0 - progress) * p.maxOpacity,
-                            child: Container(
-                              width: p.size,
-                              height: p.size,
-                              decoration: const BoxDecoration(
-                                color: AppTheme.accentGold,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: AppTheme.accentGold,
-                                    blurRadius: 2,
-                                  ),
-                                ],
-                              ),
-                            ),
+          SizedBox(
+            width: 44,
+            height: 44,
+            child: AnimatedBuilder(
+              animation: _controller,
+              builder: (context, child) {
+                return Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // Glowing mist behind
+                    ...List.generate(3, (i) {
+                      final progress = (i / 3 + _controller.value) % 1.0;
+                      return Opacity(
+                        opacity: 0.5 * (1.0 - progress),
+                        child: Container(
+                          width: 30 + 30 * progress,
+                          height: 30 + 30 * progress,
+                          decoration: const BoxDecoration(
+                            color: AppTheme.accentGold,
+                            shape: BoxShape.circle,
                           ),
-                        );
-                      }).toList(),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(width: 8),
+                        ),
+                      );
+                    }),
+                    // Floating Angel
+                    Transform.translate(
+                      offset: Offset(0, 4 * math.sin(_controller.value * 2 * math.pi)),
+                      child: ClipOval(
+                        child: Image.asset(
+                          'assets/images/perfume_angel.png',
+                          width: 36,
+                          height: 36,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Text(
-                'AI Specialist is crafting...',
+                l10n.aiCrafting,
                 style: GoogleFonts.montserrat(
                   fontSize: 12,
-                  fontStyle: FontStyle.italic,
-                  fontWeight: FontWeight.w500,
-                  color: AppTheme.accentGold.withValues(alpha: 0.8),
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.accentGold,
+                ),
+              ),
+              Text(
+                l10n.aiMolecularProcessing,
+                style: GoogleFonts.montserrat(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w400,
+                  color: AppTheme.mutedSilver,
                 ),
               ),
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _WelcomeArea extends StatefulWidget {
+  final Function(String) onStart;
+  const _WelcomeArea({required this.onStart});
+
+  @override
+  State<_WelcomeArea> createState() => _WelcomeAreaState();
+}
+
+class _WelcomeAreaState extends State<_WelcomeArea> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 4000),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(40, 100, 40, 220),
+      child: Column(
+        children: [
+          // Animated Angel Container
+          AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) {
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Outer Ambient Glow
+                  Container(
+                    width: 220,
+                    height: 220,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.accentGold.withValues(alpha: 0.15 + 0.1 * math.sin(_controller.value * 2 * math.pi)),
+                          blurRadius: 40 + 20 * math.sin(_controller.value * 2 * math.pi),
+                          spreadRadius: 5 + 5 * math.sin(_controller.value * 2 * math.pi),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Sparkling Scent Particles
+                  ...List.generate(8, (i) {
+                    final angle = (i * 45) * math.pi / 180;
+                    final radius = 100 + 20 * math.sin(_controller.value * 2 * math.pi + i);
+                    final opacity = (0.3 + 0.7 * math.sin(_controller.value * 2 * math.pi * 2 + i)).clamp(0.0, 1.0);
+                    return Transform.translate(
+                      offset: Offset(radius * math.cos(angle), radius * math.sin(angle)),
+                      child: Opacity(
+                        opacity: opacity,
+                        child: const Icon(Icons.star_rounded, color: AppTheme.accentGold, size: 8),
+                      ),
+                    );
+                  }),
+                  // The Angel itself with Shimmer and Tilt
+                  Transform.translate(
+                    offset: Offset(0, 8 * math.sin(_controller.value * 2 * math.pi)),
+                    child: Transform.rotate(
+                      angle: 0.05 * math.sin(_controller.value * 2 * math.pi), // Subtle tilt
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.3), width: 2),
+                        ),
+                        child: ClipOval(
+                          child: ShaderMask(
+                            shaderCallback: (rect) {
+                              return LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  Colors.white.withOpacity(0.0),
+                                  Colors.white.withOpacity(0.0),
+                                  Colors.white.withOpacity(0.5),
+                                  Colors.white.withOpacity(0.0),
+                                  Colors.white.withOpacity(0.0),
+                                ],
+                                stops: const [0.0, 0.35, 0.5, 0.65, 1.0],
+                                transform: _ShimmerGradientTransform(_controller.value),
+                              ).createShader(rect);
+                            },
+                            blendMode: BlendMode.srcOver,
+                            child: Image.asset(
+                              'assets/images/perfume_angel.png',
+                              width: 160,
+                              height: 160,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: 32),
+          Text(
+            l10n.welcomeTitle,
+            style: GoogleFonts.playfairDisplay(
+              fontSize: 28,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 2,
+              color: AppTheme.deepCharcoal,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            l10n.welcomeSubtitle,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.montserrat(
+              fontSize: 14,
+              height: 1.6,
+              color: AppTheme.mutedSilver,
+            ),
+          ),
+          const SizedBox(height: 48),
+          _WelcomeAction(
+            icon: Icons.auto_awesome_rounded,
+            title: l10n.aiScentDnaDiscover,
+            subtitle: l10n.aiScentDnaDiscoverSub,
+            onTap: () => widget.onStart(l10n.promptAnalyzeDna),
+          ),
+          const SizedBox(height: 16),
+          _WelcomeAction(
+            icon: Icons.celebration_rounded,
+            title: l10n.giftConsultation,
+            subtitle: l10n.giftConsultationSub,
+            onTap: () => widget.onStart(l10n.promptGiftSearch),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WelcomeAction extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  const _WelcomeAction({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.1)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppTheme.accentGold.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: AppTheme.accentGold, size: 20),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.deepCharcoal,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 11,
+                      color: AppTheme.mutedSilver,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppTheme.softTaupe),
+          ],
+        ),
       ),
     );
   }
@@ -679,7 +921,8 @@ class _DynamicChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final chips = hasRecommendations ? _contextChips : _defaultChips;
+    final l10n = AppLocalizations.of(context)!;
+    final chips = hasRecommendations ? _getContextChips(l10n) : _getDefaultChips(l10n);
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -740,31 +983,19 @@ class _DynamicChips extends StatelessWidget {
     );
   }
 
-  static const _defaultChips = [
-    _ChipData(
-      Icons.casino_outlined,
-      'Gợi ý bất ngờ',
-      'Gợi ý cho tôi một mùi hương bất ngờ',
-    ),
-    _ChipData(
-      Icons.attach_money,
-      'Dưới 1 triệu',
-      'Gợi ý nước hoa dưới 1 triệu đồng',
-    ),
-    _ChipData(
-      Icons.nightlight_outlined,
-      'Hương cho buổi tối',
-      'Mùi hương phù hợp cho buổi tối',
-    ),
-    _ChipData(Icons.favorite_border, 'Quà tặng', 'Gợi ý nước hoa làm quà tặng'),
+  static List<_ChipData> _getDefaultChips(AppLocalizations l10n) => [
+    _ChipData(Icons.casino_outlined, l10n.chipSurprise, l10n.chipSurprisePrompt),
+    _ChipData(Icons.attach_money, l10n.chipUnder1m, l10n.chipUnder1mPrompt),
+    _ChipData(Icons.nightlight_outlined, l10n.chipNight, l10n.chipNightPrompt),
+    _ChipData(Icons.favorite_border, l10n.chipGift, l10n.chipGiftPrompt),
   ];
 
-  static const _contextChips = [
-    _ChipData(Icons.trending_down, 'Rẻ hơn', 'Gợi ý tương tự nhưng rẻ hơn'),
-    _ChipData(Icons.spa_outlined, 'Ngọt hơn', 'Gợi ý mùi hương ngọt hơn'),
-    _ChipData(Icons.work_outline, 'Đi làm', 'Gợi ý nước hoa phù hợp đi làm'),
-    _ChipData(Icons.male, 'Nam tính hơn', 'Gợi ý nước hoa nam tính hơn'),
-    _ChipData(Icons.female, 'Nữ tính hơn', 'Gợi ý nước hoa nữ tính hơn'),
+  static List<_ChipData> _getContextChips(AppLocalizations l10n) => [
+    _ChipData(Icons.trending_down, l10n.chipCheaper, l10n.chipCheaperPrompt),
+    _ChipData(Icons.spa_outlined, l10n.chipSweeter, l10n.chipSweeterPrompt),
+    _ChipData(Icons.work_outline, l10n.chipOffice, l10n.chipOfficePrompt),
+    _ChipData(Icons.male, l10n.chipMasculine, l10n.chipMasculinePrompt),
+    _ChipData(Icons.female, l10n.chipFeminine, l10n.chipFemininePrompt),
   ];
 }
 
@@ -1135,5 +1366,16 @@ class _ErrorBanner extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _ShimmerGradientTransform extends GradientTransform {
+  const _ShimmerGradientTransform(this.slideValue);
+  final double slideValue;
+
+  @override
+  Matrix4? transform(Rect bounds, {ui.TextDirection? textDirection}) {
+    // We want the shimmer to travel from -1.0 to 2.0 to ensure it passes completely
+    return Matrix4.translationValues(bounds.width * (slideValue * 3 - 1), 0.0, 0.0);
   }
 }

@@ -72,13 +72,19 @@ export class ProductsService {
       isFeatured,
       isBestseller,
       notes,
-      occasion,
       minPrice,
       maxPrice,
     } = query;
 
     const where: any = {
       isActive: true,
+      // Only show products that have at least one active variant in stock
+      variants: {
+        some: {
+          stock: { gt: 0 },
+          isActive: true,
+        },
+      },
       AND: [],
     };
 
@@ -109,28 +115,15 @@ export class ProductsService {
       });
     }
 
-    if (occasion) {
-      where.AND.push({
-        OR: [
-          { name: { contains: occasion, mode: 'insensitive' } },
-          { description: { contains: occasion, mode: 'insensitive' } },
-        ],
-      });
-    }
-
     if (scentFamilyId) {
       where.scentFamilyId = Number(scentFamilyId);
     }
 
     if (minPrice !== undefined || maxPrice !== undefined) {
-      where.variants = {
-        some: {
-          price: {
-            gte: minPrice ? Number(minPrice) : undefined,
-            lte: maxPrice ? Number(maxPrice) : undefined,
-          },
-          isActive: true,
-        },
+      // Merge price filter into the existing variants.some filter
+      where.variants.some.price = {
+        gte: minPrice ? Number(minPrice) : undefined,
+        lte: maxPrice ? Number(maxPrice) : undefined,
       };
     }
 

@@ -1,0 +1,560 @@
+// Perfume-Sales DBML Schema
+// You can copy and paste this code directly into https://dbdiagram.io/ to generate the visual ERD.
+
+Table User {
+  id String [pk]
+  email String [unique]
+  phone String [unique]
+  passwordHash String
+  isActive Boolean [default: true]
+  createdAt DateTime
+  updatedAt DateTime
+  address String
+  avatarUrl String
+  budgetMax Int
+  budgetMin Int
+  city String
+  country String
+  dateOfBirth DateTime
+  fullName String
+  gender String
+  loyaltyPoints Int [default: 0]
+  role String [default: 'CUSTOMER']
+}
+
+Table UserAddress {
+  id String [pk]
+  userId String
+  recipientName String
+  phone String
+  provinceId Int
+  provinceName String
+  districtId Int
+  districtName String
+  wardCode String
+  wardName String
+  detailAddress String
+  isDefault Boolean [default: false]
+  createdAt DateTime
+  updatedAt DateTime
+}
+
+Table OAuthAccount {
+  id String [pk]
+  userId String
+  provider String
+  providerAccountId String
+  accessToken String
+  refreshToken String
+  expiresAt DateTime
+}
+
+Table Session {
+  id String [pk]
+  userId String
+  refreshToken String [unique]
+  userAgent String
+  ipAddress String
+  expiresAt DateTime
+}
+
+Table ScentFamily {
+  id Int [pk]
+  name String [unique]
+  description String
+}
+
+Table ScentNote {
+  id Int [pk]
+  name String
+  type String
+  description String
+}
+
+Table UserScentPreference {
+  id Int [pk]
+  userId String
+  scentFamilyId Int
+  noteId Int
+  intensity Int
+}
+
+Table QuizResult {
+  id String [pk]
+  userId String
+  gender String
+  occasion String
+  budgetMin Int
+  budgetMax Int
+  preferredFamily String
+  longevity String
+  recommendation String
+  createdAt DateTime
+}
+
+Table Brand {
+  id Int [pk]
+  name String [unique]
+  description String
+}
+
+Table Category {
+  id Int [pk]
+  name String [unique]
+  description String
+}
+
+Table Product {
+  id String [pk]
+  name String
+  slug String [unique]
+  brandId Int
+  categoryId Int
+  scentFamilyId Int
+  description String
+  gender String
+  longevity String
+  concentration String
+  isActive Boolean [default: true]
+  isFeatured Boolean [default: false]
+  isBestseller Boolean [default: false]
+  createdAt DateTime
+  updatedAt DateTime
+}
+
+Table ProductVariant {
+  id String [pk]
+  productId String
+  name String
+  sku String [unique]
+  barcode String [unique]
+  price Int
+  stock Int [default: 0]
+  isActive Boolean [default: true]
+}
+
+Table Store {
+  id String [pk]
+  name String
+  code String [unique]
+  address String
+  isActive Boolean [default: true]
+}
+
+Table UserStore {
+  userId String
+  storeId String
+  assignedAt DateTime
+}
+
+Table StoreStock {
+  storeId String
+  variantId String
+  quantity Int [default: 0]
+  updatedAt DateTime
+}
+
+Table ProductImage {
+  id Int [pk]
+  productId String
+  url String
+  publicId String
+  order Int [default: 0]
+}
+
+Table ProductScentNote {
+  productId String
+  noteId Int
+}
+
+Table Cart {
+  id String [pk]
+  userId String
+  createdAt DateTime
+  updatedAt DateTime
+}
+
+Table CartItem {
+  id Int [pk]
+  cartId String
+  variantId String
+  quantity Int [default: 1]
+}
+
+Table Order {
+  id String [pk]
+  code String [unique]
+  userId String
+  staffId String
+  storeId String
+  totalAmount Int
+  discountAmount Int [default: 0]
+  finalAmount Int
+  status String [default: 'PENDING']
+  paymentStatus String [default: 'PENDING']
+  channel String [default: 'ONLINE']
+  shippingAddress String
+  shippingFee Int [default: 0]
+  recipientName String
+  phone String
+  createdAt DateTime
+  updatedAt DateTime
+}
+
+Table OrderItem {
+  id Int [pk]
+  orderId String
+  variantId String
+  unitPrice Int
+  quantity Int
+  totalPrice Int
+}
+
+Table OrderStatusHistory {
+  id Int [pk]
+  orderId String
+  status String
+  note String
+  createdAt DateTime
+}
+
+Table Payment {
+  id String [pk]
+  orderId String
+  provider String
+  amount Int
+  status String [default: 'PENDING']
+  transactionId String
+  createdAt DateTime
+  updatedAt DateTime
+}
+
+Table Shipment {
+  id String [pk]
+  orderId String
+  provider String
+  trackingCode String
+  ghnOrderCode String
+  fee Int
+  status String [default: 'PENDING']
+  createdAt DateTime
+  updatedAt DateTime
+}
+
+Table PromotionCode {
+  id String [pk]
+  code String [unique]
+  description String
+  discountType String
+  discountValue Int
+  minOrderAmount Int
+  maxDiscount Int
+  usageLimit Int
+  usedCount Int [default: 0]
+  startDate DateTime
+  endDate DateTime
+  isActive Boolean [default: true]
+  isPublic Boolean [default: false]
+  pointsCost Int [default: 0]
+}
+
+Table UserPromotion {
+  id String [pk]
+  userId String
+  promotionId String
+  status String [default: 'UNUSED']
+  redeemedAt DateTime
+  usedAt DateTime
+}
+
+Table AppliedPromotion {
+  id String [pk]
+  orderId String
+  discountAmount Int
+  promotionCodeId String
+  userPromotionId String
+}
+
+Table Review {
+  id String [pk]
+  userId String
+  productId String
+  orderItemId Int [unique]
+  rating Int
+  content String
+  isVerified Boolean [default: true]
+  isHidden Boolean [default: false]
+  createdAt DateTime
+}
+
+Table ReviewImage {
+  id String [pk]
+  reviewId String
+  imageUrl String
+}
+
+Table ReviewReaction {
+  id String [pk]
+  reviewId String
+  userId String
+  type String
+}
+
+Table ReviewReport {
+  id String [pk]
+  reviewId String
+  userId String
+  reason String
+  createdAt DateTime
+}
+
+Table ReviewSummary {
+  id String [pk]
+  productId String [unique]
+  summary String
+  pros String
+  cons String
+}
+
+Table Notification {
+  id String [pk]
+  userId String
+  channel String
+  type String
+  title String
+  content String
+  isRead Boolean [default: false]
+  createdAt DateTime
+}
+
+Table AiRequestLog {
+  id String [pk]
+  userId String
+  type String
+  request String
+  response String
+  createdAt DateTime
+}
+
+Table LoyaltyTransaction {
+  id String [pk]
+  userId String
+  phone String
+  orderId String
+  points Int
+  reason String
+  createdAt DateTime
+}
+
+Table Conversation {
+  id String [pk]
+  type String
+  createdAt DateTime
+}
+
+Table ConversationParticipant {
+  id String [pk]
+  conversationId String
+  userId String
+  role String
+}
+
+Table Message {
+  id String [pk]
+  conversationId String
+  senderId String
+  senderType String
+  content String
+  type String
+  createdAt DateTime
+}
+
+Table InventoryLog {
+  id Int [pk]
+  variantId String
+  staffId String
+  storeId String
+  type String
+  quantity Int
+  reason String
+  createdAt DateTime
+}
+
+Table InventoryRequest {
+  id Int [pk]
+  storeId String
+  variantId String
+  staffId String
+  type String
+  quantity Int
+  reason String
+  status String [default: 'PENDING']
+  reviewedBy String
+}
+
+Table Favorite {
+  userId String
+  productId String
+  variantId String
+  createdAt DateTime
+}
+
+Table Banner {
+  id String [pk]
+  title String
+  imageUrl String
+  linkUrl String
+  isActive Boolean [default: true]
+}
+
+Table Journal {
+  id String [pk]
+  title String
+  excerpt String
+  mainImage String
+  category String
+  priority Int [default: 0]
+  isActive Boolean [default: true]
+}
+
+Table JournalSection {
+  id String [pk]
+  journalId String
+  subtitle String
+  content String
+  imageUrl String
+  productId String
+  order Int [default: 0]
+}
+
+Table ReturnRequest {
+  id String [pk]
+  orderId String
+  userId String
+  origin String [default: 'ONLINE']
+  createdBy String
+  status String [default: 'REQUESTED']
+  reason String
+  totalAmount Int
+  refundAmount Int
+  createdAt DateTime
+}
+
+Table ReturnItem {
+  id String [pk]
+  returnRequestId String
+  variantId String
+  quantity Int
+  qtyReceived Int
+  reason String
+  condition String
+}
+
+Table ReturnShipment {
+  id String [pk]
+  returnRequestId String
+  courier String
+  trackingNumber String
+}
+
+Table ReturnAudit {
+  id String [pk]
+  returnId String
+  actorId String
+  action String
+  createdAt DateTime
+}
+
+Table Refund {
+  id String [pk]
+  returnRequestId String
+  amount Int
+  method String
+  transactionId String
+  status String [default: 'PENDING']
+}
+
+// ======================== RELATIONSHIPS =======================
+
+Ref: UserAddress.userId > User.id
+Ref: OAuthAccount.userId > User.id
+Ref: Session.userId > User.id
+Ref: UserScentPreference.userId > User.id
+Ref: UserScentPreference.scentFamilyId > ScentFamily.id
+Ref: UserScentPreference.noteId > ScentNote.id
+Ref: QuizResult.userId > User.id
+
+Ref: Product.brandId > Brand.id
+Ref: Product.categoryId > Category.id
+Ref: Product.scentFamilyId > ScentFamily.id
+Ref: ProductVariant.productId > Product.id
+Ref: ProductImage.productId > Product.id
+Ref: ProductScentNote.productId > Product.id
+Ref: ProductScentNote.noteId > ScentNote.id
+
+Ref: UserStore.userId > User.id
+Ref: UserStore.storeId > Store.id
+Ref: StoreStock.storeId > Store.id
+Ref: StoreStock.variantId > ProductVariant.id
+
+Ref: Cart.userId > User.id
+Ref: CartItem.cartId > Cart.id
+Ref: CartItem.variantId > ProductVariant.id
+
+Ref: Order.userId > User.id
+Ref: Order.staffId > User.id
+Ref: Order.storeId > Store.id
+Ref: OrderItem.orderId > Order.id
+Ref: OrderItem.variantId > ProductVariant.id
+Ref: OrderStatusHistory.orderId > Order.id
+Ref: Payment.orderId > Order.id
+Ref: Shipment.orderId > Order.id
+
+Ref: UserPromotion.userId > User.id
+Ref: UserPromotion.promotionId > PromotionCode.id
+Ref: AppliedPromotion.orderId > Order.id
+Ref: AppliedPromotion.promotionCodeId > PromotionCode.id
+Ref: AppliedPromotion.userPromotionId > UserPromotion.id
+
+Ref: Review.userId > User.id
+Ref: Review.productId > Product.id
+Ref: Review.orderItemId > OrderItem.id
+Ref: ReviewImage.reviewId > Review.id
+Ref: ReviewReaction.reviewId > Review.id
+Ref: ReviewReaction.userId > User.id
+Ref: ReviewReport.reviewId > Review.id
+Ref: ReviewReport.userId > User.id
+Ref: ReviewSummary.productId > Product.id
+
+Ref: Notification.userId > User.id
+Ref: AiRequestLog.userId > User.id
+Ref: LoyaltyTransaction.userId > User.id
+
+Ref: ConversationParticipant.conversationId > Conversation.id
+Ref: ConversationParticipant.userId > User.id
+Ref: Message.conversationId > Conversation.id
+Ref: Message.senderId > User.id
+
+Ref: InventoryLog.variantId > ProductVariant.id
+Ref: InventoryLog.staffId > User.id
+Ref: InventoryLog.storeId > Store.id
+Ref: InventoryRequest.storeId > Store.id
+Ref: InventoryRequest.variantId > ProductVariant.id
+Ref: InventoryRequest.staffId > User.id
+Ref: InventoryRequest.reviewedBy > User.id
+
+Ref: Favorite.userId > User.id
+Ref: Favorite.productId > Product.id
+Ref: Favorite.variantId > ProductVariant.id
+
+Ref: JournalSection.journalId > Journal.id
+Ref: JournalSection.productId > Product.id
+
+Ref: ReturnRequest.orderId > Order.id
+Ref: ReturnRequest.userId > User.id
+Ref: ReturnRequest.createdBy > User.id
+Ref: ReturnItem.returnRequestId > ReturnRequest.id
+Ref: ReturnItem.variantId > ProductVariant.id
+Ref: ReturnShipment.returnRequestId > ReturnRequest.id
+Ref: ReturnAudit.returnId > ReturnRequest.id
+Ref: Refund.returnRequestId > ReturnRequest.id

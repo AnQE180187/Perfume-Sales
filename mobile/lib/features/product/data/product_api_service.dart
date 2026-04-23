@@ -18,7 +18,6 @@ class ProductApiService {
     int? brandId,
     String? search,
     String? notes,
-    String? occasion,
     int? minPrice,
     int? maxPrice,
   }) async {
@@ -30,7 +29,6 @@ class ProductApiService {
       if (brandId != null) 'brandId': brandId,
       if (search != null) 'search': search,
       if (notes != null) 'notes': notes,
-      if (occasion != null) 'occasion': occasion,
       if (minPrice != null) 'minPrice': minPrice,
       if (maxPrice != null) 'maxPrice': maxPrice,
     };
@@ -58,6 +56,12 @@ class ProductApiService {
   /// GET /catalog/brands
   Future<List<dynamic>> getBrands() async {
     final response = await _client.get(ApiEndpoints.brands);
+    return response.data as List<dynamic>;
+  }
+
+  /// GET /catalog/categories
+  Future<List<dynamic>> getCategories() async {
+    final response = await _client.get(ApiEndpoints.categories);
     return response.data as List<dynamic>;
   }
 }

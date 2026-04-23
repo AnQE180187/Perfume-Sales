@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class HelpArticleDetailScreen extends StatelessWidget {
   final String articleId;
@@ -13,7 +14,8 @@ class HelpArticleDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final article = _getArticleData(articleId);
+    final l10n = AppLocalizations.of(context)!;
+    final article = _getArticleData(articleId, l10n);
 
     return Scaffold(
       backgroundColor: AppTheme.ivoryBackground,
@@ -26,7 +28,7 @@ class HelpArticleDetailScreen extends StatelessWidget {
           onPressed: () => context.pop(),
         ),
         title: Text(
-          article['category']?.toUpperCase() ?? 'TRỢ GIÚP',
+          (article['category'] as String).toUpperCase(),
           style: GoogleFonts.playfairDisplay(
             fontSize: 14,
             fontWeight: FontWeight.w700,
@@ -50,16 +52,26 @@ class HelpArticleDetailScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            ... (article['content'] as List<Widget>),
+            ..._buildContent(article['content'] as String),
             const SizedBox(height: 48),
-            _buildRelatedSection(),
+            _buildRelatedSection(l10n),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildRelatedSection() {
+  List<Widget> _buildContent(String content) {
+    final lines = content.split('\n');
+    return lines.map((line) {
+      if (line.trim().startsWith('•')) {
+        return _bullet(line.trim().substring(1).trim());
+      }
+      return _paragraph(line.trim());
+    }).toList();
+  }
+
+  Widget _buildRelatedSection(AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -70,7 +82,7 @@ class HelpArticleDetailScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'THÔNG TIN NÀY CÓ HỮU ÍCH KHÔNG?',
+            l10n.isHelpful,
             style: GoogleFonts.montserrat(
               fontSize: 10,
               fontWeight: FontWeight.w800,
@@ -81,9 +93,9 @@ class HelpArticleDetailScreen extends StatelessWidget {
           const SizedBox(height: 16),
           Row(
             children: [
-              _buildVoteButton(Icons.thumb_up_outlined, 'Có'),
+              _buildVoteButton(Icons.thumb_up_outlined, l10n.yes),
               const SizedBox(width: 12),
-              _buildVoteButton(Icons.thumb_down_outlined, 'Không'),
+              _buildVoteButton(Icons.thumb_down_outlined, l10n.no),
             ],
           ),
         ],
@@ -107,69 +119,43 @@ class HelpArticleDetailScreen extends StatelessWidget {
     );
   }
 
-  Map<String, dynamic> _getArticleData(String id) {
+  Map<String, dynamic> _getArticleData(String id, AppLocalizations l10n) {
     switch (id) {
       case 'don-hang':
         return {
-          'category': 'Đơn hàng',
-          'title': 'Quy trình đặt hàng & Theo dõi',
-          'content': [
-            _paragraph('Sau khi chọn được mùi hương ưng ý, bạn có thể thực hiện đặt hàng theo các bước sau:'),
-            _bullet('Thêm sản phẩm vào giỏ hàng.'),
-            _bullet('Kiểm tra lại số lượng và dung tích.'),
-            _bullet('Tiến hành thanh toán và điền thông tin địa chỉ.'),
-            _paragraph('Mọi đơn hàng sẽ được xử lý trong vòng 24h.'),
-          ]
+          'category': l10n.catOrders,
+          'title': l10n.artOrdersTitle,
+          'content': l10n.artOrdersContent,
         };
       case 'thanh-toan':
         return {
-          'category': 'Thanh toán',
-          'title': 'Phương thức thanh toán & Bảo mật',
-          'content': [
-            _paragraph('Perfume GPT hiện hỗ trợ 2 phương thức thanh toán chính để đảm bảo tính an toàn và tiện lợi:'),
-            _bullet('Chuyển khoản qua PayOS (Hỗ trợ tất cả ngân hàng nội địa qua QR Code).'),
-            _bullet('Thanh toán khi nhận hàng (COD).'),
-            _paragraph('Mọi thông tin giao dịch của bạn đều được mã hóa và bảo mật tuyệt đối qua cổng thanh toán PayOS.'),
-          ]
+          'category': l10n.catPayments,
+          'title': l10n.artPaymentsTitle,
+          'content': l10n.artPaymentsContent,
         };
       case 'van-chuyen':
         return {
-          'category': 'Vận chuyển',
-          'title': 'Chính sách vận chuyển & Phí',
-          'content': [
-            _paragraph('Chúng tôi hợp tác cùng đơn vị vận chuyển Giao Hàng Nhanh (GHN) để mang sản phẩm đến tay bạn nhanh nhất có thể:'),
-            _bullet('Nội thành: 1-2 ngày làm việc.'),
-            _bullet('Ngoại thành: 3-5 ngày làm việc.'),
-            _paragraph('Phí vận chuyển sẽ được tự động tính toán dựa trên khối lượng sản phẩm và địa chỉ nhận hàng của bạn qua hệ thống GHN.'),
-          ]
+          'category': l10n.catShipping,
+          'title': l10n.artShippingTitle,
+          'content': l10n.artShippingContent,
         };
       case 'ai-tu-van':
         return {
-          'category': 'AI Tư vấn',
-          'title': 'Về hệ thống tư vấn AI của Perfume GPT',
-          'content': [
-            _paragraph('Hệ thống AI của chúng tôi không chỉ là một bộ lọc đơn giản. Nó là kết quả của sự hợp tác giữa các chuyên gia mùi hương và kỹ sư công nghệ:'),
-            _bullet('Phân tích 5 chiều: Cần thiết, Phong cách, Môi trường, Cảm xúc và Ký ức.'),
-            _bullet('Cập nhật liên tục từ dữ liệu khách hàng thực tế.'),
-            _paragraph('Độ chính xác lên đến 98% cho lần đầu tiên sử dụng.'),
-          ]
+          'category': l10n.catAiConsult,
+          'title': l10n.artAiTitle,
+          'content': l10n.artAiContent,
         };
       case 'tai-khoan':
         return {
-          'category': 'Tài khoản',
-          'title': 'Quản lý tài khoản & Bảo mật',
-          'content': [
-            _paragraph('Để đảm bảo quyền lợi và tích lũy điểm thưởng, bạn nên duy trì tài khoản của mình:'),
-            _bullet('Cập nhật thông tin cá nhân trong mục Hồ sơ.'),
-            _bullet('Bật xác thực 2 lớp để tăng cường bảo mật.'),
-            _paragraph('Nếu quên mật khẩu, vui lòng chọn "Quên mật khẩu" tại màn hình đăng nhập để nhận mã khôi phục.'),
-          ]
+          'category': l10n.catAccount,
+          'title': l10n.artAccountTitle,
+          'content': l10n.artAccountContent,
         };
       default:
         return {
-          'category': 'Trợ giúp',
-          'title': 'Thông tin chung',
-          'content': [_paragraph('Vui lòng liên hệ hỗ trợ để biết thêm chi tiết.')]
+          'category': l10n.help,
+          'title': l10n.help,
+          'content': l10n.responseTime5m,
         };
     }
   }

@@ -684,7 +684,7 @@ class _OrderDetailSheet extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(l10n.total, style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white)),
-              Text("${currencyFmt.format(order.finalAmount)}đ", style: GoogleFonts.playfairDisplay(fontSize: 24, fontWeight: FontWeight.w900, color: AppTheme.accentGold)),
+              Text("${currencyFmt.format(order.finalAmount)}đ", style: GoogleFonts.montserrat(fontSize: 22, fontWeight: FontWeight.w800, color: AppTheme.accentGold)),
             ],
           ),
         ],
@@ -820,7 +820,7 @@ class _OrderDetailSheet extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(order.code, style: GoogleFonts.playfairDisplay(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.5)),
+              Text(order.code, style: GoogleFonts.montserrat(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: -0.5)),
               const SizedBox(height: 6),
               Row(
                 children: [
@@ -909,9 +909,9 @@ class _DashboardItem extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           value,
-          style: GoogleFonts.playfairDisplay(
-            fontSize: 18,
-            fontWeight: FontWeight.w900,
+          style: GoogleFonts.montserrat(
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
             color: isGold ? AppTheme.accentGold : (color ?? Colors.white70),
           ),
         ),
@@ -1084,10 +1084,26 @@ class _StatusBadge extends StatelessWidget {
 class _StatusChip extends StatelessWidget {
   final String label;
   final Color color;
-  const _StatusChip({required this.label, required this.color});
+  final bool small;
+  const _StatusChip({required this.label, required this.color, this.small = false});
   @override
   Widget build(BuildContext context) {
-    return Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: color.withOpacity(0.18), borderRadius: AppRadius.chipBorder, border: Border.all(color: color.withOpacity(0.3))), child: Text(label, style: GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.w700, color: color)));
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: small ? 6 : 8, vertical: small ? 2 : 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.18),
+        borderRadius: AppRadius.chipBorder,
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.montserrat(
+          fontSize: small ? 8 : 10,
+          fontWeight: FontWeight.w700,
+          color: color,
+        ),
+      ),
+    );
   }
 }
 
@@ -1146,6 +1162,7 @@ class _HoverableOrderCardState extends State<_HoverableOrderCard> {
             ),
           ),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildProductPreview(order, payBadge),
               const SizedBox(width: 16),
@@ -1153,64 +1170,114 @@ class _HoverableOrderCardState extends State<_HoverableOrderCard> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Top Row: Code and Status
                     Row(
                       children: [
-                        Text(
-                          order.code,
-                          style: GoogleFonts.playfairDisplay(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
+                        Flexible(
+                          child: Text(
+                            order.code,
+                            style: GoogleFonts.montserrat(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        _StatusChip(label: payBadge.label, color: payBadge.color),
-                        if (order.hasReturnRequest) ...[
-                          const SizedBox(width: 4),
-                          _StatusChip(label: "TRẢ HÀNG", color: Colors.blueAccent),
+                        if (!isMobile) ...[
+                          const SizedBox(width: 8),
+                          _StatusChip(label: payBadge.label, color: payBadge.color),
+                          if (order.hasReturnRequest) ...[
+                            const SizedBox(width: 4),
+                            _StatusChip(label: "TRẢ HÀNG", color: Colors.blueAccent),
+                          ],
                         ],
                       ],
                     ),
                     const SizedBox(height: 6),
-                    Row(
+                    
+                    // Middle Row: Price and Count for Mobile
+                    if (isMobile) ...[
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                        Text(
+                      '${widget.currencyFmt.format(order.finalAmount)}đ',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.accentGold,
+                      ),
+                    ),
+                          Wrap(
+                            spacing: 4,
+                            children: [
+                              _StatusChip(label: payBadge.label, color: payBadge.color, small: true),
+                              if (order.hasReturnRequest)
+                                _StatusChip(label: "TRẢ", color: Colors.blueAccent, small: true),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+
+                    // Bottom Row: Meta Info
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 4,
                       children: [
-                        const Icon(Icons.person_outline_rounded, size: 12, color: Colors.white38),
-                        const SizedBox(width: 4),
-                        Text(
-                          order.customerDisplay,
-                          style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white38, fontWeight: FontWeight.w500),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.person_outline_rounded, size: 12, color: Colors.white38),
+                            const SizedBox(width: 4),
+                            Text(
+                              order.customerDisplay,
+                              style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white38, fontWeight: FontWeight.w500),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 12),
-                        const Icon(Icons.access_time_rounded, size: 12, color: Colors.white38),
-                        const SizedBox(width: 4),
-                        Text(
-                          widget.dateFmt.format(order.createdAt.toLocal()),
-                          style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white38, fontWeight: FontWeight.w500),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.access_time_rounded, size: 12, color: Colors.white38),
+                            const SizedBox(width: 4),
+                            Text(
+                              widget.dateFmt.format(order.createdAt.toLocal()),
+                              style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white38, fontWeight: FontWeight.w500),
+                            ),
+                          ],
                         ),
+                        if (isMobile)
+                          Text(
+                            "• ${order.items.length} sản phẩm",
+                            style: GoogleFonts.montserrat(fontSize: 11, color: Colors.white38, fontWeight: FontWeight.w600),
+                          ),
                       ],
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    '${widget.currencyFmt.format(order.finalAmount)}đ',
-                    style: GoogleFonts.playfairDisplay(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
-                      color: AppTheme.accentGold,
-                    ),
-                  ),
-                  Text(
-                    "${order.items.length} sản phẩm",
-                    style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white38, fontWeight: FontWeight.w700),
-                  ),
-                ],
-              ),
               if (!isMobile) ...[
+                const SizedBox(width: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '${widget.currencyFmt.format(order.finalAmount)}đ',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.accentGold,
+                      ),
+                    ),
+                    Text(
+                      "${order.items.length} sản phẩm",
+                      style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white38, fontWeight: FontWeight.w700),
+                    ),
+                  ],
+                ),
                 const SizedBox(width: 20),
                 Icon(Icons.chevron_right_rounded, color: _isHovered ? AppTheme.accentGold : Colors.white10),
               ],
