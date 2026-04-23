@@ -45,7 +45,22 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.46268876155-v14vb0m0vebr971ve1sh9f4vsk4p17hh</string>
+			</array>
+		</dict>
+	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>Ứng dụng cần camera để quét mã vạch sản phẩm tại quầy POS.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Ứng dụng cần micrô để tìm kiếm bằng giọng nói.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Ứng dụng cần nhận dạng giọng nói để chuyển giọng nói thành văn bản.</string>
 </dict>
 </plist>

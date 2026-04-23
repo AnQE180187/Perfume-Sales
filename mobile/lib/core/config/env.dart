@@ -34,7 +34,7 @@ class EnvConfig {
   static String get googleWebClientId {
     final clientId = dotenv.maybeGet('GOOGLE_WEB_CLIENT_ID');
     if (clientId != null && clientId.isNotEmpty) return clientId;
-    return '46268876155-v14vb0m0vebr971ve1sh9f4vsk4p17hh.apps.googleusercontent.com';
+    return '46268876155-4np980qen52od93u9hfeiohghrttei94.apps.googleusercontent.com';
   }
 
   /// Connection timeout in milliseconds.

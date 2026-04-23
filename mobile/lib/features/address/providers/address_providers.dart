@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/address.dart';
 import '../models/address_form_state.dart';
 import '../services/address_service.dart';
+import '../../auth/providers/auth_provider.dart';
 
 final selectedAddressProvider = StateProvider<Address?>((ref) => null);
 
@@ -30,6 +31,9 @@ class AddressListNotifier extends AsyncNotifier<List<Address>> {
       final updated = current.where((item) => item.id != id).toList();
       _syncSelectedAddress(updated);
       state = AsyncData(_sortAddresses(updated));
+      
+      // Refresh profile to update address count for progress bar
+      ref.invalidate(userProfileProvider);
     } catch (error, stack) {
       state = AsyncError(error, stack);
       rethrow;
@@ -93,6 +97,9 @@ class AddressListNotifier extends AsyncNotifier<List<Address>> {
 
       _syncSelectedAddress(normalized, preferId: saved.id);
       state = AsyncData(_sortAddresses(normalized));
+      
+      // Refresh profile to update address count for progress bar
+      ref.invalidate(userProfileProvider);
     } catch (error, stack) {
       state = AsyncError(error, stack);
       rethrow;

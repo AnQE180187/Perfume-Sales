@@ -25,12 +25,22 @@ class ProfileService {
     String? phone,
     String? gender,
     String? dateOfBirth,
+    String? address,
+    String? city,
+    String? country,
+    double? minBudget,
+    double? maxBudget,
   }) async {
     final body = <String, dynamic>{};
     if (fullName != null) body['fullName'] = fullName;
     if (phone != null) body['phone'] = phone;
     if (gender != null) body['gender'] = gender;
     if (dateOfBirth != null) body['dateOfBirth'] = dateOfBirth;
+    if (address != null) body['address'] = address;
+    if (city != null) body['city'] = city;
+    if (country != null) body['country'] = country;
+    if (minBudget != null) body['budgetMin'] = minBudget.toInt();
+    if (maxBudget != null) body['budgetMax'] = maxBudget.toInt();
 
     final response = await _apiClient.patch<Map<String, dynamic>>(
       '/users/me',

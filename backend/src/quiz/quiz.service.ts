@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AiService } from '../ai/ai.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { UsersService } from '../users/users.service';
 
 export interface QuizAnswers {
     gender?: 'MALE' | 'FEMALE' | 'UNISEX';
@@ -31,6 +32,7 @@ export class QuizService {
         private readonly prisma: PrismaService,
         private readonly aiService: AiService,
         private readonly notificationsService: NotificationsService,
+        private readonly usersService: UsersService,
     ) { }
 
     async submitQuiz(
@@ -73,6 +75,9 @@ export class QuizService {
                 content: 'Kết quả phân tích mùi hương dựa trên Quiz của bạn đã sẵn sàng. Xem ngay các gợi ý dành riêng cho bạn!',
                 data: { quizId: quizResult.id },
             }).catch(() => {});
+
+            // Check for profile completion bonus (Quiz might be the last step)
+            await this.usersService.checkAndAwardProfileCompletionBonus(userId);
         }
 
         return { quizId: quizResult.id, recommendations: enriched };

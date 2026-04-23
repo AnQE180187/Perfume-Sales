@@ -6,12 +6,15 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../chat/providers/chat_providers.dart';
 import '../../../chat/models/chat_models.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class ContactUsScreen extends ConsumerWidget {
   const ContactUsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Scaffold(
       backgroundColor: AppTheme.ivoryBackground,
       appBar: AppBar(
@@ -23,7 +26,7 @@ class ContactUsScreen extends ConsumerWidget {
           onPressed: () => context.pop(),
         ),
         title: Text(
-          'LIÊN HỆ',
+          l10n.contactTitle,
           style: GoogleFonts.playfairDisplay(
             fontSize: 16,
             fontWeight: FontWeight.w700,
@@ -39,7 +42,7 @@ class ContactUsScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'KÊNH HỖ TRỢ TRỰC TUYẾN',
+              l10n.supportChannels,
               style: GoogleFonts.montserrat(
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
@@ -50,8 +53,8 @@ class ContactUsScreen extends ConsumerWidget {
             const SizedBox(height: 16),
             _buildContactMethod(
               Icons.chat_bubble_outline_rounded,
-              'Trò chuyện trực tiếp',
-              'Thời gian phản hồi ~ 5 phút',
+              l10n.liveChat,
+              l10n.responseTime5m,
               onTap: () async {
                 final adminAsync = ref.read(adminContactProvider);
                 adminAsync.whenData((admin) async {
@@ -70,19 +73,19 @@ class ContactUsScreen extends ConsumerWidget {
             ),
             _buildContactMethod(
               Icons.mail_outline_rounded,
-              'Gửi Email cho chúng tôi',
+              l10n.sendEmail,
               'concierge@perfumegpt.com',
               onTap: () {},
             ),
             _buildContactMethod(
               Icons.phone_iphone_rounded,
-              'Hotline hỗ trợ 24/7',
-              '1900 8888 (Miễn phí)',
+              l10n.hotline247,
+              '1900 8888 (${l10n.freeHotline})',
               onTap: () {},
             ),
             const SizedBox(height: 32),
             Text(
-              'GỬI LỜI NHẮN CHO CHÚNG TÔI',
+              l10n.sendMessage,
               style: GoogleFonts.montserrat(
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
@@ -91,7 +94,7 @@ class ContactUsScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 16),
-            _buildForm(),
+            _buildForm(l10n),
             const SizedBox(height: 40),
           ],
         ),
@@ -158,7 +161,7 @@ class ContactUsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildForm() {
+  Widget _buildForm(AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -167,11 +170,11 @@ class ContactUsScreen extends ConsumerWidget {
       ),
       child: Column(
         children: [
-          _buildTextField('Họ và tên'),
+          _buildTextField(l10n.fullName),
           const SizedBox(height: 16),
-          _buildTextField('Địa chỉ Email'),
+          _buildTextField(l10n.email),
           const SizedBox(height: 16),
-          _buildTextField('Nội dung tin nhắn', maxLines: 4),
+          _buildTextField(l10n.message, maxLines: 4),
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
@@ -186,7 +189,7 @@ class ContactUsScreen extends ConsumerWidget {
                 ),
               ),
               child: Text(
-                'GỬI YÊU CẦU',
+                l10n.sendRequest.toUpperCase(),
                 style: GoogleFonts.montserrat(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,

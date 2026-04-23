@@ -13,6 +13,13 @@ class UserProfile {
   final DateTime memberSince;
   final List<String> olfactoryTags;
   final bool hasAiProfile;
+  final bool isEmailVerified;
+  final double? minBudget;
+  final double? maxBudget;
+  final String? address;
+  final String? city;
+  final String? country;
+  final int addressCount;
 
   const UserProfile({
     required this.id,
@@ -25,10 +32,51 @@ class UserProfile {
     required this.memberSince,
     this.olfactoryTags = const [],
     this.hasAiProfile = false,
+    this.isEmailVerified = false,
+    this.minBudget,
+    this.maxBudget,
+    this.address,
+    this.city,
+    this.country,
+    this.addressCount = 0,
   });
 
   String get memberSinceText {
     return 'Thành viên từ ${memberSince.year}';
+  }
+
+  List<Map<String, dynamic>> get completionCriteria {
+    return [
+      {'label': 'Thông tin cơ bản', 'isDone': true, 'value': 10},
+      {'label': 'Xác thực Email', 'isDone': isEmailVerified, 'value': 10},
+      {'label': 'Số điện thoại', 'isDone': phone != null && phone!.isNotEmpty, 'value': 10},
+      {'label': 'Giới tính', 'isDone': gender != null && gender!.isNotEmpty, 'value': 10},
+      {'label': 'Ngày sinh', 'isDone': dateOfBirth != null, 'value': 10},
+      {'label': 'Ảnh đại diện', 'isDone': avatarUrl != null && avatarUrl!.isNotEmpty, 'value': 10},
+      {'label': 'Địa chỉ nhận hàng', 'isDone': addressCount > 0, 'value': 10},
+      {'label': 'Sở thích ngân sách', 'isDone': minBudget != null && maxBudget != null, 'value': 10},
+      {'label': 'Hồ sơ Scent AI (+20%)', 'isDone': hasAiProfile, 'value': 20},
+    ];
+  }
+
+  double get completionPercentage {
+    double progress = 0.1; // Base: Name & Email (10%)
+    if (isEmailVerified) progress += 0.1;
+    if (phone != null && phone!.isNotEmpty) progress += 0.1;
+    if (gender != null && gender!.isNotEmpty) progress += 0.1;
+    if (dateOfBirth != null) progress += 0.1;
+    if (avatarUrl != null && avatarUrl!.isNotEmpty) progress += 0.1;
+    
+    // Shipping Address (10%)
+    if (addressCount > 0) progress += 0.1;
+
+    // Budget Preferences (10%)
+    if (minBudget != null && maxBudget != null) progress += 0.1;
+
+    // AI Scent Profile (20%)
+    if (hasAiProfile) progress += 0.2;
+    
+    return progress > 1.0 ? 1.0 : (progress < 0 ? 0 : progress);
   }
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -55,6 +103,19 @@ class UserProfile {
         (json['hasAiProfile'] as bool?) ??
         false;
 
+    final isEmailVerified =
+        (json['emailVerified'] as bool?) ??
+        (json['email_verified'] as bool?) ??
+        (json['is_email_verified'] as bool?) ??
+        (json['isEmailVerified'] as bool?) ??
+        false;
+    final minBudget = (json['budgetMin'] ?? json['budget_min'] ?? json['minBudget'])?.toDouble();
+    final maxBudget = (json['budgetMax'] ?? json['budget_max'] ?? json['maxBudget'])?.toDouble();
+    final address = (json['address'] ?? '') as String?;
+    final city = (json['city'] ?? '') as String?;
+    final country = (json['country'] ?? '') as String?;
+    final addressCount = (json['_count']?['addresses'] ?? 0) as int;
+
     return UserProfile(
       id: id,
       name: name,
@@ -66,6 +127,13 @@ class UserProfile {
       memberSince: memberSince,
       olfactoryTags: olfactoryTags,
       hasAiProfile: hasAiProfile,
+      isEmailVerified: isEmailVerified,
+      minBudget: minBudget,
+      maxBudget: maxBudget,
+      address: address,
+      city: city,
+      country: country,
+      addressCount: addressCount,
     );
   }
 
@@ -81,6 +149,12 @@ class UserProfile {
       'created_at': memberSince.toIso8601String(),
       'olfactory_tags': olfactoryTags,
       'has_ai_profile': hasAiProfile,
+      'is_email_verified': isEmailVerified,
+      'budgetMin': minBudget,
+      'budgetMax': maxBudget,
+      'address': address,
+      'city': city,
+      'country': country,
     };
   }
 }

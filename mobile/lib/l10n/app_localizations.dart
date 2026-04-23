@@ -581,7 +581,7 @@ abstract class AppLocalizations {
   /// No description provided for @fullName.
   ///
   /// In en, this message translates to:
-  /// **'FULL NAME'**
+  /// **'Full Name'**
   String get fullName;
 
   /// No description provided for @phoneOptional.
@@ -749,7 +749,7 @@ abstract class AppLocalizations {
   /// No description provided for @language.
   ///
   /// In en, this message translates to:
-  /// **'LANGUAGE'**
+  /// **'Language'**
   String get language;
 
   /// No description provided for @concierge.
@@ -2183,7 +2183,7 @@ abstract class AppLocalizations {
   /// No description provided for @appSettings.
   ///
   /// In en, this message translates to:
-  /// **'APP'**
+  /// **'APP INFORMATION'**
   String get appSettings;
 
   /// No description provided for @support.
@@ -3311,13 +3311,13 @@ abstract class AppLocalizations {
   /// No description provided for @recipientNameHint.
   ///
   /// In en, this message translates to:
-  /// **'Enter recipient name'**
+  /// **'Enter recipient\'s full name'**
   String get recipientNameHint;
 
   /// No description provided for @phone.
   ///
   /// In en, this message translates to:
-  /// **'Phone'**
+  /// **'Phone Number'**
   String get phone;
 
   /// No description provided for @phoneHint.
@@ -3329,7 +3329,7 @@ abstract class AppLocalizations {
   /// No description provided for @deliveryNote.
   ///
   /// In en, this message translates to:
-  /// **'Delivery Note'**
+  /// **'Delivery Note (Optional)'**
   String get deliveryNote;
 
   /// No description provided for @location.
@@ -3365,7 +3365,7 @@ abstract class AppLocalizations {
   /// No description provided for @specificAddressHint.
   ///
   /// In en, this message translates to:
-  /// **'House number, street...'**
+  /// **'House number, street name, ward, district, city'**
   String get specificAddressHint;
 
   /// No description provided for @otherOptions.
@@ -3383,7 +3383,7 @@ abstract class AppLocalizations {
   /// No description provided for @noteHint.
   ///
   /// In en, this message translates to:
-  /// **'Delivery instructions...'**
+  /// **'Example: Deliver during office hours, call before arriving...'**
   String get noteHint;
 
   /// No description provided for @setDefaultAddress.
@@ -4973,37 +4973,37 @@ abstract class AppLocalizations {
   /// No description provided for @manageDeliveryPoints.
   ///
   /// In en, this message translates to:
-  /// **'Manage Delivery Points'**
+  /// **'MANAGE DELIVERY POINTS'**
   String get manageDeliveryPoints;
 
   /// No description provided for @shippingAddressDesc.
   ///
   /// In en, this message translates to:
-  /// **'Select a default address for future orders, or save separate gift/office addresses for faster checkouts.'**
+  /// **'Store your delivery locations for the fastest and most convenient checkout process.'**
   String get shippingAddressDesc;
 
   /// No description provided for @savedAddressesCount.
   ///
   /// In en, this message translates to:
-  /// **'{count} saved addresses'**
+  /// **'{count, plural, =1{1 saved address} other{{count} saved addresses}}'**
   String savedAddressesCount(int count);
 
   /// No description provided for @currentDefaultIs.
   ///
   /// In en, this message translates to:
-  /// **'Current default is {label}.'**
-  String currentDefaultIs(Object label);
+  /// **'Current default is {label}'**
+  String currentDefaultIs(String label);
 
   /// No description provided for @priorityRecipient.
   ///
   /// In en, this message translates to:
-  /// **'Priority recipient: {name}.'**
-  String priorityRecipient(Object name);
+  /// **'Priority recipient: {name}'**
+  String priorityRecipient(String name);
 
   /// No description provided for @canChangeBeforeCheckout.
   ///
   /// In en, this message translates to:
-  /// **'You can quickly change delivery destination before final checkout.'**
+  /// **'. You can change it before checkout.'**
   String get canChangeBeforeCheckout;
 
   /// No description provided for @savedAddressesUpper.
@@ -5021,49 +5021,49 @@ abstract class AppLocalizations {
   /// No description provided for @deliveryTipsTitle.
   ///
   /// In en, this message translates to:
-  /// **'Delivery Tips'**
+  /// **'DELIVERY TIPS'**
   String get deliveryTipsTitle;
 
   /// No description provided for @deliveryTipNoAddress.
   ///
   /// In en, this message translates to:
-  /// **'Create your first address so checkout can automatically fill your recipient info.'**
+  /// **'Set a default address to receive optimal shipping suggestions from Perfume GPT.'**
   String get deliveryTipNoAddress;
 
   /// No description provided for @deliveryTipWithAddress.
   ///
   /// In en, this message translates to:
-  /// **'Current default is {label}. If this is an office, always include floor and company name for smoother delivery.'**
-  String deliveryTipWithAddress(Object label);
+  /// **'Perfume GPT will prioritize suggesting the best time slots and shipping methods for your {label}.'**
+  String deliveryTipWithAddress(String label);
 
   /// No description provided for @addressFormTitleAdd.
   ///
   /// In en, this message translates to:
-  /// **'Add Shipping Address'**
+  /// **'Add Address'**
   String get addressFormTitleAdd;
 
   /// No description provided for @addressFormTitleEdit.
   ///
   /// In en, this message translates to:
-  /// **'Edit Shipping Address'**
+  /// **'Edit Address'**
   String get addressFormTitleEdit;
 
   /// No description provided for @addressFormSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Save delivery info for faster and more accurate checkout.'**
+  /// **'Please provide accurate information to ensure your order is delivered to the right person at the right time.'**
   String get addressFormSubtitle;
 
   /// No description provided for @setAsDefaultAddressDesc.
   ///
   /// In en, this message translates to:
-  /// **'This address will be prioritized and pre-filled during checkout.'**
+  /// **'This address will be automatically selected when you proceed to checkout.'**
   String get setAsDefaultAddressDesc;
 
   /// No description provided for @errorRequiredFields.
   ///
   /// In en, this message translates to:
-  /// **'Please fill all required fields'**
+  /// **'Please fill in all required fields'**
   String get errorRequiredFields;
 
   /// No description provided for @defaultAddressUpdated.
@@ -5075,20 +5075,20 @@ abstract class AppLocalizations {
   /// No description provided for @addressAddedSuccess.
   ///
   /// In en, this message translates to:
-  /// **'New shipping address added'**
+  /// **'New address added successfully'**
   String get addressAddedSuccess;
 
   /// No description provided for @addressUpdatedSuccess.
   ///
   /// In en, this message translates to:
-  /// **'Shipping address updated'**
+  /// **'Address updated successfully'**
   String get addressUpdatedSuccess;
 
   /// No description provided for @addressDeletedSuccess.
   ///
   /// In en, this message translates to:
-  /// **'Address {label} deleted'**
-  String addressDeletedSuccess(Object label);
+  /// **'Deleted address {label}'**
+  String addressDeletedSuccess(String label);
 
   /// No description provided for @notSetLabel.
   ///
@@ -5161,6 +5161,426 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'See less'**
   String get seeLess;
+
+  /// No description provided for @helpCenterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'HELP CENTER'**
+  String get helpCenterTitle;
+
+  /// No description provided for @howCanWeHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'HOW CAN WE HELP YOU?'**
+  String get howCanWeHelp;
+
+  /// No description provided for @searchIssueHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search your issue...'**
+  String get searchIssueHint;
+
+  /// No description provided for @faqTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'FREQUENTLY ASKED QUESTIONS'**
+  String get faqTitle;
+
+  /// No description provided for @catOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Orders'**
+  String get catOrders;
+
+  /// No description provided for @catPayments.
+  ///
+  /// In en, this message translates to:
+  /// **'Payments'**
+  String get catPayments;
+
+  /// No description provided for @catShipping.
+  ///
+  /// In en, this message translates to:
+  /// **'Shipping'**
+  String get catShipping;
+
+  /// No description provided for @catAiConsult.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Consulting'**
+  String get catAiConsult;
+
+  /// No description provided for @catAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get catAccount;
+
+  /// No description provided for @faq1Question.
+  ///
+  /// In en, this message translates to:
+  /// **'How to return products?'**
+  String get faq1Question;
+
+  /// No description provided for @faq1Answer.
+  ///
+  /// In en, this message translates to:
+  /// **'You can send a return request within 7 days of receiving the items. Go to \"My Orders\", select the order, and press \"Request Return\".'**
+  String get faq1Answer;
+
+  /// No description provided for @faq2Question.
+  ///
+  /// In en, this message translates to:
+  /// **'How does the AI recommendation algorithm work?'**
+  String get faq2Question;
+
+  /// No description provided for @faq2Answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Perfume GPT uses a neural system combined with data from 147 sensory points and your lifestyle to coordinate the perfect scent molecules for your identity.'**
+  String get faq2Answer;
+
+  /// No description provided for @faq3Question.
+  ///
+  /// In en, this message translates to:
+  /// **'Does Perfume GPT ship internationally?'**
+  String get faq3Question;
+
+  /// No description provided for @faq3Answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Currently we support shipping in Vietnam and Southeast Asian countries. We are expanding our global network soon.'**
+  String get faq3Answer;
+
+  /// No description provided for @contactTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'CONTACT'**
+  String get contactTitle;
+
+  /// No description provided for @supportChannels.
+  ///
+  /// In en, this message translates to:
+  /// **'ONLINE SUPPORT CHANNELS'**
+  String get supportChannels;
+
+  /// No description provided for @liveChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Live Chat'**
+  String get liveChat;
+
+  /// No description provided for @responseTime5m.
+  ///
+  /// In en, this message translates to:
+  /// **'Response time ~ 5 mins'**
+  String get responseTime5m;
+
+  /// No description provided for @sendEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Send us an Email'**
+  String get sendEmail;
+
+  /// No description provided for @hotline247.
+  ///
+  /// In en, this message translates to:
+  /// **'24/7 Support Hotline'**
+  String get hotline247;
+
+  /// No description provided for @freeHotline.
+  ///
+  /// In en, this message translates to:
+  /// **'Free'**
+  String get freeHotline;
+
+  /// No description provided for @sendMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'SEND US A MESSAGE'**
+  String get sendMessage;
+
+  /// No description provided for @messageContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Message Content'**
+  String get messageContent;
+
+  /// No description provided for @sendRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Request'**
+  String get sendRequest;
+
+  /// No description provided for @sortNewest.
+  ///
+  /// In en, this message translates to:
+  /// **'Newest'**
+  String get sortNewest;
+
+  /// No description provided for @sortPriceLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Price ↑'**
+  String get sortPriceLow;
+
+  /// No description provided for @sortPriceHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'Price ↓'**
+  String get sortPriceHigh;
+
+  /// No description provided for @sortName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name A-Z'**
+  String get sortName;
+
+  /// No description provided for @sortBy.
+  ///
+  /// In en, this message translates to:
+  /// **'SORT BY'**
+  String get sortBy;
+
+  /// No description provided for @noVariantAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No variant available'**
+  String get noVariantAvailable;
+
+  /// No description provided for @removedFromWishlist.
+  ///
+  /// In en, this message translates to:
+  /// **'Removed from wishlist'**
+  String get removedFromWishlist;
+
+  /// No description provided for @undo.
+  ///
+  /// In en, this message translates to:
+  /// **'UNDO'**
+  String get undo;
+
+  /// No description provided for @remove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get remove;
+
+  /// No description provided for @itemsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 item} other{{count} items}}'**
+  String itemsCount(int count);
+
+  /// No description provided for @achWelcomeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'First Step'**
+  String get achWelcomeTitle;
+
+  /// No description provided for @achWelcomeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Join the PerfumeGPT fragrance community'**
+  String get achWelcomeDesc;
+
+  /// No description provided for @achExplorerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scent Explorer'**
+  String get achExplorerTitle;
+
+  /// No description provided for @achExplorerDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete your AI Scent Profile (Quiz)'**
+  String get achExplorerDesc;
+
+  /// No description provided for @achNoteMasterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Note Master'**
+  String get achNoteMasterTitle;
+
+  /// No description provided for @achNoteMasterDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Discover more than 5 characteristic notes'**
+  String get achNoteMasterDesc;
+
+  /// No description provided for @achShopperTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Elite Shopper'**
+  String get achShopperTitle;
+
+  /// No description provided for @achShopperDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Place your first order'**
+  String get achShopperDesc;
+
+  /// No description provided for @achReviewerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review King'**
+  String get achReviewerTitle;
+
+  /// No description provided for @achReviewerDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave at least 3 detailed reviews'**
+  String get achReviewerDesc;
+
+  /// No description provided for @achievementsHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'ACHIEVEMENTS'**
+  String get achievementsHeader;
+
+  /// No description provided for @addressLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Address Label'**
+  String get addressLabel;
+
+  /// No description provided for @email.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get email;
+
+  /// No description provided for @subject.
+  ///
+  /// In en, this message translates to:
+  /// **'Subject'**
+  String get subject;
+
+  /// No description provided for @message.
+  ///
+  /// In en, this message translates to:
+  /// **'Message'**
+  String get message;
+
+  /// No description provided for @settingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'SETTINGS'**
+  String get settingsTitle;
+
+  /// No description provided for @accountSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'ACCOUNT SETTINGS'**
+  String get accountSettings;
+
+  /// No description provided for @security.
+  ///
+  /// In en, this message translates to:
+  /// **'Security'**
+  String get security;
+
+  /// No description provided for @aboutUs.
+  ///
+  /// In en, this message translates to:
+  /// **'About Us'**
+  String get aboutUs;
+
+  /// No description provided for @deleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account'**
+  String get deleteAccount;
+
+  /// No description provided for @deleteAccountConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'This action cannot be undone. Are you sure you want to delete your account?'**
+  String get deleteAccountConfirm;
+
+  /// No description provided for @recentlyViewed.
+  ///
+  /// In en, this message translates to:
+  /// **'RECENTLY VIEWED'**
+  String get recentlyViewed;
+
+  /// No description provided for @isHelpful.
+  ///
+  /// In en, this message translates to:
+  /// **'WAS THIS INFORMATION HELPFUL?'**
+  String get isHelpful;
+
+  /// No description provided for @yes.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get yes;
+
+  /// No description provided for @help.
+  ///
+  /// In en, this message translates to:
+  /// **'Help'**
+  String get help;
+
+  /// No description provided for @artOrdersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ordering Process & Tracking'**
+  String get artOrdersTitle;
+
+  /// No description provided for @artOrdersContent.
+  ///
+  /// In en, this message translates to:
+  /// **'After choosing your favorite scent, you can place an order by following these steps:\n• Add product to cart.\n• Check quantity and volume.\n• Proceed to checkout and fill in address information.\nAll orders will be processed within 24h.'**
+  String get artOrdersContent;
+
+  /// No description provided for @artPaymentsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Methods & Security'**
+  String get artPaymentsTitle;
+
+  /// No description provided for @artPaymentsContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Perfume GPT currently supports 2 main payment methods to ensure safety and convenience:\n• Bank Transfer via PayOS (Supports all domestic banks via QR Code).\n• Cash on Delivery (COD).\nAll your transaction information is encrypted and securely protected via PayOS payment gateway.'**
+  String get artPaymentsContent;
+
+  /// No description provided for @artShippingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shipping Policy & Fees'**
+  String get artShippingTitle;
+
+  /// No description provided for @artShippingContent.
+  ///
+  /// In en, this message translates to:
+  /// **'We partner with Giao Hàng Nhanh (GHN) to deliver products to you as quickly as possible:\n• Urban areas: 1-2 business days.\n• Suburbs/Other: 3-5 business days.\nShipping fees will be automatically calculated based on product weight and your delivery address via GHN system.'**
+  String get artShippingContent;
+
+  /// No description provided for @artAiTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'About Perfume GPT AI Consulting System'**
+  String get artAiTitle;
+
+  /// No description provided for @artAiContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Our AI system is not just a simple filter. It is the result of collaboration between fragrance experts and technology engineers:\n• 5-dimensional analysis: Essential, Style, Environment, Emotion, and Memory.\n• Continuous updates from actual customer data.\nAccuracy up to 98% for first-time use.'**
+  String get artAiContent;
+
+  /// No description provided for @artAccountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Account Management & Security'**
+  String get artAccountTitle;
+
+  /// No description provided for @artAccountContent.
+  ///
+  /// In en, this message translates to:
+  /// **'To ensure benefits and accumulate reward points, you should maintain your account:\n• Update personal information in Profile.\n• Turn on 2-factor authentication for enhanced security.\nIf you forget your password, please select \"Forgot Password\" at the login screen to receive a recovery code.'**
+  String get artAccountContent;
 }
 
 class _AppLocalizationsDelegate

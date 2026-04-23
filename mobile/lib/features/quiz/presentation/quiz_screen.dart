@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/glass_container.dart';
 import '../providers/quiz_provider.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../../../l10n/app_localizations.dart';
 
 class QuizScreen extends ConsumerStatefulWidget {
@@ -295,9 +296,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
         break;
       case 2:
         questionText = l10n.q3Text;
-        optionTitles = questionRaw.options
-            .map((o) => o.title)
-            .toList(); // Budget values are fine as is
+        optionTitles = ['< 500K', '500K – 1M', '1M – 2M', '2M – 5M', '> 5M'];
         break;
       case 3:
         questionText = l10n.q4Text;
@@ -374,6 +373,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
                   fontSize: 28,
                   fontWeight: FontWeight.w700,
                   color: AppTheme.deepCharcoal,
+                  height: 1.2,
                 ),
               ),
             ],

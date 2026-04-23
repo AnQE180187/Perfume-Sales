@@ -175,6 +175,53 @@ class ShimmerListTile extends StatelessWidget {
   }
 }
 
+class ShimmerProductList extends StatelessWidget {
+  final int itemCount;
+  final EdgeInsetsGeometry? padding;
+
+  const ShimmerProductList({super.key, this.itemCount = 6, this.padding});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      padding: padding ?? AppSpacing.screenAll,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: itemCount,
+      itemBuilder: (_, __) => const _ShimmerProductListCard(),
+    );
+  }
+}
+
+class _ShimmerProductListCard extends StatelessWidget {
+  const _ShimmerProductListCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        children: [
+          ShimmerBox(width: 90, height: 90, borderRadius: AppRadius.md),
+          AppSpacing.horzMd,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const ShimmerBox(height: 10, width: 60),
+                AppSpacing.vertSm,
+                const ShimmerBox(height: 16),
+                AppSpacing.vertSm,
+                const ShimmerBox(height: 14, width: 100),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Full-width card skeleton — for alert cards, order cards, etc.
 class ShimmerCard extends StatelessWidget {
   final double height;

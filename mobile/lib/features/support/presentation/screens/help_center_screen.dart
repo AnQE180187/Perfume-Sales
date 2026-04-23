@@ -3,54 +3,56 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/routing/app_routes.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class HelpCenterScreen extends StatelessWidget {
   const HelpCenterScreen({super.key});
 
-  static const List<Map<String, dynamic>> _categories = [
+  static List<Map<String, dynamic>> _getCategories(AppLocalizations l10n) => [
     {
       'id': 'don-hang',
       'icon': Icons.shopping_bag_outlined,
-      'title': 'Đơn hàng'
+      'title': l10n.catOrders
     },
     {
       'id': 'thanh-toan',
       'icon': Icons.payment_outlined,
-      'title': 'Thanh toán'
+      'title': l10n.catPayments
     },
     {
       'id': 'van-chuyen',
       'icon': Icons.local_shipping_outlined,
-      'title': 'Vận chuyển'
+      'title': l10n.catShipping
     },
     {
       'id': 'ai-tu-van',
       'icon': Icons.auto_awesome_outlined,
-      'title': 'AI Tư vấn'
+      'title': l10n.catAiConsult
     },
-    {'id': 'tai-khoan', 'icon': Icons.person_outline_rounded, 'title': 'Tài khoản'},
+    {'id': 'tai-khoan', 'icon': Icons.person_outline_rounded, 'title': l10n.catAccount},
   ];
 
-  static const List<Map<String, String>> _faqs = [
+  static List<Map<String, String>> _getFaqs(AppLocalizations l10n) => [
     {
-      'question': 'Làm thế nào để đổi trả sản phẩm?',
-      'answer':
-          'Bạn có thể gửi yêu cầu đổi trả trong vòng 7 ngày kể từ khi nhận hàng. Vui lòng vào mục "Đơn hàng của tôi", chọn đơn hàng cần đổi trả và nhấn "Yêu cầu hoàn trả".'
+      'question': l10n.faq1Question,
+      'answer': l10n.faq1Answer
     },
     {
-      'question': 'Thuật toán AI gợi ý mùi hương hoạt động ra sao?',
-      'answer':
-          'Perfume GPT sử dụng hệ thống thần kinh nhân tạo kết hợp với dữ liệu về 147 điểm cảm quan và lối sống của bạn để phối hợp các phân tử mùi hương phù hợp nhất với bản sắc riêng của bạn.'
+      'question': l10n.faq2Question,
+      'answer': l10n.faq2Answer
     },
     {
-      'question': 'Perfume GPT có giao hàng quốc tế không?',
-      'answer':
-          'Hiện tại chúng tôi hỗ trợ giao hàng tại Việt Nam và các quốc gia khu vực Đông Nam Á. Chúng tôi đang mở rộng mạng lưới giao hàng toàn cầu trong thời gian tới.'
+      'question': l10n.faq3Question,
+      'answer': l10n.faq3Answer
     },
   ];
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final categories = _getCategories(l10n);
+    final faqs = _getFaqs(l10n);
+
     return Scaffold(
       backgroundColor: AppTheme.ivoryBackground,
       appBar: AppBar(
@@ -62,7 +64,7 @@ class HelpCenterScreen extends StatelessWidget {
           onPressed: () => context.pop(),
         ),
         title: Text(
-          'TRUNG TÂM TRỢ GIÚP',
+          l10n.helpCenterTitle,
           style: GoogleFonts.playfairDisplay(
             fontSize: 16,
             fontWeight: FontWeight.w700,
@@ -82,7 +84,7 @@ class HelpCenterScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'CHÚNG TÔI CÓ THỂ GIÚP GÌ CHO BẠN?',
+                    l10n.howCanWeHelp,
                     style: GoogleFonts.montserrat(
                       fontSize: 11,
                       fontWeight: FontWeight.w800,
@@ -106,7 +108,7 @@ class HelpCenterScreen extends StatelessWidget {
                     ),
                     child: TextField(
                       decoration: InputDecoration(
-                        hintText: 'Tìm kiếm vấn đề của bạn...',
+                        hintText: l10n.searchIssueHint,
                         hintStyle: GoogleFonts.montserrat(
                           fontSize: 14,
                           color: AppTheme.mutedSilver.withValues(alpha: 0.6),
@@ -137,7 +139,7 @@ class HelpCenterScreen extends StatelessWidget {
               ),
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
-                  final cat = _categories[index];
+                  final cat = categories[index];
                   return _buildCategoryCard(
                     context,
                     cat['icon'] as IconData,
@@ -145,7 +147,7 @@ class HelpCenterScreen extends StatelessWidget {
                     cat['id'] as String,
                   );
                 },
-                childCount: _categories.length,
+                childCount: categories.length,
               ),
             ),
           ),
@@ -155,7 +157,7 @@ class HelpCenterScreen extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(24, 40, 24, 16),
               child: Text(
-                'CÂU HỎI THƯỜNG GẶP',
+                l10n.faqTitle,
                 style: GoogleFonts.montserrat(
                   fontSize: 11,
                   fontWeight: FontWeight.w800,
@@ -169,10 +171,10 @@ class HelpCenterScreen extends StatelessWidget {
           SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, index) {
-                final faq = _faqs[index];
+                final faq = faqs[index];
                 return _buildExpandableFaqItem(faq['question']!, faq['answer']!);
               },
-              childCount: _faqs.length,
+              childCount: faqs.length,
             ),
           ),
 

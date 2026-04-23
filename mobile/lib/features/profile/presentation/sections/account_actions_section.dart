@@ -72,12 +72,6 @@ class AccountActionsSection extends StatelessWidget {
                 title: l10n.aiScentPreferences,
                 onTap: onAiPreferences,
               ),
-              const SizedBox(height: 8),
-              ProfileActionTile(
-                icon: Icons.settings_outlined,
-                title: l10n.settings,
-                onTap: onSettings,
-              ),
             ],
           ),
         ],
@@ -86,53 +80,3 @@ class AccountActionsSection extends StatelessWidget {
   }
 }
 
-/// Logout Section
-class LogoutSection extends StatelessWidget {
-  final VoidCallback onLogout;
-
-  const LogoutSection({super.key, required this.onLogout});
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 48, 20, 40),
-      child: Center(
-        child: InkWell(
-          onTap: onLogout,
-          borderRadius: BorderRadius.circular(30),
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 32),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(30),
-              border: Border.all(
-                color: Colors.red.withValues(alpha: 0.1),
-                width: 0.8,
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.power_settings_new_rounded,
-                  size: 14,
-                  color: Colors.red.withValues(alpha: 0.35),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  l10n.logout.toUpperCase(),
-                  style: GoogleFonts.montserrat(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 2,
-                    color: Colors.red.withValues(alpha: 0.4),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
