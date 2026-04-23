@@ -8,11 +8,9 @@ import '../../../auth/providers/auth_provider.dart';
 import '../../../loyalty/services/loyalty_service.dart';
 import '../../providers/profile_provider.dart';
 import '../../providers/achievements_provider.dart';
-import '../../../product/providers/recently_viewed_provider.dart';
 import '../widgets/animated_profile_header.dart';
 import '../widgets/profile_completion_progress.dart';
 import '../widgets/achievement_badges.dart';
-import '../widgets/recently_viewed_section.dart';
 import '../sections/user_identity_section.dart';
 import '../sections/olfactory_signature_section.dart';
 import '../sections/account_actions_section.dart';
@@ -38,7 +36,6 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profileAsync = ref.watch(profileProvider);
-    final recentlyViewed = ref.watch(recentlyViewedProvider);
     final achievements = ref.watch(achievementsProvider);
 
     return Scaffold(
@@ -71,9 +68,6 @@ class ProfileScreen extends ConsumerWidget {
                     // Achievement Badges
                     AchievementBadges(achievements: achievements),
 
-                    // Recently Viewed
-                    RecentlyViewedSection(products: recentlyViewed),
-
                     // Loyalty CTA
                     _LoyaltyCta(onTap: () => _handleLoyalty(context)),
 
@@ -92,6 +86,7 @@ class ProfileScreen extends ConsumerWidget {
                       onShippingAddresses: () => _handleShippingAddresses(context),
                       onPaymentMethods: () => _handlePaymentMethods(context),
                       onAiPreferences: () => _handleAiPreferences(context),
+                      onQuizHistory: () => _handleQuizHistory(context),
                       onSettings: () => _handleSettings(context),
                       activeShipmentsText: null,
                     ),
@@ -167,6 +162,10 @@ class ProfileScreen extends ConsumerWidget {
 
   void _handleAiPreferences(BuildContext context) {
     context.push(AppRoutes.aiPreferences);
+  }
+
+  void _handleQuizHistory(BuildContext context) {
+    context.push(AppRoutes.quizHistory);
   }
 
   void _handleSettings(BuildContext context) {

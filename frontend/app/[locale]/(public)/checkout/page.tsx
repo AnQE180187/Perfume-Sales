@@ -98,32 +98,32 @@ function CheckoutProgress({
                             "rounded-[1.4rem] border px-3 py-3 transition-all",
                             isActive
                                 ? "border-gold/50 bg-gold/[0.08] shadow-[0_18px_40px_-30px_rgba(197,160,89,0.55)]"
-                                : isDone
-                                    ? "border-emerald-500/25 bg-emerald-500/[0.08]"
-                                    : "border-white/10 bg-white/[0.03]"
-                        )}
+                                 : isDone
+                                     ? "border-emerald-500/25 bg-emerald-500/[0.08]"
+                                     : "border-border/40 bg-muted/20"
+                         )}
                     >
                         <div className="flex items-center gap-3">
                             <div
                                 className={cn(
                                     "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold",
                                     isActive
-                                        ? "bg-gold text-luxury-black"
-                                        : isDone
-                                            ? "bg-emerald-500 text-white"
-                                            : "bg-white/8 text-white/60"
-                                )}
+                                         ? "bg-gold text-luxury-black"
+                                         : isDone
+                                             ? "bg-emerald-500 text-white"
+                                             : "bg-muted text-muted-foreground"
+                                 )}
                             >
                                 {isDone ? <Check size={13} /> : itemIndex}
                             </div>
-                            <div className="min-w-0">
-                                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/38">
-                                    {stepLabel} {itemIndex}
-                                </p>
-                                <p className="mt-1 text-sm font-medium leading-5 text-white">
-                                    {label}
-                                </p>
-                            </div>
+                             <div className="min-w-0">
+                                 <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/50">
+                                     {stepLabel} {itemIndex}
+                                 </p>
+                                 <p className="mt-1 text-sm font-medium leading-5 text-foreground">
+                                     {label}
+                                 </p>
+                             </div>
                         </div>
                     </motion.div>
                 );
@@ -555,28 +555,28 @@ export default function CheckoutPage() {
     }
 
     return (
-        <div className="dark min-h-screen bg-[radial-gradient(circle_at_top,#1a1410_0%,#090909_32%,#050505_100%)] text-white">
+        <div className="min-h-screen bg-background transition-colors text-foreground">
             <main className="container-responsive py-20 lg:py-28">
                 <div className="mx-auto max-w-[1440px]">
                     <div className="grid gap-8 xl:gap-10 lg:grid-cols-[minmax(0,1fr)_390px]">
                         <div className="space-y-6 lg:space-y-8">
-                            <Link
-                                href="/cart"
-                                className="inline-flex min-h-[46px] items-center gap-3 rounded-full border border-white/10 bg-white/[0.03] px-5 text-sm font-medium text-white/70 transition-all hover:border-gold/40 hover:text-gold"
-                            >
-                                <ArrowLeft size={16} />
-                                {t('return_to_cart')}
-                            </Link>
+                             <Link
+                                 href="/cart"
+                                 className="inline-flex min-h-[46px] items-center gap-3 rounded-full border border-border/80 bg-background/50 px-5 text-sm font-medium text-muted-foreground transition-all hover:border-gold/40 hover:text-gold"
+                             >
+                                 <ArrowLeft size={16} />
+                                 {t('return_to_cart')}
+                             </Link>
 
-                            <div className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-6 shadow-[0_28px_90px_-60px_rgba(0,0,0,0.85)] sm:p-8">
+                            <div className="rounded-[2.2rem] border border-border/60 bg-card/40 p-6 shadow-xl backdrop-blur-3xl sm:p-8">
                                 <div className="space-y-3">
-                                    <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold/75">
+                                    <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold-dark dark:text-gold/75">
                                         Checkout
                                     </p>
-                                    <h1 className="text-4xl font-semibold tracking-[-0.04em] text-white md:text-5xl">
+                                    <h1 className="text-4xl font-semibold tracking-[-0.04em] text-foreground md:text-5xl">
                                         {pageTitle}
                                     </h1>
-                                    <p className="max-w-2xl text-sm leading-7 text-white/52">
+                                    <p className="max-w-2xl text-sm leading-7 text-muted-foreground">
                                         {currentStepHint}
                                     </p>
                                 </div>
@@ -599,15 +599,15 @@ export default function CheckoutPage() {
                                         exit={{ opacity: 0, y: -20 }}
                                         className="space-y-6"
                                     >
-                                        <section className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-6 shadow-[0_24px_80px_-56px_rgba(0,0,0,0.8)] sm:p-8">
-                                            <div className="mb-6 space-y-2">
-                                                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-gold/75">
-                                                    {t('shipping_address')}
-                                                </p>
-                                                <h2 className="text-2xl font-semibold tracking-[-0.03em] text-white">
-                                                    {locale === 'vi' ? 'Thông tin giao nhận' : 'Delivery details'}
-                                                </h2>
-                                            </div>
+                                         <section className="rounded-[2.2rem] border border-border/60 bg-card/40 p-6 shadow-xl sm:p-8">
+                                             <div className="mb-6 space-y-2">
+                                                 <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-gold-dark dark:text-gold/75">
+                                                     {t('shipping_address')}
+                                                 </p>
+                                                 <h2 className="text-2xl font-semibold tracking-[-0.03em] text-foreground">
+                                                     {locale === 'vi' ? 'Thông tin giao nhận' : 'Delivery details'}
+                                                 </h2>
+                                             </div>
 
                                             <AddressSelector
                                                 selectedId={selectedAddress?.id}
@@ -787,7 +787,7 @@ export default function CheckoutPage() {
                                                             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/40">
                                                                 {paymentData.accountName}
                                                             </p>
-                                                            <p className="font-mono text-sm text-white/70">
+                                                            <p className="font-mono text-sm text-muted-foreground/70">
                                                                 {paymentData.accountNumber}
                                                             </p>
                                                         </div>
@@ -798,7 +798,7 @@ export default function CheckoutPage() {
                                                             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/40">
                                                                 {locale === 'vi' ? 'Trạng thái' : 'Status'}
                                                             </p>
-                                                            <p className="mt-3 text-base font-semibold text-white">
+                                                            <p className="mt-3 text-base font-semibold text-foreground">
                                                                 {paymentDetected
                                                                     ? (locale === 'vi' ? 'Đã nhận thanh toán' : 'Payment received')
                                                                     : isPaymentExpired
@@ -806,11 +806,11 @@ export default function CheckoutPage() {
                                                                         : t('waiting_for_payment')}
                                                             </p>
                                                         </div>
-                                                        <div className="rounded-[1.4rem] border border-white/10 bg-white/[0.03] p-4">
-                                                            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/40">
+                                                        <div className="rounded-[1.4rem] border border-border/60 bg-card/40 p-4">
+                                                            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground/40">
                                                                 {locale === 'vi' ? 'Thời gian hiệu lực' : 'Validity'}
                                                             </p>
-                                                            <p className="mt-3 text-base font-semibold text-white">
+                                                            <p className="mt-3 text-base font-semibold text-foreground">
                                                                 {locale === 'vi' ? '10 phút' : '10 minutes'}
                                                             </p>
                                                         </div>
@@ -838,7 +838,7 @@ export default function CheckoutPage() {
                                                 className={cn(
                                                     'inline-flex min-h-[54px] items-center justify-center rounded-full px-6 text-sm font-semibold transition-all',
                                                     isPaymentExpired
-                                                        ? 'cursor-not-allowed border border-white/10 bg-white/[0.03] text-white/35'
+                                                        ? 'cursor-not-allowed border border-border/60 bg-card/40 text-foreground/35'
                                                         : 'bg-gold text-luxury-black hover:bg-[#d6b779]'
                                                 )}
                                             >
@@ -848,7 +848,7 @@ export default function CheckoutPage() {
 
                                             <button
                                                 onClick={() => setStep(2)}
-                                                className="inline-flex min-h-[54px] items-center justify-center rounded-full border border-white/10 px-6 text-sm font-medium text-white/66 transition-all hover:border-gold/35 hover:text-gold"
+                                                className="inline-flex min-h-[54px] items-center justify-center rounded-full border border-border/60 px-6 text-sm font-medium text-foreground/66 transition-all hover:border-gold/35 hover:text-gold"
                                             >
                                                 {t('other_method')}
                                             </button>
@@ -859,26 +859,26 @@ export default function CheckoutPage() {
                         </div>
 
                         <aside className="lg:sticky lg:top-28 lg:h-fit">
-                            <div className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-6 shadow-[0_28px_90px_-60px_rgba(0,0,0,0.92)] sm:p-7">
+                            <div className="rounded-[2rem] border border-border/60 bg-card/40 p-6 shadow-[0_28px_90px_-60px_rgba(0,0,0,0.92)] sm:p-7">
                                 <div className="flex items-start justify-between gap-4">
                                     <div>
                                         <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-gold/75">
                                             Order
                                         </p>
-                                        <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-white">
+                                        <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-foreground">
                                             {t('order_summary')}
                                         </h2>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/38">
+                                        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground/38">
                                             {locale === 'vi' ? 'Bước' : 'Step'}
                                         </p>
-                                        <p className="mt-2 text-sm font-semibold text-white">{step}/3</p>
+                                        <p className="mt-2 text-sm font-semibold text-foreground">{step}/3</p>
                                     </div>
                                 </div>
 
                                 <div className="mt-6 space-y-3">
-                                    <div className="flex items-center justify-between text-sm text-white/48">
+                                    <div className="flex items-center justify-between text-sm text-foreground/48">
                                         <span>{locale === 'vi' ? `${cartItems.length} sản phẩm` : `${cartItems.length} items`}</span>
                                         <span>{appliedCoupon ? (locale === 'vi' ? 'Đã áp dụng ưu đãi' : 'Promotion applied') : (locale === 'vi' ? 'Chưa có ưu đãi' : 'No promotion')}</span>
                                     </div>
@@ -886,8 +886,8 @@ export default function CheckoutPage() {
                                     <div className="max-h-[260px] space-y-3 overflow-y-auto pr-1 custom-scrollbar">
                                         {cartItems.length > 0 ? (
                                             cartItems.map((item) => (
-                                                <div key={item.id} className="flex gap-3 rounded-[1.4rem] border border-white/8 bg-white/[0.02] p-3">
-                                                    <div className="relative h-20 w-16 flex-shrink-0 overflow-hidden rounded-[1rem] border border-white/8 bg-white/[0.04]">
+                                                <div key={item.id} className="flex gap-3 rounded-[1.4rem] border border-border/40 bg-muted/20 p-3">
+                                                    <div className="relative h-20 w-16 flex-shrink-0 overflow-hidden rounded-[1rem] border border-border/40 bg-muted/30">
                                                         {item.variant.product.images?.[0]?.url ? (
                                                             <img
                                                                 src={item.variant.product.images[0].url}
@@ -895,63 +895,63 @@ export default function CheckoutPage() {
                                                                 className="h-full w-full object-cover"
                                                             />
                                                         ) : (
-                                                            <div className="flex h-full w-full items-center justify-center text-white/25">-</div>
+                                                            <div className="flex h-full w-full items-center justify-center text-muted-foreground/30">-</div>
                                                         )}
                                                     </div>
                                                     <div className="min-w-0 flex-1">
                                                         <div className="flex items-start justify-between gap-3">
                                                             <div className="min-w-0">
-                                                                <p className="line-clamp-2 text-sm font-medium leading-6 text-white">
+                                                                <p className="line-clamp-2 text-sm font-medium leading-6 text-foreground">
                                                                     {item.variant.product.name}
                                                                 </p>
-                                                                <p className="mt-1 text-xs text-white/42">
+                                                                <p className="mt-1 text-xs text-foreground/42">
                                                                     {item.variant.name}
                                                                 </p>
                                                             </div>
-                                                            <p className="whitespace-nowrap text-sm font-semibold text-white">
+                                                            <p className="whitespace-nowrap text-sm font-semibold text-foreground">
                                                                 {formatCurrency(item.variant.price * item.quantity)}
                                                             </p>
                                                         </div>
-                                                        <p className="mt-2 text-xs text-white/36">
+                                                        <p className="mt-2 text-xs text-foreground/36">
                                                             {t('quantity_label', { qty: item.quantity })}
                                                         </p>
                                                     </div>
                                                 </div>
                                             ))
                                         ) : (
-                                            <div className="rounded-[1.4rem] border border-white/8 bg-white/[0.02] px-4 py-6 text-center text-sm text-white/38">
+                                            <div className="rounded-[1.4rem] border border-border/40 bg-muted/20 px-4 py-6 text-center text-sm text-foreground/38">
                                                 {t('empty_cart')}
                                             </div>
                                         )}
                                     </div>
                                 </div>
 
-                                <div className="mt-6 border-t border-white/8 pt-5 space-y-4">
-                                    <div className="rounded-[1.4rem] border border-white/8 bg-white/[0.02] p-4">
-                                        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/38">
+                                <div className="mt-6 border-t border-border/40 pt-5 space-y-4">
+                                    <div className="rounded-[1.4rem] border border-border/40 bg-muted/20 p-4">
+                                        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground/38">
                                             {t('shipping_address')}
                                         </p>
                                         {selectedAddress ? (
                                             <div className="mt-3 space-y-1">
-                                                <p className="text-sm font-semibold text-white">{selectedAddress.recipientName}</p>
-                                                <p className="text-sm text-white/58">{selectedAddress.phone}</p>
-                                                <p className="text-sm leading-6 text-white/52">
+                                                <p className="text-sm font-semibold text-foreground">{selectedAddress.recipientName}</p>
+                                                <p className="text-sm text-foreground/58">{selectedAddress.phone}</p>
+                                                <p className="text-sm leading-6 text-foreground/52">
                                                     {selectedAddress.detailAddress}, {selectedAddress.wardName}, {selectedAddress.districtName}
                                                 </p>
                                             </div>
                                         ) : (
-                                            <p className="mt-3 text-sm text-white/42">
+                                            <p className="mt-3 text-sm text-foreground/42">
                                                 {locale === 'vi' ? 'Chưa chọn địa chỉ giao hàng.' : 'No shipping address selected yet.'}
                                             </p>
                                         )}
                                     </div>
 
                                     {step >= 2 && (
-                                        <div className="flex items-center justify-between rounded-[1.4rem] border border-white/8 bg-white/[0.02] px-4 py-4">
-                                            <span className="text-sm text-white/52">
+                                        <div className="flex items-center justify-between rounded-[1.4rem] border border-border/40 bg-muted/20 px-4 py-4">
+                                            <span className="text-sm text-foreground/52">
                                                 {locale === 'vi' ? 'Phương thức thanh toán' : 'Payment method'}
                                             </span>
-                                            <span className="text-sm font-semibold text-white">
+                                            <span className="text-sm font-semibold text-foreground">
                                                 {selectedPaymentLabel}
                                             </span>
                                         </div>
@@ -964,13 +964,13 @@ export default function CheckoutPage() {
                                                     <Tag size={18} />
                                                 </span>
                                                 <div>
-                                                    <p className="text-sm font-semibold text-white">{appliedCoupon.code}</p>
+                                                    <p className="text-sm font-semibold text-foreground">{appliedCoupon.code}</p>
                                                     <p className="text-xs text-gold">-{formatCurrency(appliedCoupon.discountAmount)}</p>
                                                 </div>
                                             </div>
                                             <button
                                                 onClick={handleRemoveCoupon}
-                                                className="rounded-full p-2 text-white/48 transition-colors hover:text-red-400"
+                                                className="rounded-full p-2 text-foreground/48 transition-colors hover:text-red-400"
                                             >
                                                 <X size={16} />
                                             </button>
@@ -978,18 +978,18 @@ export default function CheckoutPage() {
                                     ) : (
                                         <button
                                             onClick={() => setIsVoucherModalOpen(true)}
-                                            className="flex w-full items-center justify-between rounded-[1.4rem] border border-dashed border-white/12 bg-white/[0.02] px-4 py-4 text-left transition-all hover:border-gold/35 hover:text-gold"
+                                            className="flex w-full items-center justify-between rounded-[1.4rem] border border-dashed border-white/12 bg-muted/20 px-4 py-4 text-left transition-all hover:border-gold/35 hover:text-gold"
                                         >
                                             <div className="flex items-center gap-3">
-                                                <Tag size={18} className="text-white/50" />
-                                                <span className="text-sm font-medium text-white/68">
+                                                <Tag size={18} className="text-foreground/50" />
+                                                <span className="text-sm font-medium text-foreground/68">
                                                     {t('select_voucher')}
                                                 </span>
                                             </div>
                                             {isApplyingCoupon ? (
                                                 <Loader2 size={16} className="animate-spin text-gold" />
                                             ) : (
-                                                <Plus size={16} className="text-white/40" />
+                                                <Plus size={16} className="text-foreground/40" />
                                             )}
                                         </button>
                                     )}
@@ -1001,10 +1001,10 @@ export default function CheckoutPage() {
                                     )}
                                 </div>
 
-                                <div className="mt-6 border-t border-white/8 pt-5 space-y-3">
-                                    <div className="flex items-center justify-between text-sm text-white/56">
+                                <div className="mt-6 border-t border-border/40 pt-5 space-y-3">
+                                    <div className="flex items-center justify-between text-sm text-foreground/56">
                                         <span>{t('subtotal')}</span>
-                                        <span className="font-medium text-white">{formatCurrency(subtotal)}</span>
+                                        <span className="font-medium text-foreground">{formatCurrency(subtotal)}</span>
                                     </div>
                                     {appliedCoupon && (
                                         <div className="flex items-center justify-between text-sm text-emerald-300">
@@ -1012,9 +1012,9 @@ export default function CheckoutPage() {
                                             <span>-{formatCurrency(couponDiscount)}</span>
                                         </div>
                                     )}
-                                    <div className="flex items-center justify-between text-sm text-white/56">
+                                    <div className="flex items-center justify-between text-sm text-foreground/56">
                                         <span>{t('shipping_fee_summary')}</span>
-                                        <span className="font-medium text-white">
+                                        <span className="font-medium text-foreground">
                                             {ghnEnabled && shippingFee > 0 ? formatCurrency(shippingFee) : t('shipping_free')}
                                         </span>
                                     </div>
@@ -1026,7 +1026,7 @@ export default function CheckoutPage() {
                                             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gold/80">
                                                 {t('total')}
                                             </p>
-                                            <p className="mt-2 text-sm leading-6 text-white/48">
+                                            <p className="mt-2 text-sm leading-6 text-foreground/48">
                                                 {locale === 'vi'
                                                     ? 'Đã gồm phí vận chuyển và ưu đãi.'
                                                     : 'Shipping and discounts included.'}
@@ -1042,7 +1042,7 @@ export default function CheckoutPage() {
                                     <button
                                         onClick={primaryAction.onClick}
                                         disabled={primaryAction.disabled}
-                                        className="mt-6 inline-flex min-h-[56px] w-full items-center justify-center rounded-full bg-gold px-6 text-sm font-semibold tracking-[0.18em] uppercase text-luxury-black transition-all hover:bg-[#d6b779] disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/28"
+                                        className="mt-6 inline-flex min-h-[56px] w-full items-center justify-center rounded-full bg-gold px-6 text-sm font-semibold tracking-[0.18em] uppercase text-luxury-black transition-all hover:bg-[#d6b779] disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-foreground/28"
                                     >
                                         {submitting && step === 2 ? (
                                             <Loader2 size={16} className="mr-3 animate-spin" />
@@ -1065,7 +1065,7 @@ export default function CheckoutPage() {
                                             className={cn(
                                                 'inline-flex min-h-[56px] w-full items-center justify-center rounded-full px-6 text-sm font-semibold tracking-[0.18em] uppercase transition-all',
                                                 isPaymentExpired
-                                                    ? 'cursor-not-allowed border border-white/10 bg-white/[0.03] text-white/28'
+                                                    ? 'cursor-not-allowed border border-border/60 bg-card/40 text-foreground/28'
                                                     : 'bg-gold text-luxury-black hover:bg-[#d6b779]'
                                             )}
                                         >
@@ -1074,7 +1074,7 @@ export default function CheckoutPage() {
 
                                         <button
                                             onClick={() => setStep(2)}
-                                            className="inline-flex min-h-[52px] w-full items-center justify-center rounded-full border border-white/10 px-6 text-sm font-medium text-white/68 transition-all hover:border-gold/35 hover:text-gold"
+                                            className="inline-flex min-h-[52px] w-full items-center justify-center rounded-full border border-border/60 px-6 text-sm font-medium text-foreground/68 transition-all hover:border-gold/35 hover:text-gold"
                                         >
                                             {t('other_method')}
                                         </button>
@@ -1096,23 +1096,23 @@ export default function CheckoutPage() {
                                             animate={{ scale: 1, y: 0 }}
                                             exit={{ scale: 0.96, y: 24 }}
                                             onClick={(e) => e.stopPropagation()}
-                                            className="w-full max-w-xl overflow-hidden rounded-[2rem] border border-white/10 bg-[#101010] p-6 shadow-[0_30px_90px_-50px_rgba(0,0,0,0.9)] sm:p-8"
+                                            className="w-full max-w-xl overflow-hidden rounded-[2.5rem] border border-border/60 bg-card p-6 shadow-[0_30px_90px_-50px_rgba(0,0,0,0.9)] sm:p-8"
                                         >
                                             <div className="flex items-start justify-between gap-4">
                                                 <div>
                                                     <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-gold/75">
                                                         {t('promotion_label')}
                                                     </p>
-                                                    <h3 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-white">
+                                                    <h3 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-foreground">
                                                         {t('vouchers_modal_title')}
                                                     </h3>
-                                                    <p className="mt-2 text-sm text-white/48">
+                                                    <p className="mt-2 text-sm text-foreground/48">
                                                         {t('vouchers_modal_subtitle')}
                                                     </p>
                                                 </div>
                                                 <button
                                                     onClick={() => setIsVoucherModalOpen(false)}
-                                                    className="rounded-full border border-white/10 p-2 text-white/48 transition-colors hover:text-white"
+                                                    className="rounded-full border border-border/60 p-2 text-foreground/48 transition-colors hover:text-foreground"
                                                 >
                                                     <X size={18} />
                                                 </button>
@@ -1131,28 +1131,28 @@ export default function CheckoutPage() {
                                                                 void applyVoucherCode(voucher.promotion.code);
                                                                 setIsVoucherModalOpen(false);
                                                             }}
-                                                            className="flex w-full items-center justify-between rounded-[1.5rem] border border-white/10 bg-white/[0.03] px-5 py-4 text-left transition-all hover:border-gold/30 hover:bg-gold/[0.05]"
+                                                            className="flex w-full items-center justify-between rounded-[1.5rem] border border-border/60 bg-card/40 px-5 py-4 text-left transition-all hover:border-gold/30 hover:bg-gold/[0.05]"
                                                         >
                                                             <div className="flex items-center gap-4">
                                                                 <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gold/12 text-gold">
                                                                     <Tag size={18} />
                                                                 </span>
                                                                 <div>
-                                                                    <p className="text-sm font-semibold text-white">
+                                                                    <p className="text-sm font-semibold text-foreground">
                                                                         {voucher.promotion.code}
                                                                     </p>
-                                                                    <p className="mt-1 text-xs text-white/46">
+                                                                    <p className="mt-1 text-xs text-foreground/46">
                                                                         {voucher.promotion.discountType === 'PERCENTAGE'
                                                                             ? `-${voucher.promotion.discountValue}%`
                                                                             : `-${formatCurrency(voucher.promotion.discountValue)}`}
                                                                     </p>
                                                                 </div>
                                                             </div>
-                                                            <ArrowRight size={16} className="text-white/38" />
+                                                            <ArrowRight size={16} className="text-foreground/38" />
                                                         </button>
                                                     ))
                                                 ) : (
-                                                    <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] px-5 py-8 text-center text-sm text-white/40">
+                                                    <div className="rounded-[1.5rem] border border-border/60 bg-card/40 px-5 py-8 text-center text-sm text-foreground/40">
                                                         {t('no_vouchers')}
                                                     </div>
                                                 )}

@@ -17,10 +17,11 @@ import { type QuizRecommendation } from '@/services/quiz.service';
 
 interface RecommendationCardsProps {
   recommendations: QuizRecommendation[];
+  analysis?: string | null;
   onRetake: () => void;
 }
 
-export function RecommendationCards({ recommendations, onRetake }: RecommendationCardsProps) {
+export function RecommendationCards({ recommendations, analysis, onRetake }: RecommendationCardsProps) {
   const t = useTranslations('quiz');
   const locale = useLocale();
 
@@ -59,7 +60,7 @@ export function RecommendationCards({ recommendations, onRetake }: Recommendatio
     }).format(amount)} ${copy.fallbackPriceSuffix}`;
   };
 
-  if (recommendations.length === 0) {
+  if (!recommendations || recommendations.length === 0) {
     return (
       <div className="mx-auto max-w-3xl">
         <div className="overflow-hidden rounded-[2rem] border border-border bg-card p-8 text-center shadow-[0_20px_60px_-40px_rgba(0,0,0,0.06)] dark:shadow-[0_36px_90px_-54px_rgba(0,0,0,0.88)] lg:p-10">
@@ -138,7 +139,7 @@ export function RecommendationCards({ recommendations, onRetake }: Recommendatio
       </motion.section>
 
       <motion.article
-        initial={{ opacity: 0, y: 22 }}
+        initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, delay: 0.06 }}
         className="mt-6 overflow-hidden rounded-[2rem] border border-border bg-card shadow-[0_40px_100px_-60px_rgba(0,0,0,0.9)]"
@@ -149,7 +150,7 @@ export function RecommendationCards({ recommendations, onRetake }: Recommendatio
               <img
                 src={featured.imageUrl}
                 alt={featured.name}
-                className="h-full w-full object-cover transition-transform duration-700 hover:scale-[1.03]"
+                className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-[1.05]"
               />
             ) : (
               <div className="flex h-full items-center justify-center bg-[radial-gradient(circle_at_top,rgba(197,160,89,0.24),transparent_30%),linear-gradient(180deg,#1a1510,#0b0c0e)] text-gold">
@@ -157,7 +158,7 @@ export function RecommendationCards({ recommendations, onRetake }: Recommendatio
               </div>
             )}
 
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
             <div className="absolute left-6 top-6 inline-flex items-center gap-2 rounded-full border border-white/16 bg-black/25 px-4 py-2 text-sm text-foreground backdrop-blur">
               <CheckCircle2 size={15} className="text-gold" />
@@ -183,7 +184,7 @@ export function RecommendationCards({ recommendations, onRetake }: Recommendatio
                 href={`/products/${featured.productId}`}
                 className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-border bg-secondary text-foreground transition-all duration-300 hover:-translate-y-0.5 hover:border-[#c5a059]/28 hover:text-gold"
               >
-                <ArrowUpRight size={18} />
+                <ArrowUpRight size={24} />
               </Link>
             </div>
 
@@ -196,7 +197,7 @@ export function RecommendationCards({ recommendations, onRetake }: Recommendatio
             </div>
 
             {featured.tags && featured.tags.length > 0 ? (
-              <div className="mt-6 flex flex-wrap gap-2">
+              <div className="mt-8 flex flex-wrap gap-2.5">
                 {featured.tags.map((tag) => (
                   <span
                     key={tag}
@@ -226,7 +227,7 @@ export function RecommendationCards({ recommendations, onRetake }: Recommendatio
 
       {rest.length > 0 ? (
         <section className="mt-8">
-          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between px-2">
             <div>
               <p className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground">{copy.collectionLabel}</p>
               <h3 className="mt-2 font-heading text-3xl tracking-[-0.03em] text-foreground">{copy.featuredLabel}</h3>
@@ -257,7 +258,7 @@ export function RecommendationCards({ recommendations, onRetake }: Recommendatio
                     </div>
                   )}
 
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/65 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                   {rec.brand ? (
                     <div className="absolute left-4 top-4 rounded-full border border-white/14 bg-secondary px-3 py-1.5 text-sm text-foreground backdrop-blur">
                       {rec.brand}

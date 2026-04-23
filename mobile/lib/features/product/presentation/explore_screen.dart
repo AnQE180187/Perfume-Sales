@@ -152,7 +152,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                     padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
-                      childAspectRatio: 0.49,
+                      childAspectRatio: 0.47,
                       crossAxisSpacing: 16,
                       mainAxisSpacing: 16,
                     ),

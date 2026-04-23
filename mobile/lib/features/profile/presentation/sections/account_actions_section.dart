@@ -11,6 +11,7 @@ class AccountActionsSection extends StatelessWidget {
   final VoidCallback onMyOrders;
   final VoidCallback onShippingAddresses;
   final VoidCallback onAiPreferences;
+  final VoidCallback onQuizHistory;
   final VoidCallback onSettings;
   final VoidCallback? onPaymentMethods;
   final String? activeShipmentsText;
@@ -20,6 +21,7 @@ class AccountActionsSection extends StatelessWidget {
     required this.onMyOrders,
     required this.onShippingAddresses,
     required this.onAiPreferences,
+    required this.onQuizHistory,
     required this.onSettings,
     this.onPaymentMethods,
     this.activeShipmentsText,
@@ -71,6 +73,12 @@ class AccountActionsSection extends StatelessWidget {
                 icon: Icons.gesture_outlined,
                 title: l10n.aiScentPreferences,
                 onTap: onAiPreferences,
+              ),
+              const SizedBox(height: 8),
+              ProfileActionTile(
+                icon: Icons.history_edu_rounded,
+                title: l10n.quizHistoryTitle,
+                onTap: onQuizHistory,
               ),
             ],
           ),

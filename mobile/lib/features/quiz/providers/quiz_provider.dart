@@ -218,3 +218,8 @@ final quizProvider = StateNotifierProvider.autoDispose<QuizNotifier, QuizState>(
   final service = ref.watch(quizServiceProvider);
   return QuizNotifier(service: service, ref: ref);
 });
+
+final quizHistoryProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
+  final service = ref.watch(quizServiceProvider);
+  return service.getQuizHistory();
+});
