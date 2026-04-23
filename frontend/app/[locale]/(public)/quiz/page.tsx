@@ -212,13 +212,22 @@ export default function QuizPage() {
 
                     <div className="mt-8 flex flex-wrap items-center gap-3">
                       {isAuthenticated ? (
-                        <button
-                          onClick={handleStart}
-                          className="group inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-[linear-gradient(135deg,#d6b36d,#b68948)] px-8 text-sm font-semibold text-luxury-black shadow-[0_22px_55px_-22px_rgba(197,160,89,0.7)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_30px_75px_-24px_rgba(197,160,89,0.6)]"
-                        >
-                          <Clock3 size={18} />
-                          {locale === 'vi' ? 'Xem Lịch Sử' : 'View History'}
-                        </button>
+                        <>
+                          <button
+                            onClick={handleStart}
+                            className="group inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-[linear-gradient(135deg,#d6b36d,#b68948)] px-8 text-sm font-semibold text-luxury-black shadow-[0_22px_55px_-22px_rgba(197,160,89,0.7)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_30px_75px_-24px_rgba(197,160,89,0.6)]"
+                          >
+                            <FlaskConical size={18} />
+                            {locale === 'vi' ? 'Bắt Đầu Trả Lời' : 'Start Answering'}
+                          </button>
+                          <button
+                            onClick={handleViewHistory}
+                            className="group inline-flex min-h-14 items-center justify-center gap-3 rounded-full border border-border bg-secondary px-8 text-sm font-semibold text-foreground transition-all duration-300 hover:-translate-y-1 hover:border-gold/30 hover:bg-gold/5"
+                          >
+                            <Clock3 size={18} />
+                            {locale === 'vi' ? 'Xem Lịch Sử' : 'View History'}
+                          </button>
+                        </>
                       ) : (
                         <Link
                           href="/login"
