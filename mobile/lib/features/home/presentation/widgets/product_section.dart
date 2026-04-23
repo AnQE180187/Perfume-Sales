@@ -120,6 +120,7 @@ class ProductSection extends ConsumerWidget {
                     product: product,
                     variant: ProductCardVariant.grid,
                     matchPercent: match > 0 ? match : null,
+                    isFavorite: isFav,
                     heroTag: '${title.replaceAll(' ', '_')}_${product.id}',
                     onTap: () => context.push(
                       '/product/${product.id}?heroTag=${title.replaceAll(' ', '_')}_${product.id}',

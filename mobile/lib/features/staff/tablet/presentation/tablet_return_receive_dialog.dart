@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../returns/providers/returns_provider.dart';
@@ -17,6 +19,8 @@ class _TabletReturnReceiveDialogState extends ConsumerState<TabletReturnReceiveD
   final Map<String, int> _receivedQtys = {};
   final Map<String, bool> _sealIntact = {};
   final TextEditingController _noteController = TextEditingController();
+  final List<File> _evidenceFiles = [];
+  final ImagePicker _picker = ImagePicker();
   bool _isSubmitting = false;
 
   @override
@@ -30,30 +34,70 @@ class _TabletReturnReceiveDialogState extends ConsumerState<TabletReturnReceiveD
     }
   }
 
+  Future<void> _pickEvidence() async {
+    final List<XFile> picked = await _picker.pickMultiImage();
+    if (picked.isNotEmpty) {
+      setState(() {
+        _evidenceFiles.addAll(picked.map((x) => File(x.path)));
+      });
+    }
+  }
+
+  void _removeEvidence(int idx) {
+    setState(() => _evidenceFiles.removeAt(idx));
+  }
+
   Future<void> _submit() async {
-    setState(() => _isSubmitting = true);
-    final itemsPayload = _receivedQtys.entries.map((e) => {
-      'variantId': e.key,
-      'qtyReceived': e.value,
-      'sealIntact': _sealIntact[e.key] ?? true,
-    }).toList();
-
-    final success = await ref.read(staffReturnsProvider.notifier).receiveReturn(
-      widget.returnData['id'],
-      items: itemsPayload,
-      receivedLocation: widget.returnData['origin'] == 'POS' ? 'POS' : 'WAREHOUSE',
-      note: _noteController.text.trim(),
-    );
-
-    if (success && mounted) {
-      ref.invalidate(returnDetailsProvider(widget.returnData['id']));
-      ref.read(staffReturnsProvider.notifier).loadReturns();
-      Navigator.pop(context, true);
-    } else if (mounted) {
-      setState(() => _isSubmitting = false);
+    final hasCompromised = _sealIntact.values.any((v) => !v);
+    if (hasCompromised && _evidenceFiles.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Lỗi khi xác nhận nhận hàng."), backgroundColor: Colors.redAccent),
+        const SnackBar(content: Text("Bắt buộc phải có ảnh bằng chứng khi hàng bị lỗi/mất seal."), backgroundColor: Colors.redAccent),
       );
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+    
+    try {
+      final notifier = ref.read(staffReturnsProvider.notifier);
+      
+      // 1. Upload evidence if any
+      List<String>? evidenceUrls;
+      if (_evidenceFiles.isNotEmpty) {
+        evidenceUrls = await notifier.uploadImages(_evidenceFiles);
+      }
+
+      final itemsPayload = _receivedQtys.entries.map((e) => {
+        'variantId': e.key,
+        'qtyReceived': e.value,
+        'sealIntact': _sealIntact[e.key] ?? true,
+      }).toList();
+
+      final success = await notifier.receiveReturn(
+        widget.returnData['id'],
+        items: itemsPayload,
+        receivedLocation: widget.returnData['origin'] == 'POS' ? 'POS' : 'WAREHOUSE',
+        note: _noteController.text.trim(),
+        evidenceImages: evidenceUrls,
+      );
+
+      if (success && mounted) {
+        ref.invalidate(returnDetailsProvider(widget.returnData['id']));
+        ref.read(staffReturnsProvider.notifier).loadReturns();
+        Navigator.pop(context, true);
+      } else if (mounted) {
+        setState(() => _isSubmitting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Lỗi khi xác nhận nhận hàng."), backgroundColor: Colors.redAccent),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Lỗi: $e"), backgroundColor: Colors.redAccent),
+        );
+      }
     }
   }
 
@@ -126,6 +170,11 @@ class _TabletReturnReceiveDialogState extends ConsumerState<TabletReturnReceiveD
                   focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: AppTheme.accentGold)),
                 ),
               ),
+              const SizedBox(height: 24),
+              if (_sealIntact.values.any((v) => !v)) ...[
+                _buildEvidencePicker(),
+                const SizedBox(height: 24),
+              ],
             ],
           ),
         ),
@@ -159,6 +208,74 @@ class _TabletReturnReceiveDialogState extends ConsumerState<TabletReturnReceiveD
         IconButton(
           onPressed: val < max ? () => setState(() => _receivedQtys[vId] = val + 1) : null,
           icon: const Icon(Icons.add_circle_outline, color: AppTheme.accentGold, size: 20),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEvidencePicker() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.error_outline, color: Colors.redAccent, size: 16),
+            const SizedBox(width: 8),
+            Text("BẰNG CHỨNG HÀNG LỖI (BẮT BUỘC)", style: GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.redAccent)),
+          ],
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 80,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            children: [
+              GestureDetector(
+                onTap: _pickEvidence,
+                child: Container(
+                  width: 80,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.white10),
+                    color: Colors.white.withOpacity(0.02),
+                  ),
+                  child: const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.add_a_photo_outlined, color: Colors.white24, size: 20),
+                      SizedBox(height: 4),
+                      Text("THÊM ẢNH", style: TextStyle(fontSize: 8, color: Colors.white24)),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              ..._evidenceFiles.asMap().entries.map((e) => Stack(
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.white10),
+                      image: DecorationImage(image: FileImage(e.value), fit: BoxFit.cover),
+                    ),
+                  ),
+                  Positioned(
+                    top: 0,
+                    right: 8,
+                    child: GestureDetector(
+                      onTap: () => _removeEvidence(e.key),
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        color: Colors.black54,
+                        child: const Icon(Icons.close, size: 14, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              )),
+            ],
+          ),
         ),
       ],
     );

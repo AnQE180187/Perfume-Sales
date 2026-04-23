@@ -9,6 +9,7 @@ class LuxuryNotification {
     required String message,
     String? subMessage,
     String? imageUrl,
+    IconData? icon,
     String? actionLabel,
     VoidCallback? onAction,
   }) {
@@ -37,8 +38,8 @@ class LuxuryNotification {
                     color: AppTheme.accentGold.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(
-                    Icons.shopping_bag_outlined,
+                  child: Icon(
+                    icon ?? Icons.shopping_bag_outlined,
                     color: AppTheme.accentGold,
                     size: 20,
                   ),

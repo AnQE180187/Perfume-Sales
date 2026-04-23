@@ -438,8 +438,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get acquisitionComplete => 'SỞ HỮU THÀNH CÔNG';
 
   @override
-  String get orderCodified =>
-      'Mã định danh phân tử của bạn đã được mã hóa. Mùi hương của bạn đang được chuẩn bị.';
+  String get orderCodified => 'THÔNG TIN ĐƠN HÀNG ĐÃ ĐƯỢC GHI NHẬN';
 
   @override
   String get traceOrder => 'THEO DÕI';
@@ -957,17 +956,49 @@ class AppLocalizationsVi extends AppLocalizations {
       'Lưu ý: Sản phẩm phải còn nguyên tem mác và chưa qua sử dụng.';
 
   @override
-  String get reasonDamaged => 'Sản phẩm bị hư hỏng';
+  String get reasonDamaged => 'Hàng hư hỏng / Chai/lọ bị vỡ';
 
   @override
-  String get reasonWrongItem => 'Giao sai sản phẩm';
+  String get reasonWrongItem => 'Gửi sai sản phẩm';
 
   @override
-  String get reasonScentNotExpected => 'Mùi không như mong đợi';
+  String get reasonScentPreference => 'Mùi hương không phù hợp với sở thích';
+
+  @override
+  String get reasonColorMismatch => 'Màu/sắc tố không đúng như mong đợi';
+
+  @override
+  String get reasonExpired => 'Sản phẩm gần hết hạn sử dụng';
+
+  @override
+  String get reasonQualityNotAsExpected => 'Chất lượng không như kỳ vọng';
+
+  @override
+  String get reasonChangeOfMind => 'Thay đổi ý định không muốn mua';
+
+  @override
+  String get returnCategoryStoreFault =>
+      'Lỗi của Cửa Hàng (Hoàn toàn bộ + phí ship)';
+
+  @override
+  String get returnCategoryOther =>
+      'Lý Do Khác (Hoàn sản phẩm, không hoàn phí ship)';
 
   @override
   String get returnProcessNotice =>
       'Yêu cầu của bạn sẽ được xử lý trong vòng 24-48h';
+
+  @override
+  String get returnRequestSuccess => 'Gửi yêu cầu thành công';
+
+  @override
+  String get returnSuccessSubtitle => 'Yêu cầu của bạn đang được xem xét';
+
+  @override
+  String get viewReturnDetails => 'Xem chi tiết yêu cầu';
+
+  @override
+  String get returnToHome => 'Quay lại trang chủ';
 
   @override
   String get returnStatusRequested => 'Yêu cầu mới';
@@ -992,6 +1023,9 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get returnStatusRejected => 'Bị từ chối';
+
+  @override
+  String get returnStatusRejectedAfterReturn => 'Bị từ chối khi nhận hàng';
 
   @override
   String get returnStatusCancelled => 'Đã hủy';
@@ -1021,7 +1055,8 @@ class AppLocalizationsVi extends AppLocalizations {
   String get returnGuidanceStep2 => 'Cung cấp lý do và tài khoản nhận tiền';
 
   @override
-  String get returnGuidanceStep3 => 'Tải lên ảnh và video minh họa rõ nét';
+  String get returnGuidanceStep3 =>
+      'Tải lên ít nhất 3 ảnh và 1 video minh chứng rõ nét';
 
   @override
   String get returnEvidenceTip1 => 'Chụp rõ các mặt của sản phẩm';
@@ -1042,7 +1077,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get trackMovement => 'Theo dõi lộ trình vận chuyển';
 
   @override
-  String get confirmHandover => 'Xác nhận đã bàn giao bưu tá';
+  String get confirmHandover => 'Xác nhận đã gửi hàng';
 
   @override
   String get submitShipment => 'Gửi thông tin vận chuyển';
@@ -1556,6 +1591,16 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get molecularSignatureDesc =>
       'Mã định danh kỹ thuật số duy nhất cho hồ sơ mùi hương của bạn.';
+
+  @override
+  String get orderIdLabel => 'MÃ ĐƠN HÀNG';
+
+  @override
+  String get estDeliveryDate => 'DỰ KIẾN GIAO HÀNG';
+
+  @override
+  String get orderConfirmationNotice =>
+      'Đơn hàng của bạn sẽ được xác nhận trong vòng 24 giờ tới.';
 
   @override
   String get fullStory => 'CÂU CHUYỆY SẢN PHẨM';

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
 import '../../../../core/api/api_client.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,6 +6,28 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class StaffReturnsService {
   final ApiClient _client;
   StaffReturnsService(this._client);
+
+  Future<List<String>> uploadImages(List<File> images) async {
+    if (images.isEmpty) return [];
+
+    final formData = FormData();
+    for (var image in images) {
+      formData.files.add(
+        MapEntry('images', await MultipartFile.fromFile(image.path)),
+      );
+    }
+
+    final response = await _client.post(
+      '/returns/upload-images',
+      data: formData,
+    );
+
+    final body = response.data;
+    if (body is Map && body['urls'] is List) {
+      return (body['urls'] as List).map((e) => e.toString()).toList();
+    }
+    return [];
+  }
 
   Future<List<dynamic>> listAll({
     String? status,
@@ -38,6 +61,7 @@ class StaffReturnsService {
     required List<Map<String, dynamic>> items,
     required String receivedLocation,
     String? note,
+    List<String>? evidenceImages,
   }) async {
     await _client.post(
       '/returns/admin/$id/receive',
@@ -45,6 +69,25 @@ class StaffReturnsService {
         'items': items,
         'receivedLocation': receivedLocation,
         'note': note,
+        'evidenceImages': evidenceImages,
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>> shipBackAutomated(String id) async {
+    final response = await _client.post('/returns/admin/$id/ship-back-automated');
+    return response.data;
+  }
+
+  Future<void> shipBackManual(String id, {
+    String? courier,
+    required String trackingNumber,
+  }) async {
+    await _client.post(
+      '/returns/admin/$id/ship-back-manual',
+      data: {
+        'courier': courier,
+        'trackingNumber': trackingNumber,
       },
     );
   }

@@ -169,7 +169,13 @@ class Order {
   }
 
   bool get hasActiveReturn {
-    return returnRequests.any((r) => r.status != ReturnStatus.cancelled);
+    if (returnRequests.isEmpty) return false;
+    // An active return is one that hasn't been cancelled or rejected initially.
+    // Rejected after return should still appear in the returns tab.
+    return returnRequests.any((r) => 
+      r.status != ReturnStatus.cancelled && 
+      r.status != ReturnStatus.rejected
+    );
   }
 
   factory Order.fromJson(Map<String, dynamic> json, {List<ShipmentInfo>? shipments}) {

@@ -39,9 +39,11 @@ import {
   Banknote,
   Truck,
   Calendar,
+  Camera,
   Upload,
-  User,
-  Barcode,
+  Send,
+  AlertTriangle,
+  PackageX,
 } from "lucide-react";
 import api from "@/lib/axios";
 import {
@@ -121,6 +123,20 @@ export const AdminReturnManagement = ({
   const [audits, setAudits] = useState<any[]>([]);
   const [auditsLoading, setAuditsLoading] = useState(false);
   const [filterDate, setFilterDate] = useState("");
+
+  // Evidence photos for rejection
+  const [evidenceImages, setEvidenceImages] = useState<string[]>([]);
+  const [isUploadingEvidence, setIsUploadingEvidence] = useState(false);
+
+  // Ship Back dialog
+  const [isShipBackOpen, setIsShipBackOpen] = useState(false);
+  const [shipBackCourier, setShipBackCourier] = useState("");
+  const [shipBackTracking, setShipBackTracking] = useState("");
+  const [submittingShipBack, setSubmittingShipBack] = useState(false);
+  const [submittingAutomated, setSubmittingAutomated] = useState(false);
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [submittingReceive, setSubmittingReceive] = useState(false);
+  const [submittingRefund, setSubmittingRefund] = useState(false);
 
   useEffect(() => {
     if (isReceiveOpen && selectedReturn) {
@@ -246,7 +262,8 @@ export const AdminReturnManagement = ({
   }, [data.data, activeTab, isAdmin]);
 
   const handleReview = async (action: "approve" | "reject") => {
-    if (!selectedReturn) return;
+    if (!selectedReturn || submittingReview) return;
+    setSubmittingReview(true);
     try {
       await returnsService.reviewReturn(selectedReturn.id, { action, note });
       toast.success(
@@ -258,11 +275,19 @@ export const AdminReturnManagement = ({
       toast.error("Lỗi duyệt yêu cầu", {
         description: err?.response?.data?.message || err.message,
       });
+    } finally {
+      setSubmittingReview(false);
     }
   };
 
   const handleReceive = async () => {
-    if (!selectedReturn) return;
+    if (!selectedReturn || submittingReceive) return;
+    const hasCompromised = Object.values(receiveItemsState).some((s) => !s.sealIntact);
+    if (hasCompromised && evidenceImages.length === 0) {
+      toast.error("Vui lòng upload ít nhất 1 ảnh bằng chứng khi đánh dấu hàng lỗi/hư");
+      return;
+    }
+    setSubmittingReceive(true);
     try {
       const items = selectedReturn.items.map((i) => ({
         variantId: i.variantId,
@@ -273,14 +298,83 @@ export const AdminReturnManagement = ({
         items,
         note,
         receivedLocation: selectedReturn.origin === "POS" ? "POS" : "WAREHOUSE",
+        evidenceImages: hasCompromised ? evidenceImages : undefined,
       });
-      toast.success("Đã xác nhận thao tác nhận hàng");
+      toast.success(
+        hasCompromised
+          ? "Đã từ chối - Hàng lỗi. Vui lòng tạo vận đơn gửi trả khách."
+          : "Đã xác nhận thao tác nhận hàng"
+      );
       setIsReceiveOpen(false);
+      setEvidenceImages([]);
       loadData();
     } catch (err: any) {
       toast.error("Lỗi nhận hàng", {
         description: err?.response?.data?.message || err.message,
       });
+    } finally {
+      setSubmittingReceive(false);
+    }
+  };
+
+  const handleEvidenceUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setIsUploadingEvidence(true);
+    try {
+      const formData = new FormData();
+      Array.from(files).forEach((f) => formData.append("images", f));
+      const res = await api.post<string[]>("/reviews/upload-images", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      if (res.data && res.data.length > 0) {
+        setEvidenceImages((prev) => [...prev, ...res.data]);
+        toast.success(`Đã upload ${res.data.length} ảnh bằng chứng`);
+      }
+    } catch {
+      toast.error("Lỗi tải ảnh lên");
+    } finally {
+      setIsUploadingEvidence(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleShipBackManual = async () => {
+    if (!selectedReturn || !shipBackTracking.trim()) return;
+    setSubmittingShipBack(true);
+    try {
+      await returnsService.shipBackManual(selectedReturn.id, {
+        courier: shipBackCourier || undefined,
+        trackingNumber: shipBackTracking,
+      });
+      toast.success("Đã lưu mã vận đơn gửi trả hàng");
+      setIsShipBackOpen(false);
+      setShipBackCourier("");
+      setShipBackTracking("");
+      loadData();
+    } catch (err: any) {
+      toast.error("Lỗi lưu vận đơn", {
+        description: err?.response?.data?.message || err.message,
+      });
+    } finally {
+      setSubmittingShipBack(false);
+    }
+  };
+
+  const handleShipBackAutomated = async () => {
+    if (!selectedReturn) return;
+    setSubmittingAutomated(true);
+    try {
+      const res = await returnsService.shipBackAutomated(selectedReturn.id);
+      toast.success(`Đã tạo vận đơn GHN: ${res.orderCode}. Phí ship sẽ do khách trả.`);
+      setIsShipBackOpen(false);
+      loadData();
+    } catch (err: any) {
+      toast.error("Lỗi tạo vận đơn tự động", {
+        description: err?.response?.data?.message || err.message,
+      });
+    } finally {
+      setSubmittingAutomated(false);
     }
   };
 
@@ -301,7 +395,8 @@ export const AdminReturnManagement = ({
   };
 
   const handleRefund = async () => {
-    if (!selectedReturn) return;
+    if (!selectedReturn || submittingRefund) return;
+    setSubmittingRefund(true);
     try {
       const idempotencyKey = crypto.randomUUID();
       await returnsService.triggerRefund(
@@ -322,6 +417,8 @@ export const AdminReturnManagement = ({
       toast.error("Lỗi hoàn tiền", {
         description: err?.response?.data?.message || err.message,
       });
+    } finally {
+      setSubmittingRefund(false);
     }
   };
 
@@ -773,6 +870,25 @@ export const AdminReturnManagement = ({
 
                             </Button>
                           )}
+
+                        {/* SHIP BACK - FOR REJECTED AFTER RETURN */}
+                        {isAdmin && 
+                         req.status === "REJECTED_AFTER_RETURN" && 
+                         !req.shipments?.some(s => s.status === "RETURN_TO_CUSTOMER") && (
+                          <Button
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedReturn(req);
+                              setShipBackCourier("");
+                              setShipBackTracking("");
+                              setIsShipBackOpen(true);
+                            }}
+                            className="h-8 bg-orange-600/90 hover:bg-orange-500 text-white shadow-md shadow-orange-900/20"
+                          >
+                            <PackageX className="w-3.5 h-3.5 mr-1" /> Gửi trả khách
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))
@@ -917,6 +1033,24 @@ export const AdminReturnManagement = ({
                         className="h-8 text-red-500/80 text-[10px] font-bold"
                       >
                         <X className="w-3 h-3 mr-1" /> Hủy
+                      </Button>
+                    )}
+
+                    {isAdmin && 
+                     req.status === "REJECTED_AFTER_RETURN" && 
+                     !req.shipments?.some(s => s.status === "RETURN_TO_CUSTOMER") && (
+                      <Button
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedReturn(req);
+                          setShipBackCourier("");
+                          setShipBackTracking("");
+                          setIsShipBackOpen(true);
+                        }}
+                        className="h-8 bg-orange-600 text-white text-[10px] font-bold"
+                      >
+                        <PackageX className="w-3 h-3 mr-1" /> Gửi trả khách
                       </Button>
                     )}
                   </div>
@@ -1089,21 +1223,104 @@ export const AdminReturnManagement = ({
                       </div>
                     ))}
                   </div>
-                </div>
+                )}
+              </div>
+            </div>
 
-                <div className="space-y-3 pt-4 border-t border-border/50">
-                  <h3 className="text-xs font-semibold text-foreground flex items-center gap-2 uppercase tracking-wider">
-                    <RotateCcw className="w-3 h-3 text-gold" /> {t("dialogs.audit_log")}
-                  </h3>
-                  <div className="bg-muted/30 rounded-xl border border-border/30 overflow-hidden">
-                    {auditsLoading ? (
-                      <div className="p-4 flex justify-center">
-                        <Loader2 className="w-4 h-4 animate-spin text-gold/50" />
-                      </div>
-                    ) : audits.length === 0 ? (
-                      <div className="p-4 text-center text-[10px] text-muted-foreground italic">
-                        {t("dialogs.no_audit")}
-                      </div>
+            {isAdmin && (
+              <div className="space-y-2 pt-4 border-t border-border/50">
+                <label className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
+                  Ghi chú hoặc Phản hồi cho{" "}
+                  {selectedReturn?.origin === "POS" ? "Staff" : "khách"} (nếu từ
+                  chối)
+                </label>
+                <Input
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder={
+                    selectedReturn?.origin === "POS"
+                      ? "Nhập ghi chú hoặc lý do chi tiết để phản hồi lại cho nhân viên tại quầy..."
+                      : "Nhập ghi chú hoặc lý do chi tiết để thông báo lại khách hàng..."
+                  }
+                  className="bg-background/50 border-gold/20 h-11 focus-visible:ring-gold/30"
+                />
+              </div>
+            )}
+          </div>
+          <DialogFooter className="gap-3 sm:gap-0 px-6 py-4 border-t border-border/50 bg-background/80 backdrop-blur-md">
+            {isAdmin ? (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => handleReview("reject")}
+                  disabled={submittingReview}
+                  className="gap-2 border-red-500/30 text-red-500 hover:bg-red-500 hover:text-white transition-colors"
+                >
+                  {submittingReview ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <X className="w-4 h-4" />
+                  )}
+                  Bác bỏ Yêu cầu
+                </Button>
+                <Button
+                  onClick={() => handleReview("approve")}
+                  disabled={submittingReview}
+                  className="gap-2 bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/20"
+                >
+                  {submittingReview ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Check className="w-4 h-4" />
+                  )}
+                  Chấp nhận & Cho phép Gửi Hàng
+                </Button>
+              </>
+            ) : (
+              <Button variant="outline" onClick={() => setIsReviewOpen(false)}>Đóng</Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Receive Dialog */}
+      <Dialog open={isReceiveOpen} onOpenChange={setIsReceiveOpen}>
+        <DialogContent className="glass border-gold/30 w-full sm:max-w-md h-[100vh] sm:h-auto sm:max-h-[90vh] shadow-2xl sm:rounded-2xl flex flex-col p-0 overflow-hidden">
+          <DialogHeader className="border-b border-border/50 px-6 pt-6 pb-4 shrink-0">
+            <DialogTitle className="text-xl text-teal-400 font-semibold font-heading">
+              Xác nhận Nhận Hàng
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar">
+            <div className="bg-teal-500/10 p-4 rounded-xl border border-teal-500/20">
+              <p className="text-sm text-teal-200/80 leading-relaxed">
+                Hệ thống sẽ cập nhật kho{" "}
+                {selectedReturn?.origin === "POS"
+                  ? "tại quầy (POS)"
+                  : "cho cửa hàng chính"}{" "}
+                và đánh dấu quy trình hoàn trả hàng bước vào giai đoạn hoàn
+                tiền. Nếu hàng bị bóc seal, yêu cầu sẽ tự động bị TỪ CHỐI (Không
+                hoàn tiền).
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <label className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
+                Tình trạng Sản phẩm Nhận về
+              </label>
+              {selectedReturn?.items.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between bg-black/20 p-3 rounded-xl border border-border/50 gap-3"
+                >
+                  <div className="flex items-center gap-3">
+                    {item.variant?.product?.images?.[0]?.url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={item.variant?.product?.images?.[0]?.url}
+                        alt="Product"
+                        className="w-10 h-10 object-cover rounded-md border border-border/50"
+                      />
                     ) : (
                       <div className="max-h-40 overflow-y-auto custom-scrollbar">
                         {audits.map((a, idx) => (
@@ -1142,6 +1359,193 @@ export const AdminReturnManagement = ({
                     )}
                   </div>
                 </div>
+              ))}
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
+                Ghi chú tình trạng hàng nhập kho
+              </label>
+              <Input
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="Ví dụ: Đã kiểm tra nguyên seal..."
+                className="bg-background/50 border-gold/20 h-11"
+              />
+            </div>
+
+            {/* Evidence Upload - shown when any item is marked as damaged */}
+            {Object.values(receiveItemsState).some((s) => !s.sealIntact) && (
+              <div className="space-y-3 pt-4 border-t border-red-500/20 animate-in fade-in slide-in-from-top-2">
+                <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl">
+                  <div className="flex items-center gap-2 mb-2">
+                    <AlertTriangle className="w-4 h-4 text-red-400" />
+                    <span className="text-sm font-bold text-red-400">Bắt buộc: Ảnh bằng chứng</span>
+                  </div>
+                  <p className="text-[11px] text-red-300/70 leading-relaxed">
+                    Vui lòng chụp ảnh hoặc quay video cảnh mở hộp (unboxing) và tình trạng hàng hóa thực tế. 
+                    Bằng chứng này sẽ được gửi cho khách hàng kèm thông báo từ chối.
+                  </p>
+                </div>
+
+                <Input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleEvidenceUpload}
+                  disabled={isUploadingEvidence}
+                  className="bg-black/20 border-red-500/10 focus-visible:ring-red-500 file:bg-red-600 file:text-white file:border-0 file:py-1 file:px-2 file:mr-3 file:rounded file:text-[10px] cursor-pointer text-[10px] h-8 p-1 px-2"
+                />
+                {isUploadingEvidence && (
+                  <div className="flex items-center text-xs text-red-400 font-medium">
+                    <Loader2 className="w-3 h-3 mr-2 animate-spin" /> Đang tải ảnh lên...
+                  </div>
+                )}
+                {evidenceImages.length > 0 && (
+                  <div className="flex gap-2 flex-wrap">
+                    {evidenceImages.map((url, idx) => (
+                      <div key={idx} className="relative w-20 h-20 rounded-lg overflow-hidden border border-red-500/30 group bg-black/40">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={url} alt={`evidence-${idx}`} className="w-full h-full object-cover" />
+                        <button
+                          onClick={() => setEvidenceImages((prev) => prev.filter((_, i) => i !== idx))}
+                          className="absolute top-1 right-1 bg-black/60 hover:bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {evidenceImages.length === 0 && !isUploadingEvidence && (
+                  <p className="text-[10px] text-red-400/60 italic">Chưa có ảnh bằng chứng. Vui lòng upload ít nhất 1 ảnh.</p>
+                )}
+              </div>
+            )}
+          </div>
+          <DialogFooter className="px-6 py-4 border-t border-border/50 bg-background/80 flex flex-row justify-end gap-3 shrink-0">
+            <Button variant="ghost" onClick={() => { setIsReceiveOpen(false); setEvidenceImages([]); }}>
+              Hủy
+            </Button>
+            <Button
+              onClick={handleReceive}
+              disabled={submittingReceive}
+              className={cn(
+                "shadow-lg font-bold uppercase tracking-widest text-[10px]",
+                Object.values(receiveItemsState).some((s) => !s.sealIntact)
+                  ? "bg-red-600 hover:bg-red-500 shadow-red-900/30"
+                  : "bg-teal-600 hover:bg-teal-500 shadow-teal-900/30"
+              )}
+            >
+              {submittingReceive ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : Object.values(receiveItemsState).some((s) => !s.sealIntact) ? (
+                <AlertTriangle className="w-4 h-4 mr-2" />
+              ) : (
+                <Box className="w-4 h-4 mr-2" />
+              )}
+              {submittingReceive ? "Đang xử lý..." : Object.values(receiveItemsState).some((s) => !s.sealIntact) ? "Từ chối & Ghi nhận" : "Nhập Kho"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Ship Back Dialog */}
+      <Dialog open={isShipBackOpen} onOpenChange={setIsShipBackOpen}>
+        <DialogContent className="glass border-orange-500/30 w-full sm:max-w-md shadow-2xl sm:rounded-2xl flex flex-col p-0 overflow-hidden">
+          <DialogHeader className="border-b border-border/50 px-6 pt-6 pb-4 shrink-0">
+            <DialogTitle className="text-xl text-orange-400 font-heading">
+              Gửi trả hàng cho khách
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar space-y-6">
+            {/* Automated Option */}
+            <div className="space-y-3">
+              <label className="text-[10px] font-black uppercase tracking-widest text-orange-500/70 block">
+                Cách 1: Tự động qua GHN (Khuyên dùng)
+              </label>
+              <div className="bg-orange-500/5 border border-orange-500/20 p-4 rounded-2xl space-y-4">
+                <p className="text-[11px] text-orange-200/60 leading-relaxed">
+                  Hệ thống sẽ tự động tạo đơn GHN gửi từ kho đến địa chỉ của khách. 
+                  <strong> Khách hàng sẽ trả phí ship khi nhận hàng (COD phí ship).</strong>
+                </p>
+                <Button
+                  onClick={handleShipBackAutomated}
+                  disabled={submittingAutomated || submittingShipBack}
+                  className="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold uppercase tracking-widest text-[10px] h-11 shadow-lg shadow-orange-900/40 group"
+                >
+                  {submittingAutomated ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <RefreshCcw className="w-4 h-4 mr-2 group-hover:rotate-180 transition-transform duration-500" />
+                  )}
+                  Tạo vận đơn GHN tự động
+                </Button>
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-white/5"></span>
+              </div>
+              <div className="relative flex justify-center text-[9px] uppercase tracking-widest font-black">
+                <span className="bg-[#0c0c0c] px-4 text-muted-foreground/40">Hoặc</span>
+              </div>
+            </div>
+
+            {/* Manual Option */}
+            <div className="space-y-4">
+              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 block">
+                Cách 2: Nhập mã vận đơn thủ công
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <span className="text-[9px] font-bold text-muted-foreground uppercase ml-1">Đơn vị</span>
+                  <Input
+                    value={shipBackCourier}
+                    onChange={(e) => setShipBackCourier(e.target.value)}
+                    placeholder="VD: GHTK, Viettel..."
+                    className="bg-white/5 border-white/10 h-10 text-xs focus-visible:ring-orange-500/50"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <span className="text-[9px] font-bold text-muted-foreground uppercase ml-1">Mã vận đơn</span>
+                  <Input
+                    value={shipBackTracking}
+                    onChange={(e) => setShipBackTracking(e.target.value)}
+                    placeholder="Nhập mã..."
+                    className="bg-white/5 border-white/10 h-10 text-xs font-mono uppercase focus-visible:ring-orange-500/50"
+                  />
+                </div>
+              </div>
+              <Button
+                onClick={handleShipBackManual}
+                variant="outline"
+                disabled={submittingAutomated || submittingShipBack || !shipBackTracking.trim()}
+                className="w-full border-white/10 hover:bg-white/5 text-[10px] font-bold uppercase tracking-widest h-10"
+              >
+                {submittingShipBack ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4 mr-2" />
+                )}
+                Lưu mã vận đơn thủ công
+              </Button>
+            </div>
+          </div>
+
+          <DialogFooter className="px-6 py-4 border-t border-border/50 bg-black/40">
+            <Button 
+              variant="ghost" 
+              onClick={() => setIsShipBackOpen(false)}
+              className="text-[10px] font-bold uppercase tracking-widest"
+            >
+              Đóng
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
                 {isAdmin && (
                   <div className="space-y-2 pt-4 border-t border-border/50">
@@ -1188,8 +1592,25 @@ export const AdminReturnManagement = ({
               </div>
             </motion.div>
           </div>
-        )}
-      </AnimatePresence>
+          <DialogFooter className="pt-2">
+            <Button variant="ghost" onClick={() => setIsRefundOpen(false)}>
+              Hủy
+            </Button>
+            <Button
+              onClick={handleRefund}
+              disabled={submittingRefund}
+              className="bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-900/30"
+            >
+              {submittingRefund ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <CreditCard className="w-4 h-4 mr-2" />
+              )}
+              {submittingRefund ? "Đang xử lý..." : "Xác Nhận Hoàn Tiền"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Receive Dialog */}
       <AnimatePresence>

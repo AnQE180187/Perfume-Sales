@@ -959,16 +959,48 @@ class AppLocalizationsEn extends AppLocalizations {
       'Note: Items must be unused with tags attached.';
 
   @override
-  String get reasonDamaged => 'Product Damaged';
+  String get reasonDamaged => 'Damaged Product / Broken Bottle';
 
   @override
   String get reasonWrongItem => 'Wrong Item Sent';
 
   @override
-  String get reasonScentNotExpected => 'Scent Not As Expected';
+  String get reasonScentPreference => 'Scent preference mismatch';
+
+  @override
+  String get reasonColorMismatch => 'Color/Pigment not as expected';
+
+  @override
+  String get reasonExpired => 'Product near expiration date';
+
+  @override
+  String get reasonQualityNotAsExpected => 'Quality not as expected';
+
+  @override
+  String get reasonChangeOfMind => 'Change of mind';
+
+  @override
+  String get returnCategoryStoreFault =>
+      'Store Fault (Full Refund + Shipping Fee)';
+
+  @override
+  String get returnCategoryOther =>
+      'Other Reasons (Product Refund, No Shipping Fee)';
 
   @override
   String get returnProcessNotice => 'Request will be processed within 24-48h';
+
+  @override
+  String get returnRequestSuccess => 'Successfully Submitted';
+
+  @override
+  String get returnSuccessSubtitle => 'Your request is being reviewed';
+
+  @override
+  String get viewReturnDetails => 'View Request Details';
+
+  @override
+  String get returnToHome => 'Back to Home';
 
   @override
   String get returnStatusRequested => 'Requested';
@@ -993,6 +1025,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get returnStatusRejected => 'Rejected';
+
+  @override
+  String get returnStatusRejectedAfterReturn => 'Rejected upon Receipt';
 
   @override
   String get returnStatusCancelled => 'Cancelled';
@@ -1022,7 +1057,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get returnGuidanceStep2 => 'Provide a reason and refund info';
 
   @override
-  String get returnGuidanceStep3 => 'Upload clear photos and video';
+  String get returnGuidanceStep3 =>
+      'Upload at least 3 photos and 1 evidence video';
 
   @override
   String get returnEvidenceTip1 => 'Photograph all sides of product';
@@ -1043,7 +1079,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get trackMovement => 'Track Shipment';
 
   @override
-  String get confirmHandover => 'Confirm Handed Over';
+  String get confirmHandover => 'Confirm shipment sent';
 
   @override
   String get submitShipment => 'Submit Shipment';
@@ -1556,6 +1592,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get molecularSignatureDesc =>
       'Unique digital identifier for your olfactory profile.';
+
+  @override
+  String get orderIdLabel => 'ORDER ID';
+
+  @override
+  String get estDeliveryDate => 'EXPECTED DELIVERY';
+
+  @override
+  String get orderConfirmationNotice =>
+      'Your order will be confirmed within the next 24 hours.';
 
   @override
   String get fullStory => 'PRODUCT STORY';

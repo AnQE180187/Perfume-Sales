@@ -47,11 +47,11 @@ class ReturnService {
     return null;
   }
 
-  Future<void> createReturn(
+  Future<String?> createReturn(
     Map<String, dynamic> payload, {
     String? idempotencyKey,
   }) async {
-    await _client.post(
+    final response = await _client.post(
       ApiEndpoints.returns,
       data: payload,
       options: Options(
@@ -60,6 +60,11 @@ class ReturnService {
         },
       ),
     );
+    final body = response.data;
+    if (body is Map && body['id'] != null) {
+      return body['id'].toString();
+    }
+    return null;
   }
 
   Future<List<dynamic>> getMyReturns() async {

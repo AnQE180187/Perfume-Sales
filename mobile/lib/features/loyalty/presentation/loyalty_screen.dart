@@ -8,6 +8,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../services/loyalty_service.dart';
 import '../../cart/providers/promotions_provider.dart';
+import '../../../core/widgets/luxury_notification.dart';
 
 class LoyaltyScreen extends ConsumerWidget {
   const LoyaltyScreen({super.key});
@@ -1269,15 +1270,12 @@ class _RedeemPromoCard extends ConsumerWidget {
           await ref.read(loyaltyServiceProvider).redeemPromotion(promo['id']);
         }
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                isPublic 
-                  ? l10n.claimSuccess(promo['code'] ?? '')
-                  : l10n.redeemSuccess(promo['code'] ?? '')
-              ),
-              backgroundColor: AppTheme.deepCharcoal,
-            ),
+          final code = promo['code'] ?? '';
+          LuxuryNotification.showSuccess(
+            context,
+            message: isPublic ? 'Nhận thành công!' : 'Đổi thành công!',
+            subMessage: 'Mã $code đã có trong ví của bạn',
+            icon: Icons.confirmation_number_outlined,
           );
           ref.refresh(loyaltyStatusProvider);
           ref.refresh(redeemablePromotionsProvider);

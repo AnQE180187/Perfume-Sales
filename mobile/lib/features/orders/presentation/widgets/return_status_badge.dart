@@ -39,8 +39,10 @@ class ReturnStatusBadge extends StatelessWidget {
         label = l10n.returnStatusCompleted;
         break;
       case ReturnStatus.rejected:
-      case ReturnStatus.rejectedAfterReturn:
         label = l10n.returnStatusRejected;
+        break;
+      case ReturnStatus.rejectedAfterReturn:
+        label = l10n.returnStatusRejectedAfterReturn;
         break;
       case ReturnStatus.cancelled:
         label = l10n.returnStatusCancelled;

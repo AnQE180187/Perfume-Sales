@@ -1931,7 +1931,7 @@ abstract class AppLocalizations {
   /// No description provided for @reasonDamaged.
   ///
   /// In en, this message translates to:
-  /// **'Product Damaged'**
+  /// **'Damaged Product / Broken Bottle'**
   String get reasonDamaged;
 
   /// No description provided for @reasonWrongItem.
@@ -1940,17 +1940,77 @@ abstract class AppLocalizations {
   /// **'Wrong Item Sent'**
   String get reasonWrongItem;
 
-  /// No description provided for @reasonScentNotExpected.
+  /// No description provided for @reasonScentPreference.
   ///
   /// In en, this message translates to:
-  /// **'Scent Not As Expected'**
-  String get reasonScentNotExpected;
+  /// **'Scent preference mismatch'**
+  String get reasonScentPreference;
+
+  /// No description provided for @reasonColorMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Color/Pigment not as expected'**
+  String get reasonColorMismatch;
+
+  /// No description provided for @reasonExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Product near expiration date'**
+  String get reasonExpired;
+
+  /// No description provided for @reasonQualityNotAsExpected.
+  ///
+  /// In en, this message translates to:
+  /// **'Quality not as expected'**
+  String get reasonQualityNotAsExpected;
+
+  /// No description provided for @reasonChangeOfMind.
+  ///
+  /// In en, this message translates to:
+  /// **'Change of mind'**
+  String get reasonChangeOfMind;
+
+  /// No description provided for @returnCategoryStoreFault.
+  ///
+  /// In en, this message translates to:
+  /// **'Store Fault (Full Refund + Shipping Fee)'**
+  String get returnCategoryStoreFault;
+
+  /// No description provided for @returnCategoryOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other Reasons (Product Refund, No Shipping Fee)'**
+  String get returnCategoryOther;
 
   /// No description provided for @returnProcessNotice.
   ///
   /// In en, this message translates to:
   /// **'Request will be processed within 24-48h'**
   String get returnProcessNotice;
+
+  /// No description provided for @returnRequestSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Successfully Submitted'**
+  String get returnRequestSuccess;
+
+  /// No description provided for @returnSuccessSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your request is being reviewed'**
+  String get returnSuccessSubtitle;
+
+  /// No description provided for @viewReturnDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'View Request Details'**
+  String get viewReturnDetails;
+
+  /// No description provided for @returnToHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Home'**
+  String get returnToHome;
 
   /// No description provided for @returnStatusRequested.
   ///
@@ -1999,6 +2059,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Rejected'**
   String get returnStatusRejected;
+
+  /// No description provided for @returnStatusRejectedAfterReturn.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected upon Receipt'**
+  String get returnStatusRejectedAfterReturn;
 
   /// No description provided for @returnStatusCancelled.
   ///
@@ -2057,7 +2123,7 @@ abstract class AppLocalizations {
   /// No description provided for @returnGuidanceStep3.
   ///
   /// In en, this message translates to:
-  /// **'Upload clear photos and video'**
+  /// **'Upload at least 3 photos and 1 evidence video'**
   String get returnGuidanceStep3;
 
   /// No description provided for @returnEvidenceTip1.
@@ -2099,7 +2165,7 @@ abstract class AppLocalizations {
   /// No description provided for @confirmHandover.
   ///
   /// In en, this message translates to:
-  /// **'Confirm Handed Over'**
+  /// **'Confirm shipment sent'**
   String get confirmHandover;
 
   /// No description provided for @submitShipment.
@@ -3073,6 +3139,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unique digital identifier for your olfactory profile.'**
   String get molecularSignatureDesc;
+
+  /// No description provided for @orderIdLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'ORDER ID'**
+  String get orderIdLabel;
+
+  /// No description provided for @estDeliveryDate.
+  ///
+  /// In en, this message translates to:
+  /// **'EXPECTED DELIVERY'**
+  String get estDeliveryDate;
+
+  /// No description provided for @orderConfirmationNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Your order will be confirmed within the next 24 hours.'**
+  String get orderConfirmationNotice;
 
   /// No description provided for @fullStory.
   ///
