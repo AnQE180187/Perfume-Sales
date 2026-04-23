@@ -88,7 +88,7 @@ export const AdminReturnManagement = ({
 }: {
   isAdmin?: boolean;
 }) => {
-  const t = useTranslations("admin.returns");
+  const t = useTranslations("dashboard.admin.returns");
   const { isSidebarCollapsed: isCollapsed } = useUIStore();
 
   const getStatusLabel = (status: ReturnStatus) => {

@@ -2,7 +2,7 @@ import { AdminReturnManagement } from "@/components/returns/AdminReturnManagemen
 import { useTranslations } from "next-intl";
 
 export default function AdminReturnsPage() {
-  const t = useTranslations("admin.returns");
+  const t = useTranslations("dashboard.admin.returns");
 
   return (
     <div className="mx-auto max-w-[1680px] animate-in fade-in duration-700 space-y-8 p-4 sm:p-6 md:space-y-10 md:p-10">
