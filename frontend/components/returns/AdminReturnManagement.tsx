@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState, useMemo } from "react";
 import {
@@ -97,7 +97,7 @@ const getStatusLabel = (status: ReturnStatus) => {
     COMPLETED: "Hoàn tất",
     REJECTED: "Đã từ chối",
     REJECTED_AFTER_RETURN: "Từ chối sau khi nhận",
-    CANCELLED: "Đã huỷ",
+    CANCELLED: "Đã hủy",
   };
   return map[status] || status;
 };
@@ -423,28 +423,70 @@ export const AdminReturnManagement = ({
     return { all: data.data.length, online, pos };
   }, [data.data]);
 
+  const overviewStats = useMemo(() => {
+    const newRequests = data.data.filter((req) =>
+      ["REQUESTED", "REVIEWING", "AWAITING_CUSTOMER"].includes(req.status),
+    ).length;
+    const inHandling = data.data.filter((req) =>
+      ["APPROVED", "RETURNING", "RECEIVED", "REFUNDING", "REFUND_FAILED"].includes(req.status),
+    ).length;
+    const resolved = data.data.filter((req) =>
+      ["COMPLETED", "REJECTED", "REJECTED_AFTER_RETURN", "CANCELLED"].includes(req.status),
+    ).length;
+
+    return { newRequests, inHandling, resolved };
+  }, [data.data]);
+
   return (
-    <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">
-        <div className="flex flex-wrap items-center justify-end gap-3 px-4 sm:px-0">
+    <div className="space-y-6 animate-in fade-in zoom-in-95 duration-500">
+      <div className="overflow-hidden rounded-[2rem] border border-black/6 bg-[linear-gradient(135deg,rgba(255,255,255,0.98),rgba(247,242,233,0.9))] p-4 shadow-[0_24px_70px_-48px_rgba(15,23,42,0.24)] dark:border-white/10 dark:bg-[linear-gradient(135deg,rgba(255,255,255,0.05),rgba(255,255,255,0.03))] lg:p-5">
+        <div className="grid gap-3 lg:grid-cols-3">
+          <div className="flex min-h-[108px] flex-col justify-between rounded-[1.4rem] border border-black/6 bg-white/75 px-5 py-4 dark:border-white/10 dark:bg-white/5">
+            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-stone-400">
+              Yêu cầu mới
+            </p>
+            <p className="mt-2 text-3xl font-semibold text-foreground">
+              {overviewStats.newRequests}
+            </p>
+          </div>
+          <div className="flex min-h-[108px] flex-col justify-between rounded-[1.4rem] border border-black/6 bg-white/75 px-5 py-4 dark:border-white/10 dark:bg-white/5">
+            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-stone-400">
+              Đang xử lý
+            </p>
+            <p className="mt-2 text-3xl font-semibold text-foreground">
+              {overviewStats.inHandling}
+            </p>
+          </div>
+          <div className="flex min-h-[108px] flex-col justify-between rounded-[1.4rem] border border-gold/20 bg-gold/10 px-5 py-4">
+            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-gold/80">
+              Đã xử lý
+            </p>
+            <p className="mt-2 text-3xl font-semibold text-gold">
+              {overviewStats.resolved}
+            </p>
+          </div>
+        </div>
+      </div>
+        <div className="grid gap-3 rounded-[1.75rem] border border-black/6 bg-card px-4 py-4 shadow-[0_18px_50px_-44px_rgba(15,23,42,0.2)] dark:border-white/10 sm:px-5 md:ml-auto md:w-fit md:grid-cols-[auto_auto_auto] md:justify-end">
             <Button
               variant="outline"
-              className="glass border-gold/20 h-10 text-[10px] sm:text-xs"
+              className="h-11 rounded-full border-gold/20 bg-white/70 px-5 text-sm font-semibold shadow-sm transition-all hover:border-gold hover:bg-gold/10 dark:bg-white/5"
               onClick={loadData}
             >
               <RefreshCcw className="w-4 h-4 mr-2 text-gold" /> Làm mới
             </Button>
-            <div className="relative group flex-1 sm:flex-none">
-              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gold/60 w-3.5 h-3.5 pointer-events-none group-focus-within:text-gold transition-colors" />
+            <div className="relative group">
+              <Calendar className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gold/60 transition-colors group-focus-within:text-gold" />
               <input
                 type="date"
                 value={filterDate}
                 onChange={(e) => setFilterDate(e.target.value)}
-                className="pl-9 w-full sm:w-40 glass border border-gold/20 text-[11px] font-medium h-10 focus:ring-1 focus:ring-gold/30 transition-all cursor-pointer invert dark:invert-0 bg-transparent rounded-md outline-none"
+                className="h-11 w-full rounded-full border border-gold/20 bg-white/70 pl-11 pr-4 text-sm font-medium shadow-sm outline-none transition-all focus:ring-1 focus:ring-gold/30 dark:bg-white/5 md:w-48"
               />
             </div>
             {!isAdmin && (
               <Button
-                className="bg-gold hover:bg-gold/90 text-primary-foreground shadow-lg shadow-gold/20 h-10 text-[10px] sm:text-xs flex-1 sm:flex-none"
+                className="h-11 rounded-full bg-gold px-5 text-sm font-semibold text-primary-foreground shadow-lg shadow-gold/20 hover:bg-gold/90"
                 onClick={() => {
                   setIsPosCreateOpen(true);
                   setPosOrder(null);
@@ -464,42 +506,42 @@ export const AdminReturnManagement = ({
         className="w-full space-y-6"
       >
         {isAdmin && (
-          <TabsList className="bg-background/40 glass border border-gold/10 p-1 w-full max-w-[450px] mx-auto md:mx-0 grid grid-cols-3">
+          <TabsList className="mx-auto !grid !h-auto !w-full max-w-[640px] grid-cols-3 items-stretch rounded-full border border-black/6 bg-card p-1.5 shadow-[0_18px_50px_-42px_rgba(15,23,42,0.24)] dark:border-white/10 md:mx-0">
             <TabsTrigger
               value="all"
-              className="data-[state=active]:bg-gold/20 data-[state=active]:text-gold text-[10px] sm:text-xs"
+              className="!flex !h-11 !w-full min-w-0 items-center justify-center gap-2 rounded-full px-3 text-center text-xs font-semibold whitespace-nowrap data-[state=active]:bg-gold/12 data-[state=active]:text-gold data-[state=active]:shadow-[0_14px_28px_-22px_rgba(197,160,89,0.95)] sm:text-sm"
             >
-              <Box className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-              Tất cả
+              <Box className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
+              {"Tất cả"}
               <Badge
                 variant="secondary"
-                className="ml-1 sm:ml-2 bg-background/50 text-[9px] sm:text-[10px] py-0 px-1"
+                className="flex h-5 min-w-[22px] items-center justify-center rounded-full bg-background/60 px-1.5 text-[9px] sm:text-[10px]"
               >
                 {counts.all}
               </Badge>
             </TabsTrigger>
             <TabsTrigger
               value="online"
-              className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400 text-[10px] sm:text-xs"
+              className="!flex !h-11 !w-full min-w-0 items-center justify-center gap-2 rounded-full px-3 text-center text-xs font-semibold whitespace-nowrap data-[state=active]:bg-cyan-500/14 data-[state=active]:text-cyan-400 data-[state=active]:shadow-[0_14px_28px_-22px_rgba(34,211,238,0.8)] sm:text-sm"
             >
-              <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              <Globe className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
               Online
               <Badge
                 variant="secondary"
-                className="ml-1 sm:ml-2 bg-background/50 text-[9px] sm:text-[10px] py-0 px-1"
+                className="flex h-5 min-w-[22px] items-center justify-center rounded-full bg-background/60 px-1.5 text-[9px] sm:text-[10px]"
               >
                 {counts.online}
               </Badge>
             </TabsTrigger>
             <TabsTrigger
               value="pos"
-              className="data-[state=active]:bg-rose-500/20 data-[state=active]:text-rose-400 text-[10px] sm:text-xs"
+              className="!flex !h-11 !w-full min-w-0 items-center justify-center gap-2 rounded-full px-3 text-center text-xs font-semibold whitespace-nowrap data-[state=active]:bg-rose-500/14 data-[state=active]:text-rose-400 data-[state=active]:shadow-[0_14px_28px_-22px_rgba(244,63,94,0.7)] sm:text-sm"
             >
-              <Store className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-              Tại Quầy
+              <Store className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
+              {"Tại quầy"}
               <Badge
                 variant="secondary"
-                className="ml-1 sm:ml-2 bg-background/50 text-[9px] sm:text-[10px] py-0 px-1"
+                className="flex h-5 min-w-[22px] items-center justify-center rounded-full bg-background/60 px-1.5 text-[9px] sm:text-[10px]"
               >
                 {counts.pos}
               </Badge>
@@ -507,15 +549,15 @@ export const AdminReturnManagement = ({
           </TabsList>
         )}
 
-        <div className="glass border-gold/20 shadow-2xl overflow-hidden rounded-2xl bg-black/40 backdrop-blur-xl">
+        <div className="overflow-hidden rounded-[2rem] border border-black/6 bg-card shadow-[0_28px_90px_-54px_rgba(15,23,42,0.32)] dark:border-white/10">
           {/* Desktop Table View */}
           <div className="hidden lg:block">
             <Table>
               <TableHeader>
-                <TableRow className="border-gold/10 hover:bg-transparent bg-background/20 font-medium">
+                <TableRow className="border-black/6 bg-[linear-gradient(135deg,rgba(197,160,89,0.08),rgba(197,160,89,0.02))] hover:bg-transparent dark:border-white/10">
                   <TableHead className="w-[120px]">Nguồn</TableHead>
-                  <TableHead className="w-[140px]">Mã Yêu Cầu</TableHead>
-                  <TableHead className="w-[140px]">Mã Đơn</TableHead>
+                  <TableHead className="w-[140px]">Ma Yeu Cau</TableHead>
+                  <TableHead className="w-[140px]">Ma Don</TableHead>
                   <TableHead className="w-[120px]">Ngày tạo</TableHead>
                   <TableHead>Lý do</TableHead>
                   {isAdmin && <TableHead className="w-[180px]">Vận chuyển</TableHead>}
@@ -532,7 +574,7 @@ export const AdminReturnManagement = ({
                       <div className="flex flex-col items-center justify-center space-y-3">
                         <RefreshCcw className="w-8 h-8 animate-spin text-gold/50" />
                         <p className="text-muted-foreground text-sm">
-                          Đang đồng bộ dữ liệu...
+                          Dang dong bo du lieu...
                         </p>
                       </div>
                     </TableCell>
@@ -552,7 +594,7 @@ export const AdminReturnManagement = ({
                   filteredData.map((req) => (
                     <TableRow
                       key={req.id}
-                      className="border-gold/5 hover:bg-gold/5 transition-colors group cursor-pointer"
+                      className="group cursor-pointer border-black/6 transition-colors hover:bg-gold/5 dark:border-white/5"
                       onClick={() => {
                         setSelectedReturn(req);
                         setIsReviewOpen(true);
@@ -575,10 +617,10 @@ export const AdminReturnManagement = ({
                           </Badge>
                         )}
                       </TableCell>
-                      <TableCell className="font-mono text-xs text-muted-foreground group-hover:text-gold transition-colors">
+                      <TableCell className="font-mono text-sm text-muted-foreground group-hover:text-gold transition-colors">
                         {req.id.substring(0, 8).toUpperCase()}
                       </TableCell>
-                      <TableCell className="font-mono text-sm font-bold">
+                      <TableCell className="font-mono text-sm font-bold text-foreground">
                         {req.orderId.substring(0, 8).toUpperCase()}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
@@ -586,7 +628,7 @@ export const AdminReturnManagement = ({
                           "vi-VN",
                         )}
                       </TableCell>
-                      <TableCell className="max-w-[200px] truncate text-sm">
+                      <TableCell className="max-w-[240px] text-sm leading-7">
                         {req.reason || (
                           <span className="text-muted-foreground/50 italic">
                             Không có lý do
@@ -635,7 +677,7 @@ export const AdminReturnManagement = ({
                               })}
                             </div>
                           ) : (
-                            <span className="text-[10px] text-muted-foreground/40 italic">
+                            <span className="text-[11px] text-muted-foreground/50 italic">
                               Chưa có vận đơn
                             </span>
                           )}
@@ -644,7 +686,7 @@ export const AdminReturnManagement = ({
                       <TableCell>
                         <Badge
                           variant="outline"
-                          className={`${getStatusColor(req.status)} text-[10px] px-2 py-0.5 tracking-wide uppercase font-bold`}
+                          className={`${getStatusColor(req.status)} px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em]`}
                         >
                           {getStatusLabel(req.status)}
                         </Badge>
@@ -683,7 +725,7 @@ export const AdminReturnManagement = ({
                                 setIsReviewOpen(true);
                               }}
                             >
-                              <Check className="w-3.5 h-3.5 mr-1" /> Duyệt
+                              <Check className="w-3.5 h-3.5 mr-1" /> {"Duyệt"}
                             </Button>
                           )}
 
@@ -723,7 +765,7 @@ export const AdminReturnManagement = ({
                               className="h-8 bg-teal-600/90 hover:bg-teal-500 text-white shadow-md shadow-teal-900/20"
                             >
                               <Box className="w-3.5 h-3.5 mr-1" />{" "}
-                              {req.origin === "POS" ? "Nhận Quầy" : "Nhận Kho"}
+                              {req.origin === "POS" ? "Nhận quầy" : "Nhận kho"}
                             </Button>
                           )}
 
@@ -740,8 +782,8 @@ export const AdminReturnManagement = ({
                               }}
                               className="h-8 bg-indigo-600/90 hover:bg-indigo-500 text-white shadow-md shadow-indigo-900/20"
                             >
-                              <CreditCard className="w-3.5 h-3.5 mr-1" /> Hoàn
-                              tiền
+                              <CreditCard className="w-3.5 h-3.5 mr-1" /> Hoàn tiền
+                            
                             </Button>
                           )}
                       </TableCell>
@@ -841,7 +883,7 @@ export const AdminReturnManagement = ({
                           setIsReviewOpen(true);
                         }}
                       >
-                        <Check className="w-3 h-3 mr-1" /> Duyệt
+                        <Check className="w-3 h-3 mr-1" /> {"Duyệt"}
                       </Button>
                     )}
 
@@ -856,7 +898,7 @@ export const AdminReturnManagement = ({
                         }}
                         className="h-8 bg-teal-600 text-white text-[10px] font-bold"
                       >
-                        <Box className="w-3 h-3 mr-1" /> Nhận
+                        <Box className="w-3 h-3 mr-1" /> {"Nhận kho"}
                       </Button>
                     )}
 
@@ -903,14 +945,14 @@ export const AdminReturnManagement = ({
         <DialogContent className="glass border-gold/30 w-full sm:max-w-3xl h-[100vh] sm:h-auto sm:max-h-[90vh] flex flex-col shadow-2xl sm:rounded-2xl overflow-hidden p-0">
           <DialogHeader className="border-b border-border/50 px-6 pt-6 pb-4 bg-background/80 backdrop-blur-md shrink-0">
             <DialogTitle className="text-xl text-gold pb-1 border-b border-gold/10 inline-block font-heading">
-              Xét duyệt Yêu cầu Đổi Trả
+              Xét duyệt yêu cầu đổi trả
             </DialogTitle>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar space-y-6">
             <div className="bg-background/40 p-4 rounded-xl border border-border/50 flex flex-col sm:flex-row justify-between gap-4">
               <div>
                 <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
-                  Mã Yêu Cầu
+                  Mã yêu cầu
                 </p>
                 <strong className="font-mono text-foreground text-lg">
                   {selectedReturn?.id.substring(0, 8)}
@@ -918,7 +960,7 @@ export const AdminReturnManagement = ({
               </div>
               <div>
                 <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">
-                  Mã Đơn Hàng
+                  Mã đơn hàng
                 </p>
                 <strong className="font-mono text-foreground text-lg">
                   {selectedReturn?.orderId.substring(0, 8)}
@@ -1086,8 +1128,8 @@ export const AdminReturnManagement = ({
             {isAdmin && (
               <div className="space-y-2 pt-4 border-t border-border/50">
                 <label className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
-                  Ghi chú hoặc Phản hồi cho{" "}
-                  {selectedReturn?.origin === "POS" ? "Staff" : "khách"} (nếu từ
+                  Ghi chú hoặc phản hồi cho{" "}
+                  {selectedReturn?.origin === "POS" ? "nhân viên" : "khách"} (nếu từ
                   chối)
                 </label>
                 <Input
@@ -1111,13 +1153,13 @@ export const AdminReturnManagement = ({
                   onClick={() => handleReview("reject")}
                   className="gap-2 border-red-500/30 text-red-500 hover:bg-red-500 hover:text-white transition-colors"
                 >
-                  <X className="w-4 h-4" /> Bác bỏ Yêu cầu
+                  <X className="w-4 h-4" /> Bác bỏ yêu cầu
                 </Button>
                 <Button
                   onClick={() => handleReview("approve")}
                   className="gap-2 bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/20"
                 >
-                  <Check className="w-4 h-4" /> Chấp nhận & Cho phép Gửi Hàng
+                  <Check className="w-4 h-4" /> Chấp nhận & Cho phép gửi hàng
                 </Button>
               </>
             ) : (
@@ -1132,7 +1174,7 @@ export const AdminReturnManagement = ({
         <DialogContent className="glass border-gold/30 w-full sm:max-w-md h-[100vh] sm:h-auto shadow-2xl sm:rounded-2xl flex flex-col p-0 overflow-hidden">
           <DialogHeader className="border-b border-border/50 px-6 pt-6 pb-4 shrink-0">
             <DialogTitle className="text-xl text-teal-400 font-semibold font-heading">
-              Xác nhận Nhận Hàng
+              Xác nhận nhận hàng
             </DialogTitle>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar">
@@ -1142,15 +1184,15 @@ export const AdminReturnManagement = ({
                 {selectedReturn?.origin === "POS"
                   ? "tại quầy (POS)"
                   : "cho cửa hàng chính"}{" "}
-                và đánh dấu quy trình hoàn trả hàng bước vào giai đoạn hoàn
-                tiền. Nếu hàng bị bóc seal, yêu cầu sẽ tự động bị TỪ CHỐI (Không
-                hoàn tiền).
+                và đánh dấu quy trình hoàn trả bước vào giai đoạn hoàn
+                tiền. Nếu hàng bị bóc seal, yêu cầu sẽ tự động bị TỪ CHỐI
+                (không hoàn tiền).
               </p>
             </div>
 
             <div className="space-y-3">
               <label className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
-                Tình trạng Sản phẩm Nhận về
+                Tình trạng sản phẩm nhận về
               </label>
               {selectedReturn?.items.map((item) => (
                 <div
@@ -1177,7 +1219,7 @@ export const AdminReturnManagement = ({
                       </span>
                       <span className="text-xs text-muted-foreground mt-0.5">
                         {item.variant?.volume && `${item.variant.volume} • `}SL
-                        Yêu cầu: {item.quantity}
+                        yêu cầu: {item.quantity}
                       </span>
                     </div>
                   </div>
@@ -1273,7 +1315,7 @@ export const AdminReturnManagement = ({
               onClick={handleReceive}
               className="bg-teal-600 hover:bg-teal-500 shadow-lg shadow-teal-900/30 font-bold uppercase tracking-widest text-[10px]"
             >
-              <Box className="w-4 h-4 mr-2" /> Nhập Kho
+              <Box className="w-4 h-4 mr-2" /> Nhập kho
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1284,7 +1326,7 @@ export const AdminReturnManagement = ({
         <DialogContent className="glass border-indigo-500/30 w-full sm:max-w-md h-[100vh] sm:h-auto shadow-2xl sm:rounded-2xl flex flex-col p-0 overflow-hidden">
           <DialogHeader className="border-b border-border/50 px-6 pt-6 pb-4 shrink-0">
             <DialogTitle className="text-xl text-indigo-400 font-heading">
-              Xác Nhận Hoàn Đơn Hàng
+              Xác nhận hoàn đơn hàng
             </DialogTitle>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar">
@@ -1298,7 +1340,7 @@ export const AdminReturnManagement = ({
               </p>
               {selectedReturn?.origin === "ONLINE" && (
                 <Badge className="bg-cyan-500/20 text-cyan-400 border-none text-[8px] h-4">
-                  Trực Tuyến
+                  Trực tuyến
                 </Badge>
               )}
             </div>
@@ -1421,7 +1463,7 @@ export const AdminReturnManagement = ({
               {refundMethod === "bank_transfer" && (
                 <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
                   <label className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground block mb-1">
-                    Ảnh Hóa Đơn (Nếu có)
+                    Ảnh hóa đơn (nếu có)
                   </label>
                   <Input
                     type="file"
@@ -1469,7 +1511,7 @@ export const AdminReturnManagement = ({
 
               <div className="space-y-2 pt-2">
                 <label className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
-                  Ghi chú (Tùy chọn)
+                  Ghi chú (tùy chọn)
                 </label>
                 <Input
                   value={note}
@@ -1492,7 +1534,7 @@ export const AdminReturnManagement = ({
               onClick={handleRefund}
               className="bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-900/30"
             >
-              <CreditCard className="w-4 h-4 mr-2" /> Xác Nhận Hoàn Tiền
+              <CreditCard className="w-4 h-4 mr-2" /> Xác nhận hoàn tiền
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1504,7 +1546,7 @@ export const AdminReturnManagement = ({
           <DialogHeader className="px-6 pt-6 pb-2 border-b border-border/50">
             <DialogTitle className="text-2xl text-gold pb-2 flex items-center">
               <Store className="w-6 h-6 mr-3 text-gold/70" />
-              Khởi tạo Yêu cầu Đổi Trả Quầy (POS)
+              Khởi tạo yêu cầu đổi trả quầy (POS)
             </DialogTitle>
           </DialogHeader>
 
@@ -1512,7 +1554,7 @@ export const AdminReturnManagement = ({
             <div className="relative group">
               <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-gold transition-colors" />
               <Input
-                placeholder="Nhập mã đơn khách mua (VD: ORD-...) hoặc Quét Barcode..."
+                placeholder="Nhập mã đơn khách mua (VD: ORD-...) hoặc quét barcode..."
                 value={posSearchKey}
                 onChange={(e) => setPosSearchKey(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handlePosOrderSearch()}
@@ -1598,7 +1640,7 @@ export const AdminReturnManagement = ({
                               variant="outline"
                               className="mt-2 text-[10px] bg-background"
                             >
-                              SL Đã mua: {item.quantity}
+                              SL đã mua: {item.quantity}
                             </Badge>
                           </div>
 
@@ -1644,12 +1686,12 @@ export const AdminReturnManagement = ({
 
                 <div>
                   <label className="text-sm font-semibold mb-3 block text-foreground">
-                    Lý do nhận lại (Bắt buộc)
+                    Lý do nhận lại (bắt buộc)
                   </label>
                   <Input
                     value={posReason}
                     onChange={(e) => setPosReason(e.target.value)}
-                    placeholder="Ghi nhận tình trạng: Hàng bể vỡ, Bao bì móp, Khách đổi ý..."
+                    placeholder="Ghi nhận tình trạng: Hàng bị vỡ, bao bì móp, khách đổi ý..."
                     className="bg-black/40 border-gold/20 h-12 rounded-xl focus-visible:ring-gold/30"
                   />
                 </div>
@@ -1670,7 +1712,7 @@ export const AdminReturnManagement = ({
               disabled={!posOrder || posSubmitting}
               className="bg-gold hover:bg-gold/90 text-primary-foreground shadow-lg shadow-gold/20 rounded-xl px-8 h-11 text-base font-medium"
             >
-              {posSubmitting ? "Đang đẩy yêu cầu..." : "Khởi tạo Yêu cầu"}
+              {posSubmitting ? "Đang đẩy yêu cầu..." : "Khởi tạo yêu cầu"}
             </Button>
           </DialogFooter>
         </DialogContent>
