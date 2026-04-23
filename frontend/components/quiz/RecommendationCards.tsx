@@ -89,7 +89,7 @@ export function RecommendationCards({ recommendations, analysis, onRetake }: Rec
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45 }}
-        className="relative overflow-hidden rounded-[2rem] border border-border bg-[linear-gradient(180deg,rgba(16,18,22,0.96),rgba(8,9,11,0.98))] p-6 shadow-[0_38px_100px_-58px_rgba(0,0,0,0.9)] lg:p-10"
+        className="relative overflow-hidden rounded-[2rem] border border-border bg-card p-6 shadow-[0_20px_60px_-40px_rgba(0,0,0,0.06)] dark:shadow-[0_38px_100px_-58px_rgba(0,0,0,0.9)] lg:p-10"
       >
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(197,160,89,0.14),transparent_28%)]" />
         <div className="pointer-events-none absolute right-[-4rem] top-[-3rem] h-48 w-48 rounded-full bg-gold/10 blur-[90px]" />
@@ -142,7 +142,7 @@ export function RecommendationCards({ recommendations, analysis, onRetake }: Rec
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, delay: 0.06 }}
-        className="mt-6 overflow-hidden rounded-[2rem] border border-border bg-card shadow-[0_40px_100px_-60px_rgba(0,0,0,0.9)]"
+        className="mt-6 overflow-hidden rounded-[2rem] border border-border bg-card shadow-[0_20px_60px_-40px_rgba(0,0,0,0.06)] dark:shadow-[0_40px_100px_-60px_rgba(0,0,0,0.9)]"
       >
         <div className="grid h-full gap-0 lg:grid-cols-[0.92fr_1.08fr]">
           <div className="relative min-h-[340px] overflow-hidden bg-secondary lg:min-h-[480px]">
@@ -153,7 +153,7 @@ export function RecommendationCards({ recommendations, analysis, onRetake }: Rec
                 className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-[1.05]"
               />
             ) : (
-              <div className="flex h-full items-center justify-center bg-[radial-gradient(circle_at_top,rgba(197,160,89,0.24),transparent_30%),linear-gradient(180deg,#1a1510,#0b0c0e)] text-gold">
+              <div className="flex h-full items-center justify-center bg-gradient-to-br from-gold/5 via-secondary to-secondary dark:from-gold/10 text-gold">
                 <Sparkles size={54} />
               </div>
             )}
@@ -243,7 +243,7 @@ export function RecommendationCards({ recommendations, analysis, onRetake }: Rec
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.08, duration: 0.35 }}
                 whileHover={{ y: -6 }}
-                className="overflow-hidden rounded-[1.8rem] border border-border bg-card shadow-[0_28px_80px_-54px_rgba(0,0,0,0.9)]"
+                className="overflow-hidden rounded-[1.8rem] border border-border bg-card shadow-[0_20px_60px_-40px_rgba(0,0,0,0.06)] dark:shadow-[0_28px_80px_-54px_rgba(0,0,0,0.9)]"
               >
                 <div className="relative min-h-[220px] overflow-hidden bg-secondary">
                   {rec.imageUrl ? (
