@@ -16,6 +16,13 @@ export class QuizController {
         return this.quizService.submitQuiz(userId, body.answers);
     }
 
+    @Get('history')
+    @UseGuards(JwtAuthGuard)
+    async getUserQuizHistory(@Req() req: any) {
+        const userId = req.user.id || req.user.userId;
+        return this.quizService.getUserHistory(userId);
+    }
+
     @Get(':id')
     async getQuizResult(@Param('id') quizId: string) {
         return this.quizService.getQuizResult(quizId);

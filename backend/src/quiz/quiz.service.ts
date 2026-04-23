@@ -83,6 +83,18 @@ export class QuizService {
         return { quizId: quizResult.id, recommendations: enriched };
     }
 
+    async getUserHistory(userId: string): Promise<any[]> {
+        const results = await this.prisma.quizResult.findMany({
+            where: { userId },
+            orderBy: { createdAt: 'desc' },
+        });
+
+        return results.map(r => ({
+            ...r,
+            recommendation: r.recommendation ? JSON.parse(r.recommendation) : null,
+        }));
+    }
+
     async getQuizResult(quizId: string): Promise<any> {
         const result = await this.prisma.quizResult.findUnique({
             where: { id: quizId },
