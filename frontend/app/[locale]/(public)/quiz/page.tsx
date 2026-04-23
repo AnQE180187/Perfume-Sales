@@ -210,6 +210,7 @@ export default function QuizPage() {
                       </p>
                     </div>
 
+                    <div className="mt-8 flex flex-wrap items-center gap-3">
                       {isAuthenticated ? (
                         <button
                           onClick={handleStart}
