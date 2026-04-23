@@ -258,6 +258,7 @@ export class ProductsService {
       include: {
         brand: true,
         category: true,
+        scentFamily: true,
         images: {
           orderBy: { order: 'asc' },
         },

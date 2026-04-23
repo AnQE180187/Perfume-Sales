@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import '../../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 
@@ -127,7 +128,7 @@ class ScentStructureSection extends StatelessWidget {
                 Column(
                   children: [
                     _ScentLayer(
-                      icon: Icons.spa_outlined,
+                      icon: LucideIcons.sprout,
                       label: l10n.top.toUpperCase(),
                       note: topNote,
                       descriptor: l10n.topNotesDesc,
@@ -137,7 +138,7 @@ class ScentStructureSection extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     _ScentLayer(
-                      icon: Icons.local_florist,
+                      icon: LucideIcons.flower,
                       label: l10n.heart.toUpperCase(),
                       note: heartNote,
                       descriptor: l10n.heartNotesDesc,
@@ -147,7 +148,7 @@ class ScentStructureSection extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     _ScentLayer(
-                      icon: Icons.water_drop_outlined,
+                      icon: LucideIcons.droplets,
                       label: l10n.base.toUpperCase(),
                       note: baseNote,
                       descriptor: l10n.baseNotesDesc,
@@ -163,7 +164,7 @@ class ScentStructureSection extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _ScentLayer(
-                        icon: Icons.spa_outlined,
+                        icon: LucideIcons.sprout,
                         label: l10n.top.toUpperCase(),
                         note: topNote,
                         descriptor: l10n.topNotesDesc,
@@ -181,7 +182,7 @@ class ScentStructureSection extends StatelessWidget {
                         ),
                       ),
                       _ScentLayer(
-                        icon: Icons.local_florist,
+                        icon: LucideIcons.flower,
                         label: l10n.heart.toUpperCase(),
                         note: heartNote,
                         descriptor: l10n.heartNotesDesc,
@@ -199,7 +200,7 @@ class ScentStructureSection extends StatelessWidget {
                         ),
                       ),
                       _ScentLayer(
-                        icon: Icons.water_drop_outlined,
+                        icon: LucideIcons.droplets,
                         label: l10n.base.toUpperCase(),
                         note: baseNote,
                         descriptor: l10n.baseNotesDesc,

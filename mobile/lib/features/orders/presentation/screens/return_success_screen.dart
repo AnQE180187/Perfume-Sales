@@ -2,18 +2,18 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../core/theme/app_theme.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../l10n/app_localizations.dart';
 
-class OrderSuccessScreen extends StatefulWidget {
-  final String? orderId;
-  const OrderSuccessScreen({super.key, this.orderId});
+class ReturnSuccessScreen extends StatefulWidget {
+  final String returnId;
+  const ReturnSuccessScreen({super.key, required this.returnId});
 
   @override
-  State<OrderSuccessScreen> createState() => _OrderSuccessScreenState();
+  State<ReturnSuccessScreen> createState() => _ReturnSuccessScreenState();
 }
 
-class _OrderSuccessScreenState extends State<OrderSuccessScreen>
+class _ReturnSuccessScreenState extends State<ReturnSuccessScreen>
     with TickerProviderStateMixin {
   late final AnimationController _mainController;
   late final AnimationController _particleController;
@@ -99,13 +99,13 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
               child: Column(
                 children: [
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 40),
                   ScaleTransition(
                     scale: _sealScale,
                     child: RotationTransition(
                       turns: _sealRotate,
-                      child: Center(
-                        child: _MetallicGoldSeal(),
+                      child: const Center(
+                        child: _MetallicSuccessSeal(),
                       ),
                     ),
                   ),
@@ -117,7 +117,7 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                       child: Column(
                         children: [
                           Text(
-                            l10n.successfullyOwned,
+                            l10n.returnRequestSuccess,
                             textAlign: TextAlign.center,
                             style: GoogleFonts.playfairDisplay(
                               fontSize: 26,
@@ -128,7 +128,7 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            l10n.orderCodified.toUpperCase(),
+                            l10n.returnSuccessSubtitle.toUpperCase(),
                             textAlign: TextAlign.center,
                             style: GoogleFonts.montserrat(
                               fontSize: 10,
@@ -137,20 +137,21 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
                               color: AppTheme.mutedSilver,
                             ),
                           ),
-                          const SizedBox(height: 32),
-                          _OrderInfoCard(
-                            orderId: widget.orderId ?? 'ORD-REF-2024',
-                            points: 150,
+                          const SizedBox(height: 40),
+                          _ReturnInfoCard(
+                            returnId: widget.returnId,
                           ),
                           const SizedBox(height: 48),
-                          _TrackOrderButton(
-                            label: l10n.traceOrder,
-                            onPressed: () => context.go('/orders'),
+                          _ActionButton(
+                            label: l10n.viewReturnDetails,
+                            onPressed: () => context.push('/returns/${widget.returnId}'),
+                            isPrimary: true,
                           ),
                           const SizedBox(height: 16),
-                          _GhostButton(
-                            label: l10n.returnToAtelier,
+                          _ActionButton(
+                            label: l10n.returnToHome,
                             onPressed: () => context.go('/'),
+                            isPrimary: false,
                           ),
                         ],
                       ),
@@ -166,7 +167,9 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
   }
 }
 
-class _MetallicGoldSeal extends StatelessWidget {
+class _MetallicSuccessSeal extends StatelessWidget {
+  const _MetallicSuccessSeal();
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -204,7 +207,7 @@ class _MetallicGoldSeal extends StatelessWidget {
             ),
           ),
           const Icon(
-            Icons.verified_rounded,
+            Icons.check_circle_rounded,
             color: Colors.white,
             size: 64,
           ),
@@ -214,24 +217,15 @@ class _MetallicGoldSeal extends StatelessWidget {
   }
 }
 
-class _OrderInfoCard extends StatelessWidget {
-  final String orderId;
-  final int points;
+class _ReturnInfoCard extends StatelessWidget {
+  final String returnId;
 
-  const _OrderInfoCard({required this.orderId, required this.points});
+  const _ReturnInfoCard({required this.returnId});
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    // Calculate estimated delivery: today + 2-4 days
-    final now = DateTime.now();
-    final start = now.add(const Duration(days: 2));
-    final end = now.add(const Duration(days: 4));
     
-    // Simple date formatting for Vietnamese/English
-    String formatDate(DateTime date) => "${date.day}/${date.month}/${date.year}";
-    final deliveryRange = "${formatDate(start)} - ${formatDate(end)}";
-
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -246,82 +240,37 @@ class _OrderInfoCard extends StatelessWidget {
           ),
         ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: Stack(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Positioned.fill(
-              child: CustomPaint(
-                painter: _GridPainter(),
-              ),
+            Row(
+              children: [
+                const Icon(Icons.info_outline_rounded, color: AppTheme.accentGold, size: 18),
+                const SizedBox(width: 12),
+                Text(
+                  l10n.returnGuidanceTitle.toUpperCase(),
+                  style: GoogleFonts.montserrat(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.0,
+                    color: AppTheme.deepCharcoal,
+                  ),
+                ),
+              ],
             ),
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _Badge(label: l10n.authenticScent),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF1E5AC).withValues(alpha: 0.3),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.3)),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.stars_rounded, color: AppTheme.accentGold, size: 12),
-                            const SizedBox(width: 6),
-                            Text(
-                              '+$points PTS',
-                              style: GoogleFonts.montserrat(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w800,
-                                color: AppTheme.accentGold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  _InfoRow(
-                    label: l10n.orderIdLabel,
-                    value: orderId,
-                    icon: Icons.confirmation_number_outlined,
-                  ),
-                  const SizedBox(height: 16),
-                  _InfoRow(
-                    label: l10n.estDeliveryDate,
-                    value: deliveryRange,
-                    icon: Icons.local_shipping_outlined,
-                  ),
-                  const SizedBox(height: 20),
-                  const Divider(color: Color(0xFFE5D5C0), thickness: 0.5),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      const Icon(Icons.info_outline_rounded, size: 18, color: AppTheme.accentGold),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          l10n.orderConfirmationNotice,
-                          style: GoogleFonts.montserrat(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                            height: 1.4,
-                            color: AppTheme.deepCharcoal,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+            const SizedBox(height: 24),
+            _InfoRow(
+              label: l10n.returnIdLabel,
+              value: '#${returnId.substring(returnId.length - 8).toUpperCase()}',
+              icon: Icons.assignment_outlined,
+            ),
+            const SizedBox(height: 16),
+            _InfoRow(
+              label: l10n.timeUpper,
+              value: l10n.returnProcessNotice,
+              icon: Icons.timer_outlined,
             ),
           ],
         ),
@@ -371,8 +320,6 @@ class _InfoRow extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                   color: AppTheme.deepCharcoal,
                 ),
-                softWrap: true,
-                overflow: TextOverflow.visible,
               ),
             ],
           ),
@@ -382,11 +329,16 @@ class _InfoRow extends StatelessWidget {
   }
 }
 
-class _TrackOrderButton extends StatelessWidget {
+class _ActionButton extends StatelessWidget {
   final String label;
   final VoidCallback onPressed;
+  final bool isPrimary;
 
-  const _TrackOrderButton({required this.label, required this.onPressed});
+  const _ActionButton({
+    required this.label,
+    required this.onPressed,
+    required this.isPrimary,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -395,113 +347,54 @@ class _TrackOrderButton extends StatelessWidget {
       height: 60,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
-        boxShadow: [
+        boxShadow: isPrimary ? [
           BoxShadow(
             color: AppTheme.accentGold.withValues(alpha: 0.15),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
-        ],
+        ] : null,
       ),
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppTheme.accentGold,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
+      child: isPrimary 
+        ? ElevatedButton(
+            onPressed: onPressed,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.accentGold,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+              ),
+            ),
+            child: Text(
+              label.toUpperCase(),
+              style: GoogleFonts.montserrat(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.5,
+              ),
+            ),
+          )
+        : TextButton(
+            onPressed: onPressed,
+            style: TextButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+                side: BorderSide(color: AppTheme.softTaupe.withValues(alpha: 0.4)),
+              ),
+            ),
+            child: Text(
+              label.toUpperCase(),
+              style: GoogleFonts.montserrat(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 1.5,
+                color: AppTheme.mutedSilver,
+              ),
+            ),
           ),
-        ),
-        child: Text(
-          label.toUpperCase(),
-          style: GoogleFonts.montserrat(
-            fontSize: 12,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 1.5,
-          ),
-        ),
-      ),
     );
   }
-}
-
-class _GhostButton extends StatelessWidget {
-  final String label;
-  final VoidCallback onPressed;
-
-  const _GhostButton({required this.label, required this.onPressed});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 60,
-      child: TextButton(
-        onPressed: onPressed,
-        style: TextButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
-            side: BorderSide(color: AppTheme.softTaupe.withValues(alpha: 0.4)),
-          ),
-        ),
-        child: Text(
-          label.toUpperCase(),
-          style: GoogleFonts.montserrat(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 1.5,
-            color: AppTheme.mutedSilver,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _Badge extends StatelessWidget {
-  final String label;
-  _Badge({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: AppTheme.deepCharcoal,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        label,
-        style: GoogleFonts.montserrat(
-          fontSize: 8,
-          fontWeight: FontWeight.w800,
-          color: Colors.white,
-          letterSpacing: 0.5,
-        ),
-      ),
-    );
-  }
-}
-
-class _GridPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFFE5D5C0).withValues(alpha: 0.1)
-      ..strokeWidth = 1.0;
-
-    const step = 20.0;
-    for (double i = 0; i < size.width; i += step) {
-      canvas.drawLine(Offset(i, 0), Offset(i, size.height), paint);
-    }
-    for (double i = 0; i < size.height; i += step) {
-      canvas.drawLine(Offset(0, i), Offset(size.width, i), paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _ParticleModel {

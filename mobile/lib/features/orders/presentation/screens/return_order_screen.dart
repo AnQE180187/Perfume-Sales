@@ -39,6 +39,9 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
   int _currentStep = 0;
 
   final _formKey = GlobalKey<FormState>();
+  bool _policyAccepted = false;
+  bool _confirmedStatus = false;
+  bool _showingPolicyOnly = true;
 
   void _nextStep() {
     final l10n = AppLocalizations.of(context)!;
@@ -141,10 +144,7 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
         'items': _selectedItems.entries.map((e) => {
               'variantId': e.key,
               'quantity': e.value,
-              'images': [
-                ...imageUrls,
-                if (videoUrl != null) videoUrl,
-              ],
+              'images': imageUrls,
             }).toList(),
         'reason': finalReason,
         'videoUrl': videoUrl,
@@ -155,18 +155,18 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
         }
       };
 
-      await service.createReturn(payload, idempotencyKey: idempotencyKey);
+      final returnId = await service.createReturn(payload, idempotencyKey: idempotencyKey);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.returnSuccess),
-            backgroundColor: const Color(0xFF12B76A),
-          ),
-        );
-        context.pop();
         ref.invalidate(orderProvider);
         ref.invalidate(orderDetailProvider(widget.orderId));
+        
+        if (returnId != null) {
+          context.pushReplacement('/return-success?returnId=$returnId');
+        } else {
+          // Fallback if ID not returned for some reason
+          context.pop();
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -213,66 +213,254 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
     final orderAsync = ref.watch(orderDetailProvider(widget.orderId));
 
     return Scaffold(
-      backgroundColor: AppTheme.ivoryBackground,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        title: Text(
-          l10n.returnRequestTitle,
-          style: GoogleFonts.playfairDisplay(
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            color: AppTheme.deepCharcoal,
-          ),
-        ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
-          onPressed: () {
-            if (_currentStep > 0) {
-              _prevStep();
-            } else {
-              context.pop();
-            }
-          },
+          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+          onPressed: () => context.pop(),
+          color: AppTheme.deepCharcoal,
+        ),
+        title: Text(
+          l10n.returnRequest.toUpperCase(),
+          style: GoogleFonts.montserrat(
+            fontSize: 14,
+            fontWeight: FontWeight.w800,
+            color: AppTheme.deepCharcoal,
+            letterSpacing: 1.5,
+          ),
         ),
       ),
       body: orderAsync.when(
-        data: (order) => Column(
-          children: [
-            _buildStepper(l10n),
-            const SizedBox(height: 12),
-            _buildGuidanceCard(l10n),
-            const SizedBox(height: 16),
-            Expanded(child: _buildContent(order, l10n)),
-          ],
-        ),
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppTheme.accentGold),
-        ),
-        error: (err, _) => Center(
-          child: Text(l10n.failedLoadOrder,
-              style: const TextStyle(color: Color(0xFFD92D20))),
-        ),
+        data: (order) {
+          if (_showingPolicyOnly) {
+            return _buildPolicySequence(l10n);
+          }
+          return _buildFormFlow(order, l10n);
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text(err.toString())),
       ),
-      bottomNavigationBar: _buildBottomBar(l10n),
+    );
+  }
+
+  Widget _buildPolicySequence(AppLocalizations l10n) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      child: !_policyAccepted 
+        ? _buildPolicyView(l10n)
+        : _buildConfirmView(l10n),
+    );
+  }
+
+  Widget _buildPolicyView(AppLocalizations l10n) {
+    return Column(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Column(
+                    children: [
+                      Text(
+                        "CHÍNH SÁCH ĐỔI TRẢ VÀ HOÀN TIỀN",
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: AppTheme.accentGold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        "(RETURN POLICY)",
+                        style: GoogleFonts.montserrat(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.mutedSilver,
+                          letterSpacing: 2,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 32),
+                _buildPolicyItem(
+                  "1",
+                  "Điều kiện đổi trả chung",
+                  "Khách hàng có quyền yêu cầu trả hàng/hoàn tiền trong vòng 07 ngày kể từ khi nhận hàng thành công. Mọi yêu cầu phải kèm theo hình ảnh/video bằng chứng.",
+                ),
+                _buildPolicyItem(
+                  "2",
+                  "Phân định trách nhiệm",
+                  "• Lỗi Shop (Sai mẫu, hỏng): Shop chịu 100% phí ship, hoàn 100% giá trị.\n• Lỗi Khách (Đổi ý): Khách chịu phí ship trả hàng, chỉ hoàn giá trị sản phẩm (không hoàn ship đầu).",
+                ),
+                _buildPolicyItem(
+                  "3",
+                  "Kiểm định hàng lỗi",
+                  "Sản phẩm phải CÒN NGUYÊN SEAL nếu do khách đổi ý. Nếu mất seal hoặc hư hại do khách, Shop có quyền từ chối hoàn tiền và gửi trả lại (Khách chịu phí ship COD).",
+                ),
+                _buildPolicyItem(
+                  "4",
+                  "Yêu cầu bằng chứng",
+                  "Khuyến khích quay video unboxing và đóng gói trả hàng để bảo vệ quyền lợi.",
+                ),
+              ],
+            ),
+          ),
+        ),
+        _buildBottomButton(
+          "TÔI ĐÃ ĐỌC VÀ ĐỒNG Ý",
+          () => setState(() => _policyAccepted = true),
+          isPrimary: true,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildConfirmView(AppLocalizations l10n) {
+    return Container(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: AppTheme.accentGold.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.verified_user_outlined, size: 64, color: AppTheme.accentGold),
+          ),
+          const SizedBox(height: 32),
+          Text(
+            "XÁC NHẬN TÌNH TRẠNG",
+            style: GoogleFonts.montserrat(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              color: AppTheme.deepCharcoal,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            "\"Tôi xác nhận sản phẩm vẫn còn nguyên seal. Tôi hiểu rằng nếu sản phẩm bị mất seal, tôi sẽ bị từ chối hoàn tiền và phải trả phí ship để nhận lại hàng.\"",
+            textAlign: TextAlign.center,
+            style: GoogleFonts.montserrat(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: AppTheme.deepCharcoal.withValues(alpha: 0.7),
+              fontStyle: FontStyle.italic,
+              height: 1.6,
+            ),
+          ),
+          const SizedBox(height: 48),
+          _buildElegantButton(
+            "XÁC NHẬN & TIẾP TỤC",
+            () => setState(() => _showingPolicyOnly = false),
+          ),
+          TextButton(
+            onPressed: () => setState(() => _policyAccepted = false),
+            child: Text(
+              "QUAY LẠI",
+              style: GoogleFonts.montserrat(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.mutedSilver,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPolicyItem(String index, String title, String content) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              color: AppTheme.accentGold.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Text(
+                index,
+                style: GoogleFonts.montserrat(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.accentGold,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title.toUpperCase(),
+                  style: GoogleFonts.montserrat(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.deepCharcoal,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  content,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 12,
+                    color: AppTheme.deepCharcoal.withValues(alpha: 0.7),
+                    height: 1.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFormFlow(Order order, AppLocalizations l10n) {
+    return Column(
+      children: [
+        _buildStepper(l10n),
+        const SizedBox(height: 12),
+        _buildGuidanceCard(l10n),
+        const SizedBox(height: 16),
+        Expanded(child: _buildContent(order, l10n)),
+        _buildBottomBar(l10n),
+      ],
     );
   }
 
   Widget _buildStepper(AppLocalizations l10n) {
-    final steps = [l10n.returnStep1, l10n.returnStep2, l10n.returnStep3];
+    final steps = [
+      l10n.returnStep1,
+      l10n.returnStep2,
+      l10n.returnStep3,
+    ];
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: List.generate(steps.length * 2 - 1, (index) {
-          // Even indices are circles/labels, odd indices are lines
           if (index.isEven) {
             final stepIndex = index ~/ 2;
             final isActive = stepIndex <= _currentStep;
-            final isCurrent = stepIndex == _currentStep;
-            
-            return Row(
+            return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
@@ -280,9 +468,11 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
                   height: 24,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: isActive ? AppTheme.accentGold : Colors.white,
+                    color: isActive ? AppTheme.accentGold : Colors.transparent,
                     border: Border.all(
-                      color: isActive ? AppTheme.accentGold : AppTheme.mutedSilver.withValues(alpha: 0.3),
+                      color: isActive
+                          ? AppTheme.accentGold
+                          : AppTheme.mutedSilver.withValues(alpha: 0.2),
                       width: 2,
                     ),
                   ),
@@ -290,19 +480,19 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
                     child: Text(
                       '${stepIndex + 1}',
                       style: GoogleFonts.montserrat(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
                         color: isActive ? Colors.white : AppTheme.mutedSilver,
                       ),
                     ),
                   ),
                 ),
-                if (isCurrent) ...[
-                  const SizedBox(width: 8),
+                if (isActive) ...[
+                  const SizedBox(height: 4),
                   Text(
                     steps[stepIndex],
                     style: GoogleFonts.montserrat(
-                      fontSize: 12,
+                      fontSize: 10,
                       fontWeight: FontWeight.w700,
                       color: AppTheme.deepCharcoal,
                     ),
@@ -311,7 +501,6 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
               ],
             );
           } else {
-            // Line
             final lineIndex = index ~/ 2;
             return Expanded(
               child: Container(
@@ -327,6 +516,51 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
       ),
     );
   }
+
+  Widget _buildBottomButton(String text, VoidCallback onPressed, {bool isPrimary = false}) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
+          ),
+        ],
+      ),
+      child: _buildElegantButton(text, onPressed),
+    );
+  }
+
+  Widget _buildElegantButton(String text, VoidCallback onPressed) {
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppTheme.accentGold,
+          foregroundColor: Colors.white,
+          elevation: 4,
+          shadowColor: AppTheme.accentGold.withValues(alpha: 0.4),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        child: Text(
+          text,
+          style: GoogleFonts.montserrat(
+            fontSize: 13,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1.5,
+          ),
+        ),
+      ),
+    );
+  }
+
 
   Widget _buildGuidanceCard(AppLocalizations l10n) {
     final guidance = switch (_currentStep) {
@@ -564,43 +798,98 @@ class _ReturnOrderScreenState extends ConsumerState<ReturnOrderScreen> {
   }
 
   Widget _buildReasonChips(AppLocalizations l10n) {
-    final reasons = [
+    final storeFaults = [
       {'val': 'DAMAGED', 'label': l10n.reasonDamaged},
       {'val': 'WRONG_ITEM', 'label': l10n.reasonWrongItem},
-      {'val': 'NOT_EXPECTED', 'label': l10n.reasonScentNotExpected},
+      {'val': 'EXPIRED', 'label': l10n.reasonExpired},
     ];
 
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: reasons.map((r) {
-        final isSelected = _selectedQuickReason == r['val'];
-        return ChoiceChip(
-          label: Text(r['label']!),
-          selected: isSelected,
-          onSelected: (val) {
-            setState(() {
-              _selectedQuickReason = val ? r['val'] : null;
-            });
-          },
-          selectedColor: AppTheme.accentGold.withValues(alpha: 0.15),
-          backgroundColor: Colors.white,
-          labelStyle: GoogleFonts.montserrat(
-            fontSize: 12,
-            color: isSelected ? AppTheme.accentGold : AppTheme.deepCharcoal,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-            side: BorderSide(
-              color: isSelected
-                  ? AppTheme.accentGold
-                  : AppTheme.mutedSilver.withValues(alpha: 0.3),
+    final otherReasons = [
+      {'val': 'SCENT_PREFERENCE', 'label': l10n.reasonScentPreference},
+      {'val': 'COLOR_MISMATCH', 'label': l10n.reasonColorMismatch},
+      {'val': 'QUALITY_EXPECTATION', 'label': l10n.reasonQualityNotAsExpected},
+      {'val': 'CHANGE_OF_MIND', 'label': l10n.reasonChangeOfMind},
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildReasonCategoryHeader(
+          icon: Icons.check_circle_outline,
+          color: const Color(0xFF12B76A),
+          title: l10n.returnCategoryStoreFault,
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: storeFaults.map((r) => _buildReasonChip(r)).toList(),
+        ),
+        const SizedBox(height: 24),
+        _buildReasonCategoryHeader(
+          icon: Icons.error_outline,
+          color: const Color(0xFFF79009),
+          title: l10n.returnCategoryOther,
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: otherReasons.map((r) => _buildReasonChip(r)).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildReasonCategoryHeader({
+    required IconData icon,
+    required Color color,
+    required String title,
+  }) {
+    return Row(
+      children: [
+        Icon(icon, color: color, size: 16),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            title,
+            style: GoogleFonts.montserrat(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: color,
             ),
           ),
-          showCheckmark: false,
-        );
-      }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildReasonChip(Map<String, String> r) {
+    final isSelected = _selectedQuickReason == r['val'];
+    return ChoiceChip(
+      label: Text(r['label']!),
+      selected: isSelected,
+      onSelected: (val) {
+        setState(() {
+          _selectedQuickReason = val ? r['val'] : null;
+        });
+      },
+      selectedColor: AppTheme.accentGold.withValues(alpha: 0.15),
+      backgroundColor: Colors.white,
+      labelStyle: GoogleFonts.montserrat(
+        fontSize: 12,
+        color: isSelected ? AppTheme.accentGold : AppTheme.deepCharcoal,
+        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(30),
+        side: BorderSide(
+          color: isSelected
+              ? AppTheme.accentGold
+              : AppTheme.mutedSilver.withValues(alpha: 0.3),
+        ),
+      ),
+      showCheckmark: false,
     );
   }
 

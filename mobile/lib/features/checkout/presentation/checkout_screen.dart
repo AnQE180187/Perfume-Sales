@@ -37,7 +37,7 @@ class CheckoutScreen extends ConsumerWidget {
         ref.invalidate(cartProvider);
         ref.invalidate(cartSelectionProvider);
         ref.invalidate(activePromotionsProvider);
-        context.go(AppRoutes.orderSuccess);
+        context.go('${AppRoutes.orderSuccess}?orderId=${next.createdOrderId}');
       }
     });
 
@@ -197,7 +197,7 @@ class CheckoutScreen extends ConsumerWidget {
         ref.invalidate(cartProvider);
         ref.invalidate(cartSelectionProvider);
         ref.invalidate(activePromotionsProvider);
-        context.go(AppRoutes.orderSuccess);
+        context.go('${AppRoutes.orderSuccess}?orderId=${currentState.createdOrderId}');
         return;
       }
     }
@@ -291,7 +291,7 @@ class CheckoutScreen extends ConsumerWidget {
     ref.invalidate(cartProvider);
     ref.invalidate(cartSelectionProvider);
     ref.invalidate(activePromotionsProvider);
-    context.go(AppRoutes.orderSuccess);
+    context.go('${AppRoutes.orderSuccess}?orderId=${checkoutState.createdOrderId}');
   }
 
   void _showStockErrorDialog(BuildContext context, String message) {

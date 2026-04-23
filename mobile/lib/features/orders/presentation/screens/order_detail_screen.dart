@@ -723,18 +723,18 @@ class _PaymentInfo extends StatelessWidget {
           Text(
             l10n.payment.toUpperCase(),
             style: GoogleFonts.montserrat(
-              fontSize: 9,
+              fontSize: 10,
               fontWeight: FontWeight.w700,
               letterSpacing: 1.0,
               color: AppTheme.mutedSilver,
             ),
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: 8),
           Expanded(
             child: Align(
               alignment: Alignment.centerRight,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
                   color: isPending 
                       ? const Color(0xFFFFF7E6) 
@@ -749,10 +749,10 @@ class _PaymentInfo extends StatelessWidget {
                 child: Text(
                   paymentLabel.toUpperCase(),
                   textAlign: TextAlign.right,
-                  maxLines: 2,
                   style: GoogleFonts.montserrat(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w700,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    height: 1.3,
                     color: isPending ? const Color(0xFFD48806) : const Color(0xFF389E0D),
                   ),
                 ),

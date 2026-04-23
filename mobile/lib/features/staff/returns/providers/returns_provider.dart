@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/returns_service.dart';
@@ -6,6 +7,14 @@ class StaffReturnNotifier extends StateNotifier<AsyncValue<List<dynamic>>> {
   final StaffReturnsService _service;
   StaffReturnNotifier(this._service) : super(const AsyncValue.loading()) {
     loadReturns();
+  }
+
+  Future<List<String>> uploadImages(List<File> images) async {
+    try {
+      return await _service.uploadImages(images);
+    } catch (e) {
+      return [];
+    }
   }
 
   Future<void> loadReturns({
@@ -30,9 +39,31 @@ class StaffReturnNotifier extends StateNotifier<AsyncValue<List<dynamic>>> {
     required List<Map<String, dynamic>> items,
     required String receivedLocation,
     String? note,
+    List<String>? evidenceImages,
   }) async {
     try {
-      await _service.receiveReturn(id, items: items, receivedLocation: receivedLocation, note: note);
+      await _service.receiveReturn(id, items: items, receivedLocation: receivedLocation, note: note, evidenceImages: evidenceImages);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<Map<String, dynamic>?> shipBackAutomated(String id) async {
+    try {
+      final res = await _service.shipBackAutomated(id);
+      return res;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Future<bool> shipBackManual(String id, {
+    String? courier,
+    required String trackingNumber,
+  }) async {
+    try {
+      await _service.shipBackManual(id, courier: courier, trackingNumber: trackingNumber);
       return true;
     } catch (e) {
       return false;

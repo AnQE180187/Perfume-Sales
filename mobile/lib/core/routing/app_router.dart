@@ -17,6 +17,7 @@ import '../../features/orders/presentation/order_detail_screen.dart';
 import '../../features/orders/presentation/screens/track_order_screen.dart';
 import '../../features/orders/presentation/screens/return_order_screen.dart';
 import '../../features/orders/presentation/screens/return_detail_screen.dart';
+import '../../features/orders/presentation/screens/return_success_screen.dart';
 import '../../features/payment/presentation/payment_method_screen.dart';
 import '../../features/payment/presentation/payment_result_screen.dart';
 import '../../features/payment/presentation/screens/payment_method_screen.dart';
@@ -139,7 +140,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/order-success',
-        builder: (context, state) => const OrderSuccessScreen(),
+        builder: (context, state) {
+          final orderId = state.uri.queryParameters['orderId'];
+          return OrderSuccessScreen(orderId: orderId);
+        },
       ),
       GoRoute(
         path: '/orders',
@@ -171,6 +175,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final returnId = state.pathParameters['id']!;
           return ReturnDetailScreen(returnId: returnId);
+        },
+      ),
+      GoRoute(
+        path: '/return-success',
+        builder: (context, state) {
+          final returnId = state.uri.queryParameters['returnId']!;
+          return ReturnSuccessScreen(returnId: returnId);
         },
       ),
       GoRoute(

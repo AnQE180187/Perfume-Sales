@@ -60,6 +60,12 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
       try {
         await ref.read(returnServiceProvider).cancelReturn(widget.returnId, l10n.userCancelled);
         if (mounted) {
+          // Invalidate order providers so the Return button reappears
+          ref.invalidate(orderProvider);
+          // We don't have the orderId easily here, but we can invalidate the entire family if needed
+          // or just the list. Actually, let's refresh the list.
+          ref.read(orderProvider.notifier).refresh();
+          
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(l10n.cancelSuccess)),
           );
@@ -130,8 +136,22 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
           final ret = snapshot.data!;
           final statusStr = ret['status'] as String;
           final status = _parseReturnStatus(statusStr);
-          final items = (ret['items'] as List).cast<Map<String, dynamic>>();
-          final images = (ret['images'] as List?)?.cast<String>() ?? [];
+          final items = (ret['items'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+          
+          // Aggregate images from top-level (if any) and all items
+          final Set<String> imagesSet = {};
+          if (ret['images'] != null) {
+            imagesSet.addAll((ret['images'] as List).cast<String>());
+          }
+          for (var item in items) {
+            if (item['images'] != null) {
+              final itemImages = (item['images'] as List).cast<String>();
+              // Filter out the videoUrl if it was accidentally added to images list
+              final videoUrl = ret['videoUrl'] as String?;
+              imagesSet.addAll(itemImages.where((img) => img != videoUrl));
+            }
+          }
+          final images = imagesSet.toList();
           final videoUrl = ret['videoUrl'] as String?;
           final refundInfo = ret['paymentInfo'] as Map<String, dynamic>?;
           final totalAmount = (ret['totalAmount'] ?? 0).toDouble();
@@ -179,6 +199,9 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
 
                 if (status == ReturnStatus.completed)
                   _buildRefundCompletionSection(ret, l10n),
+
+                if (status == ReturnStatus.rejectedAfterReturn)
+                  _buildRejectedEvidenceSection(ret, l10n),
 
                 const SizedBox(height: 48),
 
@@ -457,7 +480,7 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
         ),
         const SizedBox(height: 12),
         if (hasGhnPickup)
-          _buildGhnPickupView(ghnShipment, status, l10n)
+          _buildGhnPickupView(ghnShipment, status, l10n, ret)
         else if (shipments.isNotEmpty)
           ...shipments.map((s) => _buildManualShipmentTile(s, l10n))
         else
@@ -466,9 +489,13 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
     );
   }
 
-  Widget _buildGhnPickupView(Map<String, dynamic> shipment, ReturnStatus status, AppLocalizations l10n) {
+  Widget _buildGhnPickupView(Map<String, dynamic> shipment, ReturnStatus status, AppLocalizations l10n, Map<String, dynamic> ret) {
     final trackingNumber = shipment['trackingNumber'] ?? '';
     final trackingUrl = 'https://ghn.vn/blogs/trang-thai-don-hang?order_code=$trackingNumber';
+    
+    final reason = ret['reason'] ?? '';
+    final shopFaultReasons = ['DAMAGED', 'WRONG_ITEM', 'EXPIRED'];
+    final shopPays = shopFaultReasons.contains(reason);
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -507,57 +534,99 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
               fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 12),
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF2B67F6).withValues(alpha: 0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
+              color: shopPays ? const Color(0xFF12B76A).withValues(alpha: 0.1) : const Color(0xFFF79009).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  shopPays ? Icons.info_outline : Icons.warning_amber_rounded,
+                  size: 14,
+                  color: shopPays ? const Color(0xFF027A48) : const Color(0xFFB54708),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    shopPays 
+                      ? "Phí vận chuyển sẽ do Shop chi trả."
+                      : "Quý khách vui lòng thanh toán phí ship cho bưu tá.",
+                    style: GoogleFonts.montserrat(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: shopPays ? const Color(0xFF027A48) : const Color(0xFFB54708),
+                    ),
+                  ),
                 ),
               ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF2B67F6).withValues(alpha: 0.08),
+                  blurRadius: 15,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+              border: Border.all(color: const Color(0xFF2B67F6).withValues(alpha: 0.1)),
             ),
             child: Row(
               children: [
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'GHN TRACKING',
+                        'MÃ VẬN ĐƠN GHN',
                         style: GoogleFonts.montserrat(
-                          fontSize: 8,
+                          fontSize: 9,
                           fontWeight: FontWeight.w800,
                           color: Colors.grey.shade400,
-                          letterSpacing: 0.5,
+                          letterSpacing: 1.2,
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 6),
                       Text(
                         trackingNumber,
-                        style: GoogleFonts.montserrat(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w900,
+                        style: GoogleFonts.robotoMono(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
                           color: const Color(0xFF2B67F6),
-                          letterSpacing: 0.0,
+                          letterSpacing: 0.5,
                         ),
                       ),
                     ],
                   ),
                 ),
-                TextButton.icon(
-                  onPressed: () => launchUrl(Uri.parse(trackingUrl)),
-                  icon: const Icon(Icons.open_in_new, size: 12, color: AppTheme.accentGold),
-                  label: Text(
-                    l10n.trackMovement,
-                    style: GoogleFonts.montserrat(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                      color: AppTheme.accentGold,
+                Container(
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: AppTheme.accentGold.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: TextButton.icon(
+                    onPressed: () => launchUrl(Uri.parse(trackingUrl)),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                    ),
+                    icon: const Icon(Icons.location_on_outlined, size: 14, color: AppTheme.accentGold),
+                    label: Text(
+                      l10n.traceOrder,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.accentGold,
+                      ),
                     ),
                   ),
                 ),
@@ -573,20 +642,19 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF2B67F6),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  elevation: 4,
-                  shadowColor: const Color(0xFF2B67F6).withValues(alpha: 0.4),
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                  elevation: 0,
                 ),
                 icon: _submittingHandover
                     ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    : const Icon(Icons.handshake_rounded, size: 18),
+                    : const Icon(Icons.handshake_outlined, size: 20),
                 label: Text(
-                  l10n.confirmHandover,
+                  l10n.confirmHandover.toUpperCase(),
                   style: GoogleFonts.montserrat(
                     fontSize: 13,
                     fontWeight: FontWeight.w800,
-                    letterSpacing: 0.3,
+                    letterSpacing: 1.2,
                   ),
                 ),
               ),
@@ -599,23 +667,53 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
 
   Widget _buildManualShipmentTile(Map<String, dynamic> shipment, AppLocalizations l10n) {
     return Container(
-      padding: const EdgeInsets.all(12),
-      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.softTaupe.withValues(alpha: 0.2)),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.softTaupe.withValues(alpha: 0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
-          const Icon(Icons.local_shipping, color: AppTheme.accentGold, size: 20),
-          const SizedBox(width: 12),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppTheme.accentGold.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.local_shipping_outlined, color: AppTheme.accentGold, size: 20),
+          ),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(shipment['courier'] ?? l10n.shipmentTitle, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                Text(shipment['trackingNumber'] ?? '', style: GoogleFonts.montserrat(fontSize: 13, color: AppTheme.mutedSilver)),
+                Text(
+                  (shipment['courier'] ?? l10n.shipmentTitle).toUpperCase(),
+                  style: GoogleFonts.montserrat(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.0,
+                    color: AppTheme.mutedSilver,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  shipment['trackingNumber'] ?? '',
+                  style: GoogleFonts.robotoMono(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.deepCharcoal,
+                  ),
+                ),
               ],
             ),
           ),
@@ -726,6 +824,190 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
           if (proofImages.isNotEmpty) ...[
             const SizedBox(height: 14),
             _buildRefundProofImages(proofImages, l10n),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRejectedEvidenceSection(Map<String, dynamic> ret, AppLocalizations l10n) {
+    // Extract evidence from the RECEIVED audit
+    final audits = (ret['audits'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    final receivedAudit = audits.firstWhere(
+      (a) => a['action'] == 'RECEIVED' && (a['payload']?['evidenceImages'] as List?)?.isNotEmpty == true,
+      orElse: () => <String, dynamic>{},
+    );
+    final evidenceImages = (receivedAudit['payload']?['evidenceImages'] as List?)?.cast<String>() ?? [];
+
+    // Extract return-to-customer shipments
+    final shipments = (ret['shipments'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    final returnShipments = shipments.where((s) => s['status'] == 'RETURN_TO_CUSTOMER').toList();
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFDE8E8),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFF9A8D4)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.cancel, color: Color(0xFFE02424)),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Yêu cầu bị từ chối',
+                  style: GoogleFonts.montserrat(
+                    color: const Color(0xFF9B1C1C),
+                    fontWeight: FontWeight.w800,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF9B1C1C).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              'Sản phẩm hoàn trả không còn nguyên seal hoặc bị hư hại. Theo chính sách, cửa hàng sẽ gửi trả lại sản phẩm cho bạn. Phí vận chuyển sẽ do người mua chi trả.',
+              style: GoogleFonts.montserrat(
+                color: const Color(0xFF771D1D),
+                fontSize: 11,
+                height: 1.5,
+              ),
+            ),
+          ),
+          if (evidenceImages.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            Text(
+              'Bằng chứng từ cửa hàng (${evidenceImages.length} ảnh)',
+              style: GoogleFonts.montserrat(
+                color: const Color(0xFFE02424),
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(height: 8),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: evidenceImages.map((url) => Container(
+                  margin: const EdgeInsets.only(right: 8),
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFF9A8D4)),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(url, fit: BoxFit.cover),
+                  ),
+                )).toList(),
+              ),
+            ),
+          ],
+          if (returnShipments.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            Text(
+              'Hàng đang gửi trả lại bạn',
+              style: GoogleFonts.montserrat(
+                color: const Color(0xFFD97706),
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(height: 8),
+            ...returnShipments.map((s) => Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFDE68A).withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFFCD34D)),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Mã vận đơn ${s['courier'] ?? ''}',
+                          style: GoogleFonts.montserrat(
+                            color: const Color(0xFFB45309),
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          s['trackingNumber'] ?? '',
+                          style: GoogleFonts.robotoMono(
+                            color: const Color(0xFF92400E),
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (s['courier'] == 'GHN' && s['trackingNumber'] != null)
+                    TextButton.icon(
+                      onPressed: () => launchUrl(Uri.parse('https://ghn.vn/blogs/trang-thai-don-hang?order_code=${s['trackingNumber']}')),
+                      icon: const Icon(Icons.location_on, size: 14, color: Color(0xFFD97706)),
+                      label: Text(
+                        'Theo dõi',
+                        style: GoogleFonts.montserrat(
+                          color: const Color(0xFFD97706),
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      style: TextButton.styleFrom(
+                        backgroundColor: const Color(0xFFFCD34D).withValues(alpha: 0.3),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                    ),
+                ],
+              ),
+            )),
+          ] else ...[
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFEF3C7),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFFDE68A)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.local_shipping, size: 16, color: Color(0xFFD97706)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Cửa hàng đang chuẩn bị gửi trả sản phẩm cho bạn. Vui lòng chờ cập nhật.',
+                      style: GoogleFonts.montserrat(
+                        color: const Color(0xFFB45309),
+                        fontSize: 10,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ],
       ),
@@ -865,9 +1147,34 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
   }
 
   ReturnStatus _parseReturnStatus(String status) {
-    return ReturnStatus.values.firstWhere(
-      (e) => e.name == status.toLowerCase() || e.name == status,
-      orElse: () => ReturnStatus.requested,
-    );
+    final s = status.toUpperCase();
+    switch (s) {
+      case 'REQUESTED':
+        return ReturnStatus.requested;
+      case 'AWAITING_CUSTOMER':
+        return ReturnStatus.awaitingCustomer;
+      case 'REVIEWING':
+        return ReturnStatus.reviewing;
+      case 'APPROVED':
+        return ReturnStatus.approved;
+      case 'RETURNING':
+        return ReturnStatus.returning;
+      case 'RECEIVED':
+        return ReturnStatus.received;
+      case 'REFUNDING':
+        return ReturnStatus.refunding;
+      case 'REFUND_FAILED':
+        return ReturnStatus.refundFailed;
+      case 'COMPLETED':
+        return ReturnStatus.completed;
+      case 'REJECTED':
+        return ReturnStatus.rejected;
+      case 'REJECTED_AFTER_RETURN':
+        return ReturnStatus.rejectedAfterReturn;
+      case 'CANCELLED':
+        return ReturnStatus.cancelled;
+      default:
+        return ReturnStatus.requested;
+    }
   }
 }

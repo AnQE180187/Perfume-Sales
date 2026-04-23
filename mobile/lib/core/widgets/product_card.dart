@@ -435,8 +435,8 @@ class _GridCard extends StatelessWidget {
                     ),
                   ],
                   const SizedBox(height: 6),
-                  Container(
-                    constraints: const BoxConstraints(maxHeight: 34),
+                  SizedBox(
+                    height: 32, // Fixed height for 2 lines
                     child: Text(
                       product.name,
                       maxLines: 2,
@@ -451,14 +451,13 @@ class _GridCard extends StatelessWidget {
                   ),
                   if (product.notes.isNotEmpty) ...[
                     const SizedBox(height: 4),
-                    Container(
-                      constraints: const BoxConstraints(maxHeight: 20),
+                    SizedBox(
+                      height: 20, // Fixed height for tags
                       child: ListView.separated(
+                        padding: EdgeInsets.zero,
                         scrollDirection: Axis.horizontal,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: product.notes.length > 2
-                            ? 2
-                            : product.notes.length,
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: product.notes.length,
                         separatorBuilder: (_, __) => const SizedBox(width: 4),
                         itemBuilder: (_, i) => GestureDetector(
                           onTap: () => context.push('/search?note=${product.notes[i]}'),

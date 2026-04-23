@@ -398,6 +398,14 @@ class _TabletReturnDetailsDialogState extends ConsumerState<TabletReturnDetailsD
             onTap: () => _openRefundDialog(data),
             isMobile: isMobile,
           ),
+
+        if (status == 'REJECTED_AFTER_RETURN' && !(data['shipments'] as List? ?? []).any((s) => s['type'] == 'RETURN_TO_SENDER'))
+          _buildActionButton(
+            label: "GỬI TRẢ LẠI KHÁCH",
+            icon: Icons.local_shipping_outlined,
+            onTap: () => _shipBackAutomated(data),
+            isMobile: isMobile,
+          ),
         
         if (!isMobile) const Spacer(),
         if (isMobile) const SizedBox(height: 24),
@@ -487,6 +495,40 @@ class _TabletReturnDetailsDialogState extends ConsumerState<TabletReturnDetailsD
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Giao dịch hoàn tiền đã được ghi nhận."), backgroundColor: Colors.greenAccent),
+        );
+      }
+    }
+  }
+
+  void _shipBackAutomated(Map<String, dynamic> data) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF151515),
+        title: Text("XÁC NHẬN GỬI TRẢ KHÁCH", style: GoogleFonts.playfairDisplay(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+        content: Text("Hệ thống sẽ tự động tạo vận đơn GHN gửi trả hàng lỗi cho khách. Phí vận chuyển sẽ do KHÁCH HÀNG thanh toán khi nhận hàng.", style: GoogleFonts.montserrat(color: Colors.white70, fontSize: 13)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("HỦY")),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.accentGold, foregroundColor: Colors.black),
+            child: const Text("XÁC NHẬN"),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final res = await ref.read(staffReturnsProvider.notifier).shipBackAutomated(data['id']);
+      if (res != null && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Đã tạo vận đơn GHN: ${res['orderCode']}. Phí ship do khách trả."), backgroundColor: Colors.greenAccent),
+        );
+        ref.invalidate(returnDetailsProvider(data['id']));
+        ref.read(staffReturnsProvider.notifier).loadReturns();
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Lỗi khi tạo vận đơn tự động."), backgroundColor: Colors.redAccent),
         );
       }
     }
