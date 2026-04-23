@@ -85,7 +85,7 @@ export class QuizService {
 
         return results.map(r => ({
             ...r,
-            recommendation: r.recommendation ? JSON.parse(r.recommendation) : null,
+            recommendation: r.recommendation,
         }));
     }
 
