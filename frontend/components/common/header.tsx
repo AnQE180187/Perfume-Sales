@@ -23,6 +23,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { cartService } from '@/services/cart.service';
 import { notificationService } from '@/services/notification.service';
 import { getNotificationSocket } from '@/lib/socket';
+import { BrandMegaMenu } from './brand-mega-menu';
 
 export const Header = () => {
     const t = useTranslations('common');
@@ -172,17 +173,31 @@ export const Header = () => {
                                 : "border-white/10 bg-[linear-gradient(135deg,rgba(9,9,11,0.56),rgba(9,9,11,0.3))] backdrop-blur-xl"
                         )}
                     >
-                        {/* Left */}
                         <div className="hidden lg:flex items-center gap-2 justify-start">
-                            {menuLeft.map((item) => (
-                                <Link
-                                    key={item.href}
-                                    href={item.href}
-                                    className={navItemClass(pathname === item.href)}
-                                >
-                                    {item.name}
-                                </Link>
-                            ))}
+                            {menuLeft.map((item) => {
+                                const isBoutiques = item.href === '/boutiques';
+                                return isBoutiques ? (
+                                    <div key={item.href} className="group/mega relative flex items-center">
+                                        <Link
+                                            href={item.href}
+                                            className={navItemClass(pathname === item.href)}
+                                        >
+                                            {item.name}
+                                        </Link>
+                                        <div className="absolute top-[calc(100%+24px)] left-0 opacity-0 invisible group-hover/mega:opacity-100 group-hover/mega:visible transition-all duration-300 translate-y-4 group-hover/mega:translate-y-0 before:absolute before:-top-8 before:left-0 before:w-full before:h-8">
+                                            <BrandMegaMenu />
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <Link
+                                        key={item.href}
+                                        href={item.href}
+                                        className={navItemClass(pathname === item.href)}
+                                    >
+                                        {item.name}
+                                    </Link>
+                                );
+                            })}
                         </div>
 
                         {/* Center Logo (always centered) */}

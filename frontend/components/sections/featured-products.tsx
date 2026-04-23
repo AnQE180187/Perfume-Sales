@@ -24,12 +24,12 @@ export const FeaturedProducts = () => {
     useEffect(() => {
         Promise.all([
             productService.list({ isFeatured: true, take: 3 }),
-            productService.list({ isBestseller: true, take: 3 }),
+            productService.getTopSelling(3),
             productService.list({ take: 3 }),
         ])
-            .then(([featuredItems, bestsellerItems, arrivalItems]) => {
+            .then(([featuredItems, bestsellerProducts, arrivalItems]) => {
                 setFeatured(featuredItems.items);
-                setBestsellers(bestsellerItems.items);
+                setBestsellers(bestsellerProducts);
                 setNewArrivals(arrivalItems.items);
             })
             .catch(console.error);
@@ -49,9 +49,6 @@ export const FeaturedProducts = () => {
                 <div className="mb-8 flex flex-col gap-4 md:mb-10 md:flex-row md:items-end md:justify-between">
                     <div>
                         <h3 className="text-3xl leading-tight text-foreground md:text-4xl">{section.title}</h3>
-                        <p className="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">
-                            Khám phá bộ sưu tập những mùi hương đẳng cấp nhất, được tuyển chọn kỹ lưỡng để tôn vinh bản sắc riêng của bạn.
-                        </p>
                     </div>
 
                     <Link
@@ -96,14 +93,21 @@ export const FeaturedProducts = () => {
                                     </div>
 
                                     <div className="flex flex-1 flex-col p-5 md:p-6">
-                                        <p className="text-sm font-medium text-muted-foreground">
-                                            {perfume.brand?.name || 'Perfume GPT'}
-                                        </p>
+                                        <div className="flex items-center justify-between">
+                                            <p className="text-sm font-medium text-muted-foreground">
+                                                {perfume.brand?.name || 'Perfume GPT'}
+                                            </p>
+                                            {perfume.salesCount != null && (
+                                                <p className="text-[11px] font-semibold uppercase tracking-wider text-gold bg-gold/10 px-2 py-1 rounded-md border border-gold/20">
+                                                    Đã bán {perfume.salesCount}
+                                                </p>
+                                            )}
+                                        </div>
                                         <h4 className="mt-2 line-clamp-2 text-2xl leading-tight text-foreground md:text-[1.75rem]">
                                             {perfume.name}
                                         </h4>
-                                        <p className="mt-4 text-sm leading-7 text-muted-foreground md:text-base">
-                                            Mùi hương đặc sắc mang đậm dấu ấn cá nhân, tạo nên sự lôi cuốn khó cưỡng trong mọi khoảnh khắc.
+                                        <p className="mt-4 text-sm leading-7 text-muted-foreground md:text-base line-clamp-2">
+                                            {perfume.description || 'Khám phá hương thơm độc đáo dành riêng cho bạn.'}
                                         </p>
 
                                         <div className="mt-auto pt-6">
@@ -136,9 +140,6 @@ export const FeaturedProducts = () => {
                     <h2 className="mt-4 text-3xl leading-tight text-foreground md:text-4xl lg:text-5xl">
                         {t('title')}
                     </h2>
-                    <p className="mt-5 max-w-2xl text-base leading-8 text-muted-foreground md:text-lg">
-                        Tuyển tập những dòng nước hoa trứ danh, từ những nốt hương cổ điển đến những sáng tạo hiện đại đầy phá cách.
-                    </p>
                 </div>
 
                 {sections.map(renderSection)}

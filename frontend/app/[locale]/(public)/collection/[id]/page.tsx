@@ -58,7 +58,12 @@ export default async function CollectionDetailPage({ params }: { params: Promise
           <ChevronRight className="h-4 w-4" />
           {product.brand && (
             <>
-              <span>{product.brand.name}</span>
+              <Link
+                href={`/collection?brandId=${product.brand.id}&brand=${encodeURIComponent(product.brand.name)}`}
+                className="transition-colors hover:text-gold"
+              >
+                {product.brand.name}
+              </Link>
               <ChevronRight className="h-4 w-4" />
             </>
           )}

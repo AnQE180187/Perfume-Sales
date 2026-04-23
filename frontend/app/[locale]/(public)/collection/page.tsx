@@ -14,7 +14,7 @@ import {
 import { useFormatter, useLocale, useTranslations } from 'next-intl';
 
 import { Breadcrumb } from '@/components/common/breadcrumb';
-import { Link } from '@/lib/i18n';
+import { Link, usePathname, useRouter } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import { productService, type Product, type ProductListRes } from '@/services/product.service';
 
@@ -27,6 +27,8 @@ export default function CollectionPage() {
   const locale = useLocale();
   const format = useFormatter();
   const tCommon = useTranslations('common');
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const isVi = locale === 'vi';
 
@@ -49,12 +51,12 @@ export default function CollectionPage() {
             filterLabel: 'B\u1ed9 l\u1ecdc',
             mobileFilterTitle: 'B\u1ed9 l\u1ecdc s\u1ea3n ph\u1ea9m',
             clearFilters: 'X\u00f3a t\u1ea5t c\u1ea3 b\u1ed9 l\u1ecdc',
-            brandSection: 'Th\u01b0\u01a1ng hi\u1ec7u',
-            brandSearch: 'T\u00ecm nhanh th\u01b0\u01a1ng hi\u1ec7u',
-            all: 'T\u1ea5t c\u1ea3',
-            genderSection: 'Gi\u1edbi t\u00ednh',
+            brandSearch: 'Tìm nhanh thương hiệu',
+            all: 'Tất cả',
+            categorySection: 'Danh mục',
+            genderSection: 'Giới tính',
             male: 'Nam',
-            female: 'N\u1eef',
+            female: 'Nữ',
             unisex: 'Unisex',
             priceSection: 'M\u1ee9c gi\u00e1',
             scentSection: 'Nh\u00f3m h\u01b0\u01a1ng',
@@ -97,9 +99,9 @@ export default function CollectionPage() {
             filterLabel: 'Filters',
             mobileFilterTitle: 'Product filters',
             clearFilters: 'Clear all filters',
-            brandSection: 'Brands',
             brandSearch: 'Search brands',
             all: 'All',
+            categorySection: 'Category',
             genderSection: 'Gender',
             male: 'Male',
             female: 'Female',
@@ -135,8 +137,9 @@ export default function CollectionPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [brandQuery, setBrandQuery] = useState('');
-  const [selectedBrand, setSelectedBrand] = useState<string | null>(searchParams.get('brand') || null);
+  const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
+  const [selectedBrandId, setSelectedBrandId] = useState<number | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedScent, setSelectedScent] = useState<string | null>(null);
   const [gender, setGender] = useState<GenderFilter>(null);
   const [priceRange, setPriceRange] = useState<PriceFilter>(null);
@@ -158,11 +161,37 @@ export default function CollectionPage() {
   }, []);
 
   useEffect(() => {
-    const brand = searchParams.get('brand');
-    if (brand) {
-      setSelectedBrand(brand);
-    }
+    const brandFromQuery = searchParams.get('brand');
+    const rawBrandId = searchParams.get('brandId');
+    const parsedBrandId = rawBrandId ? Number(rawBrandId) : null;
+    const hasBrandId = parsedBrandId !== null && Number.isFinite(parsedBrandId) && parsedBrandId > 0;
+
+    if (!brandFromQuery && !hasBrandId) return;
+
+    setSelectedBrand(brandFromQuery || null);
+    setSelectedBrandId(hasBrandId ? parsedBrandId : null);
   }, [searchParams]);
+
+  const syncBrandQuery = (brandId: number | null, brandName: string | null) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (brandId && brandId > 0) {
+      params.set('brandId', String(brandId));
+      if (brandName) params.set('brand', brandName);
+      else params.delete('brand');
+    } else {
+      params.delete('brandId');
+      params.delete('brand');
+    }
+
+    const currentBrandId = searchParams.get('brandId');
+    const currentBrand = searchParams.get('brand');
+    const nextBrandId = params.get('brandId');
+    const nextBrand = params.get('brand');
+    if (currentBrandId === nextBrandId && currentBrand === nextBrand) return;
+
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  };
 
   const formatCurrency = (amount: number) =>
     format.number(amount, {
@@ -177,18 +206,33 @@ export default function CollectionPage() {
   };
 
   const getScentName = (product: Product) =>
-    ((product as Product & { scentFamily?: { name?: string } }).scentFamily?.name || product.category?.name || '').trim();
+    ((product as Product & { scentFamily?: { name?: string } }).scentFamily?.name || '').trim();
 
   const brandItems = useMemo(() => {
-    const items = Array.from(
-      new Set(products.map((product) => product.brand?.name).filter(Boolean) as string[])
-    ).sort((a, b) => a.localeCompare(b));
+    const mappedBrands = new Map<string, number>();
+    products.forEach((product) => {
+      if (!product.brand?.name) return;
+      mappedBrands.set(product.brand.name, product.brand.id ?? product.brandId);
+    });
 
-    if (!brandQuery.trim()) return items;
+    return Array.from(mappedBrands.entries())
+      .map(([name, id]) => ({ name, id }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [products]);
 
-    const query = brandQuery.trim().toLowerCase();
-    return items.filter((brand) => brand.toLowerCase().includes(query));
-  }, [brandQuery, products]);
+  useEffect(() => {
+    if (selectedBrand || selectedBrandId === null) return;
+    const matchedBrand = products.find(
+      (product) => (product.brand?.id ?? product.brandId) === selectedBrandId
+    )?.brand?.name;
+    if (matchedBrand) setSelectedBrand(matchedBrand);
+  }, [products, selectedBrand, selectedBrandId]);
+
+  const categoryItems = useMemo(() => {
+    return Array.from(new Set(products.map((product) => product.category?.name).filter(Boolean) as string[])).sort((a, b) =>
+      a.localeCompare(b)
+    );
+  }, [products]);
 
   const scentItems = useMemo(() => {
     return Array.from(new Set(products.map(getScentName).filter(Boolean) as string[])).sort((a, b) =>
@@ -210,8 +254,14 @@ export default function CollectionPage() {
       });
     }
 
-    if (selectedBrand) {
+    if (selectedBrandId !== null) {
+      filtered = filtered.filter((product) => (product.brand?.id ?? product.brandId) === selectedBrandId);
+    } else if (selectedBrand) {
       filtered = filtered.filter((product) => product.brand?.name === selectedBrand);
+    }
+
+    if (selectedCategory) {
+      filtered = filtered.filter((product) => product.category?.name === selectedCategory);
     }
 
     if (selectedScent) {
@@ -275,30 +325,33 @@ export default function CollectionPage() {
       const secondPrice = getMinPrice(second) ?? 0;
       return sort === 'price_desc' ? secondPrice - firstPrice : firstPrice - secondPrice;
     });
-  }, [gender, priceRange, products, searchQuery, selectedBrand, selectedScent, selectedSeason, sort]);
+  }, [gender, priceRange, products, searchQuery, selectedBrand, selectedBrandId, selectedCategory, selectedScent, selectedSeason, sort]);
 
   useEffect(() => {
     setPage(1);
-  }, [gender, priceRange, searchQuery, selectedBrand, selectedScent, selectedSeason, sort]);
+  }, [gender, priceRange, searchQuery, selectedBrand, selectedBrandId, selectedCategory, selectedScent, selectedSeason, sort]);
 
   const totalPages = Math.max(1, Math.ceil(visibleProducts.length / pageSize));
   const pagedProducts = visibleProducts.slice((page - 1) * pageSize, page * pageSize);
 
   const clearAllFilters = () => {
     setSearchQuery('');
-    setBrandQuery('');
     setSelectedBrand(null);
+    setSelectedBrandId(null);
+    setSelectedCategory(null);
     setSelectedScent(null);
     setGender(null);
     setPriceRange(null);
     setSelectedSeason(null);
     setSort('price_desc');
+    syncBrandQuery(null, null);
   };
 
-  const activeFilterCount = [selectedBrand, selectedScent, gender, priceRange, selectedSeason].filter(Boolean).length;
+  const activeFilterCount = [selectedBrand ?? selectedBrandId, selectedCategory, selectedScent, gender, priceRange, selectedSeason].filter(Boolean).length;
 
   const activeFilters = [
-    selectedBrand ? { key: 'brand', label: selectedBrand } : null,
+    selectedBrand || selectedBrandId !== null ? { key: 'brand', label: selectedBrand ?? labels.brandSection } : null,
+    selectedCategory ? { key: 'category', label: selectedCategory } : null,
     selectedScent ? { key: 'scent', label: selectedScent } : null,
     gender
       ? {
@@ -336,7 +389,12 @@ export default function CollectionPage() {
   ].filter(Boolean) as Array<{ key: string; label: string }>;
 
   const removeFilter = (key: string) => {
-    if (key === 'brand') setSelectedBrand(null);
+    if (key === 'brand') {
+      setSelectedBrand(null);
+      setSelectedBrandId(null);
+      syncBrandQuery(null, null);
+    }
+    if (key === 'category') setSelectedCategory(null);
     if (key === 'scent') setSelectedScent(null);
     if (key === 'gender') setGender(null);
     if (key === 'price') setPriceRange(null);
@@ -366,22 +424,17 @@ export default function CollectionPage() {
     <div className="space-y-8">
       <div className="rounded-[1.8rem] border border-black/6 bg-white/70 p-5 dark:border-white/10 dark:bg-white/[0.04]">
         <h2 className="text-base font-semibold text-foreground">{labels.brandSection}</h2>
-        <div className="relative mt-4">
-          <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            value={brandQuery}
-            onChange={(event) => setBrandQuery(event.target.value)}
-            placeholder={labels.brandSearch}
-            className="w-full rounded-2xl border border-black/8 bg-background px-11 py-3.5 text-sm text-foreground outline-none transition-all focus:border-gold dark:border-white/10 dark:bg-background"
-          />
-        </div>
         <div className="mt-4 max-h-72 space-y-1 overflow-y-auto pr-1 custom-scrollbar">
           <button
             type="button"
-            onClick={() => setSelectedBrand(null)}
+            onClick={() => {
+              setSelectedBrand(null);
+              setSelectedBrandId(null);
+              syncBrandQuery(null, null);
+            }}
             className={cn(
               'w-full rounded-2xl px-4 py-3 text-left text-sm transition-all',
-              selectedBrand === null
+              selectedBrand === null && selectedBrandId === null
                 ? 'bg-gold/12 font-medium text-gold'
                 : 'text-foreground hover:bg-secondary/60 dark:hover:bg-white/[0.04]'
             )}
@@ -390,17 +443,40 @@ export default function CollectionPage() {
           </button>
           {brandItems.map((brand) => (
             <button
-              key={brand}
+              key={`${brand.id}-${brand.name}`}
               type="button"
-              onClick={() => setSelectedBrand(brand)}
+              onClick={() => {
+                setSelectedBrand(brand.name);
+                setSelectedBrandId(brand.id);
+                syncBrandQuery(brand.id, brand.name);
+              }}
               className={cn(
                 'w-full rounded-2xl px-4 py-3 text-left text-sm transition-all',
-                selectedBrand === brand
+                selectedBrandId !== null ? selectedBrandId === brand.id : selectedBrand === brand.name
                   ? 'bg-gold/12 font-medium text-gold'
                   : 'text-foreground hover:bg-secondary/60 dark:hover:bg-white/[0.04]'
               )}
             >
-              {brand}
+              {brand.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="rounded-[1.8rem] border border-black/6 bg-white/70 p-5 dark:border-white/10 dark:bg-white/[0.04]">
+        <h2 className="text-base font-semibold text-foreground">{labels.categorySection}</h2>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button type="button" onClick={() => setSelectedCategory(null)} className={pillClass(selectedCategory === null)}>
+            {labels.all}
+          </button>
+          {categoryItems.map((category) => (
+            <button
+              key={category}
+              type="button"
+              onClick={() => setSelectedCategory(category)}
+              className={pillClass(selectedCategory === category)}
+            >
+              {category}
             </button>
           ))}
         </div>
