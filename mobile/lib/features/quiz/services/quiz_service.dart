@@ -19,4 +19,9 @@ class QuizService {
     final response = await _client.get(ApiEndpoints.quizResult(quizId));
     return response.data as Map<String, dynamic>;
   }
+
+  Future<List<Map<String, dynamic>>> getQuizHistory() async {
+    final response = await _client.get(ApiEndpoints.quizHistory);
+    return List<Map<String, dynamic>>.from(response.data);
+  }
 }

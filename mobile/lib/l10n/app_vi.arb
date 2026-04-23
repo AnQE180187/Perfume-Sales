@@ -798,6 +798,15 @@
   "paymentVnpayDesc": "Thanh toán bằng ví điện tử VNPay",
   "paymentMomoDesc": "Thanh toán bằng ví điện tử MoMo",
   "paymentCodDesc": "Thanh toán khi nhận hàng",
+  "quizHistoryTitle": "Lịch sử khảo sát AI",
+  "noQuizHistory": "Bạn chưa có lịch sử khảo sát nào.",
+  "quizHistorySubtitle": "Xem lại các gợi ý mùi hương AI đã dành cho bạn.",
+  "quizResultDate": "Khảo sát ngày {date}",
+  "@quizResultDate": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
   "helpCenterTitle": "TRUNG TÂM TRỢ GIÚP",
   "howCanWeHelp": "CHÚNG TÔI CÓ THỂ GIÚP GÌ CHO BẠN?",
   "searchIssueHint": "Tìm kiếm vấn đề của bạn...",

@@ -133,6 +133,7 @@ class ApiEndpoints {
 
   // ── Quiz ──────────────────────────────────────────────────────────
   static const String quizSubmit = '/quiz/submit';
+  static const String quizHistory = '/quiz/history';
   static String quizResult(String id) => '/quiz/$id';
 
   // ── Journals ──────────────────────────────────────────────────────

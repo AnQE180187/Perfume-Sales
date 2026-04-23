@@ -4364,6 +4364,30 @@ abstract class AppLocalizations {
   /// **'Cash on delivery'**
   String get paymentCodDesc;
 
+  /// No description provided for @quizHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Quiz History'**
+  String get quizHistoryTitle;
+
+  /// No description provided for @noQuizHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'You have no quiz history yet.'**
+  String get noQuizHistory;
+
+  /// No description provided for @quizHistorySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review your past AI scent recommendations.'**
+  String get quizHistorySubtitle;
+
+  /// No description provided for @quizResultDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz on {date}'**
+  String quizResultDate(String date);
+
   /// No description provided for @welcomeTitle.
   ///
   /// In en, this message translates to:

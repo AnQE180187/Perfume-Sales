@@ -2246,6 +2246,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get paymentCodDesc => 'Cash on delivery';
 
   @override
+  String get quizHistoryTitle => 'AI Quiz History';
+
+  @override
+  String get noQuizHistory => 'You have no quiz history yet.';
+
+  @override
+  String get quizHistorySubtitle =>
+      'Review your past AI scent recommendations.';
+
+  @override
+  String quizResultDate(String date) {
+    return 'Quiz on $date';
+  }
+
+  @override
   String get welcomeTitle => 'HELLO!';
 
   @override
