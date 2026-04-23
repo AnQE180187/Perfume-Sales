@@ -74,6 +74,7 @@ class AppRoutes {
   static const String profileEdit = '/profile-edit';
   static const String rewards = '/rewards';
   static const String quiz = '/quiz';
+  static const String quizHistory = '/quiz-history';
   static const String brandStory = '/brand-story';
   static const String aiPreferences = '/ai-preferences';
   static const String settings = '/settings';

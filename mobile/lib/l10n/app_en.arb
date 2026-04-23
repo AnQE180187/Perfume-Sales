@@ -791,6 +791,15 @@
   "paymentVnpayDesc": "Pay with VNPay wallet",
   "paymentMomoDesc": "Pay with MoMo wallet",
   "paymentCodDesc": "Cash on delivery",
+  "quizHistoryTitle": "AI Quiz History",
+  "noQuizHistory": "You have no quiz history yet.",
+  "quizHistorySubtitle": "Review your past AI scent recommendations.",
+  "quizResultDate": "Quiz on {date}",
+  "@quizResultDate": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
   "welcomeTitle": "HELLO!",
   "welcomeSubtitle": "I am the Perfume Angel, your companion in finding your \"destined scent\".",
   "aiScentDnaDiscover": "Discover Scent DNA",

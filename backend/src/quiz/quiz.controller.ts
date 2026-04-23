@@ -19,8 +19,9 @@ export class QuizController {
 
     @Get('history')
     @UseGuards(JwtAuthGuard)
-    async getHistory(@Req() req: any) {
-        return this.quizService.getHistory(req.user.id || req.user.sub || req.user.userId);
+    async getUserQuizHistory(@Req() req: any) {
+        const userId = req.user.id || req.user.userId;
+        return this.quizService.getUserHistory(userId);
     }
 
     @Get(':id')
