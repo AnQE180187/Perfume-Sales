@@ -18,20 +18,20 @@ export default async function CollectionDetailPage({ params }: { params: Promise
   }
 
   return (
-    <div className="min-h-screen bg-background pt-32 px-6 pb-20">
-      <div className="max-w-7xl mx-auto">
-        <nav className="flex items-center gap-4 text-[10px] uppercase tracking-widest font-heading text-muted-foreground mb-12">
-          <Link href="/" className="hover:text-gold transition-colors">{tCommon('odyssey')}</Link>
-          <ChevronRight className="w-3 h-3" />
-          <Link href="/collection" className="hover:text-gold transition-colors">{tCommon('catalog')}</Link>
-          <ChevronRight className="w-3 h-3" />
+    <div className="min-h-screen bg-[linear-gradient(180deg,#f8f6f1_0%,#ffffff_34%,#fbfaf7_100%)] px-6 pb-20 pt-28 transition-colors dark:bg-[linear-gradient(180deg,#09090b_0%,#0c0c10_36%,#09090b_100%)] md:pt-32">
+      <div className="mx-auto max-w-7xl">
+        <nav className="mb-10 flex flex-wrap items-center gap-3 text-sm text-muted-foreground md:mb-12">
+          <Link href="/" className="transition-colors hover:text-gold">{tCommon('odyssey')}</Link>
+          <ChevronRight className="h-4 w-4" />
+          <Link href="/collection" className="transition-colors hover:text-gold">{tCommon('catalog')}</Link>
+          <ChevronRight className="h-4 w-4" />
           {product.brand && (
             <>
-              <span className="text-muted-foreground">{product.brand.name}</span>
-              <ChevronRight className="w-3 h-3" />
+              <span>{product.brand.name}</span>
+              <ChevronRight className="h-4 w-4" />
             </>
           )}
-          <span className="text-gold">{product.name}</span>
+          <span className="font-medium text-gold">{product.name}</span>
         </nav>
 
         <ProductDetail product={product} />
