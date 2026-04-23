@@ -620,7 +620,7 @@ INSTRUCTIONS:
       longevity?: string;
     },
     userId?: string,
-  ): Promise<Array<{ productId: string; name: string; reason: string; price: number }>> {
+  ): Promise<{ analysis: string; recommendations: Array<{ productId: string; name: string; reason: string; price: number }> }> {
     const startTime = Date.now();
     try {
       const catalog = await this.getProductCatalog();
@@ -652,9 +652,11 @@ ${catalog.outOfStockCatalog || '(Không có)'}
 YÊU CẦU:
 - Chọn 3-5 sản phẩm phù hợp nhất dựa trên thông tin khách hàng.
 - CHỈ ĐƯỢC CHỌN sản phẩm từ danh mục CÒN HÀNG. TUYỆT ĐỐI KHÔNG chọn sản phẩm hết hàng.
-- Ưu tiên: phù hợp giới tính, dịp sử dụng, ngân sách, gia đình hương, thời gian lưu hương.
-- Nếu sản phẩm phù hợp nhất đã hết hàng, hãy chọn sản phẩm thay thế cùng họ hương hoặc nốt hương tương tự.
-- Trả kết quả dạng JSON array: [{"productId": "<ID từ catalog>", "name": "<tên chính xác>", "reason": "<giải thích ngắn gọn bằng tiếng Việt>", "price": <giá thấp nhất số>}].
+- Chiến lược: Nếu không tìm thấy sản phẩm khớp tất cả tiêu chí (đặc biệt là ngân sách thấp), hãy ưu tiên PHÙ HỢP HƠN về nhóm hương và dịp dùng, đồng thời giải thích rõ lý do.
+- Trả kết quả dạng JSON object: {
+    "analysis": "<Đoạn văn ngắn 2-3 câu phân tích hồ sơ mùi hương của khách hàng theo phong cách sang trọng, tinh tế>",
+    "recommendations": [{"productId": "<ID từ catalog>", "name": "<tên chính xác>", "reason": "<giải thích ngắn gọn bằng tiếng Việt>", "price": <giá thấp nhất số>}]
+  }
 - Chỉ trả JSON, không thêm text ngoài.`;
 
       const response = await this.ai.models.generateContent({
@@ -662,14 +664,16 @@ YÊU CẦU:
         contents: prompt,
       });
 
-    const text = response.text ?? '[]';
-    let results: Array<{ productId: string; name: string; reason: string; price: number }> = [];
+    const text = response.text ?? '{}';
+    let analysis = 'Dựa trên hồ sơ của bạn, chúng tôi đã tinh chọn những mùi hương phản chiếu đúng cá tính và không gian sống của bạn nhất.';
+    let recommendations: Array<{ productId: string; name: string; reason: string; price: number }> = [];
 
       try {
-        const jsonMatch = text.match(/\[[\s\S]*\]/);
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           const parsed = JSON.parse(jsonMatch[0]);
-          results = Array.isArray(parsed) ? parsed.slice(0, 5) : [];
+          analysis = parsed.analysis || analysis;
+          recommendations = Array.isArray(parsed.recommendations) ? parsed.recommendations.slice(0, 5) : [];
         }
 
         await this.logRequest(
@@ -677,7 +681,7 @@ YÊU CẦU:
           'QUIZ_CONSULT',
           answers,
           text,
-          results.length > 0 ? 'SUCCESS' : 'FAILED',
+          recommendations.length > 0 ? 'SUCCESS' : 'FAILED',
           Date.now() - startTime,
         );
       } catch (error) {
@@ -685,8 +689,8 @@ YÊU CẦU:
       }
 
     // ── Post-check: Validate quiz recommendations against live DB ──
-    if (results.length > 0) {
-      const productIds = results.map((r) => r.productId).filter(Boolean);
+    if (recommendations.length > 0) {
+      const productIds = recommendations.map((r) => r.productId).filter(Boolean);
       const validProducts = await this.prisma.product.findMany({
         where: {
           id: { in: productIds },
@@ -702,21 +706,24 @@ YÊU CẦU:
       });
 
       const validIds = new Set(validProducts.map((p) => p.id));
-      const beforeCount = results.length;
+      const beforeCount = recommendations.length;
 
-      results = results.filter((r) => validIds.has(r.productId));
+      recommendations = recommendations.filter((r) => validIds.has(r.productId));
 
-      if (results.length < beforeCount) {
+      if (recommendations.length < beforeCount) {
         this.logger.warn(
-          `Quiz post-check removed ${beforeCount - results.length} out-of-stock recommendation(s)`,
+          `Quiz post-check removed ${beforeCount - recommendations.length} out-of-stock recommendation(s)`,
         );
       }
     }
 
-      return results;
+      return { analysis, recommendations };
     } catch (error) {
       this.logger.error('Failed during quiz consultation', error);
-      return [];
+      return { 
+        analysis: 'Hệ thống đang gặp gián đoạn nhỏ, nhưng chúng tôi vẫn tìm thấy những lựa chọn tuyệt vời cho bạn.', 
+        recommendations: [] 
+      };
     }
   }
 

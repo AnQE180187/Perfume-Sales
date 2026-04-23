@@ -343,6 +343,7 @@
     },
     "step_label": "Step",
     "prev_step": "Back",
+    "step_indicator": "Step {current} / {total}",
     "steps": {
       "gender": {
         "title": "Who is this signature for?",
@@ -361,7 +362,7 @@
           "office": "Professional Node",
           "date": "Intimate Resonance",
           "party": "Social Density",
-          "special": "Rare Occasions"
+          "special_event": "Rare Occasions"
         }
       },
       "budget": {
@@ -392,7 +393,7 @@
         "options": {
           "light": "Light Presence",
           "moderate": "Moderate Sillage",
-          "long": "Extended Persistence",
+          "long_lasting": "Extended Persistence",
           "very_long": "Absolute Performance"
         }
       }
@@ -754,9 +755,13 @@
       "recent_logs": "Recent Logs",
       "stats": {
         "total_requests": "Total Requests",
+        "total_requests_desc": "+5.2% from last week",
         "avg_latency": "Avg Latency",
+        "avg_latency_desc": "Under 500ms target",
         "success_rate": "Success Rate",
-        "failed_requests": "Failed Requests"
+        "success_rate_desc": "Optimal Performance",
+        "failed_requests": "Failed Requests",
+        "failed_requests_desc": "Requires intervention"
       },
       "table": {
         "type": "Type",
@@ -771,7 +776,12 @@
         "title": "AI Log Detail",
         "request": "Request (Input)",
         "response": "Response (Output)",
-        "error": "Error Details"
+        "error": "Error Details",
+        "unknown_error": "Unknown Error Event",
+        "no_output": "No output generated",
+        "velocity": "Execution Velocity",
+        "model": "Neural Model",
+        "origin": "Temporal Origin"
       },
       "types": {
         "PERFUME_CONSULT": "Perfume Consultation",
@@ -780,7 +790,9 @@
         "QUIZ_CONSULT": "Quiz Result",
         "SCENT_ANALYSIS": "Scent Analysis",
         "STAFF_POS_CONSULT": "Staff POS Consult"
-      }
+      },
+      "showing_count": "Showing {start}-{end} of {total}",
+      "no_logs": "No logs found matching filters"
     },
     "inventory": {
       "title": "Boutique Stock",
@@ -1108,7 +1120,12 @@
           "CANCEL": "Cancelled",
           "DELIVERING": "Delivering",
           "DELIVERED": "Delivered",
-          "RETURN": "Returned"
+          "RETURN": "Returned",
+          "PENDING": "Pending",
+          "PICKED_UP": "Picked Up",
+          "FAILED": "Delivery Failed",
+          "LOST": "Package Lost",
+          "DAMAGE": "Package Damaged"
         },
         "request_return": "Request Return",
         "return_submitted": "Return Request Submitted",
@@ -1117,6 +1134,7 @@
         "confirm_cancel_title": "Confirm Cancellation",
         "confirm_cancel_desc": "Are you sure you want to cancel this acquisition? This action cannot be undone.",
         "cancel_success": "Acquisition revoked successfully.",
+        "status_refunding": "Refunding",
         "cancel_error": "Failed to revoke acquisition."
       },
       "returns": {
@@ -1202,7 +1220,7 @@
         }
       },
       "notifications": {
-        "title": "Notifi{italic}",
+        "title": "Notifications",
         "subtitle": "Monitor your acquisitions, incentives, and account resonance.",
         "mark_all_read": "Mark all as read",
         "mark_read": "Mark as read",
@@ -2148,6 +2166,7 @@
             "confirm_cancel_desc": "Are you sure you want to cancel this acquisition? This action cannot be undone.",
             "cancel_success": "Acquisition revoked successfully.",
             "cancel_error": "Failed to revoke acquisition.",
+            "status_refunding": "Refunding",
             "payment_status": {
               "paid": "Settled",
               "pending": "Awaiting Fulfillment"
@@ -2158,7 +2177,16 @@
               "CANCEL": "Cancelled",
               "DELIVERING": "Delivering",
               "DELIVERED": "Delivered",
-              "RETURN": "Returned"
+              "RETURN": "Returned",
+              "PICKED_UP": "Picked Up",
+              "FAILED": "Delivery Failed",
+              "LOST": "Package Lost",
+              "DAMAGE": "Package Damaged"
+            }
+          },
+          "returns": {
+            "details": {
+              "confirm_handover": "Confirm Handover"
             }
           },
           "notifications": {

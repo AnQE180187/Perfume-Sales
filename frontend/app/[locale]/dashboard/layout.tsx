@@ -122,14 +122,8 @@ export default function DashboardLayout({
                                 <Menu size={22} />
                             </button>
 
-                            <div className="min-w-0">
-                                <p className="mb-1 text-xs font-medium uppercase tracking-[0.14em] text-gold/80">
-                                    {role}
-                                </p>
-                                <h1 className="truncate text-lg font-semibold text-foreground md:text-2xl">
-                                    {formatSegment(currentSegment)}
-                                </h1>
-                            </div>
+                            {/* Removed role and segment title as per user request */}
+
 
                             <div className="hidden min-h-[52px] items-center gap-3 rounded-[1.25rem] border border-gold/15 bg-white/80 px-4 shadow-[0_20px_40px_-28px_rgba(15,23,42,0.4)] dark:bg-white/[0.04] md:flex">
                                 <div className="h-2.5 w-2.5 rounded-full bg-gold shadow-[0_0_12px_rgba(197,160,89,0.55)]" />
