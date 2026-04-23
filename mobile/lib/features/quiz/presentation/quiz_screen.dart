@@ -8,6 +8,7 @@ import '../../../core/widgets/glass_container.dart';
 import '../providers/quiz_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../core/routing/app_routes.dart';
 
 class QuizScreen extends ConsumerStatefulWidget {
   const QuizScreen({super.key});
@@ -264,6 +265,28 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
               fontWeight: FontWeight.w600,
               color: AppTheme.mutedSilver,
               letterSpacing: 1,
+            ),
+          ),
+          const SizedBox(height: 24),
+          TextButton(
+            onPressed: () => context.push(AppRoutes.quizHistory),
+            style: TextButton.styleFrom(
+              foregroundColor: AppTheme.deepCharcoal,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.history_rounded, size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  l10n.quizHistoryTitle.toUpperCase(),
+                  style: GoogleFonts.montserrat(
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
             ),
           ),
         ],

@@ -63,7 +63,7 @@ export const Hero = ({ heroY: parentHeroY, heroScale: parentHeroScale, heroOpaci
     return (
         <section
             ref={containerRef}
-            className="relative flex min-h-screen items-center overflow-hidden pt-28 pb-16 md:pt-32 md:pb-24"
+            className="relative flex min-h-screen items-center overflow-hidden pt-20 pb-12 md:pt-32 md:pb-24"
         >
             <motion.div
                 style={{ y: heroY, scale: heroScale }}
@@ -118,7 +118,7 @@ export const Hero = ({ heroY: parentHeroY, heroScale: parentHeroScale, heroOpaci
                                 exit={{ opacity: 0, y: -18 }}
                                 transition={{ duration: 0.55 }}
                             >
-                                <h1 className="max-w-[14ch] text-[clamp(2.9rem,7vw,6rem)] font-heading leading-[0.94] text-white">
+                                <h1 className="max-w-[18ch] sm:max-w-[22ch] lg:max-w-none text-[clamp(2.1rem,6vw,3.3rem)] font-heading leading-[1.1] md:leading-tight tracking-[-0.04em] text-white lg:whitespace-nowrap">
                                     {bannerTitle}
                                 </h1>
                                 <p className="mt-6 max-w-2xl text-lg leading-8 text-white/86 md:text-xl">

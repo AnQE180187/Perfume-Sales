@@ -33,7 +33,7 @@ export const Discovery = () => {
                             <span>{t('methodology')}</span>
                         </div>
 
-                        <h2 className="mt-5 text-4xl leading-tight text-foreground md:text-5xl lg:text-6xl">
+                        <h2 className="mt-5 text-3xl leading-tight text-foreground md:text-4xl lg:text-5xl">
                             {t('title')}
                         </h2>
 

@@ -18,11 +18,12 @@ import {
 
 import { QuizForm } from '@/components/quiz/QuizForm';
 import { RecommendationCards } from '@/components/quiz/RecommendationCards';
+import { QuizHistory } from '@/components/quiz/QuizHistory';
 import { useAuth } from '@/hooks/use-auth';
 import { Link } from '@/lib/i18n';
 import { quizService, type QuizAnswers, type QuizRecommendation } from '@/services/quiz.service';
 
-type QuizState = 'intro' | 'quiz' | 'analyzing' | 'results';
+type QuizState = 'intro' | 'quiz' | 'analyzing' | 'results' | 'history';
 
 export default function QuizPage() {
   const t = useTranslations('quiz');
@@ -30,6 +31,7 @@ export default function QuizPage() {
   const { isAuthenticated } = useAuth();
   const [state, setState] = useState<QuizState>('intro');
   const [recommendations, setRecommendations] = useState<QuizRecommendation[]>([]);
+  const [analysis, setAnalysis] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -129,6 +131,16 @@ export default function QuizPage() {
     setState('quiz');
   };
 
+  const handleViewHistory = () => {
+    setState('history');
+  };
+
+  const handleShowResultFromHistory = (recs: QuizRecommendation[], analysisText?: string) => {
+    setRecommendations(recs);
+    setAnalysis(analysisText || null);
+    setState('results');
+  };
+
   const handleSubmit = async (answers: QuizAnswers) => {
     setIsSubmitting(true);
     setError(null);
@@ -137,6 +149,7 @@ export default function QuizPage() {
     try {
       const result = await quizService.submitQuiz(answers);
       setRecommendations(result.recommendations);
+      setAnalysis(result.analysis);
       await new Promise((resolve) => setTimeout(resolve, 3000));
       setState('results');
     } catch (err: any) {
@@ -150,6 +163,7 @@ export default function QuizPage() {
 
   const handleRetake = () => {
     setRecommendations([]);
+    setAnalysis(null);
     setError(null);
     setState('quiz');
   };
@@ -161,16 +175,16 @@ export default function QuizPage() {
       <div className="pointer-events-none absolute left-[-12rem] top-24 h-[24rem] w-[24rem] rounded-full bg-gold/10 blur-[120px]" />
       <div className="pointer-events-none absolute bottom-[-10rem] right-[-8rem] h-[26rem] w-[26rem] rounded-full bg-[#8f6b3f]/10 blur-[140px]" />
 
-      <main className="container-responsive relative z-10 pb-20 pt-28 sm:pt-32 lg:pb-28 lg:pt-36">
+      <main className="container-responsive relative z-10 pb-16 pt-16 sm:pt-20 lg:pb-24 lg:pt-28">
         <AnimatePresence mode="wait">
           {state === 'intro' && (
             <motion.section
               key="intro"
-              initial={{ opacity: 0, y: 18 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -18 }}
-              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              className="mx-auto w-full max-w-[1440px]"
+              exit={{ opacity: 0, y: -30 }}
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              className="w-full"
             >
               <div className="grid gap-6 xl:grid-cols-[1.18fr_0.82fr]">
                 <motion.div
@@ -196,21 +210,20 @@ export default function QuizPage() {
                       </p>
                     </div>
 
-                    <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
                       {isAuthenticated ? (
                         <button
                           onClick={handleStart}
                           className="group inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-[linear-gradient(135deg,#d6b36d,#b68948)] px-8 text-sm font-semibold text-luxury-black shadow-[0_22px_55px_-22px_rgba(197,160,89,0.7)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_30px_75px_-24px_rgba(197,160,89,0.6)]"
                         >
-                          {t('intro.start_btn')}
-                          <ArrowRight size={17} className="transition-transform duration-300 group-hover:translate-x-1" />
+                          <Clock3 size={18} />
+                          {locale === 'vi' ? 'Xem Lịch Sử' : 'View History'}
                         </button>
                       ) : (
                         <Link
                           href="/login"
                           className="group inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-[linear-gradient(135deg,#d6b36d,#b68948)] px-8 text-sm font-semibold text-luxury-black shadow-[0_22px_55px_-22px_rgba(197,160,89,0.7)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_30px_75px_-24px_rgba(197,160,89,0.6)]"
                         >
-                          <LogIn size={17} />
+                          <LogIn size={18} />
                           {t('intro.login_btn')}
                         </Link>
                       )}
@@ -411,7 +424,7 @@ export default function QuizPage() {
                         initial={{ width: 0 }}
                         animate={{ width: '100%' }}
                         transition={{ duration: 2.8, ease: 'easeInOut' }}
-                        className="h-full rounded-full bg-[linear-gradient(90deg,#8f6b3f,#d6b36d,#f0d7a1)]"
+                        className="h-full rounded-full bg-gold-btn-gradient"
                       />
                     </div>
 
@@ -505,7 +518,24 @@ export default function QuizPage() {
               transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
               className="w-full"
             >
-              <RecommendationCards recommendations={recommendations} onRetake={handleRetake} />
+              <RecommendationCards 
+                recommendations={recommendations} 
+                analysis={analysis}
+                onRetake={handleRetake} 
+              />
+            </motion.section>
+          )}
+
+          {state === 'history' && (
+            <motion.section
+              key="history"
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -18 }}
+              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+              className="w-full"
+            >
+              <QuizHistory onViewResult={handleShowResultFromHistory} onBack={() => setState('intro')} />
             </motion.section>
           )}
         </AnimatePresence>

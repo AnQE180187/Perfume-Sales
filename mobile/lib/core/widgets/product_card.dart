@@ -405,7 +405,7 @@ class _GridCard extends StatelessWidget {
               ),
             ),
           ),
-          Expanded(
+          Flexible(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
               child: Column(
@@ -435,26 +435,27 @@ class _GridCard extends StatelessWidget {
                     ),
                   ],
                   const SizedBox(height: 6),
-                  SizedBox(
-                    height: 34,
+                  Container(
+                    constraints: const BoxConstraints(maxHeight: 34),
                     child: Text(
                       product.name,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.montserrat(
-                        fontSize: 13,
+                        fontSize: 12,
                         fontWeight: FontWeight.w500,
-                        height: 1.25,
+                        height: 1.2,
                         color: AppTheme.deepCharcoal,
                       ),
                     ),
                   ),
                   if (product.notes.isNotEmpty) ...[
                     const SizedBox(height: 4),
-                    SizedBox(
-                      height: 22,
+                    Container(
+                      constraints: const BoxConstraints(maxHeight: 20),
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
+                        physics: const NeverScrollableScrollPhysics(),
                         itemCount: product.notes.length > 2
                             ? 2
                             : product.notes.length,

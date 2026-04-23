@@ -2248,6 +2248,21 @@ class AppLocalizationsVi extends AppLocalizations {
   String get paymentCodDesc => 'Thanh toán khi nhận hàng';
 
   @override
+  String get quizHistoryTitle => 'Lịch sử khảo sát AI';
+
+  @override
+  String get noQuizHistory => 'Bạn chưa có lịch sử khảo sát nào.';
+
+  @override
+  String get quizHistorySubtitle =>
+      'Xem lại các gợi ý mùi hương AI đã dành cho bạn.';
+
+  @override
+  String quizResultDate(String date) {
+    return 'Khảo sát ngày $date';
+  }
+
+  @override
   String get welcomeTitle => 'CHÀO BẠN!';
 
   @override

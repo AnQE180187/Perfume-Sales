@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/routing/app_routes.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../providers/chat_provider.dart';
@@ -1143,6 +1145,40 @@ class _ConversationDrawer extends StatelessWidget {
                           onDelete: onDelete,
                         ),
                       ),
+              ),
+
+              // Quiz History Link
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: TextButton(
+                  onPressed: () {
+                    onClose();
+                    context.push(AppRoutes.quizHistory);
+                  },
+
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    backgroundColor: AppTheme.accentGold.withValues(alpha: 0.05),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.history_edu_rounded, size: 18, color: AppTheme.accentGold),
+                      const SizedBox(width: 12),
+                      Text(
+                        l10n.quizHistoryTitle,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.deepCharcoal,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),

@@ -348,6 +348,7 @@
     },
     "step_label": "Giai đoạn",
     "prev_step": "Quay lại",
+    "step_indicator": "Bước {current} / {total}",
     "steps": {
       "gender": {
         "title": "Bạn muốn nước hoa cho ai?",
@@ -366,7 +367,7 @@
           "office": "Đi Làm / Học",
           "date": "Hẹn Hò",
           "party": "Tiệc Tùng",
-          "special": "Dịp Đặc Biệt"
+          "special_event": "Dịp Đặc Biệt"
         }
       },
       "budget": {
@@ -397,7 +398,7 @@
         "options": {
           "light": "Nhẹ nhàng (2-4 tiếng)",
           "moderate": "Vừa phải (4-6 tiếng)",
-          "long": "Lâu (6-8 tiếng)",
+          "long_lasting": "Lâu (6-8 tiếng)",
           "very_long": "Rất lâu (8 tiếng+)"
         }
       }
@@ -783,9 +784,13 @@
       "recent_logs": "Nhật Ký Gần Đây",
       "stats": {
         "total_requests": "Tổng Yêu Cầu",
+        "total_requests_desc": "+5.2% so với tuần trước",
         "avg_latency": "Độ Trễ Trung Bình",
+        "avg_latency_desc": "Dưới mục tiêu 500ms",
         "success_rate": "Tỉ Lệ Thành Công",
-        "failed_requests": "Yêu Cầu Thất Bại"
+        "success_rate_desc": "Hiệu suất tối ưu",
+        "failed_requests": "Yêu Cầu Thất Bại",
+        "failed_requests_desc": "Cần can thiệp"
       },
       "table": {
         "type": "Loại",
@@ -800,7 +805,12 @@
         "title": "Chi Tiết Nhật Ký AI",
         "request": "Yêu Cầu (Input)",
         "response": "Phản Hồi (Output)",
-        "error": "Chi Tiết Lỗi"
+        "error": "Chi Tiết Lỗi",
+        "unknown_error": "Lỗi không xác định",
+        "no_output": "Không có dữ liệu phản hồi",
+        "velocity": "Tốc độ xử lý",
+        "model": "Mô hình Nơ-ron",
+        "origin": "Thời điểm khởi tạo"
       },
       "types": {
         "PERFUME_CONSULT": "Tư Vấn Nước Hoa",
@@ -809,7 +819,9 @@
         "QUIZ_CONSULT": "Kết Quả Trắc Nghiệm",
         "SCENT_ANALYSIS": "Phân Tích Mùi Hương",
         "STAFF_POS_CONSULT": "Tư Vấn Tại Quầy"
-      }
+      },
+      "showing_count": "Hiển thị {start}-{end} trên tổng số {total}",
+      "no_logs": "Không tìm thấy nhật ký phù hợp với bộ lọc"
     },
     "inventory": {
       "title": "Quản Lý Tồn Kho",
@@ -1137,7 +1149,12 @@
           "CANCEL": "Đã hủy",
           "DELIVERING": "Đang giao hàng",
           "DELIVERED": "Đã giao",
-          "RETURN": "Đã trả hàng"
+          "RETURN": "Đã trả hàng",
+          "PENDING": "Đang chờ hàng",
+          "PICKED_UP": "Đã lấy hàng",
+          "FAILED": "Giao hàng thất bại",
+          "LOST": "Thất lạc hàng hóa",
+          "DAMAGE": "Hàng hóa hư hỏng"
         },
         "request_return": "Yêu Cầu Trả Hàng",
         "return_submitted": "Đã gửi yêu cầu trả hàng",
@@ -1146,7 +1163,8 @@
         "confirm_cancel_title": "Xác nhận hủy đơn",
         "confirm_cancel_desc": "Bạn có chắc chắn muốn hủy đơn hàng này không? Hành động này không thể hoàn tác.",
         "cancel_success": "Đơn hàng đã được hủy thành công.",
-        "cancel_error": "Không thể hủy đơn hàng này."
+        "cancel_error": "Không thể hủy đơn hàng này.",
+        "status_refunding": "Đang hoàn tiền"
       },
       "returns": {
         "title": "Yêu Cầu Đổi Trả",
@@ -1204,7 +1222,7 @@
           "title": "Tạo Yêu Cầu Đổi Trả",
           "subtitle": "Cung cấp thông tin để chúng tôi xử lý yêu cầu của bạn nhanh chóng.",
           "select_items": "Chọn sản phẩm đổi trả",
-          "quantity_label": "Số lượng: {qty}",
+          "quantity_label": "Số lượng",
           "reason_label": "Lý do đổi trả (Bắt buộc)",
           "reason_placeholder": "Ghi nhận tình trạng: Hàng bể vỡ, Bao bì móp, Khách đổi ý...",
           "item_reason_label": "Lý do riêng",
@@ -2186,6 +2204,7 @@
             "confirm_cancel_desc": "Bạn có chắc chắn muốn hủy đơn hàng này không? Hành động này không thể hoàn tác.",
             "cancel_success": "Đơn hàng đã được hủy thành công.",
             "cancel_error": "Không thể hủy đơn hàng này.",
+            "status_refunding": "Đang hoàn tiền",
             "payment_status": {
               "paid": "ĐÃ THANH TOÁN",
               "pending": "CHỜ THANH TOÁN"
@@ -2196,7 +2215,16 @@
               "CANCEL": "Đã hủy",
               "DELIVERING": "Đang giao hàng",
               "DELIVERED": "Đã giao",
-              "RETURN": "Đã trả hàng"
+              "RETURN": "Đã trả hàng",
+              "PICKED_UP": "Đã lấy hàng",
+              "FAILED": "Giao hàng thất bại",
+              "LOST": "Thất lạc hàng hóa",
+              "DAMAGE": "Hàng hóa hư hỏng"
+            }
+          },
+          "returns": {
+            "details": {
+              "confirm_handover": "Xác nhận đã bàn giao hàng"
             }
           },
           "notifications": {
@@ -2698,7 +2726,9 @@
       "IN_TRANSIT": "Đang vận chuyển",
       "DELIVERED": "Đã giao",
       "FAILED": "Thất bại / Hủy",
-      "RETURNED": "Hoàn hàng"
+      "RETURNED": "Hoàn hàng",
+      "LOST": "Thất lạc hàng hóa",
+      "DAMAGE": "Hàng hóa hư hỏng"
     }
   },
   "support_page": {

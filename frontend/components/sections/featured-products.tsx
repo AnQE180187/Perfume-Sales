@@ -137,7 +137,7 @@ export const FeaturedProducts = () => {
             <div className="container-responsive">
                 <div className="mb-14 max-w-4xl md:mb-16">
                     <p className="text-sm font-medium text-gold">{t('badge')}</p>
-                    <h2 className="mt-4 text-4xl leading-tight text-foreground md:text-5xl lg:text-6xl">
+                    <h2 className="mt-4 text-3xl leading-tight text-foreground md:text-4xl lg:text-5xl">
                         {t('title')}
                     </h2>
                 </div>

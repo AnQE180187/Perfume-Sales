@@ -40,7 +40,7 @@ export const Story = () => {
                         className="relative order-2 xl:order-1"
                     >
                         <div className="relative overflow-hidden rounded-[2.5rem] border border-black/6 bg-stone-950 shadow-[0_30px_90px_-40px_rgba(15,23,42,0.65)] dark:border-white/10">
-                            <div className="relative aspect-[4/5]">
+                            <div className="relative aspect-square sm:aspect-[4/5]">
                                 <Image
                                     src="/bleu de channel.png"
                                     alt="Bleu de Chanel"
@@ -94,7 +94,7 @@ export const Story = () => {
                             <span>{t('badge')}</span>
                         </div>
 
-                        <h2 className="max-w-3xl text-4xl leading-tight text-foreground md:text-5xl lg:text-6xl">
+                        <h2 className="max-w-3xl text-3xl leading-tight text-foreground md:text-4xl lg:text-5xl">
                             {t('title')}
                         </h2>
 
