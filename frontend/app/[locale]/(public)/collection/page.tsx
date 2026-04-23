@@ -350,7 +350,7 @@ export default function CollectionPage() {
   const activeFilterCount = [selectedBrand ?? selectedBrandId, selectedCategory, selectedScent, gender, priceRange, selectedSeason].filter(Boolean).length;
 
   const activeFilters = [
-    selectedBrand || selectedBrandId !== null ? { key: 'brand', label: selectedBrand ?? labels.brandSection } : null,
+    selectedBrand || selectedBrandId !== null ? { key: 'brand', label: selectedBrand ?? labels.allBrands } : null,
     selectedCategory ? { key: 'category', label: selectedCategory } : null,
     selectedScent ? { key: 'scent', label: selectedScent } : null,
     gender
@@ -423,7 +423,7 @@ export default function CollectionPage() {
   const FiltersContent = () => (
     <div className="space-y-8">
       <div className="rounded-[1.8rem] border border-black/6 bg-white/70 p-5 dark:border-white/10 dark:bg-white/[0.04]">
-        <h2 className="text-base font-semibold text-foreground">{labels.brandSection}</h2>
+        <h2 className="text-base font-semibold text-foreground">{labels.brandCount}</h2>
         <div className="mt-4 max-h-72 space-y-1 overflow-y-auto pr-1 custom-scrollbar">
           <button
             type="button"
