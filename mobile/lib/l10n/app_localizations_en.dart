@@ -1866,6 +1866,30 @@ class AppLocalizationsEn extends AppLocalizations {
       'Please return to Showroom and update tracking.';
 
   @override
+  String get returnShopPaysShipping => 'Shipping fee will be paid by the shop.';
+
+  @override
+  String get returnCustomerPaysShipping =>
+      'Please pay the shipping fee to the courier.';
+
+  @override
+  String get returnRejectedRequestLabel => 'Return request rejected';
+
+  @override
+  String get returnRejectedReasonCompromised =>
+      'The returned product is not sealed or is damaged. According to our policy, the store will return the product to you. The shipping fee will be paid by the buyer.';
+
+  @override
+  String get shopEvidenceLabel => 'Shop evidence';
+
+  @override
+  String get returnSendingBackToCustomer => 'Returning item back to you';
+
+  @override
+  String get returnPreparingToSendBack =>
+      'The store is preparing to send the product back to you. Please wait for updates.';
+
+  @override
   String get aiScentDna => 'AI Scent DNA';
 
   @override

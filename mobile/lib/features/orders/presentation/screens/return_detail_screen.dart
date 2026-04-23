@@ -552,8 +552,8 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
                 Expanded(
                   child: Text(
                     shopPays 
-                      ? "Phí vận chuyển sẽ do Shop chi trả."
-                      : "Quý khách vui lòng thanh toán phí ship cho bưu tá.",
+                      ? l10n.returnShopPaysShipping
+                      : l10n.returnCustomerPaysShipping,
                     style: GoogleFonts.montserrat(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
@@ -587,7 +587,7 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'MÃ VẬN ĐƠN GHN',
+                        '${l10n.trackingNumber} GHN'.toUpperCase(),
                         style: GoogleFonts.montserrat(
                           fontSize: 9,
                           fontWeight: FontWeight.w800,
@@ -859,7 +859,7 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'Yêu cầu bị từ chối',
+                  l10n.returnRejectedRequestLabel,
                   style: GoogleFonts.montserrat(
                     color: const Color(0xFF9B1C1C),
                     fontWeight: FontWeight.w800,
@@ -877,7 +877,7 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
-              'Sản phẩm hoàn trả không còn nguyên seal hoặc bị hư hại. Theo chính sách, cửa hàng sẽ gửi trả lại sản phẩm cho bạn. Phí vận chuyển sẽ do người mua chi trả.',
+              l10n.returnRejectedReasonCompromised,
               style: GoogleFonts.montserrat(
                 color: const Color(0xFF771D1D),
                 fontSize: 11,
@@ -888,7 +888,7 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
           if (evidenceImages.isNotEmpty) ...[
             const SizedBox(height: 16),
             Text(
-              'Bằng chứng từ cửa hàng (${evidenceImages.length} ảnh)',
+              '${l10n.shopEvidenceLabel} (${evidenceImages.length})',
               style: GoogleFonts.montserrat(
                 color: const Color(0xFFE02424),
                 fontSize: 10,
@@ -919,7 +919,7 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
           if (returnShipments.isNotEmpty) ...[
             const SizedBox(height: 16),
             Text(
-              'Hàng đang gửi trả lại bạn',
+              l10n.returnSendingBackToCustomer,
               style: GoogleFonts.montserrat(
                 color: const Color(0xFFD97706),
                 fontSize: 10,
@@ -943,7 +943,7 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Mã vận đơn ${s['courier'] ?? ''}',
+                          '${l10n.trackingNumber} ${s['courier'] ?? ''}',
                           style: GoogleFonts.montserrat(
                             color: const Color(0xFFB45309),
                             fontSize: 9,
@@ -966,7 +966,7 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
                       onPressed: () => launchUrl(Uri.parse('https://ghn.vn/blogs/trang-thai-don-hang?order_code=${s['trackingNumber']}')),
                       icon: const Icon(Icons.location_on, size: 14, color: Color(0xFFD97706)),
                       label: Text(
-                        'Theo dõi',
+                        l10n.trackOrderCta,
                         style: GoogleFonts.montserrat(
                           color: const Color(0xFFD97706),
                           fontSize: 10,
@@ -998,7 +998,7 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Cửa hàng đang chuẩn bị gửi trả sản phẩm cho bạn. Vui lòng chờ cập nhật.',
+                      l10n.returnPreparingToSendBack,
                       style: GoogleFonts.montserrat(
                         color: const Color(0xFFB45309),
                         fontSize: 10,

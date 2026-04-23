@@ -1863,6 +1863,30 @@ class AppLocalizationsVi extends AppLocalizations {
       'Vui lòng gửi hàng về Showroom và cập nhật mã vận đơn.';
 
   @override
+  String get returnShopPaysShipping => 'Phí vận chuyển sẽ do Shop chi trả.';
+
+  @override
+  String get returnCustomerPaysShipping =>
+      'Quý khách vui lòng thanh toán phí ship cho bưu tá.';
+
+  @override
+  String get returnRejectedRequestLabel => 'Yêu cầu bị từ chối';
+
+  @override
+  String get returnRejectedReasonCompromised =>
+      'Sản phẩm hoàn trả không còn nguyên seal hoặc bị hư hại. Theo chính sách, cửa hàng sẽ gửi trả lại sản phẩm cho bạn. Phí vận chuyển sẽ do người mua chi trả.';
+
+  @override
+  String get shopEvidenceLabel => 'Bằng chứng từ cửa hàng';
+
+  @override
+  String get returnSendingBackToCustomer => 'Hàng đang gửi trả lại bạn';
+
+  @override
+  String get returnPreparingToSendBack =>
+      'Cửa hàng đang chuẩn bị gửi trả sản phẩm cho bạn. Vui lòng chờ cập nhật.';
+
+  @override
   String get aiScentDna => 'AI Scent DNA';
 
   @override

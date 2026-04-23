@@ -21,6 +21,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUIStore } from "@/store/ui.store";
@@ -44,6 +51,8 @@ import {
   Send,
   AlertTriangle,
   PackageX,
+  User,
+  Barcode,
 } from "lucide-react";
 import api from "@/lib/axios";
 import {
@@ -1223,31 +1232,29 @@ export const AdminReturnManagement = ({
                       </div>
                     ))}
                   </div>
-                )}
               </div>
             </div>
 
             {isAdmin && (
               <div className="space-y-2 pt-4 border-t border-border/50">
                 <label className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
-                  Ghi chú hoặc Phản hồi cho{" "}
-                  {selectedReturn?.origin === "POS" ? "Staff" : "khách"} (nếu từ
-                  chối)
+                  {t("dialogs.note_label", {
+                    target: selectedReturn?.origin === "POS" ? "nhân viên" : "khách"
+                  })}
                 </label>
                 <Input
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   placeholder={
                     selectedReturn?.origin === "POS"
-                      ? "Nhập ghi chú hoặc lý do chi tiết để phản hồi lại cho nhân viên tại quầy..."
-                      : "Nhập ghi chú hoặc lý do chi tiết để thông báo lại khách hàng..."
+                      ? t("dialogs.note_placeholder_staff")
+                      : t("dialogs.note_placeholder_customer")
                   }
-                  className="bg-background/50 border-gold/20 h-11 focus-visible:ring-gold/30"
+                  className="bg-muted/30 border-gold/20 h-11 focus-visible:ring-gold/30"
                 />
               </div>
             )}
-          </div>
-          <DialogFooter className="gap-3 sm:gap-0 px-6 py-4 border-t border-border/50 bg-background/80 backdrop-blur-md">
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 sm:gap-0 px-8 py-6 md:px-12 md:py-6 border-t border-white/10 bg-white/90 dark:bg-zinc-900/50 backdrop-blur-xl shrink-0 z-20">
             {isAdmin ? (
               <>
                 <Button
@@ -1261,7 +1268,7 @@ export const AdminReturnManagement = ({
                   ) : (
                     <X className="w-4 h-4" />
                   )}
-                  Bác bỏ Yêu cầu
+                  {t("dialogs.btn_reject")}
                 </Button>
                 <Button
                   onClick={() => handleReview("approve")}
@@ -1273,182 +1280,19 @@ export const AdminReturnManagement = ({
                   ) : (
                     <Check className="w-4 h-4" />
                   )}
-                  Chấp nhận & Cho phép Gửi Hàng
+                  {t("dialogs.btn_approve")}
                 </Button>
               </>
             ) : (
               <Button variant="outline" onClick={() => setIsReviewOpen(false)}>Đóng</Button>
             )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Receive Dialog */}
-      <Dialog open={isReceiveOpen} onOpenChange={setIsReceiveOpen}>
-        <DialogContent className="glass border-gold/30 w-full sm:max-w-md h-[100vh] sm:h-auto sm:max-h-[90vh] shadow-2xl sm:rounded-2xl flex flex-col p-0 overflow-hidden">
-          <DialogHeader className="border-b border-border/50 px-6 pt-6 pb-4 shrink-0">
-            <DialogTitle className="text-xl text-teal-400 font-semibold font-heading">
-              Xác nhận Nhận Hàng
-            </DialogTitle>
-          </DialogHeader>
-          <div className="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar">
-            <div className="bg-teal-500/10 p-4 rounded-xl border border-teal-500/20">
-              <p className="text-sm text-teal-200/80 leading-relaxed">
-                Hệ thống sẽ cập nhật kho{" "}
-                {selectedReturn?.origin === "POS"
-                  ? "tại quầy (POS)"
-                  : "cho cửa hàng chính"}{" "}
-                và đánh dấu quy trình hoàn trả hàng bước vào giai đoạn hoàn
-                tiền. Nếu hàng bị bóc seal, yêu cầu sẽ tự động bị TỪ CHỐI (Không
-                hoàn tiền).
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              <label className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
-                Tình trạng Sản phẩm Nhận về
-              </label>
-              {selectedReturn?.items.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between bg-black/20 p-3 rounded-xl border border-border/50 gap-3"
-                >
-                  <div className="flex items-center gap-3">
-                    {item.variant?.product?.images?.[0]?.url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={item.variant?.product?.images?.[0]?.url}
-                        alt="Product"
-                        className="w-10 h-10 object-cover rounded-md border border-border/50"
-                      />
-                    ) : (
-                      <div className="max-h-40 overflow-y-auto custom-scrollbar">
-                        {audits.map((a, idx) => (
-                          <div
-                            key={a.id}
-                            className="p-3 border-b border-border/20 last:border-0 flex justify-between items-start gap-3"
-                          >
-                            <div className="flex-1">
-                              <p
-                                className={cn(
-                                  "text-[10px] font-bold uppercase tracking-widest mb-0.5",
-                                  a.action.includes("FAILED")
-                                    ? "text-red-500 dark:text-red-400"
-                                    : "text-gold/80 dark:text-gold/90",
-                                )}
-                              >
-                                {a.action.replace(/_/g, " ")}
-                              </p>
-                              {a.payload?.message && (
-                                <p className="text-[9px] text-muted-foreground italic">
-                                  {a.payload.message}
-                                </p>
-                              )}
-                              {a.payload?.orderCode && (
-                                <p className="text-[9px] text-cyan-600 dark:text-cyan-400 font-mono mt-0.5">
-                                  Vận đơn: {a.payload.orderCode}
-                                </p>
-                              )}
-                            </div>
-                            <span className="text-[9px] text-muted-foreground font-mono">
-                              {new Date(a.createdAt).toLocaleString("vi-VN")}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
-                Ghi chú tình trạng hàng nhập kho
-              </label>
-              <Input
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder="Ví dụ: Đã kiểm tra nguyên seal..."
-                className="bg-background/50 border-gold/20 h-11"
-              />
-            </div>
-
-            {/* Evidence Upload - shown when any item is marked as damaged */}
-            {Object.values(receiveItemsState).some((s) => !s.sealIntact) && (
-              <div className="space-y-3 pt-4 border-t border-red-500/20 animate-in fade-in slide-in-from-top-2">
-                <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <AlertTriangle className="w-4 h-4 text-red-400" />
-                    <span className="text-sm font-bold text-red-400">Bắt buộc: Ảnh bằng chứng</span>
-                  </div>
-                  <p className="text-[11px] text-red-300/70 leading-relaxed">
-                    Vui lòng chụp ảnh hoặc quay video cảnh mở hộp (unboxing) và tình trạng hàng hóa thực tế. 
-                    Bằng chứng này sẽ được gửi cho khách hàng kèm thông báo từ chối.
-                  </p>
-                </div>
-
-                <Input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handleEvidenceUpload}
-                  disabled={isUploadingEvidence}
-                  className="bg-black/20 border-red-500/10 focus-visible:ring-red-500 file:bg-red-600 file:text-white file:border-0 file:py-1 file:px-2 file:mr-3 file:rounded file:text-[10px] cursor-pointer text-[10px] h-8 p-1 px-2"
-                />
-                {isUploadingEvidence && (
-                  <div className="flex items-center text-xs text-red-400 font-medium">
-                    <Loader2 className="w-3 h-3 mr-2 animate-spin" /> Đang tải ảnh lên...
-                  </div>
-                )}
-                {evidenceImages.length > 0 && (
-                  <div className="flex gap-2 flex-wrap">
-                    {evidenceImages.map((url, idx) => (
-                      <div key={idx} className="relative w-20 h-20 rounded-lg overflow-hidden border border-red-500/30 group bg-black/40">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={url} alt={`evidence-${idx}`} className="w-full h-full object-cover" />
-                        <button
-                          onClick={() => setEvidenceImages((prev) => prev.filter((_, i) => i !== idx))}
-                          className="absolute top-1 right-1 bg-black/60 hover:bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {evidenceImages.length === 0 && !isUploadingEvidence && (
-                  <p className="text-[10px] text-red-400/60 italic">Chưa có ảnh bằng chứng. Vui lòng upload ít nhất 1 ảnh.</p>
-                )}
-              </div>
-            )}
           </div>
-          <DialogFooter className="px-6 py-4 border-t border-border/50 bg-background/80 flex flex-row justify-end gap-3 shrink-0">
-            <Button variant="ghost" onClick={() => { setIsReceiveOpen(false); setEvidenceImages([]); }}>
-              Hủy
-            </Button>
-            <Button
-              onClick={handleReceive}
-              disabled={submittingReceive}
-              className={cn(
-                "shadow-lg font-bold uppercase tracking-widest text-[10px]",
-                Object.values(receiveItemsState).some((s) => !s.sealIntact)
-                  ? "bg-red-600 hover:bg-red-500 shadow-red-900/30"
-                  : "bg-teal-600 hover:bg-teal-500 shadow-teal-900/30"
-              )}
-            >
-              {submittingReceive ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              ) : Object.values(receiveItemsState).some((s) => !s.sealIntact) ? (
-                <AlertTriangle className="w-4 h-4 mr-2" />
-              ) : (
-                <Box className="w-4 h-4 mr-2" />
-              )}
-              {submittingReceive ? "Đang xử lý..." : Object.values(receiveItemsState).some((s) => !s.sealIntact) ? "Từ chối & Ghi nhận" : "Nhập Kho"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+
 
       {/* Ship Back Dialog */}
       <Dialog open={isShipBackOpen} onOpenChange={setIsShipBackOpen}>
@@ -1547,70 +1391,7 @@ export const AdminReturnManagement = ({
         </DialogContent>
       </Dialog>
 
-                {isAdmin && (
-                  <div className="space-y-2 pt-4 border-t border-border/50">
-                    <label className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
-                      {t("dialogs.note_label", {
-                        target: selectedReturn?.origin === "POS" ? "nhân viên" : "khách"
-                      })}
-                    </label>
-                    <Input
-                      value={note}
-                      onChange={(e) => setNote(e.target.value)}
-                      placeholder={
-                        selectedReturn?.origin === "POS"
-                          ? t("dialogs.note_placeholder_staff")
-                          : t("dialogs.note_placeholder_customer")
-                      }
-                      className="bg-muted/30 border-gold/20 h-11 focus-visible:ring-gold/30"
-                    />
-                  </div>
-                )}
-              </div>
 
-              {/* MODAL FOOTER */}
-              <div className="px-8 py-6 md:px-12 md:py-8 border-t border-white/10 bg-white/90 dark:bg-zinc-900/50 backdrop-blur-xl shrink-0 flex flex-col sm:flex-row justify-end gap-3">
-                {isAdmin ? (
-                  <>
-                    <Button
-                      variant="outline"
-                      onClick={() => handleReview("reject")}
-                      className="gap-2 border-red-500/30 text-red-500 hover:bg-red-500 hover:text-white transition-colors"
-                    >
-                      <X className="w-4 h-4" /> {t("dialogs.btn_reject")}
-                    </Button>
-                    <Button
-                      onClick={() => handleReview("approve")}
-                      className="gap-2 bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/20"
-                    >
-                      <Check className="w-4 h-4" /> {t("dialogs.btn_approve")}
-                    </Button>
-                  </>
-                ) : (
-                  <Button variant="outline" onClick={() => setIsReviewOpen(false)}>Đóng</Button>
-                )}
-              </div>
-            </motion.div>
-          </div>
-          <DialogFooter className="pt-2">
-            <Button variant="ghost" onClick={() => setIsRefundOpen(false)}>
-              Hủy
-            </Button>
-            <Button
-              onClick={handleRefund}
-              disabled={submittingRefund}
-              className="bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-900/30"
-            >
-              {submittingRefund ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              ) : (
-                <CreditCard className="w-4 h-4 mr-2" />
-              )}
-              {submittingRefund ? "Đang xử lý..." : "Xác Nhận Hoàn Tiền"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Receive Dialog */}
       <AnimatePresence>
@@ -1742,6 +1523,54 @@ export const AdminReturnManagement = ({
                     className="bg-muted/30 border-teal-500/20 h-11 focus-visible:ring-teal-500/30"
                   />
                 </div>
+              {/* Evidence Upload - shown when any item is marked as damaged */}
+              {Object.values(receiveItemsState).some((s) => !s.sealIntact) && (
+                <div className="space-y-3 pt-4 border-t border-red-500/20 animate-in fade-in slide-in-from-top-2">
+                  <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl">
+                    <div className="flex items-center gap-2 mb-2">
+                      <AlertTriangle className="w-4 h-4 text-red-400" />
+                      <span className="text-sm font-bold text-red-400">Bắt buộc: Ảnh bằng chứng</span>
+                    </div>
+                    <p className="text-[11px] text-red-300/70 leading-relaxed">
+                      Vui lòng chụp ảnh hoặc quay video cảnh mở hộp (unboxing) và tình trạng hàng hóa thực tế. 
+                      Bằng chứng này sẽ được gửi cho khách hàng kèm thông báo từ chối.
+                    </p>
+                  </div>
+
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleEvidenceUpload}
+                    disabled={isUploadingEvidence}
+                    className="bg-black/20 border-red-500/10 focus-visible:ring-red-500 file:bg-red-600 file:text-white file:border-0 file:py-1 file:px-2 file:mr-3 file:rounded file:text-[10px] cursor-pointer text-[10px] h-8 p-1 px-2"
+                  />
+                  {isUploadingEvidence && (
+                    <div className="flex items-center text-xs text-red-400 font-medium">
+                      <Loader2 className="w-3 h-3 mr-2 animate-spin" /> Đang tải ảnh lên...
+                    </div>
+                  )}
+                  {evidenceImages.length > 0 && (
+                    <div className="flex gap-2 flex-wrap">
+                      {evidenceImages.map((url, idx) => (
+                        <div key={idx} className="relative w-20 h-20 rounded-lg overflow-hidden border border-red-500/30 group bg-black/40">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={url} alt={`evidence-${idx}`} className="w-full h-full object-cover" />
+                          <button
+                            onClick={() => setEvidenceImages((prev) => prev.filter((_, i) => i !== idx))}
+                            className="absolute top-1 right-1 bg-black/60 hover:bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {evidenceImages.length === 0 && !isUploadingEvidence && (
+                    <p className="text-[10px] text-red-400/60 italic">Chưa có ảnh bằng chứng. Vui lòng upload ít nhất 1 ảnh.</p>
+                  )}
+                </div>
+              )}
               </div>
 
               {/* MODAL FOOTER */}
@@ -1749,9 +1578,20 @@ export const AdminReturnManagement = ({
                 <Button variant="outline" onClick={() => setIsReceiveOpen(false)}>{t("dialogs.btn_cancel")}</Button>
                 <Button
                   onClick={handleReceive}
-                  className="bg-teal-600 hover:bg-teal-500 text-white shadow-lg shadow-teal-900/20 px-8"
+                  disabled={submittingReceive}
+                  className={cn(
+                    "shadow-lg text-white px-8",
+                    Object.values(receiveItemsState).some((s) => !s.sealIntact)
+                      ? "bg-red-600 hover:bg-red-500 shadow-red-900/20"
+                      : "bg-teal-600 hover:bg-teal-500 shadow-teal-900/20"
+                  )}
                 >
-                  {t("dialogs.btn_receive")}
+                  {submittingReceive ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : Object.values(receiveItemsState).some((s) => !s.sealIntact) ? (
+                    <AlertTriangle className="w-4 h-4 mr-2" />
+                  ) : null}
+                  {submittingReceive ? "Đang xử lý..." : Object.values(receiveItemsState).some((s) => !s.sealIntact) ? "Từ chối & Ghi nhận" : t("dialogs.btn_receive")}
                 </Button>
               </div>
             </motion.div>
