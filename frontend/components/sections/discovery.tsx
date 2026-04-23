@@ -33,12 +33,12 @@ export const Discovery = () => {
                             <span>{t('methodology')}</span>
                         </div>
 
-                        <h2 className="mt-5 text-4xl leading-tight text-foreground md:text-5xl lg:text-6xl">
+                        <h2 className="mt-5 text-3xl leading-tight text-foreground md:text-4xl lg:text-5xl">
                             {t('title')}
                         </h2>
 
                         <p className="mt-6 max-w-xl text-base leading-8 text-muted-foreground md:text-lg">
-                            Hành trình khám phá được chia thành từng bước rõ ràng để người dùng dễ hiểu, dễ theo dõi và dễ bắt đầu.
+                            Một quy trình tinh tế kết hợp giữa nghệ thuật điều chế hương thơm thủ công và trí tuệ nhân tạo hiện đại, giúp bạn tìm thấy tri kỷ khứu giác một cách chuẩn xác.
                         </p>
 
                         <div className="mt-10">
@@ -89,8 +89,7 @@ export const Discovery = () => {
                                 Người dùng nhận được trải nghiệm có hướng dẫn thay vì phải tự lần trong quá nhiều lựa chọn.
                             </h3>
                             <p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground md:text-base">
-                                Home mới tập trung vào khả năng đọc nhanh, hiểu nhanh và chọn hành động nhanh, trong khi vẫn giữ được không khí cao cấp của một
-                                thương hiệu nước hoa.
+                                Perfume GPT không chỉ đưa ra gợi ý, chúng tôi kiến tạo một trải nghiệm khám phá cá nhân hóa, giúp bạn định hình phong cách qua từng nốt hương độc bản.
                             </p>
                         </motion.div>
                     </div>

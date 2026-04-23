@@ -17,10 +17,11 @@ import { type QuizRecommendation } from '@/services/quiz.service';
 
 interface RecommendationCardsProps {
   recommendations: QuizRecommendation[];
+  analysis?: string | null;
   onRetake: () => void;
 }
 
-export function RecommendationCards({ recommendations, onRetake }: RecommendationCardsProps) {
+export function RecommendationCards({ recommendations, analysis, onRetake }: RecommendationCardsProps) {
   const t = useTranslations('quiz');
   const locale = useLocale();
 
@@ -59,18 +60,18 @@ export function RecommendationCards({ recommendations, onRetake }: Recommendatio
     }).format(amount)} ${copy.fallbackPriceSuffix}`;
   };
 
-  if (recommendations.length === 0) {
+  if (!recommendations || recommendations.length === 0) {
     return (
       <div className="mx-auto max-w-3xl">
-        <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(14,16,19,0.96),rgba(9,10,13,0.98))] p-8 text-center shadow-[0_36px_90px_-54px_rgba(0,0,0,0.88)] lg:p-10">
-          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[1.75rem] bg-[#c5a059]/12 text-[#d7b168]">
+        <div className="overflow-hidden rounded-[2.2rem] border border-border bg-card/60 p-8 text-center shadow-xl backdrop-blur-xl lg:p-12">
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[1.75rem] bg-gold/10 text-gold-dark dark:text-[#d7b168]">
             <Sparkles size={32} />
           </div>
-          <h3 className="mt-6 font-heading text-3xl tracking-[-0.03em] text-[#f7f2ea]">{t('results.no_results_title')}</h3>
-          <p className="mx-auto mt-4 max-w-xl text-base leading-8 text-[#a8a298]">{t('results.no_results_desc')}</p>
+          <h3 className="mt-8 font-heading text-3xl tracking-[-0.03em] text-foreground">{t('results.no_results_title')}</h3>
+          <p className="mx-auto mt-4 max-w-xl text-base leading-8 text-muted-foreground">{t('results.no_results_desc')}</p>
           <button
             onClick={onRetake}
-            className="mt-8 inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-[#c5a059]/22 bg-[#c5a059]/12 px-8 text-sm font-semibold text-[#e1bf7a] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#c5a059]/18"
+            className="mt-8 inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-gold/30 bg-gold/10 px-8 text-sm font-semibold text-gold-dark dark:text-[#e1bf7a] transition-all duration-300 hover:-translate-y-0.5 hover:bg-gold/20"
           >
             <RotateCcw size={16} />
             {t('results.retake')}
@@ -85,136 +86,152 @@ export function RecommendationCards({ recommendations, onRetake }: Recommendatio
   return (
     <div className="mx-auto w-full max-w-[1440px]">
       <motion.section
-        initial={{ opacity: 0, y: 18 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45 }}
-        className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(16,18,22,0.96),rgba(8,9,11,0.98))] p-6 shadow-[0_38px_100px_-58px_rgba(0,0,0,0.9)] lg:p-10"
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className="relative overflow-hidden rounded-[2.5rem] border border-border bg-card/40 p-8 shadow-2xl backdrop-blur-3xl lg:p-12"
       >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(197,160,89,0.14),transparent_28%)]" />
-        <div className="pointer-events-none absolute right-[-4rem] top-[-3rem] h-48 w-48 rounded-full bg-[#c5a059]/12 blur-[90px]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(197,160,89,0.08),transparent_40%)]" />
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
 
-        <div className="relative flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
-          <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#c5a059]/18 bg-[#c5a059]/10 px-4 py-2 text-sm font-medium text-[#d7b168]">
-              <Sparkles size={15} />
+        <div className="relative flex flex-col gap-10 xl:flex-row xl:items-end xl:justify-between">
+          <div className="max-w-4xl">
+            <div className="inline-flex items-center gap-2.5 rounded-full border border-gold/20 bg-gold/5 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.15em] text-gold-dark dark:text-[#ccac66]">
+              <Sparkles size={14} className="animate-pulse" />
               {t('results.ai_picked')}
             </div>
-            <h2 className="mt-5 font-heading text-[clamp(2.4rem,4vw,4.3rem)] leading-[0.94] tracking-[-0.05em] text-[#f8f2e9]">
+            <h2 className="mt-8 font-heading text-[clamp(1.75rem,4vw,3rem)] leading-none tracking-[-0.04em] text-foreground dark:text-white">
               {t('results.title')}
             </h2>
-            <p className="mt-4 text-base leading-8 text-[#c7c1b6]">{t('results.subtitle')}</p>
+            <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground/80">
+              {analysis || t('results.subtitle')}
+            </p>
           </div>
 
           <button
             onClick={onRetake}
-            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-6 text-sm font-medium text-[#f0eadf] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#c5a059]/30 hover:text-[#d7b168]"
+            className="inline-flex min-h-[3.5rem] items-center justify-center gap-3 rounded-full border border-border/80 bg-background/50 px-8 text-sm font-bold text-foreground backdrop-blur shadow-xl transition-all duration-500 hover:-translate-y-1 hover:border-gold/40 hover:bg-gold/5 hover:text-gold-dark"
           >
             <RotateCcw size={16} />
             {t('results.retake')}
           </button>
         </div>
 
-        <div className="relative mt-8 grid gap-4 md:grid-cols-3">
-          <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] px-5 py-5">
-            <p className="text-[11px] uppercase tracking-[0.24em] text-[#8f8a81]">{copy.summaryLabel}</p>
-            <p className="mt-3 font-heading text-4xl leading-none tracking-[-0.04em] text-[#f7f2ea]">
-              {recommendations.length.toString().padStart(2, '0')}
+        <div className="relative mt-12 grid gap-6 md:grid-cols-3">
+          <div className="group rounded-[2rem] border border-border/60 bg-muted/20 px-6 py-8 transition-colors duration-500 hover:bg-muted/30">
+            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground/50 group-hover:text-gold/40">{copy.summaryLabel}</p>
+            <div className="mt-4 flex items-baseline gap-2">
+              <p className="font-heading text-6xl leading-none tracking-tighter text-foreground">
+                {recommendations.length.toString().padStart(2, '0')}
+              </p>
+              <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+            </div>
+            <p className="mt-5 text-sm leading-relaxed text-muted-foreground/70">{copy.summaryDetail}</p>
+          </div>
+
+          <div className="group rounded-[2rem] border border-border/60 bg-muted/20 px-6 py-8 transition-colors duration-500 hover:bg-muted/30">
+            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground/50 group-hover:text-gold/40">{copy.featuredLabel}</p>
+            <p className="mt-4 font-heading text-3xl leading-tight text-foreground transition-colors duration-300 group-hover:text-gold-dark">{featured.name}</p>
+            <p className="mt-5 text-sm leading-relaxed text-muted-foreground/70">{copy.featuredDetail}</p>
+          </div>
+
+          <div className="group relative overflow-hidden rounded-[2rem] border border-gold/30 bg-gold/[0.03] px-6 py-8 shadow-[0_32px_64px_-16px_rgba(197,160,89,0.1)]">
+            <div className="absolute inset-0 bg-gradient-to-br from-gold/[0.05] to-transparent" />
+            <p className="relative text-[10px] font-bold uppercase tracking-[0.2em] text-gold-dark dark:text-[#ccac66]">{copy.matchingLabel}</p>
+            <p className="relative mt-4 font-heading text-6xl leading-none tracking-tighter text-foreground drop-shadow-[0_0_12px_rgba(197,160,89,0.3)]">
+              98.4%
             </p>
-            <p className="mt-3 text-sm leading-7 text-[#9f9a92]">{copy.summaryDetail}</p>
-          </div>
-
-          <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] px-5 py-5">
-            <p className="text-[11px] uppercase tracking-[0.24em] text-[#8f8a81]">{copy.featuredLabel}</p>
-            <p className="mt-3 text-xl font-semibold text-[#f7f2ea]">{featured.name}</p>
-            <p className="mt-3 text-sm leading-7 text-[#9f9a92]">{copy.featuredDetail}</p>
-          </div>
-
-          <div className="rounded-[1.5rem] border border-[#c5a059]/18 bg-[#c5a059]/10 px-5 py-5">
-            <p className="text-[11px] uppercase tracking-[0.24em] text-[#d7b168]">{copy.matchingLabel}</p>
-            <p className="mt-3 font-heading text-4xl leading-none tracking-[-0.04em] text-[#f8f2e9]">98.4%</p>
-            <p className="mt-3 text-sm leading-7 text-[#e0d0ab]">{copy.matchingDetail}</p>
+            <p className="relative mt-5 text-sm leading-relaxed text-gold-dark dark:text-[#d1b57a] font-medium opacity-80">{copy.matchingDetail}</p>
           </div>
         </div>
       </motion.section>
 
       <motion.article
-        initial={{ opacity: 0, y: 22 }}
+        initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, delay: 0.06 }}
-        className="mt-6 overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(14,16,19,0.96),rgba(9,10,13,0.98))] shadow-[0_40px_100px_-60px_rgba(0,0,0,0.9)]"
+        transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+        className="mt-8 overflow-hidden rounded-[2.5rem] border border-border bg-card/40 shadow-2xl backdrop-blur-3xl group"
       >
-        <div className="grid h-full gap-0 lg:grid-cols-[0.92fr_1.08fr]">
-          <div className="relative min-h-[340px] overflow-hidden bg-[#111316] lg:min-h-[480px]">
+        <div className="grid h-full gap-0 lg:grid-cols-[1fr_1.1fr]">
+          <div className="relative min-h-[380px] overflow-hidden bg-muted lg:min-h-[520px]">
             {featured.imageUrl ? (
               <img
                 src={featured.imageUrl}
                 alt={featured.name}
-                className="h-full w-full object-cover transition-transform duration-700 hover:scale-[1.03]"
+                className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-[1.05]"
               />
             ) : (
-              <div className="flex h-full items-center justify-center bg-[radial-gradient(circle_at_top,rgba(197,160,89,0.24),transparent_30%),linear-gradient(180deg,#1a1510,#0b0c0e)] text-[#d7b168]">
-                <Sparkles size={54} />
+              <div className="flex h-full items-center justify-center bg-[radial-gradient(circle_at_top,rgba(197,160,89,0.12),transparent_40%)] dark:bg-[radial-gradient(circle_at_top,rgba(197,160,89,0.25),transparent_40%)] text-gold">
+                <Sparkles size={64} className="opacity-20 animate-pulse" />
               </div>
             )}
 
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
-            <div className="absolute left-6 top-6 inline-flex items-center gap-2 rounded-full border border-white/16 bg-black/25 px-4 py-2 text-sm text-[#f7f2ea] backdrop-blur">
-              <CheckCircle2 size={15} className="text-[#d7b168]" />
-              {copy.featuredLabel}
+            <div className="absolute left-8 top-8">
+              <div className="inline-flex items-center gap-2.5 rounded-full border border-white/20 bg-black/40 px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.15em] text-white backdrop-blur-md">
+                <div className="h-1.5 w-1.5 rounded-full bg-gold animate-pulse" />
+                {copy.featuredLabel}
+              </div>
             </div>
 
-            <div className="absolute bottom-6 left-6 right-6">
-              {featured.brand ? <p className="text-sm text-white/70">{featured.brand}</p> : null}
-              <h3 className="mt-2 font-heading text-4xl leading-[0.95] tracking-[-0.04em] text-[#f8f2e9] lg:text-5xl">
+            <div className="absolute bottom-8 left-8 right-8">
+              {featured.brand ? <p className="text-sm font-bold uppercase tracking-[0.25em] text-white/60 mb-3">{featured.brand}</p> : null}
+              <h3 className="font-heading text-4xl leading-[0.95] tracking-[-0.05em] text-white lg:text-5xl">
                 {featured.name}
               </h3>
             </div>
           </div>
 
-          <div className="flex flex-col p-6 lg:p-8 xl:p-10">
-            <div className="flex flex-col gap-5 border-b border-white/8 pb-6 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex flex-col p-8 lg:p-12 xl:p-14">
+            <div className="flex flex-col gap-8 border-b border-border pb-10 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <p className="text-sm font-medium text-[#d7b168]">{t('results.ai_picked')}</p>
-                <p className="mt-2 font-heading text-4xl tracking-[-0.04em] text-[#f8f2e9]">{formatPrice(featured.price)}</p>
+                <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-gold-dark dark:text-[#ccac66]">{t('results.ai_picked')}</p>
+                <p className="mt-3 font-heading text-3xl md:text-4xl tracking-[-0.04em] text-foreground leading-none">{formatPrice(featured.price)}</p>
               </div>
 
               <Link
                 href={`/products/${featured.productId}`}
-                className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-[#f7f2ea] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#c5a059]/28 hover:text-[#d7b168]"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex h-16 w-16 items-center justify-center rounded-full border border-gold/40 bg-[#121212] dark:bg-zinc-900 text-white transition-all duration-500 hover:-translate-y-1.5 hover:border-gold hover:shadow-[0_15px_30px_-10px_rgba(197,160,89,0.3)] shadow-lg"
               >
-                <ArrowUpRight size={18} />
+                <ArrowUpRight size={24} />
               </Link>
             </div>
 
-            <div className="mt-6 rounded-[1.5rem] border border-white/8 bg-white/[0.03] px-5 py-5">
+            <div className="mt-10 rounded-[2rem] border border-border/60 bg-muted/20 px-6 py-8">
               <div className="flex items-center gap-3">
-                <Gem size={18} className="text-[#d7b168]" />
-                <p className="text-[11px] uppercase tracking-[0.24em] text-[#8f8a81]">{copy.featuredReasonLabel}</p>
+                <div className="h-8 w-8 rounded-full bg-gold/10 flex items-center justify-center">
+                  <Gem size={16} className="text-gold-dark dark:text-[#ccac66]" />
+                </div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-muted-foreground/60">{copy.featuredReasonLabel}</p>
               </div>
-              <p className="mt-4 text-base leading-8 text-[#c7c1b6]">{featured.reason}</p>
+              <p className="mt-6 text-lg leading-relaxed text-foreground/80 italic">"{featured.reason}"</p>
             </div>
 
             {featured.tags && featured.tags.length > 0 ? (
-              <div className="mt-6 flex flex-wrap gap-2">
+              <div className="mt-8 flex flex-wrap gap-2.5">
                 {featured.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-sm text-[#d8d1c6]"
+                    className="inline-flex items-center gap-2.5 rounded-full border border-border/80 bg-background/50 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground/80 transition-colors duration-300 hover:border-gold/30 hover:text-gold-dark"
                   >
-                    <Tag size={12} className="text-[#d7b168]" />
+                    <Tag size={12} className="text-gold/40" />
                     {tag}
                   </span>
                 ))}
               </div>
             ) : null}
 
-            <div className="mt-auto flex flex-col gap-4 pt-8 sm:flex-row sm:items-center sm:justify-between">
-              <p className="max-w-xl text-sm leading-7 text-[#9f9a92]">{copy.collectionDetail}</p>
+            <div className="mt-auto flex flex-col gap-8 pt-12 sm:flex-row sm:items-center sm:justify-between">
+              <p className="max-w-md text-sm leading-relaxed text-muted-foreground/60">{copy.collectionDetail}</p>
 
               <Link
                 href={`/products/${featured.productId}`}
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,#d6b36d,#b68948)] px-6 text-sm font-semibold text-[#14161a] shadow-[0_24px_55px_-24px_rgba(197,160,89,0.55)] transition-all duration-300 hover:-translate-y-0.5"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-[3.5rem] items-center justify-center gap-3 rounded-full bg-gold-btn-gradient px-10 text-[13px] font-bold uppercase tracking-[0.2em] text-[#121212] shadow-[0_20px_40px_-10px_rgba(197,160,89,0.4)] transition-all duration-500 hover:-translate-y-1.5 hover:shadow-[0_25px_50px_-12px_rgba(197,160,89,0.5)] active:scale-95"
               >
                 <ExternalLink size={16} />
                 {t('results.view_detail')}
@@ -226,12 +243,12 @@ export function RecommendationCards({ recommendations, onRetake }: Recommendatio
 
       {rest.length > 0 ? (
         <section className="mt-8">
-          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between px-2">
             <div>
-              <p className="text-[11px] uppercase tracking-[0.28em] text-[#8f8a81]">{copy.collectionLabel}</p>
-              <h3 className="mt-2 font-heading text-3xl tracking-[-0.03em] text-[#f8f2e9]">{copy.featuredLabel}</h3>
+              <p className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground">{copy.collectionLabel}</p>
+              <h3 className="mt-2 font-heading text-3xl tracking-[-0.03em] text-foreground">{copy.collectionLabel}</h3>
             </div>
-            <p className="max-w-2xl text-sm leading-7 text-[#9f9a92]">{copy.collectionDetail}</p>
+            <p className="max-w-2xl text-sm leading-7 text-muted-foreground">{copy.collectionDetail}</p>
           </div>
 
           <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
@@ -242,9 +259,9 @@ export function RecommendationCards({ recommendations, onRetake }: Recommendatio
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.08, duration: 0.35 }}
                 whileHover={{ y: -6 }}
-                className="overflow-hidden rounded-[1.8rem] border border-white/10 bg-[linear-gradient(180deg,rgba(14,16,19,0.96),rgba(9,10,13,0.98))] shadow-[0_28px_80px_-54px_rgba(0,0,0,0.9)]"
+                className="overflow-hidden rounded-[2rem] border border-border bg-card/60 shadow-xl backdrop-blur-sm"
               >
-                <div className="relative min-h-[220px] overflow-hidden bg-[#111316]">
+                <div className="relative min-h-[220px] overflow-hidden bg-muted">
                   {rec.imageUrl ? (
                     <img
                       src={rec.imageUrl}
@@ -252,42 +269,44 @@ export function RecommendationCards({ recommendations, onRetake }: Recommendatio
                       className="h-full w-full object-cover transition-transform duration-700 hover:scale-[1.04]"
                     />
                   ) : (
-                    <div className="flex h-full items-center justify-center text-[#d7b168]">
+                    <div className="flex h-full items-center justify-center text-gold">
                       <Sparkles size={30} />
                     </div>
                   )}
 
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/65 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                   {rec.brand ? (
-                    <div className="absolute left-4 top-4 rounded-full border border-white/14 bg-black/20 px-3 py-1.5 text-sm text-[#f1eadf] backdrop-blur">
+                    <div className="absolute left-4 top-4 rounded-full border border-white/20 bg-black/30 px-3 py-1.5 text-sm text-white backdrop-blur">
                       {rec.brand}
                     </div>
                   ) : null}
                 </div>
 
                 <div className="p-5">
-                  <h4 className="font-heading text-2xl leading-tight tracking-[-0.03em] text-[#f8f2e9]">{rec.name}</h4>
-                  <p className="mt-3 line-clamp-4 text-sm leading-7 text-[#a8a298]">{rec.reason}</p>
+                  <h4 className="font-heading text-2xl leading-tight tracking-[-0.03em] text-foreground">{rec.name}</h4>
+                  <p className="mt-3 line-clamp-4 text-sm leading-7 text-muted-foreground">{rec.reason}</p>
 
                   {rec.tags && rec.tags.length > 0 ? (
                     <div className="mt-4 flex flex-wrap gap-2">
                       {rec.tags.slice(0, 3).map((tag) => (
                         <span
                           key={tag}
-                          className="inline-flex items-center gap-1.5 rounded-full border border-white/8 bg-white/[0.04] px-3 py-1 text-xs text-[#d8d1c6]"
+                          className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-3 py-1 text-xs text-muted-foreground"
                         >
-                          <Tag size={10} className="text-[#d7b168]" />
+                          <Tag size={10} className="text-gold" />
                           {tag}
                         </span>
                       ))}
                     </div>
                   ) : null}
 
-                  <div className="mt-6 flex items-center justify-between gap-3 border-t border-white/8 pt-4">
-                    <p className="text-lg font-semibold text-[#f6f1e8]">{formatPrice(rec.price)}</p>
+                  <div className="mt-6 flex items-center justify-between gap-3 border-t border-border pt-4">
+                    <p className="text-lg font-semibold text-foreground">{formatPrice(rec.price)}</p>
                     <Link
                       href={`/products/${rec.productId}`}
-                      className="inline-flex min-h-10 items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 text-sm font-medium text-[#f1eadf] transition-all duration-300 hover:border-[#c5a059]/30 hover:text-[#d7b168]"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex min-h-10 items-center gap-2 rounded-full border border-gold/30 bg-[#121212] dark:bg-zinc-800 px-4 text-sm font-medium text-white transition-all duration-300 hover:border-gold hover:text-gold shadow-md"
                     >
                       {t('results.view_detail')}
                     </Link>

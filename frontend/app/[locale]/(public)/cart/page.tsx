@@ -333,12 +333,7 @@ export default function CartPage() {
                       <span className="text-sm text-muted-foreground">{t('subtotal')}</span>
                       <span className="text-xl font-semibold text-foreground">{formatCurrency(subtotal)}</span>
                     </div>
-                    <div className="flex items-center justify-between gap-4">
-                      <span className="text-sm text-muted-foreground">{t('shipping')}</span>
-                      <span className="rounded-full border border-gold/25 bg-gold/10 px-3 py-1.5 text-sm font-medium text-gold">
-                        {t('complimentary')}
-                      </span>
-                    </div>
+
                   </div>
 
                   <div className="rounded-[1.8rem] border border-black/6 bg-[linear-gradient(135deg,rgba(197,160,89,0.12),rgba(197,160,89,0.05))] p-5 dark:border-white/10">

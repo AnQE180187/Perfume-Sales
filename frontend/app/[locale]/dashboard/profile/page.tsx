@@ -378,7 +378,7 @@ export default function ProfilePage() {
                   {roleLabel}
                 </div>
                 <div>
-                  <h1 className="text-3xl font-semibold leading-tight text-foreground md:text-4xl">{summaryName}</h1>
+                  <h1 className="text-2xl md:text-3xl font-heading text-foreground uppercase tracking-tighter leading-tight">{summaryName}</h1>
                   <p className="mt-2 text-base leading-7 text-stone-500 dark:text-stone-300">{t('subtitle')}</p>
                 </div>
                 <div className="flex flex-wrap gap-3">
@@ -439,7 +439,7 @@ export default function ProfilePage() {
             <div className="glass rounded-[2rem] border border-gold/10 p-6 md:p-8">
               <div className="mb-6 flex items-center justify-between gap-4">
                 <div>
-                  <h2 className="text-2xl font-semibold text-foreground">{t('personal_info')}</h2>
+                  <h2 className="text-xl md:text-2xl font-heading text-foreground uppercase tracking-tight">{t('personal_info')}</h2>
                   <p className="mt-2 text-sm leading-7 text-stone-500 dark:text-stone-400">{t('title')}</p>
                 </div>
                 <div className="rounded-full border border-black/8 bg-white/80 px-4 py-2 text-sm text-stone-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-stone-300">
@@ -480,7 +480,7 @@ export default function ProfilePage() {
                     <Wallet className="h-5 w-5" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-semibold text-foreground">{t('labels.min_budget')}</h2>
+                    <h2 className="text-xl md:text-2xl font-heading text-foreground uppercase tracking-tight">{t('labels.min_budget')}</h2>
                     <p className="mt-2 text-sm leading-7 text-stone-500 dark:text-stone-400">{budgetDescription}</p>
                   </div>
                 </div>
@@ -545,7 +545,7 @@ export default function ProfilePage() {
                   <Shield className="h-5 w-5" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold text-foreground">{t('security.title')}</h2>
+                  <h2 className="text-lg md:text-xl font-heading text-foreground uppercase tracking-tight">{t('security.title')}</h2>
                   <p className="text-sm text-stone-500 dark:text-stone-400">{t('security.protected')}</p>
                 </div>
               </div>
@@ -572,7 +572,7 @@ export default function ProfilePage() {
                   <BadgeCheck className="h-5 w-5" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold text-foreground">{t('verification.title')}</h2>
+                  <h2 className="text-lg md:text-xl font-heading text-foreground uppercase tracking-tight">{t('verification.title')}</h2>
                   <p className="text-sm text-stone-500 dark:text-stone-400">
                     {data?.emailVerified ? t('verification.verified') : t('verification.unverified')}
                   </p>
@@ -613,7 +613,7 @@ export default function ProfilePage() {
                   <User className="h-5 w-5" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold text-foreground">{overviewTitle}</h2>
+                  <h2 className="text-lg md:text-xl font-heading text-foreground uppercase tracking-tight">{overviewTitle}</h2>
                   <p className="text-sm text-stone-500 dark:text-stone-400">{overviewDescription}</p>
                 </div>
               </div>

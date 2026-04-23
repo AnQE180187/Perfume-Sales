@@ -50,7 +50,7 @@ export const FeaturedProducts = () => {
                     <div>
                         <h3 className="text-3xl leading-tight text-foreground md:text-4xl">{section.title}</h3>
                         <p className="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">
-                            Lựa chọn được trình bày rõ ràng hơn để người dùng xem nhanh, so sánh dễ và đi đến trang chi tiết tự nhiên hơn.
+                            Khám phá bộ sưu tập những mùi hương đẳng cấp nhất, được tuyển chọn kỹ lưỡng để tôn vinh bản sắc riêng của bạn.
                         </p>
                     </div>
 
@@ -103,7 +103,7 @@ export const FeaturedProducts = () => {
                                             {perfume.name}
                                         </h4>
                                         <p className="mt-4 text-sm leading-7 text-muted-foreground md:text-base">
-                                            Giao diện card mới ưu tiên tên sản phẩm, giá và đường dẫn đến chi tiết để người dùng theo dõi dễ hơn.
+                                            Mùi hương đặc sắc mang đậm dấu ấn cá nhân, tạo nên sự lôi cuốn khó cưỡng trong mọi khoảnh khắc.
                                         </p>
 
                                         <div className="mt-auto pt-6">
@@ -133,11 +133,11 @@ export const FeaturedProducts = () => {
             <div className="container-responsive">
                 <div className="mb-14 max-w-4xl md:mb-16">
                     <p className="text-sm font-medium text-gold">{t('badge')}</p>
-                    <h2 className="mt-4 text-4xl leading-tight text-foreground md:text-5xl lg:text-6xl">
+                    <h2 className="mt-4 text-3xl leading-tight text-foreground md:text-4xl lg:text-5xl">
                         {t('title')}
                     </h2>
                     <p className="mt-5 max-w-2xl text-base leading-8 text-muted-foreground md:text-lg">
-                        Các nhóm sản phẩm được chia rõ ràng hơn để người dùng dễ khám phá và dễ ra quyết định mua sắm nhanh hơn.
+                        Tuyển tập những dòng nước hoa trứ danh, từ những nốt hương cổ điển đến những sáng tạo hiện đại đầy phá cách.
                     </p>
                 </div>
 
