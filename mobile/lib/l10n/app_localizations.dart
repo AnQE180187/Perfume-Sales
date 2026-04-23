@@ -3668,6 +3668,48 @@ abstract class AppLocalizations {
   /// **'Please return to Showroom and update tracking.'**
   String get supportShowroomReturn;
 
+  /// No description provided for @returnShopPaysShipping.
+  ///
+  /// In en, this message translates to:
+  /// **'Shipping fee will be paid by the shop.'**
+  String get returnShopPaysShipping;
+
+  /// No description provided for @returnCustomerPaysShipping.
+  ///
+  /// In en, this message translates to:
+  /// **'Please pay the shipping fee to the courier.'**
+  String get returnCustomerPaysShipping;
+
+  /// No description provided for @returnRejectedRequestLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Return request rejected'**
+  String get returnRejectedRequestLabel;
+
+  /// No description provided for @returnRejectedReasonCompromised.
+  ///
+  /// In en, this message translates to:
+  /// **'The returned product is not sealed or is damaged. According to our policy, the store will return the product to you. The shipping fee will be paid by the buyer.'**
+  String get returnRejectedReasonCompromised;
+
+  /// No description provided for @shopEvidenceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Shop evidence'**
+  String get shopEvidenceLabel;
+
+  /// No description provided for @returnSendingBackToCustomer.
+  ///
+  /// In en, this message translates to:
+  /// **'Returning item back to you'**
+  String get returnSendingBackToCustomer;
+
+  /// No description provided for @returnPreparingToSendBack.
+  ///
+  /// In en, this message translates to:
+  /// **'The store is preparing to send the product back to you. Please wait for updates.'**
+  String get returnPreparingToSendBack;
+
   /// No description provided for @aiScentDna.
   ///
   /// In en, this message translates to:
