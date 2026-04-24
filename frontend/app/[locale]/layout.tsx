@@ -12,8 +12,12 @@ export const metadata: Metadata = {
         default: 'PerfumeGPT | Luxury Fragrance & AI Scent Consultant',
         template: '%s | PerfumeGPT'
     },
-    description: 'Discover your signature scent with PerfumeGPT. Our AI-powered fragrance consultant analyzes your preferences to find the perfect luxury perfume for every occasion.',
-    keywords: ['perfume', 'fragrance', 'luxury perfume', 'AI fragrance consultant', 'scent recommendation', 'niche perfume', 'perfume shop'],
+    description: 'Find your perfect signature scent with PerfumeGPT. Our AI-powered fragrance consultant analyzes your style to find the perfect luxury perfume.',
+    keywords: [
+        'perfume', 'fragrance', 'luxury perfume', 'AI fragrance consultant', 
+        'scent recommendation', 'niche perfume', 'perfume shop', 'PerfumeGPT',
+        'nước hoa', 'nước hoa cao cấp', 'tư vấn nước hoa AI', 'nước hoa chính hãng'
+    ],
     metadataBase: new URL('https://perfumegpt.site'),
     alternates: {
         canonical: '/',
@@ -22,9 +26,20 @@ export const metadata: Metadata = {
             'vi-VN': '/vi',
         },
     },
+    robots: {
+        index: true,
+        follow: true,
+        googleBot: {
+            index: true,
+            follow: true,
+            'max-video-preview': -1,
+            'max-image-preview': 'large',
+            'max-snippet': -1,
+        },
+    },
     openGraph: {
         type: 'website',
-        locale: 'en_US',
+        locale: 'vi_VN',
         url: 'https://perfumegpt.site',
         siteName: 'PerfumeGPT',
         title: 'PerfumeGPT | Luxury Fragrance & AI Scent Consultant',
