@@ -1,13 +1,7 @@
 import { useAtomValue } from "jotai";
-import {
-  UIMatch,
-  useLocation,
-  useMatches,
-  useNavigate,
-} from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { categoriesStateUpwrapped } from "@/state";
-import headerLogoImage from "@/static/logo-dark.png";
-import { BackIcon } from "./vectors";
+import { ChevronLeft } from "lucide-react";
 import { useMemo } from "react";
 import { useRouteHandle } from "@/hooks";
 
@@ -29,22 +23,36 @@ export default function Header() {
 
   const showBack = location.key !== "default" && handle?.back !== false;
 
+  // Logo header (Home / Profile) – no header shown, Home has its own inline header
   if (handle?.logo) {
-    return (
-      <div className="h-14 w-full flex items-center px-4 py-2">
-        <img src={headerLogoImage} className="max-h-full flex-none" />
-      </div>
-    );
+    return null;
   }
 
   return (
-    <div className="h-12 w-full flex items-center pl-2 pr-[106px] py-2 space-x-1">
+    <div
+      className="h-13 w-full flex items-center px-2 gap-1"
+      style={{
+        background: '#FFFFFF',
+        borderBottom: '1px solid rgba(0,0,0,0.05)',
+        minHeight: '52px',
+      }}
+    >
       {showBack && (
-        <div className="p-2 cursor-pointer" onClick={() => navigate(-1)}>
-          <BackIcon />
-        </div>
+        <button
+          onClick={() => navigate(-1)}
+          className="w-10 h-10 flex items-center justify-center rounded-xl active:scale-90 transition-transform flex-shrink-0"
+          style={{ background: 'transparent' }}
+        >
+          <ChevronLeft size={22} className="text-foreground" strokeWidth={2.5} />
+        </button>
       )}
-      <div className="text-xl font-medium truncate">{title}</div>
+
+      <div
+        className="flex-1 text-base font-bold truncate"
+        style={{ fontFamily: "'Playfair Display', serif" }}
+      >
+        {title}
+      </div>
     </div>
   );
 }

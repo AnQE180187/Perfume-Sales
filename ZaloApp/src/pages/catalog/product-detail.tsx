@@ -1,52 +1,49 @@
 import Button from "@/components/button";
-import HorizontalDivider from "@/components/horizontal-divider";
 import { useAtomValue } from "jotai";
 import { useNavigate, useParams } from "react-router-dom";
 import { productState } from "@/state";
 import { formatPrice } from "@/utils/format";
 import ShareButton from "./share-buttont";
 import { useEffect, useState } from "react";
-import Collapse from "@/components/collapse";
 import RelatedProducts from "./related-products";
 import AiReviewSummary from "./ai-review-summary";
 import ProductReviews from "./product-reviews";
 import { useAddToCart } from "@/hooks";
 import toast from "react-hot-toast";
 import { Size } from "@/types";
-import { Heart, Star } from "lucide-react";
+import { Heart, ShoppingCart, Zap, ChevronLeft, Star } from "lucide-react";
 import axiosClient from "@/services/axiosClient";
 
 export default function ProductDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  // id is a UUID string from backend - do NOT convert to Number
   const product = useAtomValue(productState(id ?? ""));
   const [selectedSize, setSelectedSize] = useState<Size>();
   const [selectedImageIdx, setSelectedImageIdx] = useState(0);
   const [wishlisted, setWishlisted] = useState(false);
   const [wishlistLoading, setWishlistLoading] = useState(false);
 
-  // Derive images array (backend may send product.images[])
-  const images: string[] = (product as any)?.images?.map((i: any) => i.url || i) ?? 
+  const images: string[] = (product as any)?.images?.map((i: any) => i.url || i) ??
     (product?.image ? [product.image] : []);
 
-  // Derive available sizes/variants from backend data
   const variants: any[] = (product as any)?.variants ?? [];
   const sizes: Size[] = variants.length > 0
     ? variants.map((v: any) => v.label || `${v.volume}ml`)
     : (product?.sizes ?? []);
 
-  // Price: based on selected variant
-  const selectedVariant = variants.find((v: any) => 
+  const selectedVariant = variants.find((v: any) =>
     (v.label || `${v.volume}ml`) === selectedSize
   );
   const displayPrice = selectedVariant?.price ?? product?.price ?? 0;
   const displayOriginalPrice = selectedVariant?.originalPrice ?? (product as any)?.originalPrice;
+  const hasDiscount = displayOriginalPrice && displayOriginalPrice > displayPrice;
+  const discountPct = hasDiscount ? Math.round((1 - displayPrice / displayOriginalPrice) * 100) : 0;
+
+  const avgRating = (product as any)?.avgRating || 0;
+  const reviewCount = (product as any)?.reviewCount || 0;
 
   useEffect(() => {
-    if (sizes.length > 0) {
-      setSelectedSize(sizes[0]);
-    }
+    if (sizes.length > 0) setSelectedSize(sizes[0]);
     setSelectedImageIdx(0);
   }, [id]);
 
@@ -71,9 +68,12 @@ export default function ProductDetailPage() {
 
   if (!product) {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center gap-3 text-sm text-subtitle">
-        <div className="w-10 h-10 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-        <span>Đang tải sản phẩm...</span>
+      <div className="w-full h-full flex flex-col items-center justify-center gap-3" style={{ background: '#FAF8F5' }}>
+        <div
+          className="w-12 h-12 rounded-full border-2 border-t-gold animate-spin"
+          style={{ borderColor: 'rgba(212,175,55,0.2)', borderTopColor: '#D4AF37' }}
+        />
+        <span className="text-sm text-subtitle">Đang tải sản phẩm...</span>
       </div>
     );
   }
@@ -81,10 +81,10 @@ export default function ProductDetailPage() {
   const brand = (product as any)?.brand?.name;
 
   return (
-    <div className="w-full h-full flex flex-col">
+    <div className="w-full h-full flex flex-col" style={{ background: '#FAF8F5' }}>
       <div className="flex-1 overflow-y-auto">
-        {/* Image Gallery */}
-        <div className="relative bg-gray-50">
+        {/* === IMAGE GALLERY === */}
+        <div className="relative" style={{ background: '#FFFFFF' }}>
           <img
             key={selectedImageIdx}
             src={images[selectedImageIdx] || product.image}
@@ -92,7 +92,15 @@ export default function ProductDetailPage() {
             className="w-full aspect-square object-cover"
             style={{ viewTransitionName: `product-image-${product.id}` }}
           />
-          {/* Wishlist & Share buttons */}
+
+          {/* Discount badge */}
+          {hasDiscount && (
+            <div className="absolute top-3 left-3 bg-danger text-white text-xs font-bold px-2.5 py-1 rounded-full">
+              -{discountPct}%
+            </div>
+          )}
+
+          {/* Action buttons top-right */}
           <div className="absolute top-3 right-3 flex flex-col gap-2">
             <button
               id="btn-wishlist"
@@ -103,40 +111,44 @@ export default function ProductDetailPage() {
                   if (wishlisted) {
                     await axiosClient.delete(`/favorites/${product.id}`);
                     setWishlisted(false);
-                    toast.success("Đã bỏ khỏi danh sách yêu thích");
+                    toast.success("Đã bỏ khỏi yêu thích");
                   } else {
                     await axiosClient.post(`/favorites/${product.id}`);
                     setWishlisted(true);
-                    toast.success("Đã thêm vào danh sách yêu thích");
+                    toast.success("Đã thêm vào yêu thích ❤️");
                   }
                 } catch {
-                  toast.error("Không thể cập nhật danh sách yêu thích");
+                  toast.error("Không thể cập nhật yêu thích");
                 } finally {
                   setWishlistLoading(false);
                 }
               }}
-              className="w-9 h-9 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow"
+              className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-luxury-sm active:scale-90 transition-transform"
+              style={{ background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(8px)' }}
             >
               <Heart
                 size={18}
-                className={wishlisted ? "text-red-500 fill-red-500" : "text-gray-400"}
+                className={wishlisted ? "fill-danger text-danger" : "text-subtitle"}
               />
             </button>
-            <div className="w-9 h-9 rounded-full bg-white/90 backdrop-blur flex items-center justify-center shadow">
+            <div
+              className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-luxury-sm"
+              style={{ background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(8px)' }}
+            >
               <ShareButton product={product} />
             </div>
           </div>
         </div>
 
-        {/* Thumbnail strip (only if multiple images) */}
+        {/* Thumbnail strip */}
         {images.length > 1 && (
-          <div className="flex gap-2 px-4 py-2 overflow-x-auto">
+          <div className="flex gap-2 px-4 py-3 overflow-x-auto" style={{ background: '#FFFFFF', borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
             {images.map((img, idx) => (
               <button
                 key={idx}
                 onClick={() => setSelectedImageIdx(idx)}
-                className={`flex-none w-14 h-14 rounded-lg overflow-hidden border-2 transition-all ${
-                  idx === selectedImageIdx ? "border-primary" : "border-transparent"
+                className={`flex-none w-14 h-14 rounded-xl overflow-hidden border-2 transition-all active:scale-90 ${
+                  idx === selectedImageIdx ? "border-gold" : "border-transparent"
                 }`}
               >
                 <img src={img} className="w-full h-full object-cover" />
@@ -145,72 +157,99 @@ export default function ProductDetailPage() {
           </div>
         )}
 
-        {/* Product Info */}
-        <div className="w-full px-4 pt-3 pb-4">
+        {/* === PRODUCT INFO === */}
+        <div className="px-4 pt-4 pb-3" style={{ background: '#FFFFFF' }}>
           {/* Brand */}
           {brand && (
-            <div className="text-xs text-primary font-bold tracking-widest uppercase mb-1">{brand}</div>
+            <div className="text-xs font-bold tracking-widest text-gold uppercase mb-1">
+              {brand}
+            </div>
           )}
-          {/* Name */}
-          <div className="text-base font-semibold text-gray-800 leading-snug mb-2">{product.name}</div>
 
-          {/* Price row */}
-          <div className="flex items-baseline gap-3 mb-3">
-            <div className="text-2xl font-bold text-primary">{formatPrice(displayPrice)}</div>
-            {displayOriginalPrice && displayOriginalPrice > displayPrice && (
-              <div className="text-sm text-gray-400 line-through">{formatPrice(displayOriginalPrice)}</div>
-            )}
-            {displayOriginalPrice && displayOriginalPrice > displayPrice && (
-              <div className="text-xs font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-full">
-                -{Math.round((1 - displayPrice / displayOriginalPrice) * 100)}%
+          {/* Product name */}
+          <h1 className="text-lg font-bold text-foreground leading-snug mb-3"
+            style={{ fontFamily: "'Playfair Display', serif" }}>
+            {product.name}
+          </h1>
+
+          {/* Rating row */}
+          {avgRating > 0 && (
+            <div className="flex items-center gap-2 mb-3">
+              <div className="flex gap-0.5">
+                {[1, 2, 3, 4, 5].map(s => (
+                  <Star key={s} size={13} className={s <= Math.round(avgRating) ? "fill-gold text-gold" : "text-skeleton"} />
+                ))}
+              </div>
+              <span className="text-xs font-semibold text-foreground">{avgRating.toFixed(1)}</span>
+              <span className="text-xs text-subtitle">({reviewCount} đánh giá)</span>
+            </div>
+          )}
+
+          {/* Price */}
+          <div className="flex items-baseline gap-3">
+            <div className="text-2xl font-black" style={{ color: '#1a1a2e' }}>
+              {formatPrice(displayPrice)}
+            </div>
+            {hasDiscount && (
+              <div className="text-sm text-inactive line-through">
+                {formatPrice(displayOriginalPrice)}
               </div>
             )}
           </div>
 
           {/* Category */}
-          <div className="text-xs text-gray-400 mb-3">Danh mục: {product.category?.name}</div>
+          <div className="text-xs text-subtitle mt-1">
+            Danh mục: {product.category?.name}
+          </div>
         </div>
 
-        <HorizontalDivider />
-
-        {/* Variant / Size Picker */}
+        {/* === VARIANT PICKER === */}
         {sizes.length > 0 && (
-          <div className="px-4 py-3">
-            <div className="text-sm font-semibold mb-3 text-gray-700">Dung tích / Phiên bản</div>
+          <div
+            className="px-4 py-4 mt-2"
+            style={{ background: '#FFFFFF', borderTop: '1px solid rgba(0,0,0,0.04)' }}
+          >
+            <div className="text-sm font-bold text-foreground mb-3">Dung tích / Phiên bản</div>
             <div className="flex flex-wrap gap-2">
-              {sizes.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setSelectedSize(s)}
-                  className={`px-4 py-2 rounded-xl border-2 text-sm font-medium transition-all ${
-                    selectedSize === s
-                      ? "border-primary bg-primary text-white"
-                      : "border-gray-100 bg-white text-gray-600"
-                  }`}
-                >
-                  {s}
-                </button>
-              ))}
+              {sizes.map((s) => {
+                const v = variants.find((v: any) => (v.label || `${v.volume}ml`) === s);
+                const isSelected = selectedSize === s;
+                return (
+                  <button
+                    key={s}
+                    onClick={() => setSelectedSize(s)}
+                    className="px-4 py-2.5 rounded-2xl text-sm font-semibold transition-all active:scale-90"
+                    style={isSelected ? {
+                      background: 'linear-gradient(135deg, #1a1a2e, #2d2d52)',
+                      color: '#FAF8F5',
+                      border: '1.5px solid rgba(212,175,55,0.4)',
+                      boxShadow: '0 2px 12px rgba(26,26,46,0.2)',
+                    } : {
+                      background: '#F0ECE6',
+                      color: '#6B6B6B',
+                      border: '1.5px solid rgba(0,0,0,0.06)',
+                    }}
+                  >
+                    {s}
+                    {v?.price && !isSelected && (
+                      <span className="ml-1.5 text-2xs opacity-70">{formatPrice(v.price)}</span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
 
-        {/* Description / Details */}
+        {/* === DESCRIPTION === */}
         {(product as any)?.description && (
-          <>
-            <HorizontalDivider />
-            <div className="px-4 py-3">
-              <div className="text-sm font-semibold mb-2 text-gray-700">Mô tả sản phẩm</div>
-              <p className="text-sm text-gray-500 leading-relaxed">{(product as any).description}</p>
-            </div>
-          </>
-        )}
-
-        {product.details && (
-          <>
-            <div className="bg-section h-2 w-full" />
-            <Collapse items={product.details} />
-          </>
+          <div
+            className="px-4 py-4 mt-2"
+            style={{ background: '#FFFFFF', borderTop: '1px solid rgba(0,0,0,0.04)' }}
+          >
+            <div className="text-sm font-bold text-foreground mb-2">Mô tả sản phẩm</div>
+            <p className="text-sm text-subtitle leading-relaxed">{(product as any).description}</p>
+          </div>
         )}
 
         {/* AI Review Summary */}
@@ -220,38 +259,60 @@ export default function ProductDetailPage() {
         <ProductReviews productId={product.id} />
 
         {/* Related Products */}
-        <div className="bg-section h-2 w-full mt-2" />
-        <div className="font-semibold py-2 px-4">
-          <div className="pt-2 pb-2.5">Sản phẩm tương tự</div>
-          <HorizontalDivider />
+        <div
+          className="mt-2 px-4 pt-4 pb-2"
+          style={{ background: '#FFFFFF', borderTop: '1px solid rgba(0,0,0,0.04)' }}
+        >
+          <div className="text-sm font-bold text-foreground mb-3">Sản phẩm tương tự</div>
+          <RelatedProducts currentProductId={product.id} />
         </div>
-        <RelatedProducts currentProductId={product.id} />
+
+        <div className="h-20" /> {/* Spacer for bottom action bar */}
       </div>
 
-      {/* Bottom Action Bar */}
-      <HorizontalDivider />
-      <div className="flex-none grid grid-cols-2 gap-2 py-3 px-4">
-        <Button
-          large
+      {/* === BOTTOM ACTION BAR === */}
+      <div
+        className="flex-none flex gap-3 px-4 py-3"
+        style={{
+          background: '#FFFFFF',
+          borderTop: '1px solid rgba(0,0,0,0.06)',
+          paddingBottom: 'max(12px, env(safe-area-inset-bottom))',
+        }}
+      >
+        {/* Add to Cart */}
+        <button
           onClick={() => {
             addToCart(1);
             toast.success("Đã thêm vào giỏ hàng 🛍️");
           }}
+          className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm active:scale-95 transition-transform"
+          style={{
+            background: '#F0ECE6',
+            color: '#1a1a2e',
+            border: '1.5px solid rgba(212,175,55,0.2)',
+          }}
         >
+          <ShoppingCart size={16} />
           Thêm vào giỏ
-        </Button>
-        <Button
-          large
-          primary
+        </button>
+
+        {/* Buy Now */}
+        <button
           onClick={() => {
             addToCart(1);
             navigate("/cart");
           }}
+          className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm active:scale-95 transition-transform"
+          style={{
+            background: 'linear-gradient(135deg, #E2D1B3, #D4AF37)',
+            color: '#1a1a2e',
+            boxShadow: '0 4px 16px rgba(212,175,55,0.35)',
+          }}
         >
+          <Zap size={16} />
           Mua ngay
-        </Button>
+        </button>
       </div>
     </div>
   );
 }
-

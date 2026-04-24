@@ -1,19 +1,90 @@
+/* ========================================
+   PerfumeGPT Zalo Mini App - Global Styles
+   ======================================== */
+
+/* Disable text selection on non-input elements */
 :not(input):not(textarea) {
   -webkit-user-select: none;
   user-select: none;
 }
 
+/* Premium toast styling */
 .toast-container {
   > div > div {
     padding: 12px 16px;
-    background-color: #212121;
-    color: #FFFFFFF2;
-    border-radius: 8px;
+    background-color: #1a1a2e;
+    color: rgba(250, 248, 245, 0.95);
+    border-radius: 16px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
   }
 }
 
-.zaui-sheet{
+/* ZaUI Sheet override */
+.zaui-sheet {
   .zaui-sheet-content {
     min-height: unset;
   }
+}
+
+/* Smooth font rendering */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  box-sizing: border-box;
+}
+
+/* Hide scrollbars globally */
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+}
+
+/* Global tap highlight removal */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Body base */
+body {
+  font-family: 'Montserrat', 'Inter', system-ui, sans-serif;
+  background-color: #FAF8F5;
+  color: #0D0D0D;
+  overflow: hidden;
+}
+
+/* Smooth transitions for interactive elements */
+button, a, [role="button"] {
+  transition-property: transform, opacity;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Gold shimmer animation */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+/* Skeleton loading */
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #E8E0D5 25%,
+    #F0ECE6 50%,
+    #E8E0D5 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
 }

@@ -18,8 +18,8 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
         const res: any = await axiosClient.get(`/reviews/product/${productId}?take=5`);
         const items = Array.isArray(res) ? res : (res?.items || res?.data || []);
         setReviews(items);
-      } catch (err) {
-        console.warn("Could not load reviews", err);
+      } catch {
+        // silently fail
       } finally {
         setLoading(false);
       }
@@ -29,12 +29,18 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
 
   if (loading) {
     return (
-      <div className="bg-white px-4 py-6 mt-2 space-y-4 animate-pulse">
-         <div className="h-5 w-32 bg-gray-200 rounded"></div>
-         <div className="space-y-3">
-            <div className="h-16 w-full bg-gray-100 rounded-xl"></div>
-            <div className="h-16 w-full bg-gray-100 rounded-xl"></div>
-         </div>
+      <div className="px-4 pt-4 pb-2 mt-2" style={{ background: '#FFFFFF', borderTop: '1px solid rgba(0,0,0,0.04)' }}>
+        <div className="h-5 w-36 bg-skeleton rounded-lg animate-pulse mb-4" />
+        {[1, 2].map(i => (
+          <div key={i} className="flex gap-3 mb-4 animate-pulse">
+            <div className="w-8 h-8 rounded-full bg-skeleton flex-shrink-0" />
+            <div className="flex-1 space-y-2">
+              <div className="h-3 w-1/3 bg-skeleton rounded" />
+              <div className="h-3 w-full bg-skeleton rounded" />
+              <div className="h-3 w-2/3 bg-skeleton rounded" />
+            </div>
+          </div>
+        ))}
       </div>
     );
   }
@@ -42,58 +48,85 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
   if (reviews.length === 0) return null;
 
   return (
-    <div className="bg-white px-4 py-6 mt-2 border-t border-gray-100">
+    <div className="px-4 pt-4 pb-2 mt-2" style={{ background: '#FFFFFF', borderTop: '1px solid rgba(0,0,0,0.04)' }}>
+      {/* Header */}
       <div className="flex items-center gap-2 mb-4">
-        <MessageSquare size={20} className="text-gray-800" />
-        <h3 className="font-bold text-gray-800">Khách hàng đánh giá</h3>
-        <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs font-semibold">{reviews.length}</span>
+        <MessageSquare size={16} className="text-foreground" />
+        <h3 className="text-sm font-bold text-foreground">Khách hàng đánh giá</h3>
+        <div
+          className="px-2 py-0.5 rounded-full text-2xs font-bold"
+          style={{ background: 'rgba(212,175,55,0.1)', color: '#D4AF37' }}
+        >
+          {reviews.length}
+        </div>
       </div>
 
       <div className="space-y-4">
         {reviews.map((review) => (
-          <div key={review.id} className="border-b border-gray-50 pb-4 last:border-0 last:pb-0">
-            <div className="flex justify-between items-start mb-2">
+          <div
+            key={review.id}
+            className="pb-4"
+            style={{ borderBottom: '1px solid rgba(0,0,0,0.04)' }}
+          >
+            <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
-                   {review.user?.avatarUrl ? (
-                      <img src={review.user.avatarUrl} className="w-full h-full object-cover" />
-                   ) : (
-                      <User size={16} className="text-primary" />
-                   )}
+                <div
+                  className="w-8 h-8 rounded-2xl overflow-hidden flex items-center justify-center flex-shrink-0"
+                  style={{ background: '#F0ECE6' }}
+                >
+                  {review.user?.avatarUrl ? (
+                    <img src={review.user.avatarUrl} className="w-full h-full object-cover" />
+                  ) : (
+                    <User size={14} className="text-inactive" />
+                  )}
                 </div>
                 <div>
-                  <div className="text-xs font-semibold text-gray-800">{review.user?.fullName || "Khách hàng"}</div>
-                  <div className="text-[10px] text-gray-400">{new Date(review.createdAt).toLocaleDateString('vi-VN')}</div>
+                  <div className="text-xs font-semibold text-foreground">
+                    {review.user?.fullName || "Khách hàng"}
+                  </div>
+                  <div className="text-2xs text-inactive">
+                    {new Date(review.createdAt).toLocaleDateString('vi-VN')}
+                  </div>
                 </div>
               </div>
-              <div className="flex gap-0.5 mt-1">
+
+              {/* Stars */}
+              <div className="flex gap-0.5">
                 {[1, 2, 3, 4, 5].map((star) => (
-                  <Star 
-                    key={star} 
-                    size={12} 
-                    className={star <= review.rating ? "fill-warning text-warning" : "text-gray-200"} 
+                  <Star
+                    key={star}
+                    size={11}
+                    className={star <= review.rating ? "fill-gold text-gold" : "text-skeleton"}
                   />
                 ))}
               </div>
             </div>
-            
-            <p className="text-sm text-gray-700 leading-relaxed">
-              {review.content}
-            </p>
 
+            <p className="text-xs text-subtitle leading-relaxed">{review.content}</p>
+
+            {/* Review images */}
             {review.images && review.images.length > 0 && (
-              <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
-                 {review.images.map((img: string, idx: number) => (
-                    <img key={idx} src={img} className="w-16 h-16 rounded-lg object-cover border border-gray-100 flex-shrink-0" />
-                 ))}
+              <div className="flex gap-2 mt-2 overflow-x-auto">
+                {review.images.map((img: string, idx: number) => (
+                  <img
+                    key={idx}
+                    src={img}
+                    className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
+                    style={{ border: '1px solid rgba(0,0,0,0.06)' }}
+                  />
+                ))}
               </div>
             )}
-            
+
+            {/* Seller reply */}
             {review.sellerReply && (
-               <div className="mt-3 bg-gray-50 rounded-xl p-3 text-xs border border-gray-100">
-                  <strong className="text-primary block mb-1">Hệ thống phản hồi:</strong>
-                  <span className="text-gray-600">{review.sellerReply}</span>
-               </div>
+              <div
+                className="mt-2 rounded-xl p-3 text-xs"
+                style={{ background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.15)' }}
+              >
+                <strong className="text-gold block mb-1">PerfumeGPT phản hồi:</strong>
+                <span className="text-subtitle">{review.sellerReply}</span>
+              </div>
             )}
           </div>
         ))}

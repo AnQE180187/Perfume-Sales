@@ -3,14 +3,53 @@
 @tailwind utilities;
 
 :root {
-  --primary: #3459a7;
-  --secondary: #ebedef;
-  --background: #ffffff;
-  --foreground: #0d0d0d;
-  --section: #f7f7f8;
-  --inactive: #a9adb2;
-  --tabIndicator: #212121;
-  --subtitle: #6f7071;
-  --danger: #f50000;
-  --skeleton: #ebedef;
+  /* =====================================================
+     LUXURY PERFUME THEME - Matching Mobile App Design
+     ===================================================== */
+
+  /* Primary Brand Colors */
+  --primary: #1a1a2e;          /* Deep navy - main brand */
+  --primary-light: #2d2d52;
+  --gold: #D4AF37;             /* Classic gold accent */
+  --gold-light: #E2D1B3;       /* Champagne gold */
+  --gold-dark: #B8960C;
+
+  /* Backgrounds */
+  --background: #FAF8F5;       /* Cream white - matches mobile ivoryBackground */
+  --background-ivory: #F5F1ED; /* Ivory - matches mobile creamWhite */
+  --section: #F0ECE6;          /* Slightly darker ivory for section bg */
+  --card: #FFFFFF;
+
+  /* Text */
+  --foreground: #0D0D0D;       /* Deep charcoal - matches mobile deepCharcoal */
+  --subtitle: #6B6B6B;         /* Muted text */
+  --inactive: #A0A0A0;         /* Muted silver - matches mobile mutedSilver */
+
+  /* Borders & Dividers */
+  --border: rgba(0, 0, 0, 0.08);
+  --border-gold: rgba(212, 175, 55, 0.3);
+
+  /* Utility */
+  --danger: #FF453A;
+  --success: #34C759;
+  --skeleton: #E8E0D5;         /* Matches mobile softTaupe */
+  --tabIndicator: #1a1a2e;
+}
+
+/* Smooth transitions on all interactive elements */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Premium scrollbar */
+::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+}
+
+/* Smooth font rendering */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: 'Montserrat', 'Inter', system-ui, sans-serif;
 }

@@ -5,43 +5,31 @@ import { CartItem as CartItemProps } from "@/types";
 import { formatPrice } from "@/utils/format";
 import { animated, useSpring } from "@react-spring/web";
 import { useDrag } from "@use-gesture/react";
-import { RemoveIcon } from "@/components/vectors";
+import { Trash2 } from "lucide-react";
 import { useAtom } from "jotai";
 import { selectedCartItemIdsState } from "@/state";
 import { useMemo, useState } from "react";
 
-const SWIPE_TO_DELTE_OFFSET = 80;
+const SWIPE_TO_DELETE_OFFSET = 76;
 
 export default function CartItem(props: CartItemProps) {
   const [quantity, setQuantity] = useState(props.quantity);
   const { addToCart } = useAddToCart(props.product, props.id);
+  const [selectedItemIds, setSelectedItemIds] = useAtom(selectedCartItemIdsState);
 
-  const [selectedItemIds, setSelectedItemIds] = useAtom(
-    selectedCartItemIdsState
-  );
-
-  const displayOptions = useMemo(
-    () =>
-      Object.entries({
-        Size: props.options.size,
-        Color: props.options.color,
-      })
-        .filter(([_, value]) => value !== undefined)
-        .map(([key, value]) => `${key}: ${value}`)
-        .join(" | "),
+  const variantLabel = useMemo(
+    () => Object.entries({ Size: props.options.size, Color: props.options.color })
+      .filter(([_, v]) => v !== undefined)
+      .map(([k, v]) => v)
+      .join(" · "),
     [props.options]
   );
 
-  // swipe left to delete animation
   const [{ x }, api] = useSpring(() => ({ x: 0 }));
   const bind = useDrag(
     ({ last, offset: [ox] }) => {
       if (last) {
-        if (ox < -SWIPE_TO_DELTE_OFFSET) {
-          api.start({ x: -SWIPE_TO_DELTE_OFFSET });
-        } else {
-          api.start({ x: 0 });
-        }
+        api.start({ x: ox < -SWIPE_TO_DELETE_OFFSET ? -SWIPE_TO_DELETE_OFFSET : 0 });
       } else {
         api.start({ x: Math.min(ox, 0), immediate: true });
       }
@@ -55,70 +43,91 @@ export default function CartItem(props: CartItemProps) {
     }
   );
 
+  const isSelected = selectedItemIds.includes(props.id);
+
   return (
     <div className="relative">
-      <div className="absolute right-0 top-0 bottom-0 w-20 border-t-[0.5px] border-b-[0.5px] border-black/10">
-        <div
-          className="bg-danger text-white/95 w-full h-full flex flex-col space-y-1 justify-center items-center cursor-pointer"
-          onClick={() => addToCart(0)}
-        >
-          <RemoveIcon />
-          <div className="text-2xs font-medium">Xoá</div>
+      {/* Delete reveal */}
+      <div
+        className="absolute right-0 top-0 bottom-0 w-[76px] flex items-center justify-center cursor-pointer"
+        style={{ background: '#FFF0F0' }}
+        onClick={() => addToCart(0)}
+      >
+        <div className="flex flex-col items-center gap-1">
+          <Trash2 size={18} className="text-danger" />
+          <span className="text-2xs font-semibold text-danger">Xoá</span>
         </div>
       </div>
 
+      {/* Main item */}
       <animated.div
         {...bind()}
         style={{ x }}
-        className="bg-white pl-4 flex items-center space-x-4 relative"
+        className="flex items-center gap-3 px-4 py-3"
+        style2={{ background: '#FFFFFF' }}
       >
+        {/* Checkbox */}
         <Checkbox
-          checked={selectedItemIds.includes(props.id)}
+          checked={isSelected}
           onChange={(checked) => {
-            if (checked) {
-              setSelectedItemIds([...selectedItemIds, props.id]);
-            } else {
-              setSelectedItemIds(
-                selectedItemIds.filter((id) => id !== props.id)
-              );
-            }
+            setSelectedItemIds(checked
+              ? [...selectedItemIds, props.id]
+              : selectedItemIds.filter((id) => id !== props.id)
+            );
           }}
         />
-        <img src={props.product.image} className="w-14 h-14 rounded-lg" />
-        <div className="py-4 pr-4 flex-1 border-b-[0.5px] border-black/10">
-          <div className="text-sm">{props.product.name}</div>
-          {displayOptions && (
-            <div className="text-xs text-subtitle mt-0.5">{displayOptions}</div>
+
+        {/* Product image */}
+        <div className="w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0" style={{ background: '#F0ECE6' }}>
+          <img src={props.product.image} className="w-full h-full object-cover" alt={props.product.name} />
+        </div>
+
+        {/* Product info */}
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-semibold text-foreground line-clamp-2 leading-snug">
+            {props.product.name}
+          </div>
+          {variantLabel && (
+            <div
+              className="inline-block text-2xs font-medium px-2 py-0.5 rounded-full mt-1"
+              style={{ background: '#F0ECE6', color: '#6B6B6B' }}
+            >
+              {variantLabel}
+            </div>
           )}
-          <div className="flex items-center py-2 space-x-2">
-            <div className="flex-1 flex flex-wrap items-center space-x-0.5">
-              <div className="text-xs font-medium text-primary">
+
+          <div className="flex items-center justify-between mt-2">
+            {/* Price */}
+            <div>
+              <div className="text-sm font-bold" style={{ color: '#1a1a2e' }}>
                 {formatPrice(props.product.price)}
               </div>
               {props.product.originalPrice && (
-                <div className="line-through text-subtitle text-3xs">
+                <div className="text-2xs text-inactive line-through">
                   {formatPrice(props.product.originalPrice)}
                 </div>
               )}
             </div>
+
+            {/* Quantity */}
             <QuantityInput
               value={quantity}
               onChange={async (value) => {
                 if (value <= 0) {
                   setQuantity(1);
-                  api.start({ x: -SWIPE_TO_DELTE_OFFSET });
+                  api.start({ x: -SWIPE_TO_DELETE_OFFSET });
                 } else {
                   setQuantity(value);
                   await addToCart(value);
-                  if (value > quantity) {
-                    api.start({ x: 0 });
-                  }
                 }
               }}
             />
           </div>
         </div>
       </animated.div>
+
+      {/* Bottom divider */}
+      <div className="mx-4 h-px" style={{ background: 'rgba(0,0,0,0.04)' }} />
     </div>
   );
 }

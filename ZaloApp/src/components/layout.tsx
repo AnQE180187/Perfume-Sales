@@ -37,14 +37,18 @@ export default function Layout() {
 
   if (isInitializing) {
     return (
-      <div className="w-screen h-screen bg-background p-4 flex flex-col">
-        <PageSkeleton />
+      <div className="w-screen h-screen p-4 flex flex-col items-center justify-center" style={{ background: '#FAF8F5' }}>
+        <div
+          className="w-12 h-12 rounded-full border-2 animate-spin mb-4"
+          style={{ borderColor: 'rgba(212,175,55,0.2)', borderTopColor: '#D4AF37' }}
+        />
+        <div className="text-sm font-medium" style={{ color: '#D4AF37', fontFamily: "'Playfair Display', serif" }}>PerfumeGPT</div>
       </div>
     );
   }
 
   return (
-    <div className="w-screen h-screen flex flex-col bg-background text-foreground">
+    <div className="w-screen h-screen flex flex-col text-foreground" style={{ background: '#FAF8F5' }}>
       <Header />
       <div className="flex-1 overflow-y-auto">
         <Suspense fallback={<PageSkeleton />}>

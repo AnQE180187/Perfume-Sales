@@ -7,7 +7,7 @@ export const authService = {
    * and sends them to the backend to create/link our system JWT.
    */
   async loginWithEmail(email: string, password: string):Promise<any> {
-    const data = await axiosClient.post('/auth/login', { email, password });
+    const data: any = await axiosClient.post('/auth/login', { email, password });
     if (data && data.accessToken) {
       setAccessToken(data.accessToken);
       if (data.refreshToken) {
@@ -20,7 +20,7 @@ export const authService = {
 
   async registerWithEmail(payload: {email: string, password: string, fullName: string, phone?: string}):Promise<any> {
     // Usually register endpoint returns user details or we might need to login after
-    const data = await axiosClient.post('/auth/register', payload);
+    const data: any = await axiosClient.post('/auth/register', payload);
     // If backend auto logs in:
     if (data && data.accessToken) {
       setAccessToken(data.accessToken);
@@ -33,9 +33,38 @@ export const authService = {
     return data;
   },
 
-  // Keep existing Zalo login but it won't be used
-  async login(): Promise<any> {
-    throw new Error('Zalo login is disabled temporarily.');
+  async loginZalo(): Promise<any> {
+    try {
+      // Đảm bảo session đã được khởi tạo
+      await login({});
+      // Gọi Zalo SDK lấy thông tin người dùng
+      const zaloUser = await getUserInfo({ avatarType: "normal" });
+      const { id, name, avatar } = zaloUser.userInfo;
+      const token = await getAccessToken();
+
+      // Gửi thông tin lên backend để tạo/liên kết tài khoản
+      const payload = {
+        provider: 'zalo',
+        providerId: id,
+        fullName: name,
+        avatarUrl: avatar,
+        token: token,
+      };
+
+      const data: any = await axiosClient.post('/auth/social-login', payload);
+
+      if (data && data.accessToken) {
+        setAccessToken(data.accessToken);
+        if (data.refreshToken) {
+          localStorage.setItem('refreshToken', data.refreshToken);
+        }
+        return data.user;
+      }
+      return null;
+    } catch (error: any) {
+      console.error("Zalo Login Error:", error);
+      throw error;
+    }
   },
 
   /**
@@ -46,7 +75,7 @@ export const authService = {
     const refreshToken = localStorage.getItem('refreshToken');
     if (!refreshToken) return null;
     try {
-      const data = await axiosClient.post('/auth/refresh', { refreshToken });
+      const data: any = await axiosClient.post('/auth/refresh', { refreshToken });
       if (data && data.accessToken) {
         setAccessToken(data.accessToken);
         if (data.refreshToken) {

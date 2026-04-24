@@ -7,12 +7,16 @@ import axiosClient from "@/services/axiosClient";
 
 import { authService } from "./services/auth.service";
 
-// Zalo's built-in User Info
-export const userState = atom(() =>
-  getUserInfo({
-    avatarType: "normal",
-  })
-);
+export const userState = atom(async () => {
+  try {
+    return await getUserInfo({
+      avatarType: "normal",
+    });
+  } catch (err) {
+    console.warn("Zalo getUserInfo failed (often due to unactivated device or dev mode):", err);
+    return { userInfo: {} };
+  }
+});
 
 // Backend system's User Info (from Prisma)
 export const systemUserState = atom<any | null>(null);

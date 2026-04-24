@@ -2,6 +2,7 @@ import Layout from "@/components/layout";
 import CartPage from "@/pages/cart";
 import PaymentResultPage from "@/pages/cart/payment-result";
 import ProductListPage from "@/pages/catalog/product-list";
+import CatalogPage from "@/pages/catalog/index";
 import CategoryListPage from "@/pages/catalog/category-list";
 import ProductDetailPage from "@/pages/catalog/product-detail";
 import HomePage from "@/pages/home";
@@ -87,6 +88,14 @@ const router = createBrowserRouter(
           element: <ProductListPage />,
           handle: {
             title: "Bộ sưu tập nước hoa",
+          },
+        },
+        {
+          path: "/catalog",
+          element: <CatalogPage />,
+          handle: {
+            title: "Bộ sưu tập nước hoa",
+            back: false,
           },
         },
         {

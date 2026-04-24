@@ -1,50 +1,49 @@
-import HorizontalDivider from "@/components/horizontal-divider";
-import { Package } from "lucide-react";
 import TransitionLink from "@/components/transition-link";
+import { Package, ChevronRight, RefreshCw, X, Truck } from "lucide-react";
 import { useEffect, useState } from "react";
 import axiosClient from "@/services/axiosClient";
 import toast from "react-hot-toast";
+import { formatPrice } from "@/utils/format";
 
-const ORDER_STATUS_LABEL: Record<string, string> = {
-  PENDING: "Chờ xác nhận",
-  CONFIRMED: "Đã xác nhận",
-  PROCESSING: "Đang xử lý",
-  SHIPPED: "Đang giao",
-  COMPLETED: "Hoàn tất",
-  CANCELLED: "Đã hủy",
+const ORDER_STATUS: Record<string, { label: string; color: string; bg: string }> = {
+  PENDING:    { label: "Chờ xác nhận", color: "#D4AF37", bg: "rgba(212,175,55,0.1)" },
+  CONFIRMED:  { label: "Đã xác nhận",  color: "#007AFF", bg: "rgba(0,122,255,0.1)" },
+  PROCESSING: { label: "Đang xử lý",   color: "#FF9500", bg: "rgba(255,149,0,0.1)" },
+  SHIPPED:    { label: "Đang giao",     color: "#5856D6", bg: "rgba(88,86,214,0.1)" },
+  COMPLETED:  { label: "Hoàn tất",      color: "#34C759", bg: "rgba(52,199,89,0.1)" },
+  CANCELLED:  { label: "Đã hủy",        color: "#FF453A", bg: "rgba(255,69,58,0.1)" },
 };
 
-const PAYMENT_STATUS_LABEL: Record<string, string> = {
+const PAYMENT_STATUS: Record<string, string> = {
   PENDING: "Chưa thanh toán",
   PAID: "Đã thanh toán",
   FAILED: "Thanh toán lỗi",
   REFUNDED: "Đã hoàn tiền",
-  PARTIALLY_REFUNDED: "Hoàn tiền một phần",
 };
+
+const STATUS_TABS = ["ALL", "PENDING", "CONFIRMED", "SHIPPED", "COMPLETED", "CANCELLED"];
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [syncingId, setSyncingId] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [statusFilter, setStatusFilter] = useState("ALL");
 
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const res = await axiosClient.get("/orders");
+      const res: any = await axiosClient.get("/orders");
       const items = Array.isArray(res) ? res : res?.data || res?.items || res?.orders || [];
       setOrders(items);
-    } catch (err) {
+    } catch {
       toast.error("Không thể tải danh sách đơn hàng");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchOrders();
-  }, []);
+  useEffect(() => { fetchOrders(); }, []);
 
   const handleCancel = async (orderId: string) => {
     try {
@@ -53,8 +52,7 @@ export default function OrdersPage() {
       toast.success("Đã hủy đơn hàng");
       await fetchOrders();
     } catch (error: any) {
-      const message = error?.message || error?.response?.data?.message;
-      toast.error(typeof message === "string" ? message : "Không thể hủy đơn hàng");
+      toast.error(error?.message || "Không thể hủy đơn hàng");
     } finally {
       setCancellingId(null);
     }
@@ -65,7 +63,7 @@ export default function OrdersPage() {
       setSyncingId(orderId);
       await axiosClient.get(`/payments/verify-sync/${orderId}`);
       await fetchOrders();
-      toast.success("Đã kiểm tra trạng thái thanh toán");
+      toast.success("Đã đồng bộ trạng thái thanh toán");
     } catch {
       toast.error("Không thể đồng bộ thanh toán");
     } finally {
@@ -73,123 +71,194 @@ export default function OrdersPage() {
     }
   };
 
+  const filteredOrders = orders.filter((o: any) =>
+    statusFilter === "ALL" || o.status === statusFilter
+  );
+
   return (
-    <div className="min-h-full bg-section">
-      <div className="bg-white p-4 text-lg font-bold flex gap-2 items-center">
-        <Package size={24} className="text-primary" />
-        Lịch sử đơn hàng
-      </div>
-      <HorizontalDivider />
-      <div className="px-4 pt-3 flex gap-2 overflow-x-auto">
-        {["ALL", "PENDING", "CONFIRMED", "SHIPPED", "COMPLETED", "CANCELLED"].map((status) => (
-          <button
-            key={status}
-            onClick={() => setStatusFilter(status)}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap ${
-              statusFilter === status ? "bg-primary text-white" : "bg-white border text-gray-600"
-            }`}
-          >
-            {status === "ALL" ? "Tất cả" : ORDER_STATUS_LABEL[status] || status}
-          </button>
-        ))}
+    <div className="min-h-full" style={{ background: '#FAF8F5' }}>
+      {/* Status filter tabs */}
+      <div className="px-4 pt-3 pb-2">
+        <div
+          className="flex gap-2 overflow-x-auto pb-1"
+          style={{ scrollbarWidth: 'none' }}
+        >
+          {STATUS_TABS.map((s) => {
+            const info = ORDER_STATUS[s];
+            const isActive = statusFilter === s;
+            return (
+              <button
+                key={s}
+                onClick={() => setStatusFilter(s)}
+                className="flex-none px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap active:scale-95 transition-all"
+                style={isActive ? {
+                  background: s === "ALL"
+                    ? 'linear-gradient(135deg, #1a1a2e, #2d2d52)'
+                    : info?.bg,
+                  color: s === "ALL" ? '#FAF8F5' : info?.color,
+                  border: `1px solid ${s === "ALL" ? 'transparent' : info?.color + '40'}`,
+                } : {
+                  background: '#FFFFFF',
+                  color: '#6B6B6B',
+                  border: '1px solid rgba(0,0,0,0.08)',
+                }}
+              >
+                {s === "ALL" ? "Tất cả" : info?.label || s}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      <div className="p-4 space-y-4">
+      {/* Order list */}
+      <div className="px-4 space-y-3 pb-6">
         {loading ? (
-           <div className="text-center py-10 text-gray-500">Đang tải đơn hàng...</div>
-        ) : orders.length === 0 ? (
-          <div className="text-center py-10 text-gray-500">
-            Bạn chưa có đơn hàng nào
+          Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="rounded-3xl p-4 animate-pulse" style={{ background: '#FFFFFF', height: '160px' }} />
+          ))
+        ) : filteredOrders.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <Package size={48} className="text-skeleton mb-4" />
+            <div className="text-base font-bold text-foreground mb-1">Không có đơn hàng</div>
+            <p className="text-xs text-subtitle">
+              {statusFilter === "ALL" ? "Bạn chưa có đơn hàng nào." : `Không có đơn hàng ở trạng thái này.`}
+            </p>
           </div>
         ) : (
-          orders
-            .filter((order: any) => statusFilter === "ALL" || order.status === statusFilter)
-            .map((order: any) => (
-            <div key={order.id} className="bg-white rounded-xl p-4 border shadow-sm relative overflow-hidden">
-              <div className="flex justify-between items-center mb-3 border-b border-dashed pb-3">
-                <div className="font-semibold text-gray-800">Mã: #{(order.code || order.id)?.slice(0, 8).toUpperCase()}</div>
-                <div className={`px-2 py-1 rounded text-xs font-semibold ${
-                  order.status === 'COMPLETED' ? 'bg-green-100 text-green-700' :
-                  order.status === 'CANCELLED' ? 'bg-red-100 text-red-700' : 
-                  'bg-blue-100 text-blue-700'
-                }`}>
-                  {ORDER_STATUS_LABEL[order.status] || order.status}
-                </div>
-              </div>
-              
-              {/* Order Content */}
-              <div className="space-y-3 mb-3">
-                {order.items && order.items.map((item: any) => (
-                   <div key={item.id} className="flex gap-3 items-center">
-                     <div className="w-12 h-12 bg-gray-100 rounded-md overflow-hidden">
-                        <img src={item.product?.images?.[0]?.url || item.product?.image || 'https://file.hstatic.net/1000388226/file/nuoc-hoa-thu-hut-phai-dep.jpg'} className="w-full h-full object-cover" />
-                     </div>
-                     <div className="flex-1">
-                        <p className="text-sm font-semibold truncate max-w-[200px]">{item.product?.name || 'Sản phẩm'}</p>
-                        <p className="text-xs text-gray-500">{item.variant?.name || item.variant?.volume + "ml"} - Số lượng: {item.quantity}</p>
-                     </div>
-                     <div className="font-semibold text-sm">{Number(item.price).toLocaleString()}đ</div>
-                   </div>
-                ))}
-              </div>
-
-              {order.shippingProvider && (
-                <div className="bg-gray-50 p-2 rounded-lg text-xs mb-3 text-gray-600 flex justify-between items-center">
-                  <span>Giao bởi: <strong className="text-gray-800">{order.shippingProvider}</strong></span>
-                  {order.trackingNumber && <span>Mã vận đơn: <strong className="text-primary">{order.trackingNumber}</strong></span>}
-                </div>
-              )}
-
-              <div className="text-xs text-gray-500 mb-2">Ngày đặt: {new Date(order.createdAt).toLocaleDateString("vi-VN")}</div>
-              <div className="text-xs text-gray-500 mb-2">
-                Thanh toán: <span className="font-medium">{PAYMENT_STATUS_LABEL[order.paymentStatus] || order.paymentStatus || "N/A"}</span>
-              </div>
-              
-              <div className="flex justify-between items-center pt-3 border-t">
-                <div className="text-gray-500 text-sm">Tổng tiền</div>
-                <div className="font-bold text-primary text-lg">{Number(order.totalAmount || 0).toLocaleString()}đ</div>
-              </div>
-              <TransitionLink
-                to={`/orders/${order.id}`}
-                className="mt-3 block w-full text-center border border-primary/20 text-primary text-sm font-semibold py-2 rounded-lg"
+          filteredOrders.map((order: any) => {
+            const statusInfo = ORDER_STATUS[order.status] || { label: order.status, color: '#6B6B6B', bg: '#F0ECE6' };
+            return (
+              <div
+                key={order.id}
+                className="rounded-3xl overflow-hidden"
+                style={{
+                  background: '#FFFFFF',
+                  border: '1px solid rgba(0,0,0,0.06)',
+                  boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+                }}
               >
-                Xem chi tiết
-              </TransitionLink>
-              {!!order.returnRequests?.length && (
-                <TransitionLink
-                  to={`/returns/${order.returnRequests[0].id}`}
-                  className="mt-2 block w-full text-center border border-amber-200 text-amber-700 text-sm font-semibold py-2 rounded-lg"
+                {/* Header */}
+                <div
+                  className="flex items-center justify-between px-4 py-3"
+                  style={{ borderBottom: '1px solid rgba(0,0,0,0.04)' }}
                 >
-                  Xem yêu cầu trả hàng
-                </TransitionLink>
-              )}
-              {order.paymentStatus === "PENDING" && order.status !== "CANCELLED" && (
-                <button
-                  onClick={() => handleSyncPayment(order.id)}
-                  disabled={syncingId === order.id}
-                  className="mt-2 w-full border border-blue-200 text-blue-600 text-sm font-semibold py-2 rounded-lg disabled:opacity-60"
-                >
-                  {syncingId === order.id ? "Đang kiểm tra..." : "Kiểm tra thanh toán"}
-                </button>
-              )}
-              {["PENDING", "CONFIRMED", "PROCESSING"].includes(order.status) && (
-                <button
-                  onClick={() => handleCancel(order.id)}
-                  disabled={cancellingId === order.id}
-                  className="mt-3 w-full border border-red-200 text-red-600 text-sm font-semibold py-2 rounded-lg disabled:opacity-60"
-                >
-                  {cancellingId === order.id ? "Đang hủy..." : "Hủy đơn hàng"}
-                </button>
-              )}
-            </div>
-          ))
-        )}
-      </div>
+                  <div className="flex items-center gap-2">
+                    <Package size={14} className="text-inactive" />
+                    <span className="text-xs font-bold text-foreground">
+                      #{(order.code || order.id)?.slice(0, 8).toUpperCase()}
+                    </span>
+                  </div>
+                  <div
+                    className="px-2.5 py-1 rounded-full text-2xs font-bold"
+                    style={{ background: statusInfo.bg, color: statusInfo.color }}
+                  >
+                    {statusInfo.label}
+                  </div>
+                </div>
 
-      <div className="px-4 pb-4">
-        <TransitionLink to="/profile" className="block text-center text-primary font-medium py-3 rounded-xl bg-primary/10">
-          Quay lại Hồ sơ
-        </TransitionLink>
+                {/* Items preview */}
+                <div className="px-4 py-3 space-y-2.5">
+                  {order.items?.slice(0, 2).map((item: any) => (
+                    <div key={item.id} className="flex gap-3 items-center">
+                      <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0" style={{ background: '#F0ECE6' }}>
+                        <img
+                          src={item.product?.images?.[0]?.url || item.product?.image || 'https://file.hstatic.net/1000388226/file/nuoc-hoa-thu-hut-phai-dep.jpg'}
+                          className="w-full h-full object-cover"
+                          alt={item.product?.name}
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-semibold text-foreground truncate">{item.product?.name}</div>
+                        <div className="text-2xs text-subtitle">
+                          {item.variant?.name || (item.variant?.volume && `${item.variant.volume}ml`)} · x{item.quantity}
+                        </div>
+                      </div>
+                      <div className="text-xs font-bold text-foreground">{formatPrice(Number(item.price))}</div>
+                    </div>
+                  ))}
+                  {order.items?.length > 2 && (
+                    <div className="text-2xs text-subtitle">+{order.items.length - 2} sản phẩm khác</div>
+                  )}
+                </div>
+
+                {/* Shipping info */}
+                {order.shippingProvider && (
+                  <div
+                    className="mx-4 px-3 py-2 rounded-xl mb-3 flex items-center gap-2"
+                    style={{ background: '#F0ECE6' }}
+                  >
+                    <Truck size={12} className="text-subtitle flex-shrink-0" />
+                    <span className="text-2xs text-subtitle">
+                      {order.shippingProvider}
+                      {order.trackingNumber && ` · ${order.trackingNumber}`}
+                    </span>
+                  </div>
+                )}
+
+                {/* Footer: total + date */}
+                <div
+                  className="px-4 py-3"
+                  style={{ borderTop: '1px solid rgba(0,0,0,0.04)' }}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <div className="text-2xs text-subtitle">
+                        {new Date(order.createdAt).toLocaleDateString("vi-VN")} · {PAYMENT_STATUS[order.paymentStatus] || order.paymentStatus}
+                      </div>
+                    </div>
+                    <div
+                      className="text-base font-black"
+                      style={{ fontFamily: "'Playfair Display', serif", color: '#1a1a2e' }}
+                    >
+                      {formatPrice(Number(order.totalAmount || 0))}
+                    </div>
+                  </div>
+
+                  {/* Action buttons */}
+                  <div className="flex gap-2">
+                    <TransitionLink
+                      to={`/orders/${order.id}`}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-xs font-bold active:scale-95 transition-transform"
+                      style={{
+                        background: 'linear-gradient(135deg, #E2D1B3, #D4AF37)',
+                        color: '#1a1a2e',
+                      }}
+                    >
+                      {() => (
+                        <>
+                          Chi tiết
+                          <ChevronRight size={13} />
+                        </>
+                      )}
+                    </TransitionLink>
+
+                    {order.paymentStatus === "PENDING" && order.status !== "CANCELLED" && (
+                      <button
+                        onClick={() => handleSyncPayment(order.id)}
+                        disabled={syncingId === order.id}
+                        className="px-3 py-2.5 rounded-2xl text-xs font-bold disabled:opacity-60 active:scale-95 transition-transform"
+                        style={{ background: '#F0ECE6', color: '#1a1a2e' }}
+                      >
+                        {syncingId === order.id ? <RefreshCw size={13} className="animate-spin" /> : "Xác nhận TT"}
+                      </button>
+                    )}
+
+                    {["PENDING", "CONFIRMED", "PROCESSING"].includes(order.status) && (
+                      <button
+                        onClick={() => handleCancel(order.id)}
+                        disabled={cancellingId === order.id}
+                        className="px-3 py-2.5 rounded-2xl text-xs font-bold disabled:opacity-60 active:scale-95 transition-transform"
+                        style={{ background: 'rgba(255,69,58,0.1)', color: '#FF453A' }}
+                      >
+                        {cancellingId === order.id ? <RefreshCw size={13} className="animate-spin" /> : <X size={13} />}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
     </div>
   );
