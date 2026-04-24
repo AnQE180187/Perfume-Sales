@@ -2222,11 +2222,6 @@
               "DAMAGE": "Hàng hóa hư hỏng"
             }
           },
-          "returns": {
-            "details": {
-              "confirm_handover": "Xác nhận đã bàn giao hàng"
-            }
-          },
           "notifications": {
             "title": "Thông Báo",
             "subtitle": "Cập nhật mới nhất về đơn hàng và ưu đãi dành cho bạn.",
@@ -2244,6 +2239,9 @@
             }
           },
           "returns": {
+            "details": {
+              "confirm_handover": "Xác nhận đã bàn giao hàng"
+            },
             "create_modal": {
               "title": "Tạo Yêu Cầu Đổi Trả",
               "subtitle": "Cung cấp thông tin để chúng tôi xử lý yêu cầu của bạn nhanh chóng.",

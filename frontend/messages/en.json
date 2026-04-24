@@ -2188,11 +2188,6 @@
               "DAMAGE": "Package Damaged"
             }
           },
-          "returns": {
-            "details": {
-              "confirm_handover": "Confirm Handover"
-            }
-          },
           "notifications": {
             "title": "Notifi{italic}",
             "subtitle": "Monitor your acquisitions, incentives, and account resonance.",
@@ -2203,13 +2198,16 @@
             "load_more": "Load More Transcripts",
             "time": {
               "just_now": "Just now",
-            "mins_ago": "{count} minutes ago",
+              "mins_ago": "{count} minutes ago",
               "hours_ago": "{count} hours ago",
               "yesterday": "Yesterday",
               "days_ago": "{count} days ago"
             }
           },
           "returns": {
+            "details": {
+              "confirm_handover": "Confirm Handover"
+            },
             "create_modal": {
               "title": "Create Return Request",
               "subtitle": "Provide information for us to process your request quickly.",
