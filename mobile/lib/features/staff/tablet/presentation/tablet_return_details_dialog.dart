@@ -406,6 +406,19 @@ class _TabletReturnDetailsDialogState extends ConsumerState<TabletReturnDetailsD
             onTap: () => _shipBackAutomated(data),
             isMobile: isMobile,
           ),
+
+        if (status == 'COMPLETED') ...[
+          if ((data['refunds'] as List? ?? []).any((r) => r['receiptImage'] != null))
+            _buildActionButton(
+              label: "XEM MINH CHỨNG",
+              icon: Icons.receipt_long_outlined,
+              onTap: () {
+                final refund = (data['refunds'] as List).firstWhere((r) => r['receiptImage'] != null);
+                _showProofImage(refund['receiptImage']);
+              },
+              isMobile: isMobile,
+            ),
+        ],
         
         if (!isMobile) const Spacer(),
         if (isMobile) const SizedBox(height: 24),
@@ -532,6 +545,40 @@ class _TabletReturnDetailsDialogState extends ConsumerState<TabletReturnDetailsD
         );
       }
     }
+  }
+  void _showProofImage(String url) {
+    final normalizedUrl = url.startsWith('http') ? url : '${EnvConfig.apiBaseUrl}$url';
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              title: Text("MINH CHỨNG HOÀN TIỀN", style: GoogleFonts.montserrat(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
+              leading: IconButton(icon: const Icon(Icons.close, color: Colors.white), onPressed: () => Navigator.pop(ctx)),
+            ),
+            Flexible(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.network(
+                  normalizedUrl,
+                  fit: BoxFit.contain,
+                  loadingBuilder: (ctx, child, progress) {
+                    if (progress == null) return child;
+                    return const Center(child: CircularProgressIndicator(color: AppTheme.accentGold));
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
   }
 }
 

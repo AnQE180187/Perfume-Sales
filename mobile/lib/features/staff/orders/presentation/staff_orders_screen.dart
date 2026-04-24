@@ -192,48 +192,70 @@ class _StaffOrdersScreenState extends ConsumerState<StaffOrdersScreen> {
     final paidCount = state.orders.where((o) => o.paymentStatus == 'PAID').length;
 
     return Container(
-      margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      margin: const EdgeInsets.fromLTRB(20, 0, 20, 24),
       decoration: BoxDecoration(
-        color: AppTheme.accentGold.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.accentGold.withOpacity(0.1)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _DashboardItem(
-            label: "TỔNG DOANH THU",
-            value: "${_currencyFmt.format(totalRevenue)}đ",
-            icon: Icons.payments_outlined,
-            isGold: true,
-          ),
-          _buildDivider(),
-          _DashboardItem(
-            label: "SỐ ĐƠN HÀNG",
-            value: "${state.total}",
-            icon: Icons.receipt_long_outlined,
-          ),
-          _buildDivider(),
-          _DashboardItem(
-            label: "ĐÃ THANH TOÁN",
-            value: "$paidCount",
-            icon: Icons.check_circle_outline_rounded,
-            color: Colors.greenAccent,
-          ),
-          _buildDivider(),
-          _DashboardItem(
-            label: "CHỜ THANH TOÁN",
-            value: "$pendingCount",
-            icon: Icons.hourglass_empty_rounded,
-            color: Colors.orangeAccent,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.15)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.4),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
         ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppTheme.accentGold.withValues(alpha: 0.08),
+                Colors.white.withValues(alpha: 0.02),
+              ],
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _DashboardItem(
+                label: "TỔNG DOANH THU",
+                value: "${_currencyFmt.format(totalRevenue)}đ",
+                icon: Icons.auto_graph_rounded,
+                isGold: true,
+              ),
+              _buildDivider(),
+              _DashboardItem(
+                label: "SỐ ĐƠN HÀNG",
+                value: "${state.total}",
+                icon: Icons.receipt_long_rounded,
+              ),
+              _buildDivider(),
+              _DashboardItem(
+                label: "ĐÃ THANH TOÁN",
+                value: "$paidCount",
+                icon: Icons.verified_rounded,
+                color: const Color(0xFF4CAF50),
+              ),
+              _buildDivider(),
+              _DashboardItem(
+                label: "CHỜ THANH TOÁN",
+                value: "$pendingCount",
+                icon: Icons.pending_actions_rounded,
+                color: const Color(0xFFFF9800),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildDivider() => Container(width: 1, height: 32, color: Colors.white.withOpacity(0.05));
+  Widget _buildDivider() => Container(width: 1, height: 40, color: Colors.white10);
 
   Widget _buildSliverBody(OrdersState state, AppLocalizations l10n) {
     if (state.isLoading) {
@@ -348,9 +370,9 @@ class _StaffOrdersScreenState extends ConsumerState<StaffOrdersScreen> {
             child: Container(
               height: 48,
               decoration: BoxDecoration(
-                color: const Color(0xFF151515),
+                color: Colors.white.withValues(alpha: 0.03),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white.withOpacity(0.1)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
               ),
               child: TextField(
                 controller: _searchController,
@@ -358,13 +380,14 @@ class _StaffOrdersScreenState extends ConsumerState<StaffOrdersScreen> {
                 style: GoogleFonts.montserrat(fontSize: 13, color: Colors.white),
                 decoration: InputDecoration(
                   hintText: l10n.searchOrdersHint,
-                  hintStyle: GoogleFonts.montserrat(fontSize: 13, color: Colors.white38),
-                  prefixIcon: const Icon(Icons.search_rounded, color: Colors.white38, size: 20),
+                  hintStyle: GoogleFonts.montserrat(fontSize: 13, color: Colors.white24),
+                  prefixIcon: const Icon(Icons.search_rounded, color: Colors.white24, size: 20),
                   border: InputBorder.none,
+                  filled: false,
                   contentPadding: const EdgeInsets.symmetric(vertical: 12),
                   suffixIcon: _searchController.text.isNotEmpty
                       ? IconButton(
-                          icon: const Icon(Icons.clear_rounded, size: 18, color: Colors.white38),
+                          icon: const Icon(Icons.clear_rounded, size: 18, color: Colors.white24),
                           onPressed: () {
                             _searchController.clear();
                             _onSearch('');
@@ -449,13 +472,33 @@ class _StaffOrdersScreenState extends ConsumerState<StaffOrdersScreen> {
   _PayBadge _paymentBadge(String status, AppLocalizations l10n) {
     switch (status) {
       case 'PAID':
-        return _PayBadge(label: l10n.statusPaid, color: Colors.green.shade600, icon: Icons.check_circle_rounded);
+        return _PayBadge(
+          label: l10n.statusPaid, 
+          color: const Color(0xFF4CAF50), 
+          icon: Icons.verified_rounded,
+          bgColor: const Color(0xFF4CAF50).withValues(alpha: 0.1),
+        );
       case 'PENDING':
-        return _PayBadge(label: l10n.statusPendingPayment, color: Colors.orange.shade600, icon: Icons.hourglass_empty_rounded);
+        return _PayBadge(
+          label: l10n.statusPendingPayment, 
+          color: const Color(0xFFFF9800), 
+          icon: Icons.pending_rounded,
+          bgColor: const Color(0xFFFF9800).withValues(alpha: 0.1),
+        );
       case 'FAILED':
-        return _PayBadge(label: l10n.statusCancelled, color: Colors.red.shade600, icon: Icons.cancel_rounded);
+        return _PayBadge(
+          label: l10n.statusCancelled, 
+          color: const Color(0xFFE57373), 
+          icon: Icons.cancel_rounded,
+          bgColor: const Color(0xFFE57373).withValues(alpha: 0.1),
+        );
       default:
-        return _PayBadge(label: status, color: AppTheme.mutedSilver, icon: Icons.help_outline_rounded);
+        return _PayBadge(
+          label: status, 
+          color: AppTheme.mutedSilver, 
+          icon: Icons.help_outline_rounded,
+          bgColor: Colors.white10,
+        );
     }
   }
 }
@@ -537,18 +580,26 @@ class _OrderDetailSheet extends ConsumerWidget {
     bool isCancelled = order.status == 'CANCELLED';
     bool isPaid = order.paymentStatus == 'PAID';
     
-    return Row(
-      children: [
-        _TimelineStep(title: "Khởi tạo", isComplete: true, time: DateFormat('HH:mm').format(order.createdAt.toLocal())),
-        _TimelineConnector(isComplete: isPaid || isCancelled),
-        _TimelineStep(
-          title: isPaid ? "Thanh toán" : (isCancelled ? "Đã huỷ" : "Chờ xử lý"), 
-          isComplete: isPaid || isCancelled,
-          isAlert: isCancelled,
-        ),
-        _TimelineConnector(isComplete: isPaid && !isCancelled),
-        _TimelineStep(title: "Hoàn tất", isComplete: isPaid && !isCancelled, last: true),
-      ],
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.02),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+      ),
+      child: Row(
+        children: [
+          _TimelineStep(title: "Khởi tạo", isComplete: true, time: DateFormat('HH:mm').format(order.createdAt.toLocal())),
+          _TimelineConnector(isComplete: isPaid || isCancelled),
+          _TimelineStep(
+            title: isPaid ? "Thanh toán" : (isCancelled ? "Đã huỷ" : "Chờ xử lý"), 
+            isComplete: isPaid || isCancelled,
+            isAlert: isCancelled,
+          ),
+          _TimelineConnector(isComplete: isPaid && !isCancelled),
+          _TimelineStep(title: "Hoàn tất", isComplete: isPaid && !isCancelled, last: true),
+        ],
+      ),
     );
   }
 
@@ -556,36 +607,43 @@ class _OrderDetailSheet extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("THÔNG TIN KHÁCH HÀNG", style: GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.white38, letterSpacing: 1.5)),
+        _SectionHeader(title: "THÔNG TIN KHÁCH HÀNG"),
         const SizedBox(height: 16),
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.02),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withOpacity(0.05)),
+            color: Colors.white.withValues(alpha: 0.03),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
           ),
           child: Row(
             children: [
               Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(color: AppTheme.accentGold.withOpacity(0.1), shape: BoxShape.circle),
-                child: const Icon(Icons.person_outline_rounded, color: AppTheme.accentGold, size: 20),
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppTheme.accentGold.withValues(alpha: 0.2), AppTheme.accentGold.withValues(alpha: 0.05)],
+                  ),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.person_rounded, color: AppTheme.accentGold, size: 24),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(order.user?.fullName ?? order.phone ?? l10n.guest, style: GoogleFonts.montserrat(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.white)),
+                    Text(order.user?.fullName ?? order.phone ?? l10n.guest, 
+                      style: GoogleFonts.montserrat(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white)),
                     const SizedBox(height: 4),
-                    Text(order.user?.phone ?? order.phone ?? 'Không có số điện thoại', style: GoogleFonts.montserrat(fontSize: 12, color: Colors.white38, fontWeight: FontWeight.w500)),
+                    Text(order.user?.phone ?? order.phone ?? 'Không có số điện thoại', 
+                      style: GoogleFonts.robotoMono(fontSize: 12, color: Colors.white38, fontWeight: FontWeight.w500)),
                   ],
                 ),
               ),
               if (order.user?.email != null)
-                const Icon(Icons.verified_user_outlined, size: 16, color: Colors.greenAccent),
+                const Icon(Icons.verified_user_rounded, size: 20, color: Colors.greenAccent),
             ],
           ),
         ),
@@ -879,46 +937,7 @@ class _OrderDetailSheet extends ConsumerWidget {
   }
 }
 
-class _DashboardItem extends StatelessWidget {
-  final String label;
-  final String value;
-  final IconData icon;
-  final bool isGold;
-  final Color? color;
 
-  const _DashboardItem({
-    required this.label,
-    required this.value,
-    required this.icon,
-    this.isGold = false,
-    this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 10, color: Colors.white38),
-            const SizedBox(width: 6),
-            Text(label, style: GoogleFonts.montserrat(fontSize: 9, color: Colors.white38, fontWeight: FontWeight.w800, letterSpacing: 1.5)),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: GoogleFonts.montserrat(
-            fontSize: 16,
-            fontWeight: FontWeight.w800,
-            color: isGold ? AppTheme.accentGold : (color ?? Colors.white70),
-          ),
-        ),
-      ],
-    );
-  }
-}
 
 class _TotalBadge extends StatelessWidget {
   final int count;
@@ -1111,7 +1130,8 @@ class _PayBadge {
   final String label;
   final Color color;
   final IconData icon;
-  const _PayBadge({required this.label, required this.color, required this.icon});
+  final Color bgColor;
+  const _PayBadge({required this.label, required this.color, required this.icon, required this.bgColor});
 }
 
 class _HoverableOrderCard extends StatefulWidget {
@@ -1151,15 +1171,23 @@ class _HoverableOrderCardState extends State<_HoverableOrderCard> {
       child: GestureDetector(
         onTap: widget.onTap,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          duration: const Duration(milliseconds: 300),
+          margin: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
           decoration: BoxDecoration(
-            color: _isHovered ? Colors.white.withOpacity(0.04) : Colors.white.withOpacity(0.02),
-            borderRadius: BorderRadius.circular(16),
+            color: _isHovered ? Colors.white.withValues(alpha: 0.05) : Colors.white.withValues(alpha: 0.02),
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: _isHovered ? AppTheme.accentGold.withOpacity(0.3) : Colors.white.withOpacity(0.05),
+              color: _isHovered ? AppTheme.accentGold.withValues(alpha: 0.3) : Colors.white.withValues(alpha: 0.05),
+              width: 0.8,
             ),
+            boxShadow: _isHovered ? [
+              BoxShadow(
+                color: AppTheme.accentGold.withValues(alpha: 0.05),
+                blurRadius: 15,
+                spreadRadius: -5,
+              )
+            ] : null,
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1176,10 +1204,11 @@ class _HoverableOrderCardState extends State<_HoverableOrderCard> {
                         Flexible(
                           child: Text(
                             order.code,
-                            style: GoogleFonts.montserrat(
-                              fontSize: 15,
+                            style: GoogleFonts.playfairDisplay(
+                              fontSize: 16,
                               fontWeight: FontWeight.w800,
                               color: Colors.white,
+                              letterSpacing: 0.5,
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -1266,15 +1295,16 @@ class _HoverableOrderCardState extends State<_HoverableOrderCard> {
                   children: [
                     Text(
                       '${widget.currencyFmt.format(order.finalAmount)}đ',
-                      style: GoogleFonts.montserrat(
+                      style: GoogleFonts.robotoMono(
                         fontSize: 18,
                         fontWeight: FontWeight.w800,
                         color: AppTheme.accentGold,
                       ),
                     ),
+                    const SizedBox(height: 4),
                     Text(
                       "${order.items.length} sản phẩm",
-                      style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white38, fontWeight: FontWeight.w700),
+                      style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white38, fontWeight: FontWeight.w700, letterSpacing: 0.5),
                     ),
                   ],
                 ),
@@ -1301,7 +1331,7 @@ class _HoverableOrderCardState extends State<_HoverableOrderCard> {
       clipBehavior: Clip.antiAlias,
       child: hasImage
           ? Image.network(
-              order.items.first.variant!.product!.imageUrl!,
+              '${EnvConfig.apiBaseUrl}${order.items.first.variant!.product!.imageUrl!}',
               fit: BoxFit.cover,
               errorBuilder: (_, __, ___) => Icon(payBadge.icon, size: 18, color: payBadge.color.withOpacity(0.5)),
             )
@@ -1438,3 +1468,76 @@ class _DateFilterSheet extends StatelessWidget {
     );
   }
 }
+
+class _DashboardItem extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
+  final bool isGold;
+  final Color? color;
+
+  const _DashboardItem({
+    required this.label,
+    required this.value,
+    required this.icon,
+    this.isGold = false,
+    this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final displayColor = isGold ? AppTheme.accentGold : (color ?? Colors.white70);
+    
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: displayColor.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, size: 16, color: displayColor),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          label,
+          style: GoogleFonts.montserrat(
+            fontSize: 9,
+            color: Colors.white38,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1.2,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          value,
+          style: GoogleFonts.robotoMono(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: displayColor,
+            letterSpacing: -0.5,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  final String title;
+  const _SectionHeader({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      title,
+      style: GoogleFonts.montserrat(
+        fontSize: 10,
+        fontWeight: FontWeight.w800,
+        color: AppTheme.accentGold.withValues(alpha: 0.6),
+        letterSpacing: 2,
+      ),
+    );
+  }
+}
+

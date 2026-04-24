@@ -17,6 +17,8 @@ import '../../../../core/widgets/app_error_widget.dart';
 import '../../../../core/config/env.dart';
 import '../../pos/providers/pos_provider.dart';
 import '../../../../core/utils/responsive.dart';
+import 'daily_closing_dialog.dart';
+import 'daily_closing_history_screen.dart';
 
 class StaffDashboardScreen extends ConsumerWidget {
   const StaffDashboardScreen({super.key});
@@ -75,7 +77,12 @@ class StaffDashboardScreen extends ConsumerWidget {
   Widget _buildObsidianHeader(BuildContext context, WidgetRef ref, DashboardState state, AsyncValue<List<dynamic>> stores, String? selectedStoreId, AppLocalizations l10n) {
     final isMobile = Responsive.isMobile(context);
     return Container(
-      padding: EdgeInsets.fromLTRB(isMobile ? 16 : 24, isMobile ? 32 : 48, isMobile ? 16 : 24, 24),
+      padding: EdgeInsets.fromLTRB(
+        isMobile ? 16 : 24,
+        (isMobile ? 32 : 48) + MediaQuery.of(context).padding.top,
+        isMobile ? 16 : 24,
+        24,
+      ),
       decoration: const BoxDecoration(
         color: Color(0xFF0F0F0F),
         border: Border(bottom: BorderSide(color: Colors.white10)),
@@ -107,9 +114,72 @@ class StaffDashboardScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-              _DateFilter(date: state.selectedDate),
+              const SizedBox(width: 12),
+              ElevatedButton.icon(
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const DailyClosingHistoryScreen())),
+                icon: const Icon(Icons.history, size: 16, color: AppTheme.accentGold),
+                label: Text("LỊCH SỬ", style: GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.w800, color: AppTheme.accentGold, letterSpacing: 1)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white.withValues(alpha: 0.05),
+                  foregroundColor: AppTheme.accentGold,
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4), side: const BorderSide(color: Colors.white10)),
+                  elevation: 0,
+                ),
+              ),
+              const SizedBox(width: 12),
+              if (!isMobile)
+                ElevatedButton.icon(
+                  onPressed: state.report == null ? null : () => _showDailyClosingDialog(context, ref, state.report!, selectedStoreId),
+                  icon: const Icon(Icons.inventory_2_outlined, size: 16, color: Colors.black),
+                  label: Text("CHỐT DOANH THU", style: GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.black, letterSpacing: 1)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.accentGold,
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                    elevation: 0,
+                  ),
+                ),
             ],
           ),
+          if (isMobile) ...[
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: state.report == null ? null : () => _showDailyClosingDialog(context, ref, state.report!, selectedStoreId),
+                      icon: const Icon(Icons.inventory_2_outlined, size: 16, color: Colors.black),
+                      label: Text("CHỐT CA", style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w800, color: Colors.black, letterSpacing: 1)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.accentGold,
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Container(
+                    height: 52,
+                    width: 52,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(color: Colors.white10),
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.history, color: AppTheme.accentGold),
+                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const DailyClosingHistoryScreen())),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: 24),
           stores.when(
             loading: () => const SizedBox.shrink(),
@@ -151,6 +221,21 @@ class StaffDashboardScreen extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+
+  void _showDailyClosingDialog(BuildContext context, WidgetRef ref, DailyReport report, String? storeId) {
+    if (storeId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Vui lòng chọn quầy trước khi chốt doanh thu")),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.9),
+      builder: (context) => DailyClosingDialog(report: report, storeId: storeId),
     );
   }
 

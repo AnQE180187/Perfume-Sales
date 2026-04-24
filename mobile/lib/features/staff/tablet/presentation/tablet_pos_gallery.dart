@@ -592,10 +592,11 @@ class _AiConsultationPanelState extends ConsumerState<_AiConsultationPanel> {
       margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
       decoration: BoxDecoration(
         color: const Color(0xFF0F0F0F),
-        border: Border.all(color: AppTheme.accentGold.withOpacity(0.1)),
+        border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.1)),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           GestureDetector(
             onTap: () => setState(() => _isExpanded = !_isExpanded),
@@ -627,7 +628,7 @@ class _AiConsultationPanelState extends ConsumerState<_AiConsultationPanel> {
           if (_isExpanded)
             ConstrainedBox(
               constraints: BoxConstraints(
-                maxHeight: isMobile ? MediaQuery.of(context).size.height * 0.5 : double.infinity,
+                maxHeight: isMobile ? MediaQuery.of(context).size.height * 0.6 : 400,
               ),
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),

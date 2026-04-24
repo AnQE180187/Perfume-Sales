@@ -13,6 +13,7 @@ import { TopProductsList, TopProductDto } from '@/components/dashboard/admin/Top
 import { ChannelDonutChart } from '@/components/dashboard/admin/ChannelDonutChart';
 import { LowStockWidget } from '@/components/dashboard/admin/LowStockWidget';
 import { RecentOrdersFeed, RecentOrderDto } from '@/components/dashboard/admin/RecentOrdersFeed';
+import { StoreRevenueWidget } from '@/components/dashboard/admin/StoreRevenueWidget';
 import api from '@/lib/axios';
 import { cn } from '@/lib/utils';
 
@@ -276,6 +277,11 @@ export default function AdminDashboard() {
                             </motion.div>
                         ))
                     }
+                </section>
+
+                {/* ── Per-Store Analytics ────────────────────────────────── */}
+                <section>
+                    <StoreRevenueWidget />
                 </section>
 
                 {/* ── Sales Chart + Top Products ────────────────────────── */}

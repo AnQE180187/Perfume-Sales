@@ -74,9 +74,10 @@ class StaffReturnNotifier extends StateNotifier<AsyncValue<List<dynamic>>> {
     required String method,
     required double amount,
     String? note,
+    String? receiptImage,
   }) async {
     try {
-      await _service.triggerRefund(id, method: method, amount: amount, note: note);
+      await _service.triggerRefund(id, method: method, amount: amount, note: note, receiptImage: receiptImage);
       return true;
     } catch (e) {
       return false;

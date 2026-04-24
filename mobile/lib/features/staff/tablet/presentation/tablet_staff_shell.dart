@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../profile/providers/profile_provider.dart';
 
 import 'package:perfume_gpt_app/l10n/app_localizations.dart';
 import '../../dashboard/presentation/staff_dashboard_screen.dart';
@@ -24,7 +25,9 @@ class TabletStaffShell extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final _ = AppLocalizations.of(context)!;
-    final selectedIndex = ref.watch(staffTabIndexProvider);
+    final rawIndex = ref.watch(staffTabIndexProvider);
+    // Clamp to 5 items for main nav (0-4)
+    final selectedIndex = rawIndex.clamp(0, 4);
 
     return Scaffold(
       backgroundColor: const Color(0xFF030303), // Deeper Obsidian
@@ -35,7 +38,7 @@ class TabletStaffShell extends ConsumerWidget {
           
           Row(
             children: [
-              // 1. Refined Navigation Sidebar
+              // 1. Refined Navigation Sidebar (5 ITEMS)
               _BoutiqueSidebar(
                 selectedIndex: selectedIndex,
                 onChanged: (index) =>
@@ -62,7 +65,6 @@ class TabletStaffShell extends ConsumerWidget {
                             StaffInventoryScreen(),
                             StaffReturnsScreen(),
                             StaffOrdersScreen(),
-                            StaffProfileScreen(),
                           ],
                         ),
                       ),
@@ -78,7 +80,49 @@ class TabletStaffShell extends ConsumerWidget {
               ),
             ],
           ),
+
+          // Persistent profile avatar button (top-right)
+          Positioned(
+            top: 24,
+            right: 24,
+            child: _ProfileAvatarButton(
+              onTap: () => _showProfileSheet(context),
+            ),
+          ),
         ],
+      ),
+    );
+  }
+
+  void _showProfileSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Center(
+        child: Container(
+          width: 600,
+          height: MediaQuery.of(context).size.height * 0.85,
+          decoration: BoxDecoration(
+            color: const Color(0xFF0A0A0A),
+            borderRadius: BorderRadius.circular(32),
+            border: Border.all(color: Colors.white10, width: 0.5),
+          ),
+          child: Column(
+            children: [
+              const SizedBox(height: 24),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white10,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const Expanded(child: StaffProfileScreen()),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -138,12 +182,6 @@ class _BoutiqueSidebar extends StatelessWidget {
             onTap: () => onChanged(4),
             tooltip: l10n.ordersHistoryLabel,
           ),
-          _SidebarItem(
-            icon: Icons.settings_rounded,
-            isSelected: selectedIndex == 5,
-            onTap: () => onChanged(5),
-            tooltip: l10n.profileLabel,
-          ),
           const Spacer(),
           Consumer(builder: (ctx, ref, _) => _LogoutGhostBtn(onTap: () => _confirmLogout(ctx, ref, l10n))),
           const SizedBox(height: 48),
@@ -157,7 +195,7 @@ class _BoutiqueSidebar extends StatelessWidget {
       width: 40,
       height: 40,
       decoration: BoxDecoration(
-        border: Border.all(color: AppTheme.accentGold.withOpacity(0.5), width: 0.5),
+        border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.5), width: 0.5),
         shape: BoxShape.circle,
       ),
       child: Center(
@@ -215,7 +253,7 @@ class _SidebarItemState extends State<_SidebarItem> {
             height: 64,
             width: double.infinity,
             color: _isHovered && !widget.isSelected
-                ? Colors.white.withOpacity(0.03)
+                ? Colors.white.withValues(alpha: 0.03)
                 : Colors.transparent,
             child: Stack(
               alignment: Alignment.center,
@@ -271,7 +309,7 @@ class _SidebarItemState extends State<_SidebarItem> {
                       gradient: RadialGradient(
                         colors: [
                           AppTheme.accentGold
-                              .withOpacity(widget.isSelected ? 0.1 : 0.04),
+                              .withValues(alpha: widget.isSelected ? 0.1 : 0.04),
                           Colors.transparent,
                         ],
                       ),
@@ -312,14 +350,14 @@ class _LogoutGhostBtnState extends State<_LogoutGhostBtn> {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: _isHovered
-                ? Colors.redAccent.withOpacity(0.08)
+                ? Colors.redAccent.withValues(alpha: 0.08)
                 : Colors.transparent,
           ),
           child: Icon(
             Icons.power_settings_new_rounded,
             color: _isHovered
-                ? Colors.redAccent.withOpacity(0.8)
-                : Colors.redAccent.withOpacity(0.4),
+                ? Colors.redAccent.withValues(alpha: 0.8)
+                : Colors.redAccent.withValues(alpha: 0.4),
             size: 24,
           ),
         ),
@@ -363,7 +401,7 @@ class _DustPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.white.withOpacity(0.05);
+    final paint = Paint()..color = Colors.white.withValues(alpha: 0.05);
     final random = math.Random(42);
     for (int i = 0; i < 50; i++) {
       double x = random.nextDouble() * size.width;
@@ -391,7 +429,7 @@ class _GlassBillPane extends StatelessWidget {
         filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.01),
+            color: Colors.white.withValues(alpha: 0.01),
             border: const Border(left: BorderSide(color: Colors.white10, width: 0.5)),
           ),
           child: const TabletPosCart(),
@@ -435,7 +473,7 @@ void _confirmLogout(BuildContext context, WidgetRef ref, AppLocalizations l10n) 
             margin: const EdgeInsets.only(left: 12),
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.redAccent.withOpacity(0.1),
+                backgroundColor: Colors.redAccent.withValues(alpha: 0.1),
                 foregroundColor: Colors.redAccent,
                 elevation: 0,
                 side: const BorderSide(color: Colors.redAccent, width: 0.5),
@@ -456,3 +494,81 @@ void _confirmLogout(BuildContext context, WidgetRef ref, AppLocalizations l10n) 
     ),
   );
 }
+
+/// Floating profile avatar button that reads user profile data.
+class _ProfileAvatarButton extends ConsumerWidget {
+  final VoidCallback onTap;
+  const _ProfileAvatarButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final profileAsync = ref.watch(profileProvider);
+
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onTap();
+      },
+      child: Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: const Color(0xFF151515),
+          border: Border.all(
+            color: AppTheme.accentGold.withValues(alpha: 0.4),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.5),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: ClipOval(
+          child: profileAsync.when(
+            loading: () => const Icon(Icons.person_rounded,
+                color: AppTheme.accentGold, size: 24),
+            error: (_, __) => const Icon(Icons.person_rounded,
+                color: AppTheme.accentGold, size: 24),
+            data: (profile) {
+              if (profile == null) {
+                return const Icon(Icons.person_rounded,
+                    color: AppTheme.accentGold, size: 24);
+              }
+              if (profile.avatarUrl != null &&
+                  profile.avatarUrl!.isNotEmpty) {
+                return Image.network(
+                  profile.avatarUrl!,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) =>
+                      _buildInitial(profile.name),
+                );
+              }
+              return _buildInitial(profile.name);
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInitial(String name) {
+    final initial = name.isNotEmpty ? name[0].toUpperCase() : 'S';
+    return Container(
+      color: AppTheme.accentGold.withValues(alpha: 0.15),
+      alignment: Alignment.center,
+      child: Text(
+        initial,
+        style: GoogleFonts.playfairDisplay(
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          color: AppTheme.accentGold,
+        ),
+      ),
+    );
+  }
+}
+
