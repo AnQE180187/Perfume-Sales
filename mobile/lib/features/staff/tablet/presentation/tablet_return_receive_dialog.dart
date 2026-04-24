@@ -111,7 +111,7 @@ class _TabletReturnReceiveDialogState extends ConsumerState<TabletReturnReceiveD
         borderRadius: BorderRadius.circular(4),
         side: const BorderSide(color: Colors.white10),
       ),
-      title: Text("XÁC NHẬN NHẬN HÀNG HÀNG THỰC TẾ", style: GoogleFonts.playfairDisplay(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 1)),
+      title: Text("XÁC NHẬN NHẬN HÀNG THỰC TẾ", style: GoogleFonts.playfairDisplay(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 1)),
       content: SizedBox(
         width: 600,
         child: SingleChildScrollView(

@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -37,15 +38,26 @@ class StaffReturnsScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Hoàn trả",
-                        style: GoogleFonts.playfairDisplay(fontSize: isMobile ? 18 : 28, fontWeight: FontWeight.w700, color: Colors.white),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
+                        "HOÀN TRẢ",
+                        style: GoogleFonts.playfairDisplay(
+                          fontSize: isMobile ? 22 : 32, 
+                          fontWeight: FontWeight.w800, 
+                          color: Colors.white,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        "Theo dõi và quản lý yêu cầu đổi trả hàng",
+                        style: GoogleFonts.montserrat(
+                          fontSize: 12,
+                          color: Colors.white38,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 8),
                 _DateFilterButton(),
               ],
             ),
@@ -70,24 +82,27 @@ class StaffReturnsScreen extends ConsumerWidget {
                   data: (list) {
                     final storeId = ref.watch(posSelectedStoreIdProvider);
                     final range = ref.watch(returnsDateRangeProvider);
+                    final statusFilter = ref.watch(returnStatusFilterProvider);
                     final posReturns = list.where((item) {
                       try {
-                        // Filter by store if one is selected
+                        // 1. Filter by store
                         if (storeId != null && item['order']?['storeId'] != storeId) return false;
                         
+                        // 2. Filter by status
+                        if (statusFilter != 'ALL' && item['status'] != statusFilter) return false;
+
+                        // 3. Filter by date
                         if (range == null) {
-                          // Default to showing all recent returns if no range is selected
-                          // Or we can keep "Today" but maybe the user expects more.
-                          // Let's keep Today but make sure it's not too restrictive.
                           final createdAt = DateTime.parse(item['createdAt']).toLocal();
                           final now = DateTime.now();
                           bool isToday = createdAt.year == now.year &&
                               createdAt.month == now.month &&
                               createdAt.day == now.day;
                           
-                          // If it's not today, still show it if it's REQUESTED (pending) 
-                          // so staff don't miss older pending items.
-                          if (item['status'] == 'REQUESTED') return true;
+                          final status = item['status'] as String;
+                          final isPending = status != 'COMPLETED' && status != 'CANCELLED';
+                          
+                          if (isPending) return true;
                           return isToday;
                         }
                         
@@ -95,60 +110,67 @@ class StaffReturnsScreen extends ConsumerWidget {
                         final start = DateTime(range.start.year, range.start.month, range.start.day);
                         final end = DateTime(range.end.year, range.end.month, range.end.day, 23, 59, 59);
                         return createdAt.isAfter(start.subtract(const Duration(seconds: 1))) &&
-                               createdAt.isBefore(end.add(const Duration(seconds: 1)));
+                                createdAt.isBefore(end.add(const Duration(seconds: 1)));
                       } catch (_) {
                         return false;
                       }
                     }).toList();
-
-                    if (posReturns.isEmpty) {
-                      return ListView(
-                        physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
-                        children: [
-                          SizedBox(
-                            height: MediaQuery.of(context).size.height * 0.4,
-                            child: Center(
-                              child: Text(
-                                  range == null
-                                      ? "Không tìm thấy yêu cầu trả hàng mới hoặc trong hôm nay"
-                                      : "Không tìm thấy yêu cầu trả hàng trong khoảng thời gian đã chọn",
-                                  textAlign: TextAlign.center,
-                                  style: GoogleFonts.montserrat(
-                                      fontSize: 11,
-                                      color: Colors.white38,
-                                      letterSpacing: 2)),
-                            ),
-                          ),
-                        ],
-                      );
-                    }
 
                     // Calculate summary
                     final totalAmount = posReturns.fold<double>(0, (sum, item) => sum + (item['totalAmount'] ?? 0));
                     final pendingCount = posReturns.where((item) => item['status'] == 'REQUESTED').length;
 
                     return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (!isMobile) _buildSummaryBar(totalAmount, posReturns.length, pendingCount),
+                        _StatusFilterChips(),
+                        const SizedBox(height: 16),
+                        if (isMobile) 
+                          _buildMobileSummary(totalAmount, posReturns.length, pendingCount)
+                        else 
+                          _buildSummaryBar(totalAmount, posReturns.length, pendingCount),
+                        
                         if (!isMobile) const SizedBox(height: 24),
-                        Expanded(
-                          child: ListView.builder(
-                            physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
-                            padding: const EdgeInsets.only(bottom: 40),
-                            itemCount: posReturns.length,
-                            itemBuilder: (ctx, i) => GestureDetector(
-                              onTap: () => showDialog(
-                                context: context,
-                                builder: (ctx) => TabletReturnDetailsDialog(
-                                    returnId: posReturns[i]['id']),
-                              ),
-                              child: _ReturnCard(
-                                data: posReturns[i],
-                                dateFmt: dateFmt,
+                        if (isMobile) const SizedBox(height: 12),
+                        
+                        if (posReturns.isEmpty)
+                          Expanded(
+                            child: ListView(
+                              children: [
+                                SizedBox(
+                                  height: MediaQuery.of(context).size.height * 0.4,
+                                  child: Center(
+                                    child: Text(
+                                        "Không tìm thấy yêu cầu trả hàng phù hợp",
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.montserrat(
+                                            fontSize: 11,
+                                            color: Colors.white38,
+                                            letterSpacing: 2)),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        else
+                          Expanded(
+                            child: ListView.builder(
+                              physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+                              padding: const EdgeInsets.only(bottom: 40),
+                              itemCount: posReturns.length,
+                              itemBuilder: (ctx, i) => GestureDetector(
+                                onTap: () => showDialog(
+                                  context: context,
+                                  builder: (ctx) => TabletReturnDetailsDialog(
+                                      returnId: posReturns[i]['id']),
+                                ),
+                                child: _ReturnCard(
+                                  data: posReturns[i],
+                                  dateFmt: dateFmt,
+                                ),
                               ),
                             ),
                           ),
-                        ),
                       ],
                     );
                   },
@@ -161,23 +183,90 @@ class StaffReturnsScreen extends ConsumerWidget {
     );
   }
 
+  Widget _buildMobileSummary(double totalAmount, int totalCount, int pendingCount) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.15)),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppTheme.accentGold.withValues(alpha: 0.05),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: _MobileSummaryItem(
+                  label: "TỔNG HOÀN",
+                  value: "${NumberFormat('#,###', 'vi_VN').format(totalAmount)}đ",
+                  isGold: true,
+                ),
+              ),
+              Container(width: 1, height: 24, color: Colors.white10),
+              Expanded(
+                child: _MobileSummaryItem(
+                  label: "ĐƠN HÀNG",
+                  value: "$totalCount",
+                ),
+              ),
+              Container(width: 1, height: 24, color: Colors.white10),
+              Expanded(
+                child: _MobileSummaryItem(
+                  label: "CHỜ XỬ LÝ",
+                  value: "$pendingCount",
+                  isAlert: pendingCount > 0,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildSummaryBar(double totalAmount, int totalCount, int pendingCount) {
     return Container(
-      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppTheme.accentGold.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.accentGold.withOpacity(0.15)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _SummaryItem(label: "TỔNG HOÀN TIỀN", value: "${NumberFormat('#,###', 'vi_VN').format(totalAmount)}đ", isGold: true),
-          _buildVerticalDivider(),
-          _SummaryItem(label: "SỐ LƯỢNG ĐƠN", value: "$totalCount"),
-          _buildVerticalDivider(),
-          _SummaryItem(label: "CHỜ XỬ LÝ", value: "$pendingCount", isAlert: pendingCount > 0),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.15)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
         ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppTheme.accentGold.withValues(alpha: 0.08),
+                Colors.white.withValues(alpha: 0.02),
+              ],
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _SummaryItem(label: "TỔNG HOÀN TIỀN", value: "${NumberFormat('#,###', 'vi_VN').format(totalAmount)}đ", isGold: true),
+              _buildVerticalDivider(),
+              _SummaryItem(label: "SỐ LƯỢNG ĐƠN", value: "$totalCount"),
+              _buildVerticalDivider(),
+              _SummaryItem(label: "CHỜ XỬ LÝ", value: "$pendingCount", isAlert: pendingCount > 0),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -186,21 +275,22 @@ class StaffReturnsScreen extends ConsumerWidget {
 
   Widget _buildTableHeader() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.03),
-        borderRadius: BorderRadius.circular(8),
+        color: const Color(0xFF0F0F0F),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Row(
         children: [
-          Expanded(flex: 1, child: Text("Nguồn", style: _headerStyle())),
-          Expanded(flex: 2, child: Text("Mã Yêu Cầu", style: _headerStyle())),
-          Expanded(flex: 2, child: Text("Mã Đơn", style: _headerStyle())),
-          Expanded(flex: 2, child: Text("Ngày tạo", style: _headerStyle())),
-          Expanded(flex: 2, child: Text("Số tiền", style: _headerStyle())),
-          Expanded(flex: 3, child: Text("Lý do", style: _headerStyle())),
-          Expanded(flex: 2, child: Text("Trạng thái", style: _headerStyle())),
-          SizedBox(width: 48, child: Text("Hành động", style: _headerStyle(), textAlign: TextAlign.center)),
+          Expanded(flex: 1, child: Text("NGUỒN", style: _headerStyle())),
+          Expanded(flex: 2, child: Text("MÃ YÊU CẦU", style: _headerStyle())),
+          Expanded(flex: 2, child: Text("MÃ ĐƠN", style: _headerStyle())),
+          Expanded(flex: 2, child: Text("NGÀY TẠO", style: _headerStyle())),
+          Expanded(flex: 2, child: Text("SỐ TIỀN", style: _headerStyle())),
+          Expanded(flex: 3, child: Text("LÝ DO", style: _headerStyle())),
+          Expanded(flex: 2, child: Text("TRẠNG THÁI", style: _headerStyle())),
+          SizedBox(width: 48, child: Text("HÀNH ĐỘNG", style: _headerStyle(), textAlign: TextAlign.center)),
         ],
       ),
     );
@@ -208,6 +298,112 @@ class StaffReturnsScreen extends ConsumerWidget {
 
   TextStyle _headerStyle() {
     return GoogleFonts.montserrat(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.white38, letterSpacing: 1);
+  }
+}
+
+class _StatusFilterChips extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentStatus = ref.watch(returnStatusFilterProvider);
+    final statuses = [
+      {'id': 'ALL', 'label': 'Tất cả'},
+      {'id': 'REQUESTED', 'label': 'Chờ duyệt'},
+      {'id': 'APPROVED', 'label': 'Đã duyệt'},
+      {'id': 'RECEIVED', 'label': 'Đã nhận'},
+      {'id': 'REFUNDED', 'label': 'Đã hoàn tiền'},
+      {'id': 'COMPLETED', 'label': 'Hoàn tất'},
+      {'id': 'CANCELLED', 'label': 'Đã hủy'},
+    ];
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
+      child: Row(
+        children: statuses.map((status) {
+          final isSelected = currentStatus == status['id'];
+          return Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: ChoiceChip(
+              label: Text(
+                status['label']!.toUpperCase(),
+                style: GoogleFonts.montserrat(
+                  fontSize: 10,
+                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                  color: isSelected ? Colors.black : Colors.white70,
+                  letterSpacing: 1,
+                ),
+              ),
+              selected: isSelected,
+              onSelected: (selected) {
+                if (selected) {
+                  ref.read(returnStatusFilterProvider.notifier).state = status['id']!;
+                }
+              },
+              // Use WidgetStateProperty to force transparency when unselected
+              color: WidgetStateProperty.resolveWith<Color?>((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return AppTheme.accentGold;
+                }
+                return Colors.transparent;
+              }),
+              surfaceTintColor: Colors.transparent,
+              shadowColor: Colors.transparent,
+              selectedShadowColor: Colors.transparent,
+              elevation: 0,
+              pressElevation: 0,
+              side: BorderSide(
+                color: isSelected ? AppTheme.accentGold : Colors.white.withValues(alpha: 0.2),
+                width: 1,
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              showCheckmark: false,
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+class _MobileSummaryItem extends StatelessWidget {
+  final String label;
+  final String value;
+  final bool isGold;
+  final bool isAlert;
+
+  const _MobileSummaryItem({
+    required this.label,
+    required this.value,
+    this.isGold = false,
+    this.isAlert = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.montserrat(
+            fontSize: 8,
+            color: Colors.white38,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.5,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: GoogleFonts.robotoMono(
+            fontSize: 13,
+            fontWeight: FontWeight.bold,
+            color: isGold
+                ? AppTheme.accentGold
+                : (isAlert ? Colors.orangeAccent : Colors.white),
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -237,6 +433,7 @@ class _SummaryItem extends StatelessWidget {
   }
 }
 
+
 class _ReturnCard extends StatefulWidget {
   final dynamic data;
   final DateFormat dateFmt;
@@ -265,15 +462,23 @@ class _ReturnCardState extends State<_ReturnCard> {
       onExit: (_) => setState(() => _isHovered = false),
       cursor: SystemMouseCursors.click,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        duration: const Duration(milliseconds: 300),
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         decoration: BoxDecoration(
-          color: _isHovered ? Colors.white.withOpacity(0.04) : Colors.white.withOpacity(0.02),
+          color: _isHovered ? Colors.white.withValues(alpha: 0.05) : Colors.white.withValues(alpha: 0.02),
           border: Border.all(
-            color: _isHovered ? AppTheme.accentGold.withOpacity(0.3) : Colors.white.withOpacity(0.05),
+            color: _isHovered ? AppTheme.accentGold.withValues(alpha: 0.3) : Colors.white.withValues(alpha: 0.05),
+            width: 0.8,
           ),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: _isHovered ? [
+            BoxShadow(
+              color: AppTheme.accentGold.withValues(alpha: 0.05),
+              blurRadius: 15,
+              spreadRadius: -5,
+            )
+          ] : null,
         ),
         child: isMobile 
           ? Column(
@@ -282,10 +487,15 @@ class _ReturnCardState extends State<_ReturnCard> {
                 Row(
                   children: [
                     _buildOriginBadge(origin),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 12),
                     Text(
                       "#${(widget.data['id']?.toString() ?? '').substring(0, 8).toUpperCase()}",
-                      style: GoogleFonts.robotoMono(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.accentGold),
+                      style: GoogleFonts.playfairDisplay(
+                        fontSize: 14, 
+                        fontWeight: FontWeight.w800, 
+                        color: AppTheme.accentGold,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                     const Spacer(),
                     _StatusBadge(status: status),
@@ -315,10 +525,27 @@ class _ReturnCardState extends State<_ReturnCard> {
           : Row(
               children: [
                 Expanded(flex: 1, child: _buildOriginBadge(origin)),
-                Expanded(flex: 2, child: Text((widget.data['id']?.toString() ?? '').substring(0, (widget.data['id']?.toString().length ?? 0) > 8 ? 8 : (widget.data['id']?.toString().length ?? 0)).toUpperCase(), style: GoogleFonts.robotoMono(fontSize: 12, fontWeight: FontWeight.bold, color: _isHovered ? AppTheme.accentGold : Colors.white70))),
-                Expanded(flex: 2, child: Text((widget.data['orderId']?.toString() ?? '').substring(0, (widget.data['orderId']?.toString().length ?? 0) > 8 ? 8 : (widget.data['orderId']?.toString().length ?? 0)).toUpperCase(), style: GoogleFonts.robotoMono(fontSize: 12, color: Colors.white70))),
-                Expanded(flex: 2, child: Text(widget.dateFmt.format(DateTime.parse(widget.data['createdAt']).toLocal()), style: GoogleFonts.montserrat(fontSize: 12, color: Colors.white70))),
-                Expanded(flex: 2, child: Text("${currencyFmt.format(amount)}đ", style: GoogleFonts.robotoMono(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white))),
+                Expanded(
+                  flex: 2, 
+                  child: Text(
+                    (widget.data['id']?.toString() ?? '').substring(0, (widget.data['id']?.toString().length ?? 0) > 8 ? 8 : (widget.data['id']?.toString().length ?? 0)).toUpperCase(), 
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: 13, 
+                      fontWeight: FontWeight.w800, 
+                      color: _isHovered ? AppTheme.accentGold : Colors.white70,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 2, 
+                  child: Text(
+                    (widget.data['orderId']?.toString() ?? '').substring(0, (widget.data['orderId']?.toString().length ?? 0) > 8 ? 8 : (widget.data['orderId']?.toString().length ?? 0)).toUpperCase(), 
+                    style: GoogleFonts.robotoMono(fontSize: 12, color: Colors.white38),
+                  ),
+                ),
+                Expanded(flex: 2, child: Text(widget.dateFmt.format(DateTime.parse(widget.data['createdAt']).toLocal()), style: GoogleFonts.montserrat(fontSize: 12, color: Colors.white54))),
+                Expanded(flex: 2, child: Text("${currencyFmt.format(amount)}đ", style: GoogleFonts.robotoMono(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white))),
                 Expanded(flex: 3, child: Text(reason.isEmpty ? "Không có lý do" : reason, style: GoogleFonts.montserrat(fontSize: 12, color: reason.isEmpty ? Colors.white24 : Colors.white70, fontStyle: reason.isEmpty ? FontStyle.italic : FontStyle.normal), maxLines: 1, overflow: TextOverflow.ellipsis)),
                 Expanded(flex: 2, child: Align(alignment: Alignment.centerLeft, child: _StatusBadge(status: status))),
                 SizedBox(
@@ -363,7 +590,7 @@ class _StatusBadge extends StatelessWidget {
       case "REQUESTED": return "Yêu cầu mới";
       case "AWAITING_CUSTOMER": return "Chờ phản hồi khách";
       case "REVIEWING": return "Đang xem xét";
-      case "APPROVED": return "Đã duyệt, đợi trả";
+      case "APPROVED": return "Đã duyệt";
       case "RETURNING": return "Đang gửi hàng";
       case "RECEIVED": return "Đã nhận hàng";
       case "REFUNDING": return "Đang hoàn tiền";

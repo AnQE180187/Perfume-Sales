@@ -442,36 +442,46 @@ class _StaffInventoryScreenState extends ConsumerState<StaffInventoryScreen> {
     }
 
     final isMobile = Responsive.isMobile(context);
-    return SingleChildScrollView(
+    return Padding(
       padding: EdgeInsets.fromLTRB(isMobile ? 20 : 32, 0, isMobile ? 20 : 32, 40),
       child: Container(
         decoration: BoxDecoration(
           color: const Color(0xFF0A0A0A),
           border: Border.all(color: Colors.white10),
         ),
-        child: Column(
-          children: [
-            // Header Row
-            if (!Responsive.isMobile(context)) ...[
-              Container(
-                color: const Color(0xFF0F0F0F),
-                height: 56,
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Row(
-                  children: [
-                    _TableHeaderText("CHI TIẾT BỘ SƯU TẬP", flex: 4),
-                    _TableHeaderText("MÃ SKU / ĐƠN VỊ", flex: 2),
-                    _TableHeaderText("TRẠNG THÁI", flex: 2),
-                    _TableHeaderText("THAO TÁC", flex: 1),
-                  ],
-                ),
-              ),
-              const Divider(color: AppTheme.accentGold, height: 1, thickness: 0.5),
-            ],
+        child: ListView.builder(
+          physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+          itemCount: variants.length + 1, // +1 for the header
+          itemBuilder: (context, index) {
+            if (index == 0) {
+              // Header Row
+              if (isMobile) return const SizedBox.shrink();
+              return Column(
+                children: [
+                  Container(
+                    color: const Color(0xFF0F0F0F),
+                    height: 56,
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Row(
+                      children: [
+                        _TableHeaderText("CHI TIẾT BỘ SƯU TẬP", flex: 4),
+                        _TableHeaderText("MÃ SKU / ĐƠN VỊ", flex: 2),
+                        _TableHeaderText("TRẠNG THÁI", flex: 2),
+                        _TableHeaderText("THAO TÁC", flex: 1),
+                      ],
+                    ),
+                  ),
+                  const Divider(color: AppTheme.accentGold, height: 1, thickness: 0.5),
+                ],
+              );
+            }
             
-            // List of items
-            ...variants.map((v) => _InventoryRow(variant: v, onAdjust: () => _showAdjustSheet(context, v))),
-          ],
+            final v = variants[index - 1];
+            return _InventoryRow(
+              variant: v, 
+              onAdjust: () => _showAdjustSheet(context, v),
+            );
+          },
         ),
       ),
     );
