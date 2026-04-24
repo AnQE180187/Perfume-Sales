@@ -1166,7 +1166,8 @@
         "confirm_cancel_desc": "Bạn có chắc chắn muốn hủy đơn hàng này không? Hành động này không thể hoàn tác.",
         "cancel_success": "Đơn hàng đã được hủy thành công.",
         "cancel_error": "Không thể hủy đơn hàng này.",
-        "status_refunding": "Đang hoàn tiền"
+        "status_refunding": "Đang hoàn tiền",
+        "refund_info_submitted": "Đã gửi thông tin nhận tiền"
       },
       "returns": {
         "title": "Yêu Cầu Đổi Trả",
@@ -1237,8 +1238,10 @@
           "shipping_info_title": "Thông tin vận chuyển",
           "pickup_support": "Hỗ trợ Pickup",
           "pickup_scheduled": "Hệ thống đã đặt lịch thu hồi tận nơi",
-          "shipping_fee_shop": "Phí vận chuyển hoàn trả sẽ do Shop chi trả",
-          "shipping_fee_customer": "Vui lòng thanh toán phí vận chuyển cho bưu tá khi lấy hàng",
+          "shipping_fee_responsibility": "Trách nhiệm phí vận chuyển hoàn trả",
+          "shipping_fee_shop": "Shop chi trả 100% phí thu hồi",
+          "shipping_fee_customer": "Người mua chi trả phí vận chuyển",
+          "shipping_fee_customer_rejected": "Khách hàng thanh toán phí ship gửi trả khi nhận hàng",
           "pickup_instruction": "Shipper của GHN sẽ liên hệ với bạn qua số điện thoại <strong>{phone}</strong> để đến lấy hàng tại địa chỉ của đơn hàng gốc. Vui lòng đóng gói hàng cẩn thận và chờ shipper liên hệ.",
           "tracking_number_ghn": "Mã vận đơn GHN",
           "tracking_btn": "Theo dõi hành trình",

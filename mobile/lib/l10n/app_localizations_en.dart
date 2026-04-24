@@ -1873,11 +1873,18 @@ class AppLocalizationsEn extends AppLocalizations {
       'Please pay the shipping fee to the courier.';
 
   @override
-  String get returnRejectedRequestLabel => 'Return request rejected';
+  String get returnShippingResponsibility => 'Shipping Responsibility';
+
+  @override
+  String get returnShippingFeeCustomerRejected =>
+      'Customer pays shipping fee upon receiving the returned item';
+
+  @override
+  String get returnRejectedRequestLabel => 'Feedback on return request';
 
   @override
   String get returnRejectedReasonCompromised =>
-      'The returned product is not sealed or is damaged. According to our policy, the store will return the product to you. The shipping fee will be paid by the buyer.';
+      'Unfortunately, the returned product\'s seal is broken or it has been damaged/used. Per our policy, PerfumeGPT will return the product to you. The shipping fee for this return will be paid by the buyer upon receipt.';
 
   @override
   String get shopEvidenceLabel => 'Shop evidence';
@@ -1887,7 +1894,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get returnPreparingToSendBack =>
-      'The store is preparing to send the product back to you. Please wait for updates.';
+      'The PerfumeGPT team is preparing to pack and return the product to you. Please stay tuned for updates.';
 
   @override
   String get aiScentDna => 'AI Scent DNA';

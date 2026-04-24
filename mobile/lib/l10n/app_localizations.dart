@@ -3680,16 +3680,28 @@ abstract class AppLocalizations {
   /// **'Please pay the shipping fee to the courier.'**
   String get returnCustomerPaysShipping;
 
+  /// No description provided for @returnShippingResponsibility.
+  ///
+  /// In en, this message translates to:
+  /// **'Shipping Responsibility'**
+  String get returnShippingResponsibility;
+
+  /// No description provided for @returnShippingFeeCustomerRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer pays shipping fee upon receiving the returned item'**
+  String get returnShippingFeeCustomerRejected;
+
   /// No description provided for @returnRejectedRequestLabel.
   ///
   /// In en, this message translates to:
-  /// **'Return request rejected'**
+  /// **'Feedback on return request'**
   String get returnRejectedRequestLabel;
 
   /// No description provided for @returnRejectedReasonCompromised.
   ///
   /// In en, this message translates to:
-  /// **'The returned product is not sealed or is damaged. According to our policy, the store will return the product to you. The shipping fee will be paid by the buyer.'**
+  /// **'Unfortunately, the returned product\'s seal is broken or it has been damaged/used. Per our policy, PerfumeGPT will return the product to you. The shipping fee for this return will be paid by the buyer upon receipt.'**
   String get returnRejectedReasonCompromised;
 
   /// No description provided for @shopEvidenceLabel.
@@ -3707,7 +3719,7 @@ abstract class AppLocalizations {
   /// No description provided for @returnPreparingToSendBack.
   ///
   /// In en, this message translates to:
-  /// **'The store is preparing to send the product back to you. Please wait for updates.'**
+  /// **'The PerfumeGPT team is preparing to pack and return the product to you. Please stay tuned for updates.'**
   String get returnPreparingToSendBack;
 
   /// No description provided for @aiScentDna.

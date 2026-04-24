@@ -1141,6 +1141,7 @@
         "confirm_cancel_desc": "Are you sure you want to cancel this acquisition? This action cannot be undone.",
         "cancel_success": "Acquisition revoked successfully.",
         "status_refunding": "Refunding",
+        "refund_info_submitted": "Refund information submitted",
         "cancel_error": "Failed to revoke acquisition."
       },
       "returns": {
@@ -1212,8 +1213,10 @@
           "shipping_info_title": "Shipping Information",
           "pickup_support": "Pickup Support",
           "pickup_scheduled": "System has scheduled a pickup",
-          "shipping_fee_shop": "Return shipping fee will be paid by the Shop",
-          "shipping_fee_customer": "Please pay the shipping fee to the courier upon pickup",
+          "shipping_fee_responsibility": "Return Shipping Responsibility",
+          "shipping_fee_shop": "Shop pays 100% return shipping fee",
+          "shipping_fee_customer": "Customer pays return shipping fee",
+          "shipping_fee_customer_rejected": "Customer pays shipping fee upon receiving the returned item",
           "pickup_instruction": "GHN courier will contact you at <strong>{phone}</strong> to collect the items from the original order address. Please pack the items carefully and wait for the courier to contact you.",
           "tracking_number_ghn": "GHN Tracking Number",
           "tracking_btn": "Track Journey",

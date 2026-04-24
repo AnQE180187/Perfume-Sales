@@ -263,6 +263,43 @@ export default function CustomerReturnDetailPage() {
           </p>
         </header>
 
+        {/* Reason & Responsibility Summary */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="glass bg-black/40 shadow-2xl rounded-[2rem] p-6 border border-gold/20 backdrop-blur-md flex flex-col md:flex-row items-start md:items-center gap-6"
+        >
+          <div className="flex-1">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-gold/60 mb-2">
+              {t("reason")}
+            </p>
+            <p className="text-base font-bold text-foreground">
+              {getReasonLabel(returnReq.reason)}
+            </p>
+          </div>
+          
+          <div className="hidden md:block h-12 w-px bg-gold/10" />
+
+          <div className="flex-1">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-gold/60 mb-2">
+              {t("shipping_fee_responsibility")}
+            </p>
+            <div className="flex items-center gap-2">
+              {['[DAMAGED]', '[WRONG_ITEM]', '[EXPIRED]'].some(r => returnReq.reason?.includes(r)) ? (
+                <>
+                  <CheckCircle size={16} className="text-emerald-400" />
+                  <p className="text-sm font-bold text-emerald-400">{t("shipping_fee_shop")}</p>
+                </>
+              ) : (
+                <>
+                  <AlertCircle size={16} className="text-amber-400" />
+                  <p className="text-sm font-bold text-amber-400">{t("shipping_fee_customer")}</p>
+                </>
+              )}
+            </div>
+          </div>
+        </motion.div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main content */}
           <div className="lg:col-span-2 space-y-8">
@@ -794,8 +831,23 @@ export default function CustomerReturnDetailPage() {
                   <div className="bg-red-900/20 border border-red-500/20 rounded-2xl p-4">
                     <p className="text-[11px] text-red-200/80 leading-relaxed">
                       Sản phẩm hoàn trả không còn nguyên seal hoặc bị hư hại. Theo chính sách,
-                      cửa hàng sẽ gửi trả lại sản phẩm cho bạn. Phí vận chuyển sẽ do người mua chi trả.
+                      cửa hàng sẽ gửi trả lại sản phẩm cho bạn.
                     </p>
+                  </div>
+
+                  {/* Shipping Fee Responsibility Transparency Block */}
+                  <div className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-2xl flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-xl bg-amber-500/20 flex items-center justify-center">
+                      <AlertCircle size={16} className="text-amber-400" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-amber-500/80 mb-0.5">
+                        {t("shipping_fee_responsibility")}
+                      </p>
+                      <p className="text-xs font-bold text-amber-400">
+                        {t("shipping_fee_customer_rejected")}
+                      </p>
+                    </div>
                   </div>
 
                   {/* Evidence photos from admin */}

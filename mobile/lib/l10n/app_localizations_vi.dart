@@ -1870,11 +1870,18 @@ class AppLocalizationsVi extends AppLocalizations {
       'Quý khách vui lòng thanh toán phí ship cho bưu tá.';
 
   @override
-  String get returnRejectedRequestLabel => 'Yêu cầu bị từ chối';
+  String get returnShippingResponsibility => 'Trách nhiệm phí vận chuyển';
+
+  @override
+  String get returnShippingFeeCustomerRejected =>
+      'Khách hàng thanh toán phí ship gửi trả khi nhận hàng';
+
+  @override
+  String get returnRejectedRequestLabel => 'Phản hồi về yêu cầu trả hàng';
 
   @override
   String get returnRejectedReasonCompromised =>
-      'Sản phẩm hoàn trả không còn nguyên seal hoặc bị hư hại. Theo chính sách, cửa hàng sẽ gửi trả lại sản phẩm cho bạn. Phí vận chuyển sẽ do người mua chi trả.';
+      'Rất tiếc, sản phẩm hoàn trả không còn nguyên seal hoặc đã bị hư hại/sử dụng. Theo chính sách của hệ thống, PerfumeGPT sẽ gửi trả lại sản phẩm này cho quý khách. Chi phí vận chuyển lượt gửi trả sẽ do người mua thanh toán khi nhận hàng.';
 
   @override
   String get shopEvidenceLabel => 'Bằng chứng từ cửa hàng';
@@ -1884,7 +1891,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get returnPreparingToSendBack =>
-      'Cửa hàng đang chuẩn bị gửi trả sản phẩm cho bạn. Vui lòng chờ cập nhật.';
+      'Đội ngũ PerfumeGPT đang chuẩn bị đóng gói và gửi trả lại sản phẩm cho quý khách. Vui lòng theo dõi trạng thái tiếp theo.';
 
   @override
   String get aiScentDna => 'AI Scent DNA';
