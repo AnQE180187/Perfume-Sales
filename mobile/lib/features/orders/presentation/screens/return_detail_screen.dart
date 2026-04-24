@@ -163,6 +163,8 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildHeader(ret['id'], status, l10n),
+                const SizedBox(height: 16),
+                _buildSummaryCard(ret, l10n),
                 const SizedBox(height: 24),
 
                 Text(
@@ -494,8 +496,7 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
     final trackingUrl = 'https://ghn.vn/blogs/trang-thai-don-hang?order_code=$trackingNumber';
     
     final reason = ret['reason'] ?? '';
-    final shopFaultReasons = ['DAMAGED', 'WRONG_ITEM', 'EXPIRED'];
-    final shopPays = shopFaultReasons.contains(reason);
+    final shopPays = _isShopFault(reason);
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -885,6 +886,54 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
               ),
             ),
           ),
+          const SizedBox(height: 16),
+          // Shipping Fee Responsibility Transparency Block
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFDE68A).withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFFCD34D)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFD97706).withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.info_outline, size: 16, color: Color(0xFFD97706)),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.returnShippingResponsibility.toUpperCase(),
+                        style: GoogleFonts.montserrat(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w800,
+                          color: const Color(0xFFB45309),
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        l10n.returnShippingFeeCustomerRejected,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF92400E),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
           if (evidenceImages.isNotEmpty) ...[
             const SizedBox(height: 16),
             Text(
@@ -1144,6 +1193,142 @@ class _ReturnDetailScreenState extends ConsumerState<ReturnDetailScreen> {
         );
       },
     );
+  }
+
+  Widget _buildSummaryCard(Map<String, dynamic> ret, AppLocalizations l10n) {
+    final reason = ret['reason'] ?? '';
+    final isShopFault = _isShopFault(reason);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.softTaupe.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppTheme.softTaupe.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.help_outline, size: 16, color: AppTheme.mutedSilver),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.returnReason.toUpperCase(),
+                      style: GoogleFonts.montserrat(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.mutedSilver,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    Text(
+                      _getReasonText(reason, l10n),
+                      style: GoogleFonts.montserrat(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.deepCharcoal,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          const Divider(height: 1, color: AppTheme.softTaupe),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: isShopFault 
+                    ? const Color(0xFF12B76A).withValues(alpha: 0.1) 
+                    : const Color(0xFFF79009).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  isShopFault ? Icons.check_circle_outline : Icons.info_outline, 
+                  size: 16, 
+                  color: isShopFault ? const Color(0xFF027A48) : const Color(0xFFB54708)
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.returnShippingResponsibility.toUpperCase(),
+                      style: GoogleFonts.montserrat(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.mutedSilver,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    Text(
+                      isShopFault ? l10n.returnShopPaysShipping : l10n.returnCustomerPaysShipping,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: isShopFault ? const Color(0xFF027A48) : const Color(0xFFB54708),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  bool _isShopFault(String reason) {
+    return reason.contains('[DAMAGED]') ||
+           reason.contains('[WRONG_ITEM]') ||
+           reason.contains('[EXPIRED]') ||
+           reason == 'DAMAGED' ||
+           reason == 'WRONG_ITEM' ||
+           reason == 'EXPIRED';
+  }
+
+  String _getReasonText(String reason, AppLocalizations l10n) {
+    String label = reason;
+    if (reason.contains('[DAMAGED]') || reason == 'DAMAGED') {
+      label = l10n.reasonDamaged;
+    } else if (reason.contains('[WRONG_ITEM]') || reason == 'WRONG_ITEM') {
+      label = l10n.reasonWrongItem;
+    } else if (reason.contains('[EXPIRED]') || reason == 'EXPIRED') {
+      label = l10n.reasonExpired;
+    } else if (reason.contains('[SCENT_PREFERENCE]') || reason == 'SCENT_PREFERENCE') {
+      label = l10n.reasonScentPreference;
+    } else if (reason.contains('[COLOR_MISMATCH]') || reason == 'COLOR_MISMATCH') {
+      label = l10n.reasonColorMismatch;
+    } else if (reason.contains('[QUALITY_NOT_EXPECTED]') || reason == 'QUALITY_NOT_EXPECTED') {
+      label = l10n.reasonQualityNotAsExpected;
+    } else if (reason.contains('[CHANGE_OF_MIND]') || reason == 'CHANGE_OF_MIND') {
+      label = l10n.reasonChangeOfMind;
+    }
+
+    // Extract detail by removing the bracketed part [TAG]
+    final detail = reason.replaceAll(RegExp(r'\[.*?\]'), '').trim();
+    if (detail.isNotEmpty && detail != label && detail != reason) {
+      return '$label: $detail';
+    }
+    return label;
   }
 
   ReturnStatus _parseReturnStatus(String status) {
