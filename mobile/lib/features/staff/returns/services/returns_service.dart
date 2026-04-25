@@ -94,7 +94,6 @@ class StaffReturnsService {
 
   Future<void> triggerRefund(String id, {
     required String method,
-    required double amount,
     String? transactionId,
     String? note,
     String? receiptImage,
@@ -103,10 +102,9 @@ class StaffReturnsService {
       '/returns/admin/$id/refund',
       data: {
         'method': method,
-        'amount': amount,
-        'transactionId': transactionId,
-        'note': note,
-        'receiptImage': receiptImage,
+        if (transactionId != null) 'transactionId': transactionId,
+        if (note != null) 'note': note,
+        if (receiptImage != null) 'receiptImage': receiptImage,
       },
       options: Options(
         headers: {

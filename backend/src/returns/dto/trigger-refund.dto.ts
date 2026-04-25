@@ -1,13 +1,9 @@
-import { IsString, IsOptional, IsIn, IsNumber } from 'class-validator';
+import { IsString, IsOptional, IsIn } from 'class-validator';
 
 export class TriggerRefundDto {
   @IsString()
   @IsIn(['manual', 'cash', 'bank_transfer', 'gateway'])
   method: 'manual' | 'cash' | 'bank_transfer' | 'gateway';
-
-  @IsOptional()
-  @IsNumber()
-  amount?: number;
 
   @IsOptional()
   @IsString()
