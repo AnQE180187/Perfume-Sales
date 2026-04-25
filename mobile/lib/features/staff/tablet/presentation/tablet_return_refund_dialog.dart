@@ -185,7 +185,6 @@ class _TabletReturnRefundDialogState extends ConsumerState<TabletReturnRefundDia
     final success = await ref.read(staffReturnsProvider.notifier).triggerRefund(
       widget.returnData['id'], 
       method: _method, 
-      amount: amount,
       note: _noteController.text.trim(),
       receiptImage: receiptImageUrl,
     );
