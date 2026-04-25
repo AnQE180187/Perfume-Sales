@@ -10,6 +10,9 @@ final productServiceProvider = Provider<ProductService>((ref) {
 });
 
 final productsProvider = FutureProvider<List<Product>>((ref) async {
+  // Watch preferences to trigger re-fetch when they change
+  ref.watch(aiPreferencesProvider);
+
   if (AppConfig.useRealAPI) {
     final repository = ref.watch(productRepositoryProvider);
     // Tăng giới hạn lên 100 để lấy toàn bộ sản phẩm
@@ -38,8 +41,9 @@ final personalizedProductsProvider = FutureProvider<List<Product>>((ref) async {
 final recommendedProductsProvider = FutureProvider<List<Product>>((ref) async {
   if (AppConfig.useRealAPI) {
     final products = await ref.watch(productsProvider.future);
-    if (products.length <= 3) return products;
-    return products.skip(2).take(6).toList();
+    // Show top matches first (already sorted by backend)
+    if (products.length <= 8) return products;
+    return products.take(12).toList();
   }
 
   final service = ref.watch(productServiceProvider);

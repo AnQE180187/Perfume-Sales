@@ -287,6 +287,45 @@ class AppLocalizationsVi extends AppLocalizations {
   String get pleaseAcceptTerms => 'VUI LÒNG CHẤP NHẬN ĐIỀU KHOẢN';
 
   @override
+  String get dnaSuccessTitle => 'KHO LƯU TRỮ DNA ĐÃ ĐƯỢC THIẾT LẬP';
+
+  @override
+  String get dnaSuccessMessage =>
+      'Hệ thống đã ghi nhận thành công hồ sơ khứu giác của bạn.';
+
+  @override
+  String get dnaSuccessSubmessage =>
+      'Thiên thần sẽ dẫn lối bạn khám phá những mùi hương độc bản phản ánh đúng bản sắc của riêng mình.';
+
+  @override
+  String get exploreNow => 'KHÁM PHÁ NGAY';
+
+  @override
+  String avoidedNotesWarning(Object notes) {
+    return '(Tuy nhiên, có chứa nốt hương bạn muốn tránh: $notes)';
+  }
+
+  @override
+  String avoidedNotesNotice(Object notes) {
+    return 'Lưu ý: Có nốt hương bạn muốn tránh ($notes)';
+  }
+
+  @override
+  String get dnaMatchDescription1 => 'Sản phẩm này vô cùng tương thích với ';
+
+  @override
+  String get dnaMatchDescription2 => ' mà bạn đặc biệt yêu thích.';
+
+  @override
+  String get dnaMatchScore => 'Chỉ số phù hợp DNA:';
+
+  @override
+  String get excellentScore => 'TUYỆT VỜI';
+
+  @override
+  String get unisex => 'Phi giới tính';
+
+  @override
   String get accessDenied => 'TRUY CẬP BỊ TỪ CHỐI';
 
   @override
@@ -318,6 +357,12 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get next => 'TIẾP THEO';
+
+  @override
+  String get and => 'và';
+
+  @override
+  String get more => 'khác';
 
   @override
   String get beginJourney => 'BẮT ĐẦU HÀNH TRÌNH';

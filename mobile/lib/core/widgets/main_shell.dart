@@ -67,11 +67,11 @@ class _MainShellState extends State<MainShell> with SingleTickerProviderStateMix
   ];
 
   void _openConsultation() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => const ConsultationScreen(),
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const ConsultationScreen(),
+        fullscreenDialog: true,
+      ),
     );
   }
 

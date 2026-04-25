@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 class TappableCard extends StatefulWidget {
   final Widget child;
   final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
   final double scaleDownFactor;
   final BorderRadius? borderRadius;
   final EdgeInsetsGeometry? margin;
@@ -19,6 +20,7 @@ class TappableCard extends StatefulWidget {
     super.key,
     required this.child,
     this.onTap,
+    this.onLongPress,
     this.scaleDownFactor = 0.96,
     this.borderRadius,
     this.margin,
@@ -112,6 +114,10 @@ class _TappableCardState extends State<TappableCard> with SingleTickerProviderSt
         onTapDown: _handleTapDown,
         onTapUp: _handleTapUp,
         onTapCancel: _handleTapCancel,
+        onLongPress: widget.onLongPress != null ? () {
+          HapticFeedback.heavyImpact();
+          widget.onLongPress!();
+        } : null,
         child: ScaleTransition(
           scale: _scaleAnimation,
           child: Stack(

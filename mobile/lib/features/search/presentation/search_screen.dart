@@ -18,6 +18,8 @@ import '../../cart/providers/cart_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:permission_handler/permission_handler.dart';
+import '../../../core/utils/perfume_utils.dart';
+import '../../profile/providers/ai_preferences_provider.dart' hide scentNotesProvider;
 
 class SearchScreen extends ConsumerStatefulWidget {
   final String? initialScent;
@@ -154,6 +156,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final searchState = ref.watch(searchProvider);
     final recentSearches = ref.watch(recentSearchesProvider);
     final wishlist = ref.watch(wishlistProvider).valueOrNull ?? [];
+    final aiPrefs = ref.watch(aiPreferencesProvider).value;
+    final preferredNotes = aiPrefs?.preferredNotes ?? [];
+    final avoidedNotes = aiPrefs?.avoidedNotes ?? [];
     
     return Scaffold(
       backgroundColor: AppTheme.ivoryBackground,
@@ -185,7 +190,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   if (_searchController.text.isEmpty && !_hasActiveFilters)
                     SliverToBoxAdapter(child: _buildInitialView(l10n, recentSearches)),
                   SliverToBoxAdapter(child: _buildResultInfo(l10n, searchState)),
-                  _buildResults(searchState, l10n, wishlist),
+                  _buildResults(searchState, l10n, wishlist, preferredNotes, avoidedNotes),
                   if (searchState.isLoadingMore)
                     SliverToBoxAdapter(
                       child: Padding(
@@ -385,7 +390,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     );
   }
 
-  Widget _buildResults(SearchState state, AppLocalizations l10n, List<Product> wishlist) {
+  Widget _buildResults(SearchState state, AppLocalizations l10n, List<Product> wishlist, List<String> preferredNotes, List<String> avoidedNotes) {
     if (state.isLoading) {
       return SliverToBoxAdapter(
         child: state.viewMode == 'grid' 
@@ -403,19 +408,27 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     }
 
     if (state.viewMode == 'grid') {
+      final isTablet = MediaQuery.of(context).size.width > 600;
       return SliverPadding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         sliver: SliverGrid(
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2, childAspectRatio: 0.49, crossAxisSpacing: 18, mainAxisSpacing: 20,
+          gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+            maxCrossAxisExtent: isTablet ? 300 : 220,
+            mainAxisExtent: isTablet ? 370 : 320,
+            crossAxisSpacing: 18,
+            mainAxisSpacing: 20,
           ),
           delegate: SliverChildBuilderDelegate(
             (context, index) {
               final product = state.results[index];
               final isFavorite = wishlist.any((p) => p.id == product.id);
+              final match = calculateMatchPercentage(product, preferredNotes, avoidedNotes);
               return ProductCard(
                 product: product,
                 isFavorite: isFavorite,
+                preferredNotes: preferredNotes,
+                avoidedNotes: avoidedNotes,
+                matchPercent: match > 0 ? match : null,
                 onFavoriteToggle: () => ref.read(wishlistProvider.notifier).toggle(product),
                 onTap: () => context.push('/product/${product.id}'),
               );
@@ -432,12 +445,16 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             (context, index) {
               final product = state.results[index];
               final isFavorite = wishlist.any((p) => p.id == product.id);
+              final match = calculateMatchPercentage(product, preferredNotes, avoidedNotes);
               return Padding(
                 padding: const EdgeInsets.only(bottom: 16),
                 child: ProductCard(
                   product: product,
                   variant: ProductCardVariant.list,
                   isFavorite: isFavorite,
+                  preferredNotes: preferredNotes,
+                  avoidedNotes: avoidedNotes,
+                  matchPercent: match > 0 ? match : null,
                   onFavoriteToggle: () => ref.read(wishlistProvider.notifier).toggle(product),
                   onTap: () => context.push('/product/${product.id}'),
                   onAdd: () {

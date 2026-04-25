@@ -12,6 +12,8 @@ import '../../../l10n/app_localizations.dart';
 import '../../product/models/product.dart';
 import '../../cart/providers/cart_provider.dart';
 import '../providers/wishlist_provider.dart';
+import '../../../core/utils/perfume_utils.dart';
+import '../../profile/providers/ai_preferences_provider.dart';
 
 enum WishlistSort { newest, priceLow, priceHigh, name }
 enum WishlistView { grid, list }
@@ -236,9 +238,9 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen>
                 SliverToBoxAdapter(child: _buildHeader(l10n, wishlist.length)),
                 SliverToBoxAdapter(child: _buildToolbar(l10n)),
                 if (_viewMode == WishlistView.grid)
-                  _buildGridView(sorted)
+                  _buildGridView(sorted, ref)
                 else
-                  _buildListView(sorted),
+                  _buildListView(sorted, ref),
                 const SliverToBoxAdapter(child: SizedBox(height: 40)),
               ],
             );
@@ -370,28 +372,35 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen>
     );
   }
 
-  Widget _buildGridView(List<Product> products) {
+  Widget _buildGridView(List<Product> products, WidgetRef ref) {
+    final aiPrefs = ref.watch(aiPreferencesProvider).value;
+    final preferredNotes = aiPrefs?.preferredNotes ?? [];
+    final avoidedNotes = aiPrefs?.avoidedNotes ?? [];
+    
     return SliverPadding(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       sliver: SliverGrid(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 0.47,
+        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+          maxCrossAxisExtent: MediaQuery.of(context).size.width > 600 ? 300 : 220,
+          mainAxisExtent: MediaQuery.of(context).size.width > 600 ? 370 : 320,
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
         ),
         delegate: SliverChildBuilderDelegate(
           (context, index) {
             final product = products[index];
-            return _AnimatedEntry(
-              index: index,
-              child: ProductCard(
-                product: product,
-                variant: ProductCardVariant.grid,
-                isFavorite: true,
-                onTap: () => context.push('/product/${product.id}'),
-                onFavoriteToggle: () => _removeWithUndo(product),
-              ),
+            final match = calculateMatchPercentage(product, preferredNotes, avoidedNotes);
+            
+            return ProductCard(
+              product: product,
+              variant: ProductCardVariant.grid,
+              isFavorite: true,
+              preferredNotes: preferredNotes,
+              avoidedNotes: avoidedNotes,
+              matchPercent: match > 0 ? match : null,
+              onFavoriteToggle: () => _removeWithUndo(product),
+              heroTag: 'wishlist_grid_${product.id}',
+              onTap: () => context.push('/product/${product.id}?heroTag=wishlist_grid_${product.id}'),
             );
           },
           childCount: products.length,
@@ -400,54 +409,32 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen>
     );
   }
 
-  Widget _buildListView(List<Product> products) {
+  Widget _buildListView(List<Product> products, WidgetRef ref) {
+    final aiPrefs = ref.watch(aiPreferencesProvider).value;
+    final preferredNotes = aiPrefs?.preferredNotes ?? [];
+    final avoidedNotes = aiPrefs?.avoidedNotes ?? [];
+    
     return SliverPadding(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate(
           (context, index) {
             final product = products[index];
-            return _AnimatedEntry(
-              index: index,
-              child: Dismissible(
-                key: ValueKey(product.id),
-                direction: DismissDirection.endToStart,
-                onDismissed: (_) => _removeWithUndo(product),
-                background: Container(
-                  alignment: Alignment.centerRight,
-                  margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.only(right: 24),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.red.shade300.withValues(alpha: 0.0),
-                        Colors.red.shade400,
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.delete_outline_rounded,
-                          color: Colors.white, size: 24),
-                      const SizedBox(height: 4),
-                      Text(
-                        AppLocalizations.of(context)!.remove,
-                        style: GoogleFonts.montserrat(
-                          fontSize: 10, fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                child: _WishlistListTile(
-                  product: product,
-                  onTap: () => context.push('/product/${product.id}'),
-                  onAddToCart: () => _addToCart(product),
-                  onRemove: () => _removeWithUndo(product),
-                ),
+            final match = calculateMatchPercentage(product, preferredNotes, avoidedNotes);
+            
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: ProductCard(
+                product: product,
+                variant: ProductCardVariant.list,
+                isFavorite: true,
+                preferredNotes: preferredNotes,
+                avoidedNotes: avoidedNotes,
+                matchPercent: match > 0 ? match : null,
+                onFavoriteToggle: () => _removeWithUndo(product),
+                heroTag: 'wishlist_list_${product.id}',
+                onTap: () => context.push('/product/${product.id}?heroTag=wishlist_list_${product.id}'),
+                onAdd: () => _addToCart(product),
               ),
             );
           },
@@ -456,7 +443,6 @@ class _WishlistScreenState extends ConsumerState<WishlistScreen>
       ),
     );
   }
-
   Widget _buildEmptyState(AppLocalizations l10n) {
     return FadeTransition(
       opacity: _entryController,
@@ -532,12 +518,14 @@ class _AnimatedEntryState extends State<_AnimatedEntry>
 // ─── Wishlist List Tile ───────────────────────────────────────────
 class _WishlistListTile extends StatelessWidget {
   final Product product;
+  final int? matchPercent;
   final VoidCallback? onTap;
   final VoidCallback? onAddToCart;
   final VoidCallback? onRemove;
 
   const _WishlistListTile({
     required this.product,
+    this.matchPercent,
     this.onTap,
     this.onAddToCart,
     this.onRemove,
@@ -565,16 +553,37 @@ class _WishlistListTile extends StatelessWidget {
             // Image
             ClipRRect(
               borderRadius: BorderRadius.circular(14),
-              child: Image.network(
-                product.imageUrl,
-                width: 80, height: 80,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  width: 80, height: 80,
-                  color: AppTheme.ivoryBackground,
-                  child: const Icon(Icons.image_outlined,
-                      size: 28, color: AppTheme.mutedSilver),
-                ),
+              child: Stack(
+                children: [
+                  Image.network(
+                    product.imageUrl,
+                    width: 80, height: 80,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      width: 80, height: 80,
+                      color: AppTheme.ivoryBackground,
+                      child: const Icon(Icons.image_outlined,
+                          size: 28, color: AppTheme.mutedSilver),
+                    ),
+                  ),
+                  if (matchPercent != null)
+                    Positioned(
+                      top: 4, left: 4,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppTheme.accentGold,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          '$matchPercent%',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 8, fontWeight: FontWeight.w700, color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
             const SizedBox(width: 14),

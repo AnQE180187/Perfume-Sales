@@ -288,6 +288,46 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pleaseAcceptTerms => 'PLEASE ACCEPT TERMS';
 
   @override
+  String get dnaSuccessTitle => 'YOUR DNA ARCHIVE IS SECURED';
+
+  @override
+  String get dnaSuccessMessage =>
+      'The system has successfully mapped your olfactory profile.';
+
+  @override
+  String get dnaSuccessSubmessage =>
+      'The Angel will now guide you to unique scents that resonate with your true identity.';
+
+  @override
+  String get exploreNow => 'EXPLORE NOW';
+
+  @override
+  String avoidedNotesWarning(Object notes) {
+    return '(However, contains notes you wish to avoid: $notes)';
+  }
+
+  @override
+  String avoidedNotesNotice(Object notes) {
+    return 'Note: Contains avoided notes ($notes)';
+  }
+
+  @override
+  String get dnaMatchDescription1 =>
+      'This fragrance is highly compatible with ';
+
+  @override
+  String get dnaMatchDescription2 => ' that you particularly love.';
+
+  @override
+  String get dnaMatchScore => 'DNA Compatibility Index:';
+
+  @override
+  String get excellentScore => 'EXCELLENT';
+
+  @override
+  String get unisex => 'Unisex';
+
+  @override
   String get accessDenied => 'ACCESS DENIED';
 
   @override
@@ -319,6 +359,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get next => 'NEXT';
+
+  @override
+  String get and => 'and';
+
+  @override
+  String get more => 'more';
 
   @override
   String get beginJourney => 'BEGIN JOURNEY';

@@ -111,7 +111,7 @@ class SearchNotifier extends StateNotifier<SearchState> {
         minPrice: _getMinPrice(state.priceRange),
         maxPrice: _getMaxPrice(state.priceRange),
         skip: 0,
-        take: 10,
+        take: 12,
       );
 
       // Apply sorting on results
@@ -121,7 +121,7 @@ class SearchNotifier extends StateNotifier<SearchState> {
       state = state.copyWith(
         results: sortedResults, 
         isLoading: false,
-        hasMore: results.length == 10,
+        hasMore: results.length == 12,
       );
     } catch (e) {
       state = state.copyWith(
@@ -144,8 +144,8 @@ class SearchNotifier extends StateNotifier<SearchState> {
     
     try {
       final results = await _repository.getProducts(
-        skip: (nextPage - 1) * 10,
-        take: 10,
+        skip: (nextPage - 1) * 12,
+        take: 12,
         categoryId: state.categoryId,
         scentFamilyId: state.scentFamilyId,
         brandId: state.brandId,
@@ -166,7 +166,7 @@ class SearchNotifier extends StateNotifier<SearchState> {
           results: newResults,
           isLoadingMore: false,
           page: nextPage,
-          hasMore: results.length == 10,
+          hasMore: results.length == 12,
         );
       }
     } catch (e) {
