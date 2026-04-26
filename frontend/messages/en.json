@@ -594,9 +594,16 @@
     "kpi": {
       "title": "Performance Matrix",
       "subtitle_prefix": "Today's KPIs —",
+      "action_close": "CLOSE SHIFT",
+      "analytics_label": "PERFORMANCE ANALYTICS",
+      "all_stores": "GLOBAL NETWORK",
+      "history_title": "SHIFT HISTORY",
+      "history_empty": "NO SHIFT HISTORY FOUND",
       "loading": "Loading report...",
       "cards": {
         "revenue": "Today's Revenue",
+        "cash": "CASH FLOW",
+        "transfer": "DIGITAL TRANSFER",
         "total_orders": "Total Orders",
         "avg_order_value": "Avg Order Value",
         "completion_rate": "Completion Rate",
@@ -614,6 +621,11 @@
       },
       "errors": {
         "load_failed": "Failed to load report."
+      },
+      "history": {
+        "matched": "MATCHED",
+        "discrepant": "DISCREPANT",
+        "actual_revenue": "ACTUAL REVENUE"
       }
     },
     "profile": {

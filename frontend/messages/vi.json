@@ -619,9 +619,16 @@
     "kpi": {
       "title": "Hiệu Suất Ngày",
       "subtitle_prefix": "KPI Hôm Nay —",
+      "action_close": "CHỐT DOANH THU",
+      "analytics_label": "PHÂN TÍCH HIỆU SUẤT",
+      "all_stores": "TẤT CẢ CỬA HÀNG",
+      "history_title": "LỊCH SỬ CHỐT CA",
+      "history_empty": "CHƯA CÓ LỊCH SỬ CHỐT CA",
       "loading": "Đang tải...",
       "cards": {
         "revenue": "Tổng Doanh thu",
+        "cash": "TIỀN MẶT",
+        "transfer": "CHUYỂN KHOẢN",
         "total_orders": "Tổng Đơn Hàng",
         "avg_order_value": "Giá Trị Đơn Trung Bình",
         "completion_rate": "Tỉ Lệ Hoàn Tất",
@@ -639,6 +646,11 @@
       },
       "errors": {
         "load_failed": "Không tải được danh sách đơn hàng"
+      },
+      "history": {
+        "matched": "KHỚP",
+        "discrepant": "LỆCH",
+        "actual_revenue": "THỰC THU"
       }
     },
     "profile": {

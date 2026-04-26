@@ -676,9 +676,17 @@ class _OrderDetailSheet extends ConsumerWidget {
   }
 
   Widget _buildItemTile(StaffOrderItem item, NumberFormat currencyFmt) {
-    String? imageUrl = item.variant?.product?.imageUrl;
-    if (imageUrl != null && !imageUrl.startsWith('http')) {
-      imageUrl = '${EnvConfig.apiBaseUrl}/$imageUrl';
+    String? rawImageUrl = item.variant?.product?.imageUrl;
+    String fullUrl = '';
+    if (rawImageUrl != null && rawImageUrl.isNotEmpty) {
+      if (rawImageUrl.startsWith('http')) {
+        fullUrl = rawImageUrl;
+      } else {
+        final baseUrl = EnvConfig.apiBaseUrl;
+        final cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
+        final cleanPath = rawImageUrl.startsWith('/') ? rawImageUrl : '/$rawImageUrl';
+        fullUrl = '$cleanBaseUrl$cleanPath';
+      }
     }
 
     return Padding(
@@ -694,10 +702,20 @@ class _OrderDetailSheet extends ConsumerWidget {
               border: Border.all(color: Colors.white10),
             ),
             clipBehavior: Clip.antiAlias,
-            child: imageUrl != null
+            child: rawImageUrl != null && rawImageUrl.isNotEmpty
                 ? Image.network(
-                    imageUrl,
+                    fullUrl,
                     fit: BoxFit.cover,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return const Center(
+                        child: SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white10),
+                        ),
+                      );
+                    },
                     errorBuilder: (_, __, ___) => const Icon(Icons.inventory_2_outlined, size: 20, color: Colors.white10),
                   )
                 : const Icon(Icons.inventory_2_outlined, size: 20, color: Colors.white10),
@@ -1230,14 +1248,18 @@ class _HoverableOrderCardState extends State<_HoverableOrderCard> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                        Text(
-                      '${widget.currencyFmt.format(order.finalAmount)}đ',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        color: AppTheme.accentGold,
-                      ),
-                    ),
+                          Flexible(
+                            child: Text(
+                              '${widget.currencyFmt.format(order.finalAmount)}đ',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                                color: AppTheme.accentGold,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
                           Wrap(
                             spacing: 4,
                             children: [
@@ -1319,7 +1341,26 @@ class _HoverableOrderCardState extends State<_HoverableOrderCard> {
   }
 
   Widget _buildProductPreview(StaffOrder order, _PayBadge payBadge) {
-    final hasImage = order.items.isNotEmpty && order.items.first.variant?.product?.imageUrl != null;
+    String? imageUrl;
+    if (order.items.isNotEmpty) {
+      imageUrl = order.items.first.variant?.product?.imageUrl;
+    }
+
+    final hasImage = imageUrl != null && imageUrl.isNotEmpty;
+    
+    // Construct full URL with slash handling
+    String fullUrl = '';
+    if (hasImage) {
+      if (imageUrl.startsWith('http')) {
+        fullUrl = imageUrl;
+      } else {
+        final baseUrl = EnvConfig.apiBaseUrl;
+        final cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
+        final cleanPath = imageUrl.startsWith('/') ? imageUrl : '/$imageUrl';
+        fullUrl = '$cleanBaseUrl$cleanPath';
+      }
+    }
+
     return Container(
       width: 52,
       height: 52,
@@ -1331,12 +1372,26 @@ class _HoverableOrderCardState extends State<_HoverableOrderCard> {
       clipBehavior: Clip.antiAlias,
       child: hasImage
           ? Image.network(
-              '${EnvConfig.apiBaseUrl}${order.items.first.variant!.product!.imageUrl!}',
+              fullUrl,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Icon(payBadge.icon, size: 18, color: payBadge.color.withOpacity(0.5)),
+              errorBuilder: (_, __, ___) => _buildFallbackIcon(payBadge),
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return const Center(
+                  child: SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white10),
+                  ),
+                );
+              },
             )
-          : Icon(payBadge.icon, size: 18, color: payBadge.color.withOpacity(0.5)),
+          : _buildFallbackIcon(payBadge),
     );
+  }
+
+  Widget _buildFallbackIcon(_PayBadge payBadge) {
+    return Icon(Icons.inventory_2_outlined, size: 20, color: Colors.white.withOpacity(0.1));
   }
 }
 
