@@ -4,34 +4,54 @@ import '../data/product_repository.dart';
 import '../models/product.dart';
 import '../services/product_service.dart';
 import '../../profile/providers/ai_preferences_provider.dart';
+import '../../../core/utils/perfume_utils.dart';
 
 final productServiceProvider = Provider<ProductService>((ref) {
   return ProductService();
 });
 
 final productsProvider = FutureProvider<List<Product>>((ref) async {
-  // Watch preferences to trigger re-fetch when they change
-  ref.watch(aiPreferencesProvider);
+  final aiPrefs = ref.watch(aiPreferencesProvider).value;
+  final preferredNotes = aiPrefs?.preferredNotes ?? [];
+  final avoidedNotes = aiPrefs?.avoidedNotes ?? [];
 
+  List<Product> products;
   if (AppConfig.useRealAPI) {
     final repository = ref.watch(productRepositoryProvider);
-    // Tăng giới hạn lên 100 để lấy toàn bộ sản phẩm
-    final rawList = await repository.getProducts(take: 100);
-    return rawList;
+    products = await repository.getProducts(take: 100);
+  } else {
+    final service = ref.watch(productServiceProvider);
+    products = await service.getAllProducts();
   }
 
-  final service = ref.watch(productServiceProvider);
-  return await service.getAllProducts();
+  if (preferredNotes.isNotEmpty || avoidedNotes.isNotEmpty) {
+    // Clone and sort to avoid side effects if needed, 
+    // though here products is already a fresh list
+    products.sort((a, b) {
+      final matchA = calculateMatchPercentage(a, preferredNotes, avoidedNotes);
+      final matchB = calculateMatchPercentage(b, preferredNotes, avoidedNotes);
+      if (matchA != matchB) return matchB.compareTo(matchA);
+      
+      // Secondary sort: rating or name if scores are same
+      return (b.rating ?? 0).compareTo(a.rating ?? 0);
+    });
+  }
+
+  return products;
 });
 
 final personalizedProductsProvider = FutureProvider<List<Product>>((ref) async {
-  // Watch preferences to trigger re-fetch when they change
-  ref.watch(aiPreferencesProvider);
-
+  // Use the main products list which is already sorted by AI match
+  final products = await ref.watch(productsProvider.future);
+  
   if (AppConfig.useRealAPI) {
-    final repository = ref.watch(productRepositoryProvider);
-    // Request a fresh list which will be filtered/sorted by the backend AI logic
-    return await repository.getProducts(take: 12);
+    // If we want more variety, we could filter by high match scores only here
+    return products.where((p) {
+      final aiPrefs = ref.watch(aiPreferencesProvider).value;
+      if (aiPrefs == null) return true;
+      final match = calculateMatchPercentage(p, aiPrefs.preferredNotes, aiPrefs.avoidedNotes);
+      return match >= 70; // Only show excellent matches in personalized section
+    }).take(12).toList();
   }
 
   final service = ref.watch(productServiceProvider);
@@ -41,8 +61,7 @@ final personalizedProductsProvider = FutureProvider<List<Product>>((ref) async {
 final recommendedProductsProvider = FutureProvider<List<Product>>((ref) async {
   if (AppConfig.useRealAPI) {
     final products = await ref.watch(productsProvider.future);
-    // Show top matches first (already sorted by backend)
-    if (products.length <= 8) return products;
+    // Show top matches first
     return products.take(12).toList();
   }
 
