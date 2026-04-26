@@ -91,8 +91,6 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
           indicatorColor: AppTheme.accentGold,
           labelColor: AppTheme.deepCharcoal,
           unselectedLabelColor: AppTheme.mutedSilver,
-          isScrollable: true,
-          tabAlignment: TabAlignment.start,
           tabs: [
             Tab(text: l10n.ordersActive),
             Tab(text: l10n.ordersCompleted),

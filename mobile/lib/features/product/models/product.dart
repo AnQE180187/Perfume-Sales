@@ -60,6 +60,7 @@ class Product {
   final List<String>? images;
   final String? scentAnalysis;
   final String? scentFamily;
+  final String? gender;
 
   Product({
     required this.id,
@@ -84,6 +85,7 @@ class Product {
     this.images,
     this.scentAnalysis,
     this.scentFamily,
+    this.gender,
   });
 
   Product copyWith({
@@ -107,6 +109,7 @@ class Product {
     List<String>? images,
     String? scentAnalysis,
     String? scentFamily,
+    String? gender,
   }) {
     return Product(
       id: id ?? this.id,
@@ -129,6 +132,7 @@ class Product {
       images: images ?? this.images,
       scentAnalysis: scentAnalysis ?? this.scentAnalysis,
       scentFamily: scentFamily ?? this.scentFamily,
+      gender: gender ?? this.gender,
     );
   }
 
@@ -153,6 +157,7 @@ class Product {
       'images': images,
       'scentAnalysis': scentAnalysis,
       'scent_family': scentFamily,
+      'gender': gender,
     };
   }
 
@@ -330,6 +335,7 @@ class Product {
       images: imageList,
       scentAnalysis: json['scentAnalysis'] as String?,
       scentFamily: scentFamily,
+      gender: json['gender']?.toString(),
     );
   }
 }

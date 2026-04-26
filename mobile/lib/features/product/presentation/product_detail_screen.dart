@@ -21,6 +21,7 @@ import '../models/product.dart';
 import '../../../core/widgets/product_price_section.dart';
 import '../../../core/widgets/scent_structure_section.dart';
 import 'scent_structure_detail_screen.dart';
+import '../../../core/utils/perfume_utils.dart';
 
 class ProductDetailScreen extends ConsumerStatefulWidget {
   final String productId;
@@ -386,54 +387,66 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                               // DNA MATCH + LOYALTY POINTS
                               Consumer(
                                 builder: (context, ref, _) {
-                                  final aiPrefs = ref.watch(aiPreferencesProvider).value;
-                                  final preferredNotes = aiPrefs?.preferredNotes ?? [];
-                                  
-                                  // Calculate Match %
-                                  int match = 0;
-                                  if (preferredNotes.isNotEmpty) {
-                                    final pNotes = product.notes.map((n) => n.toLowerCase()).toSet();
-                                    int matches = 0;
-                                    for (var n in preferredNotes) {
-                                      if (pNotes.contains(n.toLowerCase())) matches++;
-                                    }
-                                    if (matches > 0) {
-                                      match = (75 + (matches * 10)).clamp(80, 99);
-                                    }
-                                  }
+                                   final l10n = AppLocalizations.of(context)!;
+                                   final aiPrefs = ref.watch(aiPreferencesProvider).value;
+                                   final preferredNotes = aiPrefs?.preferredNotes ?? [];
+                                   final avoidedNotes = aiPrefs?.avoidedNotes ?? [];
+                                   
+                                   // Calculate Match % using standardized utility
+                                   final match = calculateMatchPercentage(product, preferredNotes, avoidedNotes);
+                                   final avoidedFound = getAvoidedNotesFound(product, avoidedNotes);
+                                   final hasPenalty = avoidedFound.isNotEmpty;
 
                                   final points = (currentPrice / 10000).floor();
 
                                   return Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      if (match > 0) ...[
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                          decoration: BoxDecoration(
-                                            color: AppTheme.accentGold.withValues(alpha: 0.1),
-                                            borderRadius: BorderRadius.circular(12),
-                                            border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.2)),
-                                          ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              const Icon(Icons.auto_awesome_rounded, size: 14, color: AppTheme.accentGold),
-                                              const SizedBox(width: 6),
-                                              Text(
-                                                AppLocalizations.of(context)!.dnaMatch(match),
-                                                style: GoogleFonts.montserrat(
-                                                  fontSize: 10,
-                                                  fontWeight: FontWeight.w700,
-                                                  color: AppTheme.accentGold,
-                                                  letterSpacing: 0.5,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        const SizedBox(height: 12),
-                                      ],
+                                       if (match > 0) ...[
+                                         Container(
+                                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                           decoration: BoxDecoration(
+                                             color: _getMatchColor(match).withValues(alpha: 0.1),
+                                             borderRadius: BorderRadius.circular(12),
+                                             border: Border.all(color: _getMatchColor(match).withValues(alpha: 0.2)),
+                                           ),
+                                           child: Row(
+                                             mainAxisSize: MainAxisSize.min,
+                                             children: [
+                                               Icon(
+                                                 hasPenalty ? Icons.warning_amber_rounded : Icons.auto_awesome_rounded, 
+                                                 size: 14, 
+                                                 color: _getMatchColor(match).withValues(alpha: 0.8),
+                                               ),
+                                               const SizedBox(width: 6),
+                                               Text(
+                                                 AppLocalizations.of(context)!.dnaMatch(match),
+                                                 style: GoogleFonts.montserrat(
+                                                   fontSize: 10,
+                                                   fontWeight: FontWeight.w700,
+                                                   color: _getMatchColor(match).withValues(alpha: 0.8),
+                                                   letterSpacing: 0.5,
+                                                 ),
+                                               ),
+                                             ],
+                                           ),
+                                         ),
+                                         if (hasPenalty) ...[
+                                           const SizedBox(height: 8),
+                                           Padding(
+                                             padding: const EdgeInsets.only(left: 4),
+                                             child: Text(
+                                               l10n.avoidedNotesNotice(avoidedFound.join(', ')),
+                                               style: GoogleFonts.montserrat(
+                                                 fontSize: 10,
+                                                 fontStyle: FontStyle.italic,
+                                                 color: Colors.redAccent.withValues(alpha: 0.8),
+                                               ),
+                                             ),
+                                           ),
+                                         ],
+                                         const SizedBox(height: 12),
+                                       ],
                                       Row(
                                         children: [
                                           const Icon(Icons.stars_rounded, size: 16, color: AppTheme.accentGold),
@@ -620,6 +633,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                     child: _TechnicalSpecsSection(
                       longevity: product.longevity,
                       concentration: product.concentration,
+                      gender: product.gender,
+                      scentFamily: product.scentFamily,
                     ),
                   ),
 
@@ -759,70 +774,147 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
 class _TechnicalSpecsSection extends StatelessWidget {
   final String? longevity;
   final String? concentration;
+  final String? gender;
+  final String? scentFamily;
 
-  const _TechnicalSpecsSection({this.longevity, this.concentration});
+  const _TechnicalSpecsSection({
+    this.longevity, 
+    this.concentration,
+    this.gender,
+    this.scentFamily,
+  });
 
   @override
   Widget build(BuildContext context) {
-    if (longevity == null && concentration == null) return const SizedBox.shrink();
+    if (longevity == null && concentration == null && gender == null && scentFamily == null) {
+      return const SizedBox.shrink();
+    }
 
     final l10n = AppLocalizations.of(context)!;
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppTheme.creamWhite.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.accentGold.withOpacity(0.1)),
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            l10n.technicalSpecs.toUpperCase(),
-            style: GoogleFonts.montserrat(
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.5,
-              color: AppTheme.accentGold,
-            ),
+          Row(
+            children: [
+              Container(
+                width: 12,
+                height: 1,
+                color: AppTheme.accentGold,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                l10n.technicalSpecs.toUpperCase(),
+                style: GoogleFonts.montserrat(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 2.0,
+                  color: AppTheme.accentGold,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
-          _specRow(Icons.timer_outlined, l10n.longevityLabel, longevity ?? l10n.updating),
-          const Divider(height: 24, color: AppTheme.softTaupe),
-          _specRow(Icons.water_drop_outlined, l10n.concentrationLabel, concentration ?? l10n.updating),
+          const SizedBox(height: 20),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final itemWidth = (constraints.maxWidth - 16) / 2;
+              return Wrap(
+                spacing: 16,
+                runSpacing: 16,
+                children: [
+                  _specCard(
+                    itemWidth,
+                    Icons.timer_outlined,
+                    l10n.longevityLabel,
+                    longevity ?? l10n.informationPending,
+                  ),
+                  _specCard(
+                    itemWidth,
+                    Icons.water_drop_outlined,
+                    l10n.concentrationLabel,
+                    concentration ?? l10n.informationPending,
+                  ),
+                  _specCard(
+                    itemWidth,
+                    Icons.person_outline_rounded,
+                    l10n.gender,
+                    _translateGender(context, gender) ?? l10n.informationPending,
+                  ),
+                  _specCard(
+                    itemWidth,
+                    Icons.bubble_chart_outlined,
+                    l10n.scentFamily,
+                    scentFamily ?? l10n.informationPending,
+                  ),
+                ],
+              );
+            },
+          ),
         ],
       ),
     );
   }
 
-  Widget _specRow(IconData icon, String label, String value) {
-    return Row(
-      children: [
-        Icon(icon, size: 18, color: AppTheme.mutedSilver),
-        const SizedBox(width: 12),
-        Text(
-          label,
-          style: GoogleFonts.montserrat(
-            fontSize: 13,
-            color: AppTheme.deepCharcoal.withOpacity(0.6),
-          ),
+  String? _translateGender(BuildContext context, String? gender) {
+    if (gender == null) return null;
+    final l10n = AppLocalizations.of(context)!;
+    switch (gender.toUpperCase()) {
+      case 'MALE':
+      case 'MEN':
+        return l10n.male;
+      case 'FEMALE':
+      case 'WOMEN':
+        return l10n.female;
+      case 'UNISEX':
+        return l10n.unisex;
+      default:
+        return gender;
+    }
+  }
+
+  Widget _specCard(double width, IconData icon, String label, String value) {
+    return Container(
+      width: width,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.creamWhite.withOpacity(0.4),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppTheme.accentGold.withOpacity(0.08),
+          width: 1,
         ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Text(
-            value,
-            textAlign: TextAlign.end,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            icon,
+            size: 18,
+            color: AppTheme.accentGold.withOpacity(0.7),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            label.toUpperCase(),
             style: GoogleFonts.montserrat(
-              fontSize: 13,
+              fontSize: 8,
               fontWeight: FontWeight.w600,
-              color: AppTheme.deepCharcoal,
+              letterSpacing: 0.5,
+              color: AppTheme.mutedSilver,
             ),
           ),
-        ),
-      ],
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: GoogleFonts.montserrat(
+              fontSize: 11, // Slightly smaller to fit better
+              fontWeight: FontWeight.w700,
+              color: AppTheme.deepCharcoal,
+              height: 1.3,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -905,4 +997,11 @@ class _ProductStorySection extends StatelessWidget {
       ),
     );
   }
+}
+
+Color _getMatchColor(int percent) {
+  if (percent >= 80) return AppTheme.accentGold;
+  if (percent >= 60) return Colors.amber.shade600;
+  if (percent >= 40) return Colors.orange.shade700;
+  return Colors.redAccent;
 }

@@ -1,6 +1,8 @@
 class DailyReport {
   final String date;
   final double totalRevenue;
+  final double cashRevenue;
+  final double transferRevenue;
   final int totalOrders;
   final int completedOrders;
   final int cancelledOrders;
@@ -15,6 +17,8 @@ class DailyReport {
   const DailyReport({
     required this.date,
     required this.totalRevenue,
+    required this.cashRevenue,
+    required this.transferRevenue,
     required this.totalOrders,
     required this.completedOrders,
     required this.cancelledOrders,
@@ -31,6 +35,8 @@ class DailyReport {
     return DailyReport(
       date: json['date'] as String,
       totalRevenue: (json['totalRevenue'] as num).toDouble(),
+      cashRevenue: (json['cashRevenue'] as num? ?? 0).toDouble(),
+      transferRevenue: (json['transferRevenue'] as num? ?? 0).toDouble(),
       totalOrders: (json['totalOrders'] as num).toInt(),
       completedOrders: (json['completedOrders'] as num).toInt(),
       cancelledOrders: (json['cancelledOrders'] as num? ?? 0).toInt(),

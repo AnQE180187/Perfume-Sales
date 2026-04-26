@@ -11,6 +11,8 @@ import '../providers/product_provider.dart';
 import '../../wishlist/providers/wishlist_provider.dart';
 import 'package:perfume_gpt_app/l10n/app_localizations.dart';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
+import '../../../core/utils/perfume_utils.dart';
+import '../../profile/providers/ai_preferences_provider.dart';
 
 class ExploreScreen extends ConsumerStatefulWidget {
   const ExploreScreen({super.key});
@@ -25,6 +27,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     final productsAsync = ref.watch(productsProvider);
     final wishlistAsync = ref.watch(wishlistProvider);
     final wishlistIds = wishlistAsync.value?.map((p) => p.id).toSet() ?? {};
+    final aiPrefs = ref.watch(aiPreferencesProvider).value;
+    final preferredNotes = aiPrefs?.preferredNotes ?? [];
+    final avoidedNotes = aiPrefs?.avoidedNotes ?? [];
 
     return Scaffold(
       body: SafeArea(
@@ -150,9 +155,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   showChildOpacityTransition: false,
                   child: GridView.builder(
                     padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 0.47,
+                    gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                      maxCrossAxisExtent: MediaQuery.of(context).size.width > 600 ? 300 : 220,
+                      mainAxisExtent: MediaQuery.of(context).size.width > 600 ? 370 : 320,
                       crossAxisSpacing: 16,
                       mainAxisSpacing: 16,
                     ),
@@ -160,6 +165,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                     itemBuilder: (context, index) {
                       final product = products[index];
                       final isFav = wishlistIds.contains(product.id);
+                      final match = calculateMatchPercentage(product, preferredNotes, avoidedNotes);
                       return _StaggeredEntrance(
                         index: index,
                         child: ProductCard(
@@ -168,6 +174,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                           badge: (product.rating ?? 0) >= 4.9
                               ? AppLocalizations.of(context)!.topRated
                               : null,
+                          matchPercent: match > 0
+                              ? match
+                              : null,
+                          preferredNotes: preferredNotes,
+                          avoidedNotes: avoidedNotes,
                           isFavorite: isFav,
                           heroTag: 'explore_${product.id}',
                           onTap: () => context.push('/product/${product.id}?heroTag=explore_${product.id}'),

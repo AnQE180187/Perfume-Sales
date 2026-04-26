@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/luxury_button.dart';
 import '../../providers/ai_preferences_provider.dart';
 import '../../../../l10n/app_localizations.dart';
 
@@ -510,7 +511,16 @@ class _AiPreferencesScreenState extends ConsumerState<AiPreferencesScreen>
       await ref.read(aiPreferencesProvider.notifier).updatePreferences(
         riskLevel: _riskLevel, preferredNotes: _preferredNotes, avoidedNotes: _avoidedNotes
       );
-      if (mounted) Navigator.pop(context);
+      
+      if (mounted) {
+        // Show premium success dialog
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => _DnaSuccessDialog(),
+        );
+        if (mounted) Navigator.pop(context);
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${l10n.error}: $e')));
     }
@@ -573,6 +583,137 @@ class _AiPreferencesScreenState extends ConsumerState<AiPreferencesScreen>
   }
 }
 
+class _DnaSuccessDialog extends StatefulWidget {
+  @override
+  State<_DnaSuccessDialog> createState() => _DnaSuccessDialogState();
+}
+
+class _DnaSuccessDialogState extends State<_DnaSuccessDialog> with SingleTickerProviderStateMixin {
+  late AnimationController _pulseController;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+    
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(28),
+          boxShadow: [
+            BoxShadow(
+              color: AppTheme.accentGold.withOpacity(0.15),
+              blurRadius: 30,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ScaleTransition(
+              scale: _scaleAnimation,
+              child: Container(
+                width: 90,
+                height: 90,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.accentGold.withOpacity(0.3),
+                      blurRadius: 20,
+                      spreadRadius: 5,
+                    ),
+                  ],
+                  gradient: RadialGradient(
+                    colors: [
+                      AppTheme.accentGold.withOpacity(0.2),
+                      AppTheme.accentGold.withOpacity(0.05),
+                    ],
+                  ),
+                  border: Border.all(color: AppTheme.accentGold.withOpacity(0.3), width: 2),
+                ),
+                child: Center(
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/images/perfume_angel.png',
+                      width: 60,
+                      height: 60,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              l10n.dnaSuccessTitle,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.playfairDisplay(
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1,
+                color: AppTheme.accentGold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              l10n.dnaSuccessMessage,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.montserrat(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.deepCharcoal,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              l10n.dnaSuccessSubmessage,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.montserrat(
+                fontSize: 13,
+                color: AppTheme.mutedSilver,
+                height: 1.6,
+              ),
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              child: LuxuryButton(
+                text: l10n.exploreNow,
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class RadarChartPainter extends CustomPainter {
   final List<String> preferredNotes;
   final double animationValue;
@@ -583,7 +724,7 @@ class RadarChartPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width * 0.35;
+    final radius = math.min(size.width, size.height) * 0.35;
     const sides = 5;
     const angle = (2 * math.pi) / sides;
     final labels = [l10n.woody, l10n.floral, l10n.citrus, l10n.spicy, l10n.musky];

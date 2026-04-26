@@ -614,6 +614,72 @@ abstract class AppLocalizations {
   /// **'PLEASE ACCEPT TERMS'**
   String get pleaseAcceptTerms;
 
+  /// No description provided for @dnaSuccessTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR DNA ARCHIVE IS SECURED'**
+  String get dnaSuccessTitle;
+
+  /// No description provided for @dnaSuccessMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The system has successfully mapped your olfactory profile.'**
+  String get dnaSuccessMessage;
+
+  /// No description provided for @dnaSuccessSubmessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The Angel will now guide you to unique scents that resonate with your true identity.'**
+  String get dnaSuccessSubmessage;
+
+  /// No description provided for @exploreNow.
+  ///
+  /// In en, this message translates to:
+  /// **'EXPLORE NOW'**
+  String get exploreNow;
+
+  /// No description provided for @avoidedNotesWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'(However, contains notes you wish to avoid: {notes})'**
+  String avoidedNotesWarning(Object notes);
+
+  /// No description provided for @avoidedNotesNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Note: Contains avoided notes ({notes})'**
+  String avoidedNotesNotice(Object notes);
+
+  /// No description provided for @dnaMatchDescription1.
+  ///
+  /// In en, this message translates to:
+  /// **'This fragrance is highly compatible with '**
+  String get dnaMatchDescription1;
+
+  /// No description provided for @dnaMatchDescription2.
+  ///
+  /// In en, this message translates to:
+  /// **' that you particularly love.'**
+  String get dnaMatchDescription2;
+
+  /// No description provided for @dnaMatchScore.
+  ///
+  /// In en, this message translates to:
+  /// **'DNA Compatibility Index:'**
+  String get dnaMatchScore;
+
+  /// No description provided for @excellentScore.
+  ///
+  /// In en, this message translates to:
+  /// **'EXCELLENT'**
+  String get excellentScore;
+
+  /// No description provided for @unisex.
+  ///
+  /// In en, this message translates to:
+  /// **'Unisex'**
+  String get unisex;
+
   /// No description provided for @accessDenied.
   ///
   /// In en, this message translates to:
@@ -673,6 +739,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'NEXT'**
   String get next;
+
+  /// No description provided for @and.
+  ///
+  /// In en, this message translates to:
+  /// **'and'**
+  String get and;
+
+  /// No description provided for @more.
+  ///
+  /// In en, this message translates to:
+  /// **'more'**
+  String get more;
 
   /// No description provided for @beginJourney.
   ///

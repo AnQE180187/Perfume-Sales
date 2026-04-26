@@ -22,8 +22,8 @@ class _DailyClosingDialogState extends ConsumerState<DailyClosingDialog> {
   bool _isSubmitting = false;
   final currencyFmt = NumberFormat('#,###', 'vi_VN');
 
-  double get systemCash => widget.report.totalRevenue * 0.4; // Giả định 40% là tiền mặt (Demo)
-  double get systemTransfer => widget.report.totalRevenue * 0.6; // Giả định 60% là ck (Demo)
+  double get systemCash => widget.report.cashRevenue; 
+  double get systemTransfer => widget.report.transferRevenue;
 
   @override
   void dispose() {
@@ -87,7 +87,7 @@ class _DailyClosingDialogState extends ConsumerState<DailyClosingDialog> {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
-          width: 500,
+          constraints: const BoxConstraints(maxWidth: 500),
           padding: const EdgeInsets.all(32),
           decoration: BoxDecoration(
             color: const Color(0xFF0F0F0F),
@@ -110,18 +110,22 @@ class _DailyClosingDialogState extends ConsumerState<DailyClosingDialog> {
                       child: const Icon(Icons.inventory_2_outlined, color: AppTheme.accentGold, size: 24),
                     ),
                     const SizedBox(width: 16),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "CHỐT DOANH THU",
-                          style: GoogleFonts.playfairDisplay(fontSize: 24, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 1),
-                        ),
-                        Text(
-                          "Đối soát tiền mặt thực tế cuối ngày",
-                          style: GoogleFonts.montserrat(fontSize: 12, color: Colors.white38),
-                        ),
-                      ],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "CHỐT DOANH THU",
+                            style: GoogleFonts.playfairDisplay(fontSize: 24, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 1),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            "Đối soát tiền mặt thực tế cuối ngày",
+                            style: GoogleFonts.montserrat(fontSize: 12, color: Colors.white38),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -216,7 +220,14 @@ class _DailyClosingDialogState extends ConsumerState<DailyClosingDialog> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: GoogleFonts.montserrat(color: Colors.white60, fontSize: 14)),
+          Expanded(
+            child: Text(
+              label,
+              style: GoogleFonts.montserrat(color: Colors.white60, fontSize: 14),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: 16),
           Text(
             value, 
             style: GoogleFonts.robotoMono(

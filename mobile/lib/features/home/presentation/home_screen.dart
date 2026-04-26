@@ -93,11 +93,11 @@ class _AIPromptBannerState extends State<_AIPromptBanner>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     void openConsultation() {
-      showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        builder: (_) => const ConsultationScreen(),
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const ConsultationScreen(),
+          fullscreenDialog: true,
+        ),
       );
     }
 

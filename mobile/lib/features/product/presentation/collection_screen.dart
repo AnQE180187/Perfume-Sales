@@ -115,11 +115,11 @@ class CollectionScreen extends StatelessWidget {
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             sliver: SliverGrid(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 30,
-                crossAxisSpacing: 20,
-                childAspectRatio: 0.54,
+              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 220,
+                mainAxisExtent: 355,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
               ),
               delegate: SliverChildBuilderDelegate(
                 (context, index) => const ProductCard(),

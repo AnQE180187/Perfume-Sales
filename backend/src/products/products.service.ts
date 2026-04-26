@@ -159,22 +159,28 @@ export class ProductsService {
       }
     }
 
+    // [MODIFIED] Disabled strict avoidance filtering at database level 
+    // to allow Penalty System visualization on Mobile.
+    /*
     if (avoidedNotes.length > 0) {
       where.AND.push({
         NOT: {
           notes: {
             some: {
               note: {
-                name: {
-                  in: avoidedNotes,
-                  mode: 'insensitive',
-                },
+                OR: avoidedNotes.map((note) => ({
+                  name: {
+                    startsWith: note.split(' (')[0],
+                    mode: 'insensitive',
+                  },
+                })),
               },
             },
           },
         },
       });
     }
+    */
 
     // Strict Filter for "Classic" mode (Low Risk Level < 0.35)
     // If user has preferred notes and riskLevel is low, ONLY show matching products
@@ -182,12 +188,14 @@ export class ProductsService {
       where.AND.push({
         notes: {
           some: {
-            note: {
-              name: {
-                in: preferredNotes,
-                mode: 'insensitive',
+              note: {
+                OR: preferredNotes.map((note) => ({
+                  name: {
+                    startsWith: note.split(' (')[0],
+                    mode: 'insensitive',
+                  },
+                })),
               },
-            },
           },
         },
       });
@@ -229,15 +237,14 @@ export class ProductsService {
     if (shouldScoring) {
       finalItems = items
         .sort((a, b) => {
+          const clean = (s: string) => s.split(' (')[0].toLowerCase().trim();
+          const preferredCleans = preferredNotes.map(clean);
+
           const scoreA = a.notes.filter((pn) =>
-            preferredNotes.some(
-              (un) => un.toLowerCase() === pn.note.name.toLowerCase(),
-            ),
+            preferredCleans.includes(clean(pn.note.name)),
           ).length;
           const scoreB = b.notes.filter((pn) =>
-            preferredNotes.some(
-              (un) => un.toLowerCase() === pn.note.name.toLowerCase(),
-            ),
+            preferredCleans.includes(clean(pn.note.name)),
           ).length;
           return scoreB - scoreA;
         })
