@@ -42,6 +42,7 @@
     "loyalty_reason": "Loyalty reward for your continued patronage."
   },
   "common": {
+    "back": "Back",
     "title": "Perfume GPT | Personalized Luxury Perfume",
     "consultation": "AI Consultation",
     "membership": "Membership",
@@ -157,7 +158,8 @@
       "manage_journal": "Manage Journal",
       "manage_banner": "Manage Banners",
       "ai_logs": "AI Performance",
-      "returns": "Return Requests"
+      "returns": "Return Requests",
+      "inventory": "Inventory Import"
     },
     "shared": {
       "chat": "Perfume GPT Chat"
@@ -3086,5 +3088,32 @@
     "digital_title_line2": "",
     "digital_desc": "An invitation to our AI-powered consultation. The gift of a bespoke molecular signature delivered instantly via the digital registry.",
     "digital_cta": "Send Digital Pass • 5.500.000đ"
+  },
+  "inventory": {
+    "title": "Inventory Import",
+    "subtitle": "Update stock for the Central Warehouse.",
+    "import_btn": "Import Stock",
+    "select_variant": "Select Product Variant",
+    "quantity": "Quantity",
+    "reason": "Reason",
+    "reason_placeholder": "e.g. Stock from supplier...",
+    "success": "Stock imported successfully!",
+    "error": "Failed to import stock. Please try again.",
+    "search_placeholder": "Search product to import...",
+    "current_stock": "Current Stock: {count}",
+    "import_confirm": "Confirm import of {quantity} units to warehouse?",
+    "history_title": "Inventory History",
+    "history_subtitle": "Logs of warehouse imports and adjustments.",
+    "type_import": "Import",
+    "type_adjust": "Adjust",
+    "type_sale": "Sale",
+    "type_return": "Return",
+    "table_product": "Product",
+    "table_type": "Type",
+    "table_quantity": "Qty",
+    "table_staff": "Staff",
+    "table_date": "Date",
+    "table_reason": "Reason",
+    "empty_history": "No inventory movement logs found."
   }
 }
