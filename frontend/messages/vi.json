@@ -42,6 +42,7 @@
     "loyalty_reason": "Phần thưởng tri ân khách hàng thân thiết."
   },
   "common": {
+    "back": "Quay lại",
     "title": "Perfume GPT",
     "consultation": "Tư Vấn AI",
     "membership": "Hội Viên",
@@ -75,7 +76,7 @@
     "my_profile": "Hồ Sơ Của Tôi",
     "member": "Thành viên",
     "anonymous_user": "Khách Ẩn Danh",
-    "all": "Tất cả thương hiệu",
+    "all": "Tất cả",
     "loading": "Đang tải...",
     "processing": "ĐANG CHUẨN BỊ",
     "view_options": "Xem Chi Tiết",
@@ -158,7 +159,8 @@
       "manage_journal": "Quản lý Tạp chí",
       "manage_banner": "Quản lý Banner",
       "ai_logs": "Hiệu Suất AI",
-      "returns": "Yêu cầu Đổi trả"
+      "returns": "Yêu cầu Đổi trả",
+      "inventory": "Quản lý Nhập hàng"
     },
     "shared": {
       "chat": "Trò chuyện Perfume GPT"
@@ -797,7 +799,9 @@
       "avoided_tab": "Nốt hương muốn tránh",
       "search_placeholder": "Tìm kiếm và thêm nốt hương {type}...",
       "search_preferred": "yêu thích",
-      "search_avoided": "muốn tránh",
+      "search_avoided": "muốn tránh"
+    },
+    "scent_dna_details": {
       "your_list_title": "Danh sách {type} của bạn",
       "preferred_label": "Yêu thích",
       "avoided_label": "Muốn tránh",
@@ -3154,5 +3158,32 @@
       "title_line2": "Của Nước Hoa.",
       "button": "Khám Phá Mùi Hương Của Tôi"
     }
+  },
+  "inventory": {
+    "title": "Quản lý Nhập hàng",
+    "subtitle": "Cập nhật tồn kho cho kho tổng (Central Warehouse).",
+    "import_btn": "Nhập hàng",
+    "select_variant": "Chọn phiên bản sản phẩm",
+    "quantity": "Số lượng nhập",
+    "reason": "Lý do nhập",
+    "reason_placeholder": "Ví dụ: Nhập hàng từ nhà cung cấp...",
+    "success": "Đã nhập hàng thành công!",
+    "error": "Nhập hàng thất bại. Vui lòng thử lại.",
+    "search_placeholder": "Tìm kiếm sản phẩm để nhập hàng...",
+    "current_stock": "Tồn kho hiện tại: {count}",
+    "import_confirm": "Xác nhận nhập {quantity} sản phẩm vào kho?",
+    "history_title": "Lịch sử Kho",
+    "history_subtitle": "Nhật ký nhập hàng và điều chỉnh tồn kho.",
+    "type_import": "Nhập hàng",
+    "type_adjust": "Điều chỉnh",
+    "type_sale": "Bán hàng",
+    "type_return": "Trả hàng",
+    "table_product": "Sản phẩm",
+    "table_type": "Loại",
+    "table_quantity": "Số lượng",
+    "table_staff": "Nhân viên",
+    "table_date": "Ngày thực hiện",
+    "table_reason": "Lý do",
+    "empty_history": "Chưa có lịch sử biến động kho."
   }
 }
