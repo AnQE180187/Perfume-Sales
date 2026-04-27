@@ -212,104 +212,150 @@ class _TabletPosGalleryState extends ConsumerState<TabletPosGallery> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (ctx) => Container(
-        height: MediaQuery.of(context).size.height * 0.75,
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          children: [
-            const SizedBox(height: 12),
-            Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(2))),
-            const SizedBox(height: 24),
-            Text(
-              "QUÉT MÃ VẠCH / SKU",
-              style: GoogleFonts.montserrat(
-                color: AppTheme.accentGold,
-                fontWeight: FontWeight.w900,
-                fontSize: 16,
-                letterSpacing: 3,
+      builder: (ctx) => _BarcodeScannerSheetContent(
+        storeId: storeId,
+        onSuccess: (code) {
+          if (ctx.mounted) {
+            Navigator.pop(ctx);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text("Sản phẩm [$code] đã được thêm vào giỏ"),
+                backgroundColor: Colors.green.shade900,
               ),
+            );
+          }
+        },
+      ),
+    );
+  }
+}
+
+class _BarcodeScannerSheetContent extends ConsumerStatefulWidget {
+  final String storeId;
+  final Function(String) onSuccess;
+
+  const _BarcodeScannerSheetContent({
+    required this.storeId,
+    required this.onSuccess,
+  });
+
+  @override
+  ConsumerState<_BarcodeScannerSheetContent> createState() => _BarcodeScannerSheetContentState();
+}
+
+class _BarcodeScannerSheetContentState extends ConsumerState<_BarcodeScannerSheetContent> {
+  bool _isProcessing = false;
+  final _textController = TextEditingController();
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleBarcode(String code) async {
+    if (_isProcessing || code.isEmpty) return;
+    
+    setState(() => _isProcessing = true);
+    try {
+      final success = await ref.read(posProvider.notifier).applyBarcode(code, widget.storeId);
+      if (success) {
+        widget.onSuccess(code);
+      } else {
+        setState(() => _isProcessing = false);
+      }
+    } catch (_) {
+      setState(() => _isProcessing = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.75,
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        children: [
+          const SizedBox(height: 12),
+          Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(2))),
+          const SizedBox(height: 24),
+          Text(
+            "QUÉT MÃ VẠCH / SKU",
+            style: GoogleFonts.montserrat(
+              color: AppTheme.accentGold,
+              fontWeight: FontWeight.w900,
+              fontSize: 16,
+              letterSpacing: 3,
             ),
-            const SizedBox(height: 32),
-            Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(24),
-                child: Stack(
-                  children: [
-                    MobileScanner(
-                      controller: MobileScannerController(
-                        facing: CameraFacing.back,
-                        torchEnabled: false,
-                      ),
-                      onDetect: (capture) async {
-                        final List<Barcode> barcodes = capture.barcodes;
-                        for (final barcode in barcodes) {
-                          final code = barcode.rawValue;
-                          if (code != null) {
-                            final success = await ref.read(posProvider.notifier).applyBarcode(code, storeId);
-                            if (success && ctx.mounted) {
-                              Navigator.pop(ctx);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text("Sản phẩm [$code] đã được thêm vào giỏ"),
-                                  backgroundColor: Colors.green.shade900,
-                                ),
-                              );
-                            }
-                          }
+          ),
+          const SizedBox(height: 32),
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: Stack(
+                children: [
+                  MobileScanner(
+                    controller: MobileScannerController(
+                      facing: CameraFacing.back,
+                      torchEnabled: false,
+                    ),
+                    onDetect: (capture) {
+                      if (_isProcessing) return;
+                      final List<Barcode> barcodes = capture.barcodes;
+                      for (final barcode in barcodes) {
+                        final code = barcode.rawValue;
+                        if (code != null && code.isNotEmpty) {
+                          _handleBarcode(code);
+                          break; 
                         }
-                      },
+                      }
+                    },
+                  ),
+                  // Scanner Overlay UI
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: AppTheme.accentGold.withOpacity(0.2), width: 2),
+                      borderRadius: BorderRadius.circular(24),
                     ),
-                    // Scanner Overlay UI
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: AppTheme.accentGold.withOpacity(0.2), width: 2),
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      child: Center(
-                        child: Container(
-                          width: 200,
-                          height: 200,
-                          decoration: BoxDecoration(
-                            border: Border.all(color: AppTheme.accentGold, width: 2),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                    child: Center(
+                      child: Container(
+                        width: 200,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: AppTheme.accentGold, width: 2),
+                          borderRadius: BorderRadius.circular(12),
                         ),
+                        child: _isProcessing 
+                          ? const Center(child: CircularProgressIndicator(color: AppTheme.accentGold))
+                          : null,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 32),
-            // Simulation field for emulator or if camera fails
-            TextField(
-              style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 13),
-              textAlign: TextAlign.center,
-              decoration: InputDecoration(
-                hintStyle: GoogleFonts.montserrat(color: Colors.white60, fontSize: 11),
-                filled: true,
-                fillColor: Colors.white.withOpacity(0.05),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white10)),
-                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white10)),
-                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppTheme.accentGold)),
-                prefixIcon: const Icon(Icons.keyboard_rounded, color: AppTheme.accentGold, size: 18),
-              ),
-              onSubmitted: (code) async {
-                final success = await ref.read(posProvider.notifier).applyBarcode(code, storeId);
-                if (success && ctx.mounted) {
-                  Navigator.pop(ctx);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text("Sản phẩm [$code] đã được thêm vào giỏ"),
-                      backgroundColor: Colors.green.shade900,
-                    ),
-                  );
-                }
-              },
+          ),
+          const SizedBox(height: 32),
+          // Simulation field for emulator or if camera fails
+          TextField(
+            controller: _textController,
+            enabled: !_isProcessing,
+            style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 13),
+            textAlign: TextAlign.center,
+            decoration: InputDecoration(
+              hintText: "NHẬP MÃ THỦ CÔNG",
+              hintStyle: GoogleFonts.montserrat(color: Colors.white60, fontSize: 11),
+              filled: true,
+              fillColor: Colors.white.withOpacity(0.05),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white10)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white10)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppTheme.accentGold)),
+              prefixIcon: const Icon(Icons.keyboard_rounded, color: AppTheme.accentGold, size: 18),
             ),
-            const SizedBox(height: 32),
-          ],
-        ),
+            onSubmitted: _handleBarcode,
+          ),
+          const SizedBox(height: 32),
+        ],
       ),
     );
   }
