@@ -799,9 +799,7 @@
       "avoided_tab": "Nốt hương muốn tránh",
       "search_placeholder": "Tìm kiếm và thêm nốt hương {type}...",
       "search_preferred": "yêu thích",
-      "search_avoided": "muốn tránh"
-    },
-    "scent_dna_details": {
+      "search_avoided": "muốn tránh",
       "your_list_title": "Danh sách {type} của bạn",
       "preferred_label": "Yêu thích",
       "avoided_label": "Muốn tránh",
@@ -1091,6 +1089,7 @@
         "subtitle": "Mỗi đơn hàng giúp bạn tích thêm điểm để đổi ưu đãi.",
         "credits_suffix": "Điểm",
         "history_title": "Lịch Sử Điểm Thưởng",
+        "my_vouchers": "Ưu đãi của tôi",
         "syncing": "Đang tải...",
         "empty": "Chưa có giao dịch nào. Bắt đầu mua sắm để tích điểm.",
         "perks_title": "Đặc quyền",
@@ -1157,9 +1156,12 @@
         "discount_off": "Giảm {value}%",
         "discount_fixed": "Giảm {value} {currency}",
         "fallback_desc": "Đặc quyền dành riêng cho khách hàng của Perfume GPT.",
-        "neural_insight_title": "Phân tích Hệ thống",
-        "neural_insight_desc": "Các yêu cầu và lượt quy đổi được xử lý ngay lập tức. Sau khi tổng hợp, mã ưu đãi sẽ xuất hiện trong {vault} của bạn.",
+        "remaining_slots": "Còn lại {remaining}/{limit} suất",
+        "unlimited": "Không giới hạn",
+        "neural_insight_title": "Phân Tích Hệ Thống AI",
+        "neural_insight_desc": "Các yêu cầu và lượt quy đổi được xử lý ngay lập tức. Sau khi tổng hợp, mã ưu đãi sẽ xuất hiện trong <vault>Ví Đặc Quyền</vault> của bạn.",
         "loyalty_vault": "Ví Đặc Quyền",
+        "vault_section_title": "Tủ Voucher Của Tôi",
         "referral": {
           "title": "Chương Trình Giới Thiệu",
           "desc": "Chia sẻ mã của bạn và nhận điểm thưởng đặc biệt khi bạn bè đặt hàng.",
