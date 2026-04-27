@@ -109,7 +109,18 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
                   _buildErrorHeader(quizState.errorMessage!, l10n),
                 Expanded(
                   child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 500),
+                    duration: const Duration(milliseconds: 700),
+                    switchInCurve: Curves.easeOutCubic,
+                    switchOutCurve: Curves.easeInCubic,
+                    transitionBuilder: (Widget child, Animation<double> animation) {
+                      return FadeTransition(
+                        opacity: animation,
+                        child: ScaleTransition(
+                          scale: Tween<double>(begin: 0.94, end: 1.0).animate(animation),
+                          child: child,
+                        ),
+                      );
+                    },
                     child: _buildCurrentStage(quizState, l10n),
                   ),
                 ),
@@ -507,13 +518,13 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           SizedBox(
-            width: 200,
-            height: 200,
+            width: 260,
+            height: 260,
             child: AnimatedBuilder(
               animation: _angelController,
               builder: (context, child) {
                 return CustomPaint(
-                  painter: AuraAnalysisPainter(_angelController.value),
+                  painter: SparklingParticlePainter(_angelController.value),
                   child: Center(
                     child: Transform.translate(
                       offset: Offset(0, 8 * math.sin(_angelController.value * 2 * math.pi)),
@@ -524,8 +535,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: AppTheme.accentGold.withValues(alpha: 0.3),
-                              blurRadius: 20,
+                              color: AppTheme.accentGold.withValues(alpha: 0.4),
+                              blurRadius: 30,
                               spreadRadius: 5,
                             ),
                           ],
@@ -836,13 +847,26 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
                   Positioned(
                     top: 16,
                     right: 16,
-                    child: GlassContainer(
-                      padding: const EdgeInsets.all(8),
-                      borderRadius: 12,
-                      child: const Icon(
-                        Icons.favorite_border_rounded,
-                        size: 18,
-                        color: Colors.white,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.15),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: GlassContainer(
+                        padding: const EdgeInsets.all(8),
+                        borderRadius: 12,
+                        opacity: 0.25,
+                        blur: 8,
+                        child: const Icon(
+                          Icons.favorite_border_rounded,
+                          size: 18,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
@@ -974,6 +998,75 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
       ),
     );
   }
+}
+
+class SparklingParticlePainter extends CustomPainter {
+  final double progress;
+  final math.Random random = math.Random(42); // Fixed seed for stable particles
+
+  SparklingParticlePainter(this.progress);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final paint = Paint()..style = PaintingStyle.fill;
+
+    // Draw rotating rings first (Aura)
+    final ringPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+
+    for (int i = 0; i < 4; i++) {
+      ringPaint.color = AppTheme.accentGold.withValues(alpha: 0.1 + (i * 0.1));
+      final radius = (size.width / 2.2) - (i * 20);
+      final rotation = (progress * 2 * math.pi) * (1 + (i * 0.3));
+      
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        rotation,
+        1.5,
+        false,
+        ringPaint,
+      );
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        rotation + math.pi,
+        0.8,
+        false,
+        ringPaint,
+      );
+    }
+
+    // Draw particles
+    for (int i = 0; i < 35; i++) {
+      final angle = (i * 2 * math.pi / 35) + (progress * 2 * math.pi * (i % 2 == 0 ? 1 : -0.5));
+      final rBase = (size.width / 2.4);
+      final rVar = 30 * math.sin(progress * 4 * math.pi + i);
+      final radius = rBase + rVar;
+      
+      final x = center.dx + radius * math.cos(angle);
+      final y = center.dy + radius * math.sin(angle);
+      
+      final opacity = (0.3 + 0.7 * math.sin(progress * 6 * math.pi + i)).clamp(0.0, 1.0);
+      final pSize = (1.0 + 2.5 * math.cos(progress * 3 * math.pi + i)).abs();
+      
+      paint.color = AppTheme.accentGold.withValues(alpha: opacity);
+      
+      // Draw a small glow for each particle
+      if (opacity > 0.6) {
+        canvas.drawCircle(
+          Offset(x, y), 
+          pSize * 2, 
+          Paint()..color = AppTheme.accentGold.withValues(alpha: opacity * 0.3)..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3)
+        );
+      }
+      
+      canvas.drawCircle(Offset(x, y), pSize, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
 
 class AuraAnalysisPainter extends CustomPainter {

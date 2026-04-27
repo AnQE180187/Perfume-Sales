@@ -9,14 +9,6 @@ class OrderTimeline extends StatelessWidget {
 
   const OrderTimeline({super.key, required this.steps});
 
-  static const _icons = <IconData>[
-    Icons.receipt_long_rounded,
-    Icons.verified_rounded,
-    Icons.inventory_2_rounded,
-    Icons.local_shipping_rounded,
-    Icons.check_circle_rounded,
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -24,9 +16,16 @@ class OrderTimeline extends StatelessWidget {
         final index = entry.key;
         final step = entry.value;
         final isLast = index == steps.length - 1;
-        final icon = index < _icons.length ? _icons[index] : Icons.circle;
 
-        return _TimelineRow(step: step, icon: icon, isLast: isLast);
+        // Progress for the bottle: 0.0 (empty) to 1.0 (full)
+        // We'll map the index to a fill level
+        final fillLevel = step.reached ? (index + 1) / steps.length : (index / steps.length);
+
+        return _TimelineRow(
+          step: step,
+          fillLevel: fillLevel,
+          isLast: isLast,
+        );
       }).toList(),
     );
   }
@@ -34,12 +33,12 @@ class OrderTimeline extends StatelessWidget {
 
 class _TimelineRow extends StatelessWidget {
   final TrackingTimelineStep step;
-  final IconData icon;
+  final double fillLevel;
   final bool isLast;
 
   const _TimelineRow({
     required this.step,
-    required this.icon,
+    required this.fillLevel,
     required this.isLast,
   });
 
@@ -54,44 +53,44 @@ class _TimelineRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Left: icon + connector line ──
+          // ── Left: bottle icon + connector line ──
           SizedBox(
             width: 44,
             child: Column(
               children: [
-                // Icon circle
+                // Bottle Icon with fill animation
                 AnimatedContainer(
-                  duration: const Duration(milliseconds: 350),
-                  curve: Curves.easeOutCubic,
-                  width: step.current ? 40 : 36,
-                  height: step.current ? 40 : 36,
+                  duration: const Duration(milliseconds: 600),
+                  curve: Curves.easeOutBack,
+                  width: step.current ? 42 : 38,
+                  height: step.current ? 42 : 38,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: step.reached
                         ? (step.current
-                              ? AppTheme.accentGold.withValues(alpha: 0.15)
-                              : const Color(0xFF12B76A).withValues(alpha: 0.12))
+                                ? AppTheme.accentGold.withValues(alpha: 0.08)
+                                : const Color(0xFF12B76A).withValues(alpha: 0.05))
                         : Colors.white,
-                    border: Border.all(
-                      color: step.reached ? activeColor : inactiveColor,
-                      width: step.current ? 2.2 : 1.5,
-                    ),
                     boxShadow: step.current
                         ? [
                             BoxShadow(
-                              color: AppTheme.accentGold.withValues(
-                                alpha: 0.25,
-                              ),
-                              blurRadius: 10,
-                              spreadRadius: 1,
+                              color: AppTheme.accentGold.withValues(alpha: 0.2),
+                              blurRadius: 12,
+                              spreadRadius: 2,
                             ),
                           ]
                         : null,
                   ),
-                  child: Icon(
-                    icon,
-                    size: step.current ? 19 : 16,
-                    color: step.reached ? activeColor : inactiveColor,
+                  child: Center(
+                    child: CustomPaint(
+                      size: const Size(20, 24),
+                      painter: _PerfumeBottlePainter(
+                        fillLevel: fillLevel,
+                        strokeColor: step.reached ? activeColor : inactiveColor,
+                        fillColor: step.reached ? activeColor : Colors.transparent,
+                        isCurrent: step.current,
+                      ),
+                    ),
                   ),
                 ),
                 // Connector line
@@ -188,6 +187,76 @@ class _TimelineRow extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _PerfumeBottlePainter extends CustomPainter {
+  final double fillLevel;
+  final Color strokeColor;
+  final Color fillColor;
+  final bool isCurrent;
+
+  _PerfumeBottlePainter({
+    required this.fillLevel,
+    required this.strokeColor,
+    required this.fillColor,
+    required this.isCurrent,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final strokePaint = Paint()
+      ..color = strokeColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = isCurrent ? 2.0 : 1.2;
+
+    final fillPaint = Paint()
+      ..color = fillColor.withValues(alpha: isCurrent ? 0.8 : 0.6)
+      ..style = PaintingStyle.fill;
+
+    final path = Path();
+    final w = size.width;
+    final h = size.height;
+
+    // Draw bottle shape (Rectangle body + smaller neck + cap)
+    final bodyHeight = h * 0.7;
+    final neckWidth = w * 0.4;
+    final neckHeight = h * 0.15;
+    final capHeight = h * 0.15;
+
+    // Body
+    final bodyRect = Rect.fromLTWH(0, h - bodyHeight, w, bodyHeight);
+    final bodyPath = Path()..addRRect(RRect.fromRectAndRadius(bodyRect, const Radius.circular(4)));
+    
+    // Fill level path
+    if (fillLevel > 0) {
+      final fillRect = Rect.fromLTWH(
+        0, 
+        h - (bodyHeight * fillLevel), 
+        w, 
+        bodyHeight * fillLevel
+      );
+      final fillPath = Path()..addRRect(RRect.fromRectAndRadius(fillRect, const Radius.circular(4)));
+      canvas.drawPath(fillPath, fillPaint);
+    }
+
+    // Draw outlines
+    canvas.drawPath(bodyPath, strokePaint);
+    
+    // Neck
+    final neckRect = Rect.fromLTWH((w - neckWidth) / 2, capHeight, neckWidth, neckHeight);
+    canvas.drawRect(neckRect, strokePaint);
+    
+    // Cap
+    final capRect = Rect.fromLTWH((w - neckWidth - 4) / 2, 0, neckWidth + 4, capHeight);
+    canvas.drawRRect(RRect.fromRectAndRadius(capRect, const Radius.circular(2)), strokePaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _PerfumeBottlePainter oldDelegate) {
+    return oldDelegate.fillLevel != fillLevel || 
+           oldDelegate.strokeColor != strokeColor || 
+           oldDelegate.isCurrent != isCurrent;
   }
 }
 

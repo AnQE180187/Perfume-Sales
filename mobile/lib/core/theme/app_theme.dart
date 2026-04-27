@@ -31,6 +31,53 @@ class AppTheme {
   static const Color glassWhite = Color(0x0DFFFFFF); // 5% White
   static const Color glassBorder = Color(0x1AFFFFFF); // 10% White
 
+  // --- PREMIUM DECORATION ---
+  static BoxDecoration getPremiumShadow({
+    double borderRadius = 16,
+    Color? color,
+  }) {
+    return BoxDecoration(
+      color: color ?? Colors.white,
+      borderRadius: BorderRadius.circular(borderRadius),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.04),
+          blurRadius: 20,
+          offset: const Offset(0, 8),
+        ),
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.02),
+          blurRadius: 5,
+          offset: const Offset(0, 2),
+        ),
+      ],
+    );
+  }
+
+  static BoxDecoration getGlassDecoration({
+    double borderRadius = 16,
+    double opacity = 0.8,
+    bool showBorder = true,
+  }) {
+    return BoxDecoration(
+      color: Colors.white.withValues(alpha: opacity),
+      borderRadius: BorderRadius.circular(borderRadius),
+      border: showBorder
+          ? Border.all(
+              color: Colors.black.withValues(alpha: 0.05),
+              width: 1,
+            )
+          : null,
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.03),
+          blurRadius: 15,
+          offset: const Offset(0, 5),
+        ),
+      ],
+    );
+  }
+
   // --- DYNAMIC UTILS ---
   static LinearGradient getLuxuryGradient(Brightness brightness) {
     return brightness == Brightness.dark

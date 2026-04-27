@@ -644,28 +644,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String get orderStatusRefunded => 'Refunded';
 
   @override
-  String get orderDescPending => 'Your order is pending confirmation';
+  String get orderDescPending =>
+      'Our concierge is receiving your olfactory request';
 
   @override
-  String get orderDescConfirmed => 'Your order has been confirmed';
+  String get orderDescConfirmed =>
+      'Master artisans are preparing your fragrance essence';
 
   @override
-  String get orderDescProcessing => 'We are preparing your scent';
+  String get orderDescProcessing =>
+      'Your signature scent is being meticulously packaged';
 
   @override
-  String get orderDescShipped => 'Your scent is on the way';
+  String get orderDescShipped => 'Your fragrance journey is on its way to you';
 
   @override
-  String get orderDescOutForDelivery => 'Your order is out for delivery';
+  String get orderDescOutForDelivery =>
+      'Your unique scent will reach your doorstep today';
 
   @override
-  String get orderDescDelivered => 'Delivered successfully';
+  String get orderDescDelivered =>
+      'Congratulations on acquiring your new scent signature';
 
   @override
-  String get orderDescCancelled => 'This order was cancelled';
+  String get orderDescCancelled =>
+      'Your order has been removed from our system';
 
   @override
-  String get orderDescRefunded => 'Order has been refunded';
+  String get orderDescRefunded =>
+      'The refund has been credited to your account';
 
   @override
   String get payment => 'PAYMENT';
@@ -1766,7 +1773,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get category => 'Category';
 
   @override
-  String get recipientName => 'Recipient Name';
+  String get recipientName => 'Personal Information';
 
   @override
   String get recipientNameHint => 'Enter recipient\'s full name';
@@ -1838,6 +1845,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get giftLabel => 'Gift';
+
+  @override
+  String get hotelLabel => 'Hotel';
+
+  @override
+  String get schoolLabel => 'School';
+
+  @override
+  String get cafeLabel => 'Store';
+
+  @override
+  String get otherLabel => 'Other';
 
   @override
   String get selectProvince => 'Select Province';

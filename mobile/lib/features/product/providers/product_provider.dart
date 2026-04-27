@@ -24,18 +24,20 @@ final productsProvider = FutureProvider<List<Product>>((ref) async {
     products = await service.getAllProducts();
   }
 
-  if (preferredNotes.isNotEmpty || avoidedNotes.isNotEmpty) {
-    // Clone and sort to avoid side effects if needed, 
-    // though here products is already a fresh list
-    products.sort((a, b) {
+  // Sort by match percentage if DNA is present, otherwise sort by "Best Selling" (reviews/rating)
+  products.sort((a, b) {
+    if (preferredNotes.isNotEmpty || avoidedNotes.isNotEmpty) {
       final matchA = calculateMatchPercentage(a, preferredNotes, avoidedNotes);
       final matchB = calculateMatchPercentage(b, preferredNotes, avoidedNotes);
       if (matchA != matchB) return matchB.compareTo(matchA);
-      
-      // Secondary sort: rating or name if scores are same
-      return (b.rating ?? 0).compareTo(a.rating ?? 0);
-    });
-  }
+    }
+    
+    // Default / Secondary sort: Best selling (most reviews, then highest rating)
+    final reviewCompare = (b.reviews ?? 0).compareTo(a.reviews ?? 0);
+    if (reviewCompare != 0) return reviewCompare;
+    
+    return (b.rating ?? 0).compareTo(a.rating ?? 0);
+  });
 
   return products;
 });
@@ -49,6 +51,10 @@ final personalizedProductsProvider = FutureProvider<List<Product>>((ref) async {
     return products.where((p) {
       final aiPrefs = ref.watch(aiPreferencesProvider).value;
       if (aiPrefs == null) return true;
+      
+      // If no DNA preferences, show as best sellers (all pass filter)
+      if (aiPrefs.preferredNotes.isEmpty && aiPrefs.avoidedNotes.isEmpty) return true;
+      
       final match = calculateMatchPercentage(p, aiPrefs.preferredNotes, aiPrefs.avoidedNotes);
       return match >= 70; // Only show excellent matches in personalized section
     }).take(12).toList();

@@ -79,6 +79,9 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
         centerTitle: true,
         bottom: TabBar(
           controller: _tabController,
+          isScrollable: true,
+          tabAlignment: TabAlignment.start,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
           labelStyle: GoogleFonts.montserrat(
             fontWeight: FontWeight.w700,
             fontSize: 13,

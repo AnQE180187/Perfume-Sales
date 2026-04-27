@@ -116,26 +116,45 @@ class _BadgeIcon extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            width: 64,
-            height: 64,
+            width: 68,
+            height: 68,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: achievement.isUnlocked 
-                  ? AppTheme.accentGold.withValues(alpha: 0.1)
-                  : AppTheme.mutedSilver.withValues(alpha: 0.1),
+                  ? Colors.white 
+                  : AppTheme.mutedSilver.withValues(alpha: 0.05),
               border: Border.all(
                 color: achievement.isUnlocked 
-                    ? AppTheme.accentGold 
-                    : AppTheme.mutedSilver.withValues(alpha: 0.3),
+                    ? AppTheme.accentGold.withValues(alpha: 0.5) 
+                    : AppTheme.mutedSilver.withValues(alpha: 0.2),
                 width: 1.5,
               ),
+              boxShadow: achievement.isUnlocked ? [
+                BoxShadow(
+                  color: AppTheme.accentGold.withValues(alpha: 0.15),
+                  blurRadius: 15,
+                  offset: const Offset(0, 5),
+                )
+              ] : null,
             ),
-            child: Icon(
-              achievement.icon,
-              color: achievement.isUnlocked 
-                  ? AppTheme.accentGold 
-                  : AppTheme.mutedSilver.withValues(alpha: 0.5),
-              size: 32,
+            child: Center(
+              child: Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: achievement.isUnlocked 
+                      ? AppTheme.accentGold.withValues(alpha: 0.08)
+                      : Colors.transparent,
+                ),
+                child: Icon(
+                  achievement.icon,
+                  color: achievement.isUnlocked 
+                      ? AppTheme.accentGold 
+                      : AppTheme.mutedSilver.withValues(alpha: 0.4),
+                  size: 28,
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 8),

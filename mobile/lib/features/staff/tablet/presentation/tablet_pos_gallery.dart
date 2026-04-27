@@ -262,6 +262,26 @@ class _BarcodeScannerSheetContentState extends ConsumerState<_BarcodeScannerShee
       if (success) {
         widget.onSuccess(code);
       } else {
+        final error = ref.read(posProvider).error;
+        if (mounted && error != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                error,
+                style: GoogleFonts.montserrat(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
+              backgroundColor: Colors.red.shade900,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              margin: const EdgeInsets.all(24),
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
         setState(() => _isProcessing = false);
       }
     } catch (_) {

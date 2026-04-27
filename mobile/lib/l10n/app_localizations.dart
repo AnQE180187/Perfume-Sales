@@ -1301,49 +1301,49 @@ abstract class AppLocalizations {
   /// No description provided for @orderDescPending.
   ///
   /// In en, this message translates to:
-  /// **'Your order is pending confirmation'**
+  /// **'Our concierge is receiving your olfactory request'**
   String get orderDescPending;
 
   /// No description provided for @orderDescConfirmed.
   ///
   /// In en, this message translates to:
-  /// **'Your order has been confirmed'**
+  /// **'Master artisans are preparing your fragrance essence'**
   String get orderDescConfirmed;
 
   /// No description provided for @orderDescProcessing.
   ///
   /// In en, this message translates to:
-  /// **'We are preparing your scent'**
+  /// **'Your signature scent is being meticulously packaged'**
   String get orderDescProcessing;
 
   /// No description provided for @orderDescShipped.
   ///
   /// In en, this message translates to:
-  /// **'Your scent is on the way'**
+  /// **'Your fragrance journey is on its way to you'**
   String get orderDescShipped;
 
   /// No description provided for @orderDescOutForDelivery.
   ///
   /// In en, this message translates to:
-  /// **'Your order is out for delivery'**
+  /// **'Your unique scent will reach your doorstep today'**
   String get orderDescOutForDelivery;
 
   /// No description provided for @orderDescDelivered.
   ///
   /// In en, this message translates to:
-  /// **'Delivered successfully'**
+  /// **'Congratulations on acquiring your new scent signature'**
   String get orderDescDelivered;
 
   /// No description provided for @orderDescCancelled.
   ///
   /// In en, this message translates to:
-  /// **'This order was cancelled'**
+  /// **'Your order has been removed from our system'**
   String get orderDescCancelled;
 
   /// No description provided for @orderDescRefunded.
   ///
   /// In en, this message translates to:
-  /// **'Order has been refunded'**
+  /// **'The refund has been credited to your account'**
   String get orderDescRefunded;
 
   /// No description provided for @payment.
@@ -3467,7 +3467,7 @@ abstract class AppLocalizations {
   /// No description provided for @recipientName.
   ///
   /// In en, this message translates to:
-  /// **'Recipient Name'**
+  /// **'Personal Information'**
   String get recipientName;
 
   /// No description provided for @recipientNameHint.
@@ -3607,6 +3607,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Gift'**
   String get giftLabel;
+
+  /// No description provided for @hotelLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Hotel'**
+  String get hotelLabel;
+
+  /// No description provided for @schoolLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'School'**
+  String get schoolLabel;
+
+  /// No description provided for @cafeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Store'**
+  String get cafeLabel;
+
+  /// No description provided for @otherLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get otherLabel;
 
   /// No description provided for @selectProvince.
   ///

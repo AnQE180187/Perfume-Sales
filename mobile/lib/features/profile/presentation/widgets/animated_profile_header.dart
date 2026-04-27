@@ -27,30 +27,59 @@ class AnimatedProfileHeader extends SliverPersistentHeaderDelegate {
       decoration: BoxDecoration(
         color: AppTheme.ivoryBackground,
         boxShadow: overlapsContent
-            ? [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)]
+            ? [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)]
             : null,
       ),
       child: Stack(
         children: [
-          // Background Parallax
+          // Premium Aura Background (Parallax)
           Positioned(
-            top: -shrinkOffset * 0.5,
-            left: 0,
-            right: 0,
-            height: maxExtent,
+            top: -shrinkOffset * 0.4,
+            left: -50,
+            right: -50,
+            height: maxExtent * 1.2,
             child: Opacity(
               opacity: headerOpacity,
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      AppTheme.accentGold.withOpacity(0.15),
-                      AppTheme.ivoryBackground,
-                    ],
+              child: Stack(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          AppTheme.accentGold.withValues(alpha: 0.15),
+                          AppTheme.ivoryBackground,
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+                  // Animated-like aura blobs
+                  Positioned(
+                    top: -20,
+                    right: 40,
+                    child: Container(
+                      width: 200,
+                      height: 200,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppTheme.accentGold.withValues(alpha: 0.08),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 40,
+                    left: -20,
+                    child: Container(
+                      width: 150,
+                      height: 150,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppTheme.champagneGold.withValues(alpha: 0.1),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -60,7 +89,7 @@ class AnimatedProfileHeader extends SliverPersistentHeaderDelegate {
             padding: EdgeInsets.only(top: MediaQuery.paddingOf(context).top),
             child: Stack(
               children: [
-                // Custom App Bar (Fixed at top of sliver)
+                // Custom App Bar
                 Positioned(
                   top: 0,
                   left: 0,
@@ -95,7 +124,7 @@ class AnimatedProfileHeader extends SliverPersistentHeaderDelegate {
                   ),
                 ),
 
-                // Collapsing Profile Info (Fades out and moves)
+                // Collapsing Profile Info
                 if (shrinkOffset < maxExtent - minExtent + 20)
                   Positioned(
                     top: 60,
@@ -109,37 +138,50 @@ class AnimatedProfileHeader extends SliverPersistentHeaderDelegate {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 5),
+                            // Avatar with Gold Ring & Shadow
                             Container(
                               width: avatarSize,
                               height: avatarSize,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 3),
+                                border: Border.all(
+                                  color: AppTheme.accentGold.withValues(alpha: 0.5),
+                                  width: 2,
+                                ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppTheme.deepCharcoal.withOpacity(0.1),
-                                    blurRadius: 10,
+                                    color: AppTheme.accentGold.withValues(alpha: 0.15),
+                                    blurRadius: 20,
+                                    spreadRadius: 2,
                                   ),
                                 ],
                               ),
-                              child: CircleAvatar(
-                                backgroundColor: AppTheme.creamWhite,
-                                backgroundImage: profile.avatarUrl != null 
-                                    ? NetworkImage(profile.avatarUrl!) 
-                                    : null,
-                                child: profile.avatarUrl == null 
-                                    ? Icon(Icons.person, size: avatarSize * 0.5, color: AppTheme.mutedSilver)
-                                    : null,
+                              padding: const EdgeInsets.all(4),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: Colors.white, width: 2),
+                                ),
+                                child: CircleAvatar(
+                                  backgroundColor: AppTheme.creamWhite,
+                                  backgroundImage: profile.avatarUrl != null 
+                                      ? NetworkImage(profile.avatarUrl!) 
+                                      : null,
+                                  child: profile.avatarUrl == null 
+                                      ? Icon(Icons.person_rounded, size: avatarSize * 0.45, color: AppTheme.mutedSilver)
+                                      : null,
+                                ),
                               ),
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 16),
                             Text(
                               profile.name,
                               style: GoogleFonts.playfairDisplay(
-                                fontSize: 22,
+                                fontSize: 24,
                                 fontWeight: FontWeight.w700,
                                 color: AppTheme.deepCharcoal,
+                                letterSpacing: 0.5,
                               ),
                             ),
                             Text(
@@ -150,46 +192,48 @@ class AnimatedProfileHeader extends SliverPersistentHeaderDelegate {
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 16),
+                            // Membership Info Row (Virtual Card Style)
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.5),
+                                    color: Colors.white.withValues(alpha: 0.7),
                                     borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(color: AppTheme.softTaupe.withValues(alpha: 0.5)),
                                   ),
                                   child: Text(
                                     profile.memberSinceText.toUpperCase(),
                                     style: GoogleFonts.montserrat(
                                       fontSize: 10,
                                       fontWeight: FontWeight.w700,
-                                      letterSpacing: 0.5,
-                                      color: AppTheme.deepCharcoal.withOpacity(0.6),
+                                      letterSpacing: 0.8,
+                                      color: AppTheme.deepCharcoal.withValues(alpha: 0.6),
                                     ),
                                   ),
                                 ),
-                                const SizedBox(width: 8),
+                                const SizedBox(width: 10),
                                 GestureDetector(
                                   onTap: onEdit,
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                                     decoration: BoxDecoration(
-                                      color: AppTheme.accentGold.withOpacity(0.1),
+                                      color: AppTheme.accentGold.withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(color: AppTheme.accentGold.withOpacity(0.2)),
+                                      border: Border.all(color: AppTheme.accentGold.withValues(alpha: 0.3)),
                                     ),
                                     child: Row(
                                       children: [
-                                        const Icon(Icons.edit_rounded, size: 10, color: AppTheme.accentGold),
-                                        const SizedBox(width: 4),
+                                        const Icon(Icons.edit_rounded, size: 11, color: AppTheme.accentGold),
+                                        const SizedBox(width: 6),
                                         Text(
                                           'SỬA HỒ SƠ',
                                           style: GoogleFonts.montserrat(
                                             fontSize: 10,
                                             fontWeight: FontWeight.w700,
-                                            letterSpacing: 0.5,
+                                            letterSpacing: 0.8,
                                             color: AppTheme.accentGold,
                                           ),
                                         ),
@@ -199,7 +243,7 @@ class AnimatedProfileHeader extends SliverPersistentHeaderDelegate {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 30),
                           ],
                         ),
                       ),
@@ -214,10 +258,10 @@ class AnimatedProfileHeader extends SliverPersistentHeaderDelegate {
   }
 
   @override
-  double get maxExtent => 300.0;
+  double get maxExtent => 340.0;
 
   @override
-  double get minExtent => 100.0;
+  double get minExtent => 110.0;
 
   @override
   bool shouldRebuild(covariant AnimatedProfileHeader oldDelegate) => true;

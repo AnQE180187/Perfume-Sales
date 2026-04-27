@@ -52,7 +52,7 @@ class HomeHeader extends ConsumerWidget {
               color: Colors.transparent,
               child: TappableCard(
                 onTap: () => context.push('/search'),
-                scaleDownFactor: 0.98,
+                pressScaleFactor: 1.02,
                 borderRadius: BorderRadius.circular(28),
                 useGlassmorphism: true,
                 glassOpacity: 0.98,
@@ -141,7 +141,7 @@ class _IconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return TappableCard(
       onTap: onTap,
-      scaleDownFactor: 0.85,
+      pressScaleFactor: 0.90,
       borderRadius: BorderRadius.circular(16),
       useGlassmorphism: true,
       glassOpacity: 0.7,
@@ -242,123 +242,144 @@ class _BannerCarouselState extends ConsumerState<BannerCarousel> {
                   onPageChanged: (i) => setState(() => _current = i),
                   itemBuilder: (context, index) {
                     final b = banners[index];
-                    return TappableCard(
-                      onTap: () {
-                        if (b.linkUrl != null && b.linkUrl!.startsWith('/')) {
-                          context.push(b.linkUrl!);
-                        }
-                      },
-                      scaleDownFactor: 0.96,
-                      margin: const EdgeInsets.only(right: 14, bottom: 8, top: 4),
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppTheme.deepCharcoal.withValues(alpha: 0.08),
-                          blurRadius: 12,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(24),
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            // Image with Shimmer loading fallback
-                            Image.network(
-                              b.imageUrl,
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                              loadingBuilder: (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return const CustomShimmer(
-                                  width: double.infinity,
-                                  height: double.infinity,
-                                );
-                              },
-                              errorBuilder: (_, __, ___) => _placeholder(
-                                MediaQuery.of(context).size.width * 0.85,
-                                height,
-                              ),
+                    return AnimatedBuilder(
+                      animation: _pageController,
+                      builder: (context, child) {
+                        double offset = 0.0;
+                        try {
+                          if (_pageController.hasClients && _pageController.position.haveDimensions) {
+                            offset = (index - (_pageController.page ?? 0));
+                          }
+                        } catch (_) {}
+                        
+                        return TappableCard(
+                          onTap: () {
+                            if (b.linkUrl != null && b.linkUrl!.startsWith('/')) {
+                              context.push(b.linkUrl!);
+                            }
+                          },
+                          pressScaleFactor: 1.05,
+                          margin: const EdgeInsets.only(right: 14, bottom: 8, top: 4),
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.deepCharcoal.withValues(alpha: 0.08),
+                              blurRadius: 12,
+                              offset: const Offset(0, 6),
                             ),
-
-                            // Gradient overlay + title/subtitle
-                            Positioned(
-                              left: 0,
-                              right: 0,
-                              bottom: 0,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
-                                    colors: [
-                                      Colors.transparent,
-                                      Colors.black.withValues(alpha: 0.2),
-                                      Colors.black.withValues(alpha: 0.7),
-                                    ],
-                                    stops: const [0.0, 0.4, 1.0],
+                          ],
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(24),
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                // Parallax Image
+                                Transform.translate(
+                                  offset: Offset(offset * 40, 0), // Subtle horizontal parallax
+                                  child: Transform.scale(
+                                    scale: 1.1, // Slightly larger to avoid edge gaps
+                                    child: Image.network(
+                                      b.imageUrl,
+                                      fit: BoxFit.cover,
+                                      width: double.infinity,
+                                      loadingBuilder: (context, child, loadingProgress) {
+                                        if (loadingProgress == null) return child;
+                                        return const CustomShimmer(
+                                          width: double.infinity,
+                                          height: double.infinity,
+                                        );
+                                      },
+                                      errorBuilder: (_, __, ___) => _placeholder(
+                                        MediaQuery.of(context).size.width * 0.85,
+                                        height,
+                                      ),
+                                    ),
                                   ),
                                 ),
-                                padding: const EdgeInsets.fromLTRB(16, 40, 16, 16),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        mainAxisSize: MainAxisSize.min,
+
+                                // Gradient overlay + title/subtitle (Static or less parallax)
+                                Positioned(
+                                  left: 0,
+                                  right: 0,
+                                  bottom: 0,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                        colors: [
+                                          Colors.transparent,
+                                          Colors.black.withValues(alpha: 0.2),
+                                          Colors.black.withValues(alpha: 0.7),
+                                        ],
+                                        stops: const [0.0, 0.4, 1.0],
+                                      ),
+                                    ),
+                                    padding: const EdgeInsets.fromLTRB(16, 40, 16, 16),
+                                    child: Transform.translate(
+                                      offset: Offset(offset * -15, 0), // Reverse parallax for text
+                                      child: Row(
+                                        crossAxisAlignment: CrossAxisAlignment.end,
                                         children: [
-                                          if (b.title != null && b.title!.isNotEmpty)
-                                            Text(
-                                              b.title!,
-                                              style: GoogleFonts.montserrat(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w700,
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                if (b.title != null && b.title!.isNotEmpty)
+                                                  Text(
+                                                    b.title!,
+                                                    style: GoogleFonts.montserrat(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.w700,
+                                                      color: Colors.white,
+                                                      letterSpacing: 0.5,
+                                                    ),
+                                                  ),
+                                                if (b.subtitle != null && b.subtitle!.isNotEmpty) ...[
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                    b.subtitle!,
+                                                    maxLines: 2,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    style: GoogleFonts.montserrat(
+                                                      fontSize: 12,
+                                                      fontWeight: FontWeight.w400,
+                                                      color: Colors.white.withValues(alpha: 0.9),
+                                                      height: 1.4,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ],
+                                            ),
+                                          ),
+                                          if (b.linkUrl != null && b.linkUrl!.isNotEmpty)
+                                            Container(
+                                              margin: const EdgeInsets.only(left: 12),
+                                              padding: const EdgeInsets.all(8),
+                                              decoration: BoxDecoration(
+                                                color: Colors.white.withValues(alpha: 0.2),
+                                                shape: BoxShape.circle,
+                                                border: Border.all(
+                                                  color: Colors.white.withValues(alpha: 0.4),
+                                                ),
+                                              ),
+                                              child: const Icon(
+                                                Icons.arrow_forward_rounded,
                                                 color: Colors.white,
-                                                letterSpacing: 0.5,
+                                                size: 16,
                                               ),
                                             ),
-                                          if (b.subtitle != null && b.subtitle!.isNotEmpty) ...[
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              b.subtitle!,
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: GoogleFonts.montserrat(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w400,
-                                                color: Colors.white.withValues(alpha: 0.9),
-                                                height: 1.4,
-                                              ),
-                                            ),
-                                          ],
                                         ],
                                       ),
                                     ),
-                                    if (b.linkUrl != null && b.linkUrl!.isNotEmpty)
-                                      Container(
-                                        margin: const EdgeInsets.only(left: 12),
-                                        padding: const EdgeInsets.all(8),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white.withValues(alpha: 0.2),
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: Colors.white.withValues(alpha: 0.4),
-                                          ),
-                                        ),
-                                        child: const Icon(
-                                          Icons.arrow_forward_rounded,
-                                          color: Colors.white,
-                                          size: 16,
-                                        ),
-                                      ),
-                                  ],
+                                  ),
                                 ),
-                              ),
+                              ],
                             ),
-                          ],
-                        ),
-                      ),
+                          ),
+                        );
+                      },
                     );
                   },
                 ),

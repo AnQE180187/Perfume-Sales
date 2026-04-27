@@ -6,7 +6,7 @@ class TappableCard extends StatefulWidget {
   final Widget child;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
-  final double scaleDownFactor;
+  final double pressScaleFactor;
   final BorderRadius? borderRadius;
   final EdgeInsetsGeometry? margin;
   final EdgeInsetsGeometry? padding;
@@ -21,7 +21,7 @@ class TappableCard extends StatefulWidget {
     required this.child,
     this.onTap,
     this.onLongPress,
-    this.scaleDownFactor = 0.96,
+    this.pressScaleFactor = 1.02,
     this.borderRadius,
     this.margin,
     this.padding,
@@ -45,12 +45,12 @@ class _TappableCardState extends State<TappableCard> with SingleTickerProviderSt
   void initState() {
     super.initState();
     _controller = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 200), reverseDuration: const Duration(milliseconds: 400));
-    _scaleAnimation = Tween<double>(begin: 1.0, end: widget.scaleDownFactor).animate(
+        vsync: this, duration: const Duration(milliseconds: 150), reverseDuration: const Duration(milliseconds: 300));
+    _scaleAnimation = Tween<double>(begin: 1.0, end: widget.pressScaleFactor).animate(
       CurvedAnimation(
         parent: _controller,
         curve: Curves.easeOutCubic,
-        reverseCurve: Curves.elasticOut, // Real bounce effect when returning to 1.0
+        reverseCurve: Curves.easeInCubic,
       ),
     );
   }
