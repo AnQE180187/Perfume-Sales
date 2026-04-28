@@ -715,7 +715,8 @@
         "title": "Trò Chuyện & Hỗ Trợ",
         "buttons": {
           "perfume_ai": "Trợ lý Nước hoa (AI)",
-          "marketing_ai": "Trợ lý Tiếp thị (AI)"
+          "marketing_ai": "Trợ lý Tiếp thị (AI)",
+          "send_image": "Gửi hình ảnh"
         },
         "placeholders": {
           "search": "Tìm kiếm...",
@@ -1030,6 +1031,9 @@
         "customer": "Khách Hàng",
         "phone_placeholder": "Nhập số điện thoại khách hàng...",
         "lookup_btn": "Tra cứu",
+        "vouchers_btn": "Mã giảm giá",
+        "available_vouchers": "Mã giảm giá khả dụng",
+        "apply_btn": "Áp dụng",
         "looking_up": "Đang tra cứu...",
         "member": "Thành viên",
         "guest": "Khách vãng lai",

@@ -90,10 +90,6 @@ class _LoyaltyBody extends StatelessWidget {
             const SizedBox(height: 16),
             _RedeemRewardsSection(userPoints: status.points),
             const SizedBox(height: 32),
-            _SectionHeader(title: AppLocalizations.of(context)!.membershipTiersTitle),
-            const SizedBox(height: 16),
-            _TiersCard(status: status),
-            const SizedBox(height: 32),
             _SectionHeader(title: AppLocalizations.of(context)!.howToEarnTitle),
             const SizedBox(height: 16),
             _HowItWorksCard(),
@@ -222,7 +218,7 @@ class _PointsHeroCard extends StatelessWidget {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            (l10n.localeName == 'vi' ? status.tierNameVi : status.tierName).toUpperCase(),
+                            l10n.loyaltyProgram.toUpperCase(),
                             style: GoogleFonts.playfairDisplay(
                               fontSize: 22,
                               fontWeight: FontWeight.w800,
@@ -233,7 +229,6 @@ class _PointsHeroCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const _MembershipLevelBadge(),
                     ],
                   ),
                   const Spacer(),
@@ -263,32 +258,7 @@ class _PointsHeroCard extends StatelessWidget {
                       letterSpacing: 2,
                     ),
                   ),
-                  const SizedBox(height: 32),
-                  if (status.points < 5000) ...[
-                    _buildProgressBar(status),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          '${status.points} / ${status.nextTierPoints} pts',
-                          style: GoogleFonts.montserrat(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white.withValues(alpha: 0.4),
-                          ),
-                        ),
-                        Text(
-                          l10n.pointsToNextTier(status.nextTierPoints - status.points),
-                          style: GoogleFonts.montserrat(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.accentGold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                  const Spacer(),
                 ],
               ),
             ),

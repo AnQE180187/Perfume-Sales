@@ -510,6 +510,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get promoCode => 'PROMO CODE';
 
   @override
+  String get availableVouchers => 'Available Vouchers';
+
+  @override
+  String get close => 'CLOSE';
+
+  @override
+  String minOrderRequired(String amount) {
+    return 'Min $amount';
+  }
+
+  @override
   String get apply => 'APPLY';
 
   @override
@@ -1519,6 +1530,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String peopleFoundHelpful(int count) {
     return '$count people found helpful';
   }
+
+  @override
+  String get helpful => 'Helpful';
+
+  @override
+  String get report => 'Report';
+
+  @override
+  String get reportReasonHint => 'Why are you reporting this review?';
+
+  @override
+  String get reportSuccess => 'Report submitted successfully';
+
+  @override
+  String get helpfulSuccess => 'Thank you for your feedback';
 
   @override
   String yearsAgo(int count) {

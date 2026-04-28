@@ -172,6 +172,14 @@
   "discoverCollection": "Khám phá bộ sưu tập tuyển chọn",
   "exploreCollection": "KHÁM PHÁ BỘ SƯU TẬP",
   "promoCode": "MÃ KHUYẾN MÃI",
+  "availableVouchers": "Mã giảm giá khả dụng",
+  "close": "ĐÓNG",
+  "minOrderRequired": "Tối thiểu {amount}đ",
+  "@minOrderRequired": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
   "apply": "ÁP DỤNG",
   "proceedCheckout": "TIẾN HÀNH THANH TOÁN",
   "discountApplied": "giảm giá đã áp dụng",
@@ -533,6 +541,11 @@
       "count": { "type": "int" }
     }
   },
+  "helpful": "Hữu ích",
+  "report": "Báo cáo",
+  "reportReasonHint": "Lý do bạn báo cáo đánh giá này?",
+  "reportSuccess": "Đã gửi báo cáo thành công",
+  "helpfulSuccess": "Cảm ơn bạn đã phản hồi",
   "yearsAgo": "{count} năm trước",
   "@yearsAgo": { "placeholders": { "count": { "type": "int" } } },
   "monthsAgo": "{count} tháng trước",

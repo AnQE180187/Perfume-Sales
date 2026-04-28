@@ -60,6 +60,11 @@ class CacheInterceptor extends Interceptor {
   }
 
   bool _shouldCache(String path) {
+    // SECURITY & FRESHNESS: Never cache admin or staff-specific return paths
+    if (path.contains('/returns/admin') || path.contains('/staff/pos')) {
+      return false;
+    }
+    
     // Check if the path is in our cacheable list (exact or startWith)
     return _cacheablePaths.any((p) => path.startsWith(p));
   }

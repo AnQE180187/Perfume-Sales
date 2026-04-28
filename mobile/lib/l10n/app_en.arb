@@ -172,6 +172,14 @@
   "discoverCollection": "Discover the curated collection",
   "exploreCollection": "EXPLORE COLLECTION",
   "promoCode": "PROMO CODE",
+  "availableVouchers": "Available Vouchers",
+  "close": "CLOSE",
+  "minOrderRequired": "Min {amount}",
+  "@minOrderRequired": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
   "apply": "APPLY",
   "proceedCheckout": "PROCEED TO CHECKOUT",
   "discountApplied": "discount applied",
@@ -527,6 +535,11 @@
       "count": { "type": "int" }
     }
   },
+  "helpful": "Helpful",
+  "report": "Report",
+  "reportReasonHint": "Why are you reporting this review?",
+  "reportSuccess": "Report submitted successfully",
+  "helpfulSuccess": "Thank you for your feedback",
   "yearsAgo": "{count}y ago",
   "@yearsAgo": { "placeholders": { "count": { "type": "int" } } },
   "monthsAgo": "{count}m ago",

@@ -259,24 +259,7 @@ class _UserProfileHeader extends StatelessWidget {
         : null;
 
     final initials = _getInitials(name);
-    final loyaltyValue =
-        profile?['loyalty_points'] ?? profile?['loyaltyPoints'];
-    final loyaltyPoints = loyaltyValue is int
-        ? loyaltyValue
-        : loyaltyValue is num
-        ? loyaltyValue.toInt()
-        : 0;
 
-    String tierLabel;
-    if (loyaltyPoints >= 5000) {
-      tierLabel = l10n.memberPlatinum;
-    } else if (loyaltyPoints >= 2000) {
-      tierLabel = l10n.memberGold;
-    } else if (loyaltyPoints >= 500) {
-      tierLabel = l10n.memberSilver;
-    } else {
-      tierLabel = l10n.memberStandard;
-    }
 
     return Column(
       children: [
@@ -329,40 +312,7 @@ class _UserProfileHeader extends StatelessWidget {
           textAlign: TextAlign.center,
         ),
 
-        const SizedBox(height: 8),
-
-        // Membership badge
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-          decoration: BoxDecoration(
-            color: AppTheme.champagneGold.withValues(alpha: 0.07),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: AppTheme.champagneGold.withValues(alpha: 0.25),
-              width: 0.5,
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.star_rounded,
-                size: 12,
-                color: AppTheme.accentGold.withValues(alpha: 0.8),
-              ),
-              const SizedBox(width: 5),
-              Text(
-                tierLabel,
-                style: GoogleFonts.montserrat(
-                  fontSize: 9.5,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 1.8,
-                  color: AppTheme.accentGold,
-                ),
-              ),
-            ],
-          ),
-        ),
+        const SizedBox(height: 4), // Reduced from 8 since badge is gone
       ],
     );
   }
@@ -398,15 +348,7 @@ class _UserProfileHeaderPlaceholder extends StatelessWidget {
             borderRadius: BorderRadius.circular(7),
           ),
         ),
-        const SizedBox(height: 10),
-        Container(
-          width: 80,
-          height: 10,
-          decoration: BoxDecoration(
-            color: AppTheme.softTaupe.withValues(alpha: 0.25),
-            borderRadius: BorderRadius.circular(5),
-          ),
-        ),
+
       ],
     );
   }

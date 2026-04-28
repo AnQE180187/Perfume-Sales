@@ -507,6 +507,17 @@ class AppLocalizationsVi extends AppLocalizations {
   String get promoCode => 'MÃ KHUYẾN MÃI';
 
   @override
+  String get availableVouchers => 'Mã giảm giá khả dụng';
+
+  @override
+  String get close => 'ĐÓNG';
+
+  @override
+  String minOrderRequired(String amount) {
+    return 'Tối thiểu $amountđ';
+  }
+
+  @override
   String get apply => 'ÁP DỤNG';
 
   @override
@@ -1517,6 +1528,21 @@ class AppLocalizationsVi extends AppLocalizations {
   String peopleFoundHelpful(int count) {
     return '$count người thấy hữu ích';
   }
+
+  @override
+  String get helpful => 'Hữu ích';
+
+  @override
+  String get report => 'Báo cáo';
+
+  @override
+  String get reportReasonHint => 'Lý do bạn báo cáo đánh giá này?';
+
+  @override
+  String get reportSuccess => 'Đã gửi báo cáo thành công';
+
+  @override
+  String get helpfulSuccess => 'Cảm ơn bạn đã phản hồi';
 
   @override
   String yearsAgo(int count) {

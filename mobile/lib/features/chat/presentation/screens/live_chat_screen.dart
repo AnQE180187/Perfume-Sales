@@ -376,28 +376,32 @@ class _ChatBubble extends StatelessWidget {
                     ],
                   ),
                   child: message.type == MessageType.image
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Image.network(
-                                message.content['imageUrl'] ?? '',
-                                errorBuilder: (context, error, stackTrace) =>
-                                    const Icon(Icons.broken_image_rounded),
-                                loadingBuilder: (context, child, loadingProgress) {
-                                  if (loadingProgress == null) return child;
-                                  return Container(
-                                    width: 200,
-                                    height: 150,
-                                    color: Colors.black.withValues(alpha: 0.05),
-                                    child: const Center(
-                                      child: CircularProgressIndicator(strokeWidth: 2),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ],
+                      ? ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 400),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Image.network(
+                                  message.content['imageUrl'] ?? '',
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const Icon(Icons.broken_image_rounded),
+                                  loadingBuilder: (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return Container(
+                                      width: 200,
+                                      height: 150,
+                                      color: Colors.black.withValues(alpha: 0.05),
+                                      child: const Center(
+                                        child: CircularProgressIndicator(strokeWidth: 2),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
                           ),
                         )
                       : Text(

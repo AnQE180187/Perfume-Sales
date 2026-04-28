@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -83,13 +84,26 @@ class _TabletReturnDetailsDialogState extends ConsumerState<TabletReturnDetailsD
       ),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: AppTheme.accentGold.withOpacity(0.1),
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () async {
+                HapticFeedback.mediumImpact();
+                // Force a hard refresh of the details
+                await ref.refresh(returnDetailsProvider(widget.returnId).future);
+                // Also trigger a refresh for the background list
+                ref.read(staffReturnsProvider.notifier).loadReturns();
+              },
               borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: AppTheme.accentGold.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.refresh_rounded, color: AppTheme.accentGold, size: isMobile ? 24 : 28),
+              ),
             ),
-            child: Icon(Icons.rotate_left_rounded, color: AppTheme.accentGold, size: isMobile ? 24 : 28),
           ),
           SizedBox(width: isMobile ? 16 : 24),
           Expanded(
@@ -207,7 +221,24 @@ class _TabletReturnDetailsDialogState extends ConsumerState<TabletReturnDetailsD
           children: [
             Expanded(child: _InfoTile(label: "KHÁCH HÀNG", value: data['user']?['fullName'] ?? "KHÁCH LẺ")),
             const SizedBox(width: 24),
-            Expanded(child: _InfoTile(label: "TRẠNG THÁI", value: status, isStatus: true)),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "TRẠNG THÁI",
+                    style: GoogleFonts.montserrat(
+                      fontSize: 9,
+                      color: Colors.white38,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  _StatusBadge(status: status),
+                ],
+              ),
+            ),
           ],
         ),
       ],
@@ -582,11 +613,73 @@ class _TabletReturnDetailsDialogState extends ConsumerState<TabletReturnDetailsD
   }
 }
 
+class _StatusBadge extends StatelessWidget {
+  final String status;
+  const _StatusBadge({required this.status});
+
+  String get localized {
+    switch (status) {
+      case "REQUESTED": return "CHỜ DUYỆT";
+      case "AWAITING_CUSTOMER": return "CHỜ KHÁCH HÀNG";
+      case "REVIEWING": return "ĐANG XEM XÉT";
+      case "APPROVED": return "ĐÃ DUYỆT";
+      case "RETURNING": return "ĐANG GỬI LẠI";
+      case "RECEIVED": return "ĐÃ NHẬN HÀNG";
+      case "REFUNDING": return "ĐANG HOÀN TIỀN";
+      case "REFUND_FAILED": return "HOÀN TIỀN LỖI";
+      case "COMPLETED": return "HOÀN TẤT";
+      case "REJECTED": return "ĐÃ TỪ CHỐI";
+      case "REJECTED_AFTER_RETURN": return "TỪ CHỐI SAU NHẬN";
+      case "CANCELLED": return "ĐÃ HUỶ";
+      default: return status;
+    }
+  }
+
+  Color get color {
+    switch (status) {
+      case "REQUESTED": return Colors.blueAccent;
+      case "REVIEWING": return Colors.purpleAccent;
+      case "APPROVED": return Colors.greenAccent;
+      case "RETURNING": return Colors.orangeAccent;
+      case "RECEIVED": return Colors.tealAccent;
+      case "COMPLETED": return Colors.lightGreenAccent;
+      case "REFUNDING": return Colors.indigoAccent;
+      case "REJECTED":
+      case "REJECTED_AFTER_RETURN":
+      case "CANCELLED":
+      case "REFUND_FAILED":
+        return Colors.redAccent;
+      default: return Colors.grey;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        border: Border.all(color: color.withOpacity(0.3), width: 1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        localized,
+        style: GoogleFonts.montserrat(
+          fontSize: 11,
+          color: color,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 1,
+        ),
+      ),
+    );
+  }
+}
+
 class _InfoTile extends StatelessWidget {
   final String label;
   final String value;
   final bool isGold;
-  final bool isStatus;
+  final bool isStatus; // Kept for compatibility if used elsewhere
   final bool isLarge;
   final bool isMobile;
   const _InfoTile({
@@ -615,19 +708,12 @@ class _InfoTile extends StatelessWidget {
         const SizedBox(height: 10),
         Text(
           value,
-          style: isStatus 
-            ? GoogleFonts.montserrat(
-                fontSize: 10, 
-                fontWeight: FontWeight.w900, 
-                color: AppTheme.accentGold, 
-                letterSpacing: 1.5,
-              )
-            : GoogleFonts.montserrat(
-                fontSize: isLarge ? 16 : 14, 
-                fontWeight: isGold ? FontWeight.w900 : FontWeight.w600, 
-                color: isGold ? AppTheme.accentGold : Colors.white, 
-                letterSpacing: 0.5,
-              ),
+          style: GoogleFonts.montserrat(
+            fontSize: isLarge ? 16 : 14, 
+            fontWeight: isGold ? FontWeight.w900 : FontWeight.w600, 
+            color: isGold ? AppTheme.accentGold : Colors.white, 
+            letterSpacing: 0.5,
+          ),
         ),
       ],
     );

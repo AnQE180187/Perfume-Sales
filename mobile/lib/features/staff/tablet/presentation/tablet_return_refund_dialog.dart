@@ -63,46 +63,44 @@ class _TabletReturnRefundDialogState extends ConsumerState<TabletReturnRefundDia
               const SizedBox(height: 12),
               _buildMethodOption('bank_transfer', "CHUYỂN KHOẢN (TRANSFER)", Icons.account_balance_outlined),
               const SizedBox(height: 32),
-              if (_method != 'cash') ...[
-                Text("ẢNH HÓA ĐƠN / BIÊN LAI", style: GoogleFonts.montserrat(fontSize: 9, color: Colors.white38, fontWeight: FontWeight.w800, letterSpacing: 2)),
-                const SizedBox(height: 16),
-                GestureDetector(
-                  onTap: _pickImage,
-                  child: Container(
-                    width: double.infinity,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.02),
-                      border: Border.all(color: Colors.white10),
-                      borderRadius: BorderRadius.circular(8),
-                      image: _receiptImage != null 
-                        ? DecorationImage(image: FileImage(_receiptImage!), fit: BoxFit.cover)
-                        : null,
-                    ),
-                    child: _receiptImage == null 
-                      ? Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.add_a_photo_outlined, color: Colors.white10, size: 32),
-                            const SizedBox(height: 8),
-                            Text("NHẤN ĐỂ CHỌN ẢNH MINH CHỨNG", style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white10, fontWeight: FontWeight.w600)),
-                          ],
-                        )
-                      : Align(
-                          alignment: Alignment.topRight,
-                          child: IconButton(
-                            onPressed: () => setState(() => _receiptImage = null),
-                            icon: Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
-                              child: const Icon(Icons.close, size: 16, color: Colors.white),
-                            ),
+              Text("ẢNH HÓA ĐƠN / BIÊN LAI (BẮT BUỘC)", style: GoogleFonts.montserrat(fontSize: 9, color: Colors.white38, fontWeight: FontWeight.w800, letterSpacing: 2)),
+              const SizedBox(height: 16),
+              GestureDetector(
+                onTap: _pickImage,
+                child: Container(
+                  width: double.infinity,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.02),
+                    border: Border.all(color: _receiptImage == null ? Colors.redAccent.withOpacity(0.3) : Colors.white10),
+                    borderRadius: BorderRadius.circular(8),
+                    image: _receiptImage != null 
+                      ? DecorationImage(image: FileImage(_receiptImage!), fit: BoxFit.cover)
+                      : null,
+                  ),
+                  child: _receiptImage == null 
+                    ? Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.add_a_photo_outlined, color: Colors.white10, size: 32),
+                          const SizedBox(height: 8),
+                          Text("NHẤN ĐỂ CHỌN ẢNH MINH CHỨNG", style: GoogleFonts.montserrat(fontSize: 10, color: Colors.white10, fontWeight: FontWeight.w600)),
+                        ],
+                      )
+                    : Align(
+                        alignment: Alignment.topRight,
+                        child: IconButton(
+                          onPressed: () => setState(() => _receiptImage = null),
+                          icon: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                            child: const Icon(Icons.close, size: 16, color: Colors.white),
                           ),
                         ),
-                  ),
+                      ),
                 ),
-                const SizedBox(height: 32),
-              ],
+              ),
+              const SizedBox(height: 32),
               TextField(
                 controller: _noteController,
                 style: GoogleFonts.montserrat(color: Colors.white, fontSize: 13),
@@ -127,7 +125,7 @@ class _TabletReturnRefundDialogState extends ConsumerState<TabletReturnRefundDia
         ),
         const SizedBox(width: 12),
         ElevatedButton(
-          onPressed: (_isSubmitting || suggestedAsync.isLoading || suggestedAsync.value == null || suggestedAsync.value! <= 0 || (_method != 'cash' && _receiptImage == null)) 
+          onPressed: (_isSubmitting || suggestedAsync.isLoading || suggestedAsync.value == null || suggestedAsync.value! <= 0 || _receiptImage == null) 
             ? null 
             : () => _submit(suggestedAsync.value!),
           style: ElevatedButton.styleFrom(
@@ -147,10 +145,7 @@ class _TabletReturnRefundDialogState extends ConsumerState<TabletReturnRefundDia
   Widget _buildMethodOption(String id, String label, IconData icon) {
     final isSelected = _method == id;
     return InkWell(
-      onTap: () => setState(() {
-        _method = id;
-        if (id == 'cash') _receiptImage = null;
-      }),
+      onTap: () => setState(() => _method = id),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(

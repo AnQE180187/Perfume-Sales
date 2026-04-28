@@ -53,7 +53,10 @@ class StaffReturnsService {
   }
 
   Future<Map<String, dynamic>> getDetails(String id) async {
-    final response = await _client.get('/returns/admin/$id');
+    final response = await _client.get(
+      '/returns/admin/$id',
+      queryParameters: {'_t': DateTime.now().millisecondsSinceEpoch},
+    );
     return response.data;
   }
 

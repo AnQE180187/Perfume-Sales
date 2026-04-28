@@ -91,6 +91,22 @@ class ReviewApiService {
     return ReviewSummaryModel.fromJson(response.data as Map<String, dynamic>);
   }
 
+  /// POST /reviews/:id/react
+  Future<void> reactToReview(String reviewId, {String type = 'HELPFUL'}) async {
+    await _client.post(
+      ApiEndpoints.reactToReview(reviewId),
+      data: {'type': type},
+    );
+  }
+
+  /// POST /reviews/:id/report
+  Future<void> reportReview(String reviewId, String reason) async {
+    await _client.post(
+      ApiEndpoints.reportReview(reviewId),
+      data: {'reason': reason},
+    );
+  }
+
   static MediaType _mimeFromExt(String ext) {
     switch (ext) {
       case 'png':

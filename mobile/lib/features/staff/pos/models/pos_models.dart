@@ -104,6 +104,7 @@ class PosOrder {
   final double finalAmount;
   final String status;
   final String paymentStatus;
+  final String? paymentMethod;
   final PosOrderCustomer? user;
   final String? phone;
   final List<PosOrderItem> items;
@@ -117,6 +118,7 @@ class PosOrder {
     required this.finalAmount,
     required this.status,
     required this.paymentStatus,
+    this.paymentMethod,
     this.user,
     this.phone,
     this.items = const [],
@@ -134,6 +136,7 @@ class PosOrder {
       finalAmount: (json['finalAmount'] as num).toDouble(),
       status: json['status'] as String,
       paymentStatus: json['paymentStatus'] as String,
+      paymentMethod: json['paymentMethod'] as String?,
       phone: json['phone'] as String?,
       user: json['user'] != null
           ? PosOrderCustomer.fromJson(json['user'] as Map<String, dynamic>)
@@ -144,6 +147,23 @@ class PosOrder {
               .toList() ??
           const [],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'code': code,
+      'storeId': storeId,
+      'totalAmount': totalAmount,
+      'discountAmount': discountAmount,
+      'finalAmount': finalAmount,
+      'status': status,
+      'paymentStatus': paymentStatus,
+      'paymentMethod': paymentMethod,
+      'phone': phone,
+      'user': user?.toJson(),
+      'items': items.map((e) => e.toJson()).toList(),
+    };
   }
 }
 
@@ -170,6 +190,16 @@ class PosOrderCustomer {
       loyaltyPoints: (json['loyaltyPoints'] as num?)?.toInt() ?? 0,
       tier: json['tier'] as String?,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'fullName': fullName,
+      'phone': phone,
+      'loyaltyPoints': loyaltyPoints,
+      'tier': tier,
+    };
   }
 }
 
@@ -204,6 +234,17 @@ class PosOrderItem {
           : null,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'variantId': variantId,
+      'quantity': quantity,
+      'unitPrice': unitPrice,
+      'totalPrice': totalPrice,
+      'variant': variant?.toJson(),
+    };
+  }
 }
 
 class PosOrderItemVariant {
@@ -231,6 +272,15 @@ class PosOrderItemVariant {
           : null,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'price': price,
+      'product': product?.toJson(),
+    };
+  }
 }
 
 class PosOrderItemProduct {
@@ -244,6 +294,13 @@ class PosOrderItemProduct {
       id: json['id'] as String,
       name: json['name'] as String,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+    };
   }
 }
 

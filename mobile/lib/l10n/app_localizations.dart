@@ -1034,6 +1034,24 @@ abstract class AppLocalizations {
   /// **'PROMO CODE'**
   String get promoCode;
 
+  /// No description provided for @availableVouchers.
+  ///
+  /// In en, this message translates to:
+  /// **'Available Vouchers'**
+  String get availableVouchers;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'CLOSE'**
+  String get close;
+
+  /// No description provided for @minOrderRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Min {amount}'**
+  String minOrderRequired(String amount);
+
   /// No description provided for @apply.
   ///
   /// In en, this message translates to:
@@ -2995,6 +3013,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} people found helpful'**
   String peopleFoundHelpful(int count);
+
+  /// No description provided for @helpful.
+  ///
+  /// In en, this message translates to:
+  /// **'Helpful'**
+  String get helpful;
+
+  /// No description provided for @report.
+  ///
+  /// In en, this message translates to:
+  /// **'Report'**
+  String get report;
+
+  /// No description provided for @reportReasonHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Why are you reporting this review?'**
+  String get reportReasonHint;
+
+  /// No description provided for @reportSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Report submitted successfully'**
+  String get reportSuccess;
+
+  /// No description provided for @helpfulSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you for your feedback'**
+  String get helpfulSuccess;
 
   /// No description provided for @yearsAgo.
   ///

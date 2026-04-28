@@ -740,14 +740,82 @@ class _FilterChipWidget extends StatelessWidget {
   }
 }
 
-class _ReviewCard extends StatelessWidget {
+class _ReviewCard extends ConsumerWidget {
   final ReviewItem review;
   final String timeAgo;
 
   const _ReviewCard({required this.review, required this.timeAgo});
 
+  Future<void> _handleHelpful(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      await ref.read(reviewApiServiceProvider).reactToReview(review.id);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.helpfulSuccess)),
+        );
+        // Refresh the review list to show updated count
+        ref.invalidate(reviewListProvider(review.productId));
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.error)),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleReport(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
+    final controller = TextEditingController();
+    
+    final reason = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.creamWhite,
+        title: Text(l10n.report, style: GoogleFonts.playfairDisplay(fontWeight: FontWeight.bold)),
+        content: TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            hintText: l10n.reportReasonHint,
+            hintStyle: GoogleFonts.montserrat(fontSize: 13),
+          ),
+          maxLines: 3,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.cancel, style: const TextStyle(color: AppTheme.mutedSilver)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, controller.text),
+            child: Text(l10n.confirm, style: const TextStyle(color: AppTheme.accentGold)),
+          ),
+        ],
+      ),
+    );
+
+    if (reason != null && reason.trim().isNotEmpty) {
+      try {
+        await ref.read(reviewApiServiceProvider).reportReview(review.id, reason.trim());
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.reportSuccess)),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.error)),
+          );
+        }
+      }
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final name = review.user.fullName;
     final initial = name.isNotEmpty ? name[0].toUpperCase() : '?';
@@ -873,26 +941,57 @@ class _ReviewCard extends StatelessWidget {
               ),
             ),
           ],
-          if (review.helpfulCount > 0) ...[
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                const Icon(
-                  Icons.favorite_border,
-                  size: 14,
-                  color: AppTheme.mutedSilver,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  l10n.peopleFoundHelpful(review.helpfulCount),
-                  style: GoogleFonts.montserrat(
-                    fontSize: 11,
-                    color: AppTheme.mutedSilver,
-                  ),
-                ),
-              ],
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              _ReviewActionButton(
+                icon: Icons.thumb_up_alt_outlined,
+                label: "${l10n.helpful} (${review.helpfulCount})",
+                onTap: () => _handleHelpful(context, ref),
+              ),
+              const SizedBox(width: 24),
+              _ReviewActionButton(
+                icon: Icons.flag_outlined,
+                label: l10n.report,
+                onTap: () => _handleReport(context, ref),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ReviewActionButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _ReviewActionButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: AppTheme.mutedSilver),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: GoogleFonts.montserrat(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: AppTheme.mutedSilver,
             ),
-          ],
+          ),
         ],
       ),
     );
