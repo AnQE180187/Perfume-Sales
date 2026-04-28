@@ -1007,6 +1007,7 @@
         "vouchers_btn": "Vouchers",
         "available_vouchers": "Available Vouchers",
         "apply_btn": "Apply",
+        "no_vouchers": "No vouchers available",
         "looking_up": "Looking up...",
         "member": "Member",
         "guest": "Guest",
