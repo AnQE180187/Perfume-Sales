@@ -92,10 +92,10 @@ final staffReturnsProvider = StateNotifierProvider<StaffReturnNotifier, AsyncVal
 final returnStatusFilterProvider = StateProvider<String>((ref) => 'ALL');
 final returnsDateRangeProvider = StateProvider<DateTimeRange?>((ref) => null);
 
-final returnDetailsProvider = FutureProvider.family<Map<String, dynamic>, String>((ref, id) async {
+final returnDetailsProvider = FutureProvider.autoDispose.family<Map<String, dynamic>, String>((ref, id) async {
   return ref.watch(staffReturnsServiceProvider).getDetails(id);
 });
 
-final suggestedRefundProvider = FutureProvider.family<double, String>((ref, id) async {
+final suggestedRefundProvider = FutureProvider.autoDispose.family<double, String>((ref, id) async {
   return ref.watch(staffReturnsServiceProvider).getSuggestedRefund(id);
 });

@@ -87,6 +87,8 @@ class ApiEndpoints {
       '/reviews/product/$productId/stats';
   static String reviewSummaryByProduct(String productId) =>
       '/reviews/product/$productId/summary';
+  static String reactToReview(String id) => '/reviews/$id/react';
+  static String reportReview(String id) => '/reviews/$id/report';
 
   // ── Stores ────────────────────────────────────────────────────────
   static const String myStores = '/stores/my-stores';
@@ -112,12 +114,16 @@ class ApiEndpoints {
   static String staffPosOrderCustomer(String id) =>
       '/staff/pos/orders/$id/customer';
   static String staffPosOrderItems(String id) => '/staff/pos/orders/$id/items';
+  static String staffPosOrderSyncItems(String id) => '/staff/pos/orders/$id/sync-items';
   static String staffPosPayCash(String id) => '/staff/pos/orders/$id/pay/cash';
   static String staffPosPayQr(String id) => '/staff/pos/orders/$id/pay/qr';
   static String staffPosCancelOrder(String id) => '/staff/pos/orders/$id';
   static const String staffPosCheckout = '/staff/pos/checkout';
   static const String staffPosSaveDraft = '/staff/pos/save-draft';
   static const String staffPosAiConsult = '/staff/pos/ai-consult';
+  static const String staffPosCustomerPromotions = '/staff/pos/customer-promotions';
+  static String staffPosApplyPromotion(String id) => '/staff/pos/orders/$id/apply-promotion';
+  static String staffPosRemovePromotion(String id) => '/staff/pos/orders/$id/promotion';
 
   // ── Staff: Reports ────────────────────────────────────────────────
   static const String staffReportsDaily = '/staff/reports/daily';

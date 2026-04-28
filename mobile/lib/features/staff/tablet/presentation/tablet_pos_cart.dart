@@ -17,19 +17,63 @@ import 'package:perfume_gpt_app/core/utils/responsive.dart';
 import 'package:perfume_gpt_app/features/staff/models/staff_store.dart' as staff;
 import 'package:perfume_gpt_app/features/stores/services/stores_service.dart' as stores;
 
-class TabletPosCart extends ConsumerWidget {
+class TabletPosCart extends ConsumerStatefulWidget {
   const TabletPosCart({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TabletPosCart> createState() => _TabletPosCartState();
+}
+
+class _TabletPosCartState extends ConsumerState<TabletPosCart> {
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final posState = ref.watch(posProvider);
     final l10n = AppLocalizations.of(context)!;
     final currencyFmt = NumberFormat('#,###', 'vi_VN');
 
     final isMobile = MediaQuery.of(context).size.width < 600;
 
+    // Sync controller with state (e.g. when customer is cleared)
+    ref.listen(posProvider.select((s) => s.customerPhone), (prev, next) {
+      if ((next == null || next.isEmpty) && _searchController.text.isNotEmpty) {
+        _searchController.clear();
+      }
+    });
+
+    ref.listen(posProvider.select((s) => s.error), (prev, next) {
+      if (next != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next),
+            backgroundColor: Colors.red.shade900,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    });
+
+    ref.listen(posProvider.select((s) => s.successMessage), (prev, next) {
+      if (next != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next),
+            backgroundColor: Colors.green.shade900,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    });
+
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 24, vertical: isMobile ? 12 : 32),
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24, vertical: isMobile ? 8 : 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -39,58 +83,44 @@ class TabletPosCart extends ConsumerWidget {
               Text(
                 "ĐƠN HIỆN TẠI",
                 style: GoogleFonts.playfairDisplay(
-                  fontSize: 20,
+                  fontSize: 18,
                   fontWeight: FontWeight.w700,
                   color: AppTheme.accentGold,
                   letterSpacing: 2,
                 ),
               ),
               const Spacer(),
-              const Icon(Icons.receipt_outlined, color: Colors.white60, size: 18),
+              const Icon(Icons.receipt_outlined, color: Colors.white60, size: 16),
             ],
           ),
-          SizedBox(height: isMobile ? 16 : 32),
-          
-          // Member Search
-          _buildMemberSearchCompact(ref, l10n, posState, isMobile),
-          SizedBox(height: isMobile ? 16 : 32),
+          const SizedBox(height: 16),
 
-          // Items Bar
-          const Divider(color: Colors.white10),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Row(
-              children: [
-                Text("MÔ TẢ", style: GoogleFonts.montserrat(fontSize: 9, color: Colors.white, fontWeight: FontWeight.w700, letterSpacing: 1)),
-                const Spacer(),
-                Text("TẠM TÍNH", style: GoogleFonts.montserrat(fontSize: 9, color: Colors.white, fontWeight: FontWeight.w700, letterSpacing: 1)),
-              ],
+          _buildMemberSearchCompact(context, ref, l10n, posState, isMobile),
+
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: _buildMinimalCartList(ref, posState, currencyFmt, l10n),
             ),
           ),
-          const Divider(color: Colors.white10),
 
-          // Cart Items
-          Expanded(
-            child: _buildMinimalCartList(ref, posState, currencyFmt, l10n),
-          ),
-
-          // Footer
           _buildLuxuryCheckoutFooter(context, ref, posState, currencyFmt, l10n),
         ],
       ),
     );
   }
 
-  Widget _buildMemberSearchCompact(WidgetRef ref, AppLocalizations l10n, PosState state, bool isMobile) {
+  Widget _buildMemberSearchCompact(BuildContext context, WidgetRef ref, AppLocalizations l10n, PosState state, bool isMobile) {
     return Column(
       children: [
         Container(
-          height: 44,
+          height: 40,
           decoration: BoxDecoration(
             border: Border.all(color: Colors.white10),
             borderRadius: BorderRadius.circular(4),
           ),
           child: TextField(
+            controller: _searchController,
             style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 12),
             decoration: InputDecoration(
               hintText: "GẮN SĐT KHÁCH HÀNG...",
@@ -98,6 +128,7 @@ class TabletPosCart extends ConsumerWidget {
               prefixIcon: const Icon(Icons.person_outline_rounded, color: Colors.white, size: 16),
               border: InputBorder.none,
               filled: false,
+              contentPadding: const EdgeInsets.symmetric(vertical: 10),
             ),
             onChanged: (v) => ref.read(posProvider.notifier).autoSearchCustomers(v),
             onSubmitted: (v) {
@@ -108,36 +139,49 @@ class TabletPosCart extends ConsumerWidget {
         if (state.customerSuggestions.isNotEmpty)
           Container(
             margin: const EdgeInsets.only(top: 4),
+            constraints: const BoxConstraints(maxHeight: 150),
             decoration: BoxDecoration(
               color: const Color(0xFF1A1A1A),
               border: Border.all(color: AppTheme.accentGold.withOpacity(0.2)),
               borderRadius: BorderRadius.circular(4),
+              boxShadow: [BoxShadow(color: Colors.black54, blurRadius: 10)],
             ),
-            child: Column(
-              children: state.customerSuggestions.map((s) => InkWell(
-                onTap: () => ref.read(posProvider.notifier).selectCustomerSuggestion(s),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.person_search_rounded, color: AppTheme.accentGold, size: 14),
-                      const SizedBox(width: 8),
-                      Text(s.phone ?? "", style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
-                      const SizedBox(width: 8),
-                      Text(s.fullName ?? "", style: GoogleFonts.playfairDisplay(color: Colors.white70, fontSize: 11)),
-                      const Spacer(),
-                      Text("${s.loyaltyPoints} pts", style: GoogleFonts.montserrat(color: AppTheme.accentGold, fontSize: 9, fontWeight: FontWeight.bold)),
-                    ],
+            child: SingleChildScrollView(
+              child: Column(
+                children: state.customerSuggestions.map((s) => InkWell(
+                  onTap: () {
+                    _searchController.text = s.phone ?? "";
+                    ref.read(posProvider.notifier).selectCustomerSuggestion(s);
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.person_search_rounded, color: AppTheme.accentGold, size: 14),
+                        const SizedBox(width: 8),
+                        Text(s.phone ?? "", style: GoogleFonts.robotoMono(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            s.fullName ?? "", 
+                            style: GoogleFonts.playfairDisplay(color: Colors.white70, fontSize: 11),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text("${s.loyaltyPoints} pts", style: GoogleFonts.montserrat(color: AppTheme.accentGold, fontSize: 9, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
                   ),
-                ),
-              )).toList(),
+                )).toList(),
+              ),
             ),
           ),
         if (state.customerPhone != null)
           Padding(
             padding: const EdgeInsets.only(top: 12),
             child: Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               decoration: BoxDecoration(
                 color: const Color(0xFF0F0F0F),
                 border: Border.all(color: AppTheme.accentGold.withOpacity(0.1)),
@@ -146,16 +190,16 @@ class TabletPosCart extends ConsumerWidget {
               child: Row(
                 children: [
                   Container(
-                    width: 48,
-                    height: 48,
+                    width: 40,
+                    height: 40,
                     decoration: BoxDecoration(
                       color: AppTheme.accentGold.withOpacity(0.05),
                       shape: BoxShape.circle,
                       border: Border.all(color: AppTheme.accentGold.withOpacity(0.2), width: 0.5),
                     ),
-                    child: const Icon(Icons.person_pin_rounded, color: AppTheme.accentGold, size: 24),
+                    child: const Icon(Icons.person_pin_rounded, color: AppTheme.accentGold, size: 20),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -163,22 +207,46 @@ class TabletPosCart extends ConsumerWidget {
                         Row(
                           children: [
                             Text("${l10n.client} / ", style: GoogleFonts.montserrat(fontSize: 8, color: AppTheme.accentGold, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                              decoration: BoxDecoration(color: AppTheme.accentGold.withOpacity(0.1), borderRadius: BorderRadius.circular(2)),
-                              child: Text(state.customerInfo?.tier?.toUpperCase() ?? l10n.member, style: GoogleFonts.montserrat(fontSize: 7, color: AppTheme.accentGold, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                            Flexible(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                decoration: BoxDecoration(color: AppTheme.accentGold.withOpacity(0.1), borderRadius: BorderRadius.circular(2)),
+                                child: Text(
+                                  state.customerInfo?.tier?.toUpperCase() ?? l10n.member,
+                                  style: GoogleFonts.montserrat(fontSize: 7, color: AppTheme.accentGold, fontWeight: FontWeight.w900, letterSpacing: 1),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 4),
-                        Text(state.customerInfo?.fullName ?? state.customerPhone!, style: GoogleFonts.playfairDisplay(fontSize: 15, color: Colors.white, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 2),
+                        Text(
+                          state.customerInfo?.fullName ?? state.customerPhone!,
+                          style: GoogleFonts.playfairDisplay(fontSize: 14, color: Colors.white, fontWeight: FontWeight.bold),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                         if (state.customerInfo != null)
-                          Text("${state.customerInfo!.loyaltyPoints} ${l10n.loyaltyPoints}", style: GoogleFonts.robotoMono(fontSize: 9, color: Colors.white70, fontWeight: FontWeight.bold)),
+                          Text(
+                            "${state.customerInfo!.loyaltyPoints} ${l10n.loyaltyPoints}",
+                            style: GoogleFonts.robotoMono(fontSize: 8, color: Colors.white70, fontWeight: FontWeight.bold),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                       ],
                     ),
                   ),
+                  if (state.customerPhone != null)
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      icon: const Icon(Icons.card_membership_rounded, size: 22, color: AppTheme.accentGold),
+                      onPressed: () => _showVoucherDialog(context, ref, state),
+                    ),
+                  const SizedBox(width: 8),
                   IconButton(
-                    icon: const Icon(Icons.close_rounded, size: 16, color: Colors.white24),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    icon: const Icon(Icons.close_rounded, size: 18, color: Colors.white24),
                     onPressed: () => ref.read(posProvider.notifier).setCustomerPhone(''),
                   ),
                 ],
@@ -238,16 +306,22 @@ class TabletPosCart extends ConsumerWidget {
     return Column(
       children: [
         const Divider(color: Colors.white10),
-        const SizedBox(height: 16),
+        const SizedBox(height: 8),
         _PriceLine(label: l10n.subtotal.toUpperCase(), value: "${fmt.format(subtotal)}đ"),
-        if (discount > 0) _PriceLine(label: l10n.memberDiscount.toUpperCase(), value: "-${fmt.format(discount)}đ", isGold: true),
-        const SizedBox(height: 16),
+        if (discount > 0) 
+          _PriceLine(
+            label: l10n.memberDiscount.toUpperCase(), 
+            value: "-${fmt.format(discount)}đ", 
+            isGold: true,
+            onRemove: () => ref.read(posProvider.notifier).removePromotion(),
+          ),
+        const SizedBox(height: 12),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(l10n.totalAmount.toUpperCase(), 
-              style: GoogleFonts.montserrat(fontSize: 12, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 0.5),
+              style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 0.5),
             ),
             const SizedBox(width: 8),
             Expanded(
@@ -256,13 +330,13 @@ class TabletPosCart extends ConsumerWidget {
                 alignment: Alignment.centerRight,
                 child: Text(
                   "${fmt.format(total)}đ",
-                  style: GoogleFonts.montserrat(fontSize: 24, fontWeight: FontWeight.w800, color: AppTheme.accentGold),
+                  style: GoogleFonts.montserrat(fontSize: 22, fontWeight: FontWeight.w800, color: AppTheme.accentGold),
                 ),
               ),
             ),
           ],
         ),
-        SizedBox(height: Responsive.isMobile(context) ? 16 : 40),
+        SizedBox(height: Responsive.isMobile(context) ? 12 : 24),
         Row(
           children: [
             Expanded(
@@ -426,13 +500,121 @@ class TabletPosCart extends ConsumerWidget {
       ),
     );
   }
+
+  void _showVoucherDialog(BuildContext context, WidgetRef ref, PosState state) {
+    final l10n = AppLocalizations.of(context)!;
+    final currencyFmt = NumberFormat('#,###', 'vi_VN');
+    
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A1A),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24), side: BorderSide(color: AppTheme.accentGold.withOpacity(0.1))),
+        title: Row(
+          children: [
+            const Icon(Icons.card_membership_rounded, color: AppTheme.accentGold, size: 20),
+            const SizedBox(width: 12),
+            Text(
+              l10n.availableVouchers.toUpperCase(),
+              style: GoogleFonts.montserrat(fontSize: 14, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 1),
+            ),
+          ],
+        ),
+        content: SizedBox(
+          width: 400,
+          child: ListView.separated(
+            shrinkWrap: true,
+            itemCount: state.customerPromotions.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            itemBuilder: (ctx, i) {
+              final up = state.customerPromotions[i];
+              final promo = up['promotion'] as Map<String, dynamic>;
+              final code = promo['code'] as String;
+              final desc = promo['description'] as String? ?? '';
+              final discountType = promo['discountType'] as String;
+              final discountValue = (promo['discountValue'] as num?)?.toDouble() ?? 0.0;
+              final minOrder = (promo['minOrderAmount'] as num?)?.toDouble() ?? 0.0;
+              
+              final subtotal = state.localCart.fold<double>(0, (sum, it) => sum + it.totalPrice);
+              final isEligible = subtotal >= minOrder;
+
+              return Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.03),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppTheme.accentGold.withOpacity(0.1)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(code, style: GoogleFonts.robotoMono(color: AppTheme.accentGold, fontWeight: FontWeight.bold, fontSize: 14)),
+                        Text(
+                          discountType == 'PERCENTAGE' ? "-${discountValue.toInt()}%" : "-${currencyFmt.format(discountValue)}đ",
+                          style: GoogleFonts.montserrat(color: AppTheme.accentGold, fontWeight: FontWeight.w900, fontSize: 16),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(desc, style: GoogleFonts.montserrat(color: Colors.white60, fontSize: 10)),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Hết hạn: ${DateFormat('dd/MM/yyyy').format(DateTime.parse(promo['endDate']))}",
+                          style: GoogleFonts.montserrat(color: Colors.white38, fontSize: 9),
+                        ),
+                        ElevatedButton(
+                          onPressed: !isEligible ? null : () {
+                            Navigator.pop(ctx);
+                            ref.read(posProvider.notifier).applyPromotion(
+                              code,
+                              storeId: ref.read(posSelectedStoreIdProvider),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.accentGold,
+                            foregroundColor: Colors.black,
+                            disabledBackgroundColor: Colors.white10,
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                          child: Text(
+                            !isEligible 
+                              ? l10n.minOrderRequired(currencyFmt.format(minOrder)) 
+                              : l10n.apply,
+                            style: GoogleFonts.montserrat(fontSize: 9, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.close, style: GoogleFonts.montserrat(color: Colors.white38, fontSize: 10, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _PriceLine extends StatelessWidget {
   final String label;
   final String value;
   final bool isGold;
-  const _PriceLine({required this.label, required this.value, this.isGold = false});
+  final VoidCallback? onRemove;
+  const _PriceLine({required this.label, required this.value, this.isGold = false, this.onRemove});
 
   @override
   Widget build(BuildContext context) {
@@ -441,7 +623,20 @@ class _PriceLine extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: GoogleFonts.montserrat(fontSize: 12, color: isGold ? AppTheme.accentGold : Colors.white, fontWeight: FontWeight.w700, letterSpacing: 1.5)),
+          Expanded(
+            child: Row(
+              children: [
+                Text(label, style: GoogleFonts.montserrat(fontSize: 12, color: isGold ? AppTheme.accentGold : Colors.white, fontWeight: FontWeight.w700, letterSpacing: 1.5)),
+                if (onRemove != null) ...[
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: onRemove,
+                    child: Icon(Icons.close, size: 14, color: isGold ? AppTheme.accentGold.withOpacity(0.7) : Colors.white54),
+                  ),
+                ],
+              ],
+            ),
+          ),
           Text(value, style: GoogleFonts.robotoMono(fontSize: 14, color: isGold ? AppTheme.accentGold : Colors.white70)),
         ],
       ),

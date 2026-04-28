@@ -31,59 +31,85 @@ class AccountActionsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 6, bottom: 12),
-            child: Text(
-              l10n.accountManagement,
-              style: GoogleFonts.montserrat(
-                fontSize: 10,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.5,
-                color: AppTheme.mutedSilver,
-              ),
-            ),
-          ),
-          Column(
-            children: [
+          _buildGroup(
+            context,
+            l10n.accountManagement,
+            [
               ProfileActionTile(
-                icon: Icons.auto_stories_outlined,
+                icon: Icons.shopping_bag_outlined,
                 title: l10n.myOrders,
                 subtitle: activeShipmentsText,
                 subtitleIsBadge: activeShipmentsText != null,
                 onTap: onMyOrders,
               ),
-              const SizedBox(height: 8),
+              const Divider(height: 1, indent: 56, color: AppTheme.softTaupe, thickness: 0.2),
               ProfileActionTile(
-                icon: Icons.map_outlined,
+                icon: Icons.location_on_outlined,
                 title: l10n.shippingAddresses,
                 onTap: onShippingAddresses,
               ),
-              const SizedBox(height: 8),
+              const Divider(height: 1, indent: 56, color: AppTheme.softTaupe, thickness: 0.2),
               ProfileActionTile(
-                icon: Icons.payment_outlined,
+                icon: Icons.credit_card_outlined,
                 title: l10n.paymentAndCards,
                 onTap: onPaymentMethods ?? () {},
               ),
-              const SizedBox(height: 8),
+            ],
+          ),
+          const SizedBox(height: 24),
+          _buildGroup(
+            context,
+            'CÁ NHÂN HÓA AI',
+            [
               ProfileActionTile(
-                icon: Icons.gesture_outlined,
+                icon: Icons.psychology_outlined,
                 title: l10n.aiScentPreferences,
                 onTap: onAiPreferences,
               ),
-              const SizedBox(height: 8),
+              const Divider(height: 1, indent: 56, color: AppTheme.softTaupe, thickness: 0.2),
               ProfileActionTile(
-                icon: Icons.history_edu_rounded,
+                icon: Icons.history_rounded,
                 title: l10n.quizHistoryTitle,
                 onTap: onQuizHistory,
+              ),
+              const Divider(height: 1, indent: 56, color: AppTheme.softTaupe, thickness: 0.2),
+              ProfileActionTile(
+                icon: Icons.settings_outlined,
+                title: l10n.settings,
+                onTap: onSettings,
               ),
             ],
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildGroup(BuildContext context, String title, List<Widget> children) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 12),
+          child: Text(
+            title.toUpperCase(),
+            style: GoogleFonts.montserrat(
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.5,
+              color: AppTheme.mutedSilver,
+            ),
+          ),
+        ),
+        Container(
+          decoration: AppTheme.getPremiumShadow(borderRadius: 20),
+          child: Column(children: children),
+        ),
+      ],
     );
   }
 }

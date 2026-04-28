@@ -203,6 +203,18 @@ class AddressCard extends StatelessWidget {
       case AddressLabel.gift:
         icon = Icons.card_giftcard_rounded;
         break;
+      case AddressLabel.hotel:
+        icon = Icons.hotel_outlined;
+        break;
+      case AddressLabel.school:
+        icon = Icons.school_outlined;
+        break;
+      case AddressLabel.cafe:
+        icon = Icons.store_outlined;
+        break;
+      case AddressLabel.other:
+        icon = Icons.more_horiz_rounded;
+        break;
     }
     return Container(
       padding: const EdgeInsets.all(10),

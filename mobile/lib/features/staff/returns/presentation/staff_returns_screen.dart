@@ -37,14 +37,25 @@ class StaffReturnsScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        "HOÀN TRẢ",
-                        style: GoogleFonts.playfairDisplay(
-                          fontSize: isMobile ? 22 : 32, 
-                          fontWeight: FontWeight.w800, 
-                          color: Colors.white,
-                          letterSpacing: -0.5,
-                        ),
+                      Row(
+                        children: [
+                          Text(
+                            "HOÀN TRẢ",
+                            style: GoogleFonts.playfairDisplay(
+                              fontSize: isMobile ? 22 : 32, 
+                              fontWeight: FontWeight.w800, 
+                              color: Colors.white,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          IconButton(
+                            icon: const Icon(Icons.refresh_rounded, color: Colors.white24, size: 20),
+                            onPressed: () {
+                              ref.read(staffReturnsProvider.notifier).loadReturns();
+                            },
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -339,13 +350,8 @@ class _StatusFilterChips extends ConsumerWidget {
                   ref.read(returnStatusFilterProvider.notifier).state = status['id']!;
                 }
               },
-              // Use WidgetStateProperty to force transparency when unselected
-              color: WidgetStateProperty.resolveWith<Color?>((states) {
-                if (states.contains(WidgetState.selected)) {
-                  return AppTheme.accentGold;
-                }
-                return Colors.transparent;
-              }),
+              backgroundColor: Colors.transparent,
+              selectedColor: AppTheme.accentGold,
               surfaceTintColor: Colors.transparent,
               shadowColor: Colors.transparent,
               selectedShadowColor: Colors.transparent,

@@ -262,6 +262,26 @@ class _BarcodeScannerSheetContentState extends ConsumerState<_BarcodeScannerShee
       if (success) {
         widget.onSuccess(code);
       } else {
+        final error = ref.read(posProvider).error;
+        if (mounted && error != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                error,
+                style: GoogleFonts.montserrat(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
+              backgroundColor: Colors.red.shade900,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              margin: const EdgeInsets.all(24),
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
         setState(() => _isProcessing = false);
       }
     } catch (_) {
@@ -425,12 +445,25 @@ class _ScientificProductCardState extends ConsumerState<_ScientificProductCard> 
                     Container(
                       margin: const EdgeInsets.all(12),
                       width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.white, // White background for clean perfume product display
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(4),
-                        child: imageUrl != null
-                            ? Image.network(imageUrl, fit: BoxFit.contain)
-                            : const Icon(Icons.science_outlined,
-                                size: 48, color: AppTheme.accentGold),
+                        child: Center(
+                          child: AspectRatio(
+                            aspectRatio: 1,
+                            child: imageUrl != null
+                                ? Image.network(
+                                    imageUrl, 
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image_outlined, size: 48, color: Colors.grey),
+                                  )
+                                : const Icon(Icons.science_outlined,
+                                    size: 48, color: AppTheme.accentGold),
+                          ),
+                        ),
                       ),
                     ),
                     // Stock Badge Overlay
@@ -529,17 +562,21 @@ class _ScientificProductCardState extends ConsumerState<_ScientificProductCard> 
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    if (widget.variant.barcode != null)
-                      Text(
-                        "BC: ${widget.variant.barcode}",
-                        style: GoogleFonts.robotoMono(
-                          fontSize: 8,
-                          color: AppTheme.accentGold.withOpacity(0.4),
-                          fontWeight: FontWeight.bold,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                    SizedBox(
+                      height: 12,
+                      child: widget.variant.barcode != null
+                          ? Text(
+                              "BC: ${widget.variant.barcode}",
+                              style: GoogleFonts.robotoMono(
+                                fontSize: 8,
+                                color: AppTheme.accentGold.withOpacity(0.4),
+                                fontWeight: FontWeight.bold,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            )
+                          : null,
+                    ),
                     const SizedBox(height: 8),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -200,12 +200,13 @@ class OrderCard extends StatelessWidget {
                     : l10n.review;
 
     return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
       children: [
         if (!isCancelled && !isReturn) ...[
           TextButton(
             onPressed: onViewDetail ?? onTap,
             style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
@@ -218,52 +219,43 @@ class OrderCard extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 12),
         ],
-        const Spacer(),
-        Flexible(
-          child: ElevatedButton(
-            onPressed: isReviewed
-                ? null
-                : showTrack
-                    ? onTrack
-                    : (isCancelled || isReturn ? onViewDetail : onReview),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: showTrack || isReturn ? AppTheme.accentGold : AppTheme.deepCharcoal,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              minimumSize: const Size(80, 40),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              elevation: 0,
+        ElevatedButton(
+          onPressed: isReviewed
+              ? null
+              : showTrack
+                  ? onTrack
+                  : (isCancelled || isReturn ? onViewDetail : onReview),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: showTrack || isReturn ? AppTheme.accentGold : AppTheme.deepCharcoal,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            minimumSize: const Size(100, 40),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (isReviewed) ...[
-                  const Icon(Icons.check_circle, size: 14),
-                  const SizedBox(width: 4),
-                ],
-                Flexible(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      showTrack 
-                          ? l10n.traceOrder 
-                          : isReturn 
-                              ? l10n.viewDetails 
-                              : (isCancelled ? l10n.viewDetails : (isReviewed ? l10n.reviewed : l10n.review)),
-                      style: GoogleFonts.montserrat(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 11,
-                      ),
-                      maxLines: 1,
-                    ),
-                  ),
-                ),
+            elevation: 0,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (isReviewed) ...[
+                const Icon(Icons.check_circle, size: 14),
+                const SizedBox(width: 4),
               ],
-            ),
+              Text(
+                showTrack 
+                    ? l10n.traceOrder 
+                    : isReturn 
+                        ? l10n.viewDetails 
+                        : (isCancelled ? l10n.viewDetails : (isReviewed ? l10n.reviewed : l10n.review)),
+                style: GoogleFonts.montserrat(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 11,
+                ),
+              ),
+            ],
           ),
         ),
       ],

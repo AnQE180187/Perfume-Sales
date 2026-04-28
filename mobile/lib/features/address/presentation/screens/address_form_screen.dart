@@ -353,57 +353,77 @@ class _LabelSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Row(
-      children: AddressLabel.values.map((label) {
-        final active = selected == label;
-        IconData icon;
-        String labelText;
-        switch (label) {
-          case AddressLabel.home: 
-            icon = Icons.home_outlined; 
-            labelText = l10n.homeLabel;
-            break;
-          case AddressLabel.office: 
-            icon = Icons.work_outline_rounded; 
-            labelText = l10n.officeLabel;
-            break;
-          case AddressLabel.gift: 
-            icon = Icons.card_giftcard_rounded; 
-            labelText = l10n.giftLabel;
-            break;
-        }
-        
-        return Expanded(
-          child: Padding(
-            padding: EdgeInsets.only(right: label == AddressLabel.gift ? 0 : 12),
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      clipBehavior: Clip.none,
+      child: Row(
+        children: AddressLabel.values.map((label) {
+          final active = selected == label;
+          IconData icon;
+          String labelText;
+          switch (label) {
+            case AddressLabel.home:
+              icon = Icons.home_outlined;
+              labelText = l10n.homeLabel;
+              break;
+            case AddressLabel.office:
+              icon = Icons.work_outline_rounded;
+              labelText = l10n.officeLabel;
+              break;
+            case AddressLabel.gift:
+              icon = Icons.card_giftcard_rounded;
+              labelText = l10n.giftLabel;
+              break;
+            case AddressLabel.hotel:
+              icon = Icons.hotel_outlined;
+              labelText = l10n.hotelLabel;
+              break;
+            case AddressLabel.school:
+              icon = Icons.school_outlined;
+              labelText = l10n.schoolLabel;
+              break;
+            case AddressLabel.cafe:
+              icon = Icons.store_outlined;
+              labelText = l10n.cafeLabel;
+              break;
+            case AddressLabel.other:
+              icon = Icons.more_horiz_rounded;
+              labelText = l10n.otherLabel;
+              break;
+          }
+
+          return Padding(
+            padding: const EdgeInsets.only(right: 12),
             child: InkWell(
               onTap: () => onChanged(label),
               borderRadius: BorderRadius.circular(12),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
+                width: 100, // Fixed width for scrollable items
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 decoration: BoxDecoration(
                   color: active ? AppTheme.deepCharcoal : Colors.white,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: active ? AppTheme.deepCharcoal : AppTheme.softTaupe.withValues(alpha: 0.3),
+                    color: active
+                        ? AppTheme.deepCharcoal
+                        : AppTheme.softTaupe.withValues(alpha: 0.3),
                     width: 1,
                   ),
-                  boxShadow: active ? [
-                    BoxShadow(
-                      color: AppTheme.deepCharcoal.withValues(alpha: 0.2),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    )
-                  ] : [],
+                  boxShadow: active
+                      ? [
+                          BoxShadow(
+                            color: AppTheme.deepCharcoal.withValues(alpha: 0.2),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          )
+                        ]
+                      : [],
                 ),
                 child: Column(
                   children: [
-                    Icon(
-                      icon, 
-                      size: 20, 
-                      color: active ? Colors.white : AppTheme.mutedSilver
-                    ),
+                    Icon(icon,
+                        size: 20, color: active ? Colors.white : AppTheme.mutedSilver),
                     const SizedBox(height: 6),
                     Text(
                       labelText,
@@ -417,9 +437,9 @@ class _LabelSelector extends StatelessWidget {
                 ),
               ),
             ),
-          ),
-        );
-      }).toList(),
+          );
+        }).toList(),
+      ),
     );
   }
 }

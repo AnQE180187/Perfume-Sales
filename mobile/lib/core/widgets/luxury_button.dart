@@ -30,7 +30,7 @@ class LuxuryButton extends StatelessWidget {
 
     return TappableCard(
       onTap: isDisabled ? null : onPressed,
-      scaleDownFactor: 0.94,
+      pressScaleFactor: 0.94,
       borderRadius: BorderRadius.circular(24),
       child: Container(
         height: height ?? 46,

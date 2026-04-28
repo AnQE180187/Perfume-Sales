@@ -507,6 +507,17 @@ class AppLocalizationsVi extends AppLocalizations {
   String get promoCode => 'MÃ KHUYẾN MÃI';
 
   @override
+  String get availableVouchers => 'Mã giảm giá khả dụng';
+
+  @override
+  String get close => 'ĐÓNG';
+
+  @override
+  String minOrderRequired(String amount) {
+    return 'Tối thiểu $amountđ';
+  }
+
+  @override
   String get apply => 'ÁP DỤNG';
 
   @override
@@ -640,28 +651,35 @@ class AppLocalizationsVi extends AppLocalizations {
   String get orderStatusRefunded => 'Đã hoàn tiền';
 
   @override
-  String get orderDescPending => 'Đơn hàng đang chờ xác nhận';
+  String get orderDescPending =>
+      'Thiên thần đang tiếp nhận yêu cầu khứu giác của bạn';
 
   @override
-  String get orderDescConfirmed => 'Đơn hàng đã xác nhận và đang chuẩn bị';
+  String get orderDescConfirmed =>
+      'Nghệ nhân đang bắt đầu chuẩn bị những tinh hoa';
 
   @override
-  String get orderDescProcessing => 'Đang đóng gói mùi hương của bạn';
+  String get orderDescProcessing =>
+      'Mùi hương của bạn đang được đóng gói một cách tỉ mỉ';
 
   @override
-  String get orderDescShipped => 'Đang trên đường đến bạn';
+  String get orderDescShipped =>
+      'Hành trình hương thơm đang trên đường tới bạn';
 
   @override
-  String get orderDescOutForDelivery => 'Sẽ giao hôm nay';
+  String get orderDescOutForDelivery =>
+      'Mùi hương đặc bản sẽ chạm ngõ nhà bạn hôm nay';
 
   @override
-  String get orderDescDelivered => 'Giao hàng thành công';
+  String get orderDescDelivered =>
+      'Chúc mừng bạn đã sở hữu dấu ấn mùi hương mới';
 
   @override
-  String get orderDescCancelled => 'Đơn hàng đã hủy';
+  String get orderDescCancelled => 'Đơn hàng đã được hủy bỏ khỏi hệ thống';
 
   @override
-  String get orderDescRefunded => 'Đã hoàn tiền';
+  String get orderDescRefunded =>
+      'Tiền hoàn đã được chuyển vào tài khoản của bạn';
 
   @override
   String get payment => 'THANH TOÁN';
@@ -1512,6 +1530,21 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String get helpful => 'Hữu ích';
+
+  @override
+  String get report => 'Báo cáo';
+
+  @override
+  String get reportReasonHint => 'Lý do bạn báo cáo đánh giá này?';
+
+  @override
+  String get reportSuccess => 'Đã gửi báo cáo thành công';
+
+  @override
+  String get helpfulSuccess => 'Cảm ơn bạn đã phản hồi';
+
+  @override
   String yearsAgo(int count) {
     return '$count năm trước';
   }
@@ -1764,7 +1797,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get category => 'Phân loại';
 
   @override
-  String get recipientName => 'Tên người nhận';
+  String get recipientName => 'Thông tin cá nhân';
 
   @override
   String get recipientNameHint => 'Nhập họ và tên người nhận';
@@ -1835,6 +1868,18 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get giftLabel => 'Quà tặng';
+
+  @override
+  String get hotelLabel => 'Khách sạn';
+
+  @override
+  String get schoolLabel => 'Trường học';
+
+  @override
+  String get cafeLabel => 'Cửa hàng';
+
+  @override
+  String get otherLabel => 'Khác';
 
   @override
   String get selectProvince => 'Chọn Tỉnh / Thành phố';

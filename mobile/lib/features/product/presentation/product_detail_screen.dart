@@ -48,6 +48,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
   final PageController _pageController = PageController();
   int _currentImagePage = 0;
   Color? _dominantColor;
+  Color? _accentColor;
+  Color? _mutedColor;
   String? _loadedImageUrl;
 
   // Size pricing map
@@ -105,7 +107,9 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
       );
       if (mounted) {
         setState(() {
-          _dominantColor = palette.dominantColor?.color ?? palette.lightMutedColor?.color;
+          _dominantColor = palette.dominantColor?.color;
+          _accentColor = palette.vibrantColor?.color ?? palette.lightVibrantColor?.color;
+          _mutedColor = palette.mutedColor?.color ?? palette.darkMutedColor?.color;
         });
       }
     } catch (_) {}
@@ -225,33 +229,40 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                             child: Stack(
                               fit: StackFit.expand,
                               children: [
-                                // gradient background
+                                // dynamic gradient background
                                 Container(
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
                                       colors: [
-                                        _dominantColor?.withValues(alpha: 0.15) ?? const Color(0xFFE8D5B7),
-                                        _dominantColor?.withValues(alpha: 0.5) ?? const Color(0xFFF5F1ED),
+                                        _mutedColor?.withValues(alpha: 0.3) ?? const Color(0xFFE8D5B7),
+                                        _dominantColor?.withValues(alpha: 0.25) ?? const Color(0xFFF5F1ED),
+                                        _accentColor?.withValues(alpha: 0.2) ?? const Color(0xFFFFFFFF),
                                       ],
+                                      stops: const [0.0, 0.5, 1.0],
                                     ),
                                   ),
                                 ),
-                                // swipeable image gallery
+                                // swipeable image gallery with Zoom
                                 PageView.builder(
                                   controller: _pageController,
                                   onPageChanged: (i) =>
                                       setState(() => _currentImagePage = i),
                                   itemCount: images.length,
-                                  itemBuilder: (_, i) => Image.network(
-                                    images[i],
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => const Center(
-                                      child: Icon(
-                                        Icons.image_outlined,
-                                        size: 64,
-                                        color: AppTheme.mutedSilver,
+                                  itemBuilder: (_, i) => InteractiveViewer(
+                                    minScale: 1.0,
+                                    maxScale: 3.5,
+                                    panEnabled: false, // keep swipe working
+                                    child: Image.network(
+                                      images[i],
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) => const Center(
+                                        child: Icon(
+                                          Icons.image_outlined,
+                                          size: 64,
+                                          color: AppTheme.mutedSilver,
+                                        ),
                                       ),
                                     ),
                                   ),

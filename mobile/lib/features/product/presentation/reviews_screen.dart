@@ -24,16 +24,28 @@ class ReviewsScreen extends ConsumerStatefulWidget {
 
 class _ReviewsScreenState extends ConsumerState<ReviewsScreen> {
   _ReviewFilter _activeFilter = _ReviewFilter.all;
+  int? _selectedStar;
+  int _currentPage = 1;
+  static const int _pageSize = 5;
 
   List<ReviewItem> _applyFilter(List<ReviewItem> items) {
+    List<ReviewItem> filtered = items;
     switch (_activeFilter) {
       case _ReviewFilter.withImages:
-        return items.where((r) => r.images.isNotEmpty).toList();
+        filtered = filtered.where((r) => r.images.isNotEmpty).toList();
+        break;
       case _ReviewFilter.verified:
-        return items.where((r) => r.isVerified).toList();
+        filtered = filtered.where((r) => r.isVerified).toList();
+        break;
       case _ReviewFilter.all:
-        return items;
+        break;
     }
+
+    if (_selectedStar != null) {
+      filtered = filtered.where((r) => r.rating == _selectedStar).toList();
+    }
+
+    return filtered;
   }
 
   String _timeAgo(DateTime dt, AppLocalizations l10n) {
@@ -83,7 +95,7 @@ class _ReviewsScreenState extends ConsumerState<ReviewsScreen> {
         centerTitle: true,
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+        padding: const EdgeInsets.fromLTRB(24, 12, 24, 48),
         children: [
           // ── AI Insight Card ──────────────────────────────────────
           summaryAsync.when(
@@ -104,30 +116,66 @@ class _ReviewsScreenState extends ConsumerState<ReviewsScreen> {
               ),
             ),
             error: (_, __) => const SizedBox.shrink(),
-            data: (stats) => _RatingSummary(stats: stats),
+            data: (stats) => _RatingSummary(
+              stats: stats,
+              selectedStar: _selectedStar,
+              onStarTap: (star) {
+                setState(() {
+                  _selectedStar = (_selectedStar == star) ? null : star;
+                  _currentPage = 1;
+                });
+              },
+            ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 32),
           // ── Filter Tabs ──────────────────────────────────────────
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
             child: Row(
               children: [
                 _FilterChipWidget(
                   label: l10n.allReviews,
-                  isSelected: _activeFilter == _ReviewFilter.all,
-                  onTap: () => setState(() => _activeFilter = _ReviewFilter.all),
+                  isSelected: _activeFilter == _ReviewFilter.all && _selectedStar == null,
+                  onTap: () {
+                    setState(() {
+                      _activeFilter = _ReviewFilter.all;
+                      _selectedStar = null;
+                      _currentPage = 1;
+                    });
+                  },
                 ),
                 const SizedBox(width: 8),
                 _FilterChipWidget(
                   label: l10n.withImages,
                   isSelected: _activeFilter == _ReviewFilter.withImages,
-                  onTap: () => setState(() => _activeFilter = _ReviewFilter.withImages),
+                  onTap: () {
+                    setState(() {
+                      _activeFilter = _ReviewFilter.withImages;
+                      _currentPage = 1;
+                    });
+                  },
                 ),
                 const SizedBox(width: 8),
                 _FilterChipWidget(
                   label: l10n.verifiedBuyer,
                   isSelected: _activeFilter == _ReviewFilter.verified,
-                  onTap: () => setState(() => _activeFilter = _ReviewFilter.verified),
+                  onTap: () {
+                    setState(() {
+                      _activeFilter = _ReviewFilter.verified;
+                      _currentPage = 1;
+                    });
+                  },
+                ),
+                const SizedBox(width: 8),
+                _StarFilterDropdown(
+                  selectedStar: _selectedStar,
+                  onSelected: (star) {
+                    setState(() {
+                      _selectedStar = star;
+                      _currentPage = 1;
+                    });
+                  },
                 ),
               ],
             ),
@@ -175,18 +223,65 @@ class _ReviewsScreenState extends ConsumerState<ReviewsScreen> {
                   ),
                 );
               }
+
+              final totalItems = filtered.length;
+              final totalPages = (totalItems / _pageSize).ceil();
+              final startIndex = (_currentPage - 1) * _pageSize;
+              final pagedItems = filtered.skip(startIndex).take(_pageSize).toList();
+
               return Column(
-                children: filtered
-                    .map(
-                      (review) => Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: _ReviewCard(
-                          review: review,
-                          timeAgo: _timeAgo(review.createdAt, l10n),
-                        ),
+                children: [
+                  ...pagedItems.map(
+                    (review) => Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: _ReviewCard(
+                        review: review,
+                        timeAgo: _timeAgo(review.createdAt, l10n),
                       ),
-                    )
-                    .toList(),
+                    ),
+                  ),
+                  if (totalPages > 1) ...[
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                          onPressed: _currentPage > 1
+                              ? () => setState(() => _currentPage--)
+                              : null,
+                          icon: Icon(
+                            Icons.chevron_left,
+                            color: _currentPage > 1
+                                ? AppTheme.deepCharcoal
+                                : AppTheme.mutedSilver,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Text(
+                            '$_currentPage / $totalPages',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.deepCharcoal,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: _currentPage < totalPages
+                              ? () => setState(() => _currentPage++)
+                              : null,
+                          icon: Icon(
+                            Icons.chevron_right,
+                            color: _currentPage < totalPages
+                                ? AppTheme.deepCharcoal
+                                : AppTheme.mutedSilver,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
               );
             },
           ),
@@ -285,7 +380,14 @@ class _AiInsightCardState extends State<_AiInsightCard> {
 
 class _RatingSummary extends StatelessWidget {
   final ReviewStats stats;
-  const _RatingSummary({required this.stats});
+  final int? selectedStar;
+  final Function(int) onStarTap;
+
+  const _RatingSummary({
+    required this.stats,
+    this.selectedStar,
+    required this.onStarTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -315,7 +417,11 @@ class _RatingSummary extends StatelessWidget {
                     hasHalf: hasHalf,
                   ),
                   const SizedBox(height: 16),
-                  _RatingRight(stats: stats),
+                  _RatingRight(
+                    stats: stats,
+                    selectedStar: selectedStar,
+                    onStarTap: onStarTap,
+                  ),
                 ],
               )
             : Row(
@@ -327,7 +433,13 @@ class _RatingSummary extends StatelessWidget {
                     hasHalf: hasHalf,
                   ),
                   const SizedBox(width: 24),
-                  Expanded(child: _RatingRight(stats: stats)),
+                  Expanded(
+                    child: _RatingRight(
+                      stats: stats,
+                      selectedStar: selectedStar,
+                      onStarTap: onStarTap,
+                    ),
+                  ),
                 ],
               );
       },
@@ -398,52 +510,185 @@ class _RatingLeft extends StatelessWidget {
 
 class _RatingRight extends StatelessWidget {
   final ReviewStats stats;
-  const _RatingRight({required this.stats});
+  final int? selectedStar;
+  final Function(int) onStarTap;
+
+  const _RatingRight({
+    required this.stats,
+    this.selectedStar,
+    required this.onStarTap,
+  });
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [5, 4, 3, 2, 1].map((star) {
         final count = stats.distribution[star] ?? 0;
         final ratio = stats.total > 0 ? count / stats.total : 0.0;
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 6),
-          child: Row(
-            children: [
-              Text(
-                '$star',
-                style: GoogleFonts.montserrat(
-                  fontSize: 11,
-                  color: AppTheme.mutedSilver,
+        final isSelected = selectedStar == star;
+
+        return GestureDetector(
+          onTap: () => onStarTap(star),
+          behavior: HitTestBehavior.opaque,
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(
+              children: [
+                Text(
+                  '$star',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 11,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    color: isSelected ? AppTheme.accentGold : AppTheme.mutedSilver,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 4),
-              const Icon(Icons.star, size: 10, color: AppTheme.accentGold),
-              const SizedBox(width: 6),
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(3),
-                  child: LinearProgressIndicator(
-                    value: ratio.toDouble(),
-                    minHeight: 6,
-                    backgroundColor: AppTheme.softTaupe.withValues(alpha: 0.3),
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                      AppTheme.accentGold,
+                const SizedBox(width: 4),
+                Icon(
+                  Icons.star,
+                  size: 10,
+                  color: isSelected
+                      ? AppTheme.accentGold
+                      : AppTheme.accentGold.withValues(alpha: 0.5),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(3),
+                    child: LinearProgressIndicator(
+                      value: ratio.toDouble(),
+                      minHeight: 6,
+                      backgroundColor: AppTheme.softTaupe.withValues(alpha: 0.15),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        isSelected
+                            ? AppTheme.accentGold
+                            : AppTheme.accentGold.withValues(alpha: 0.6),
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 6),
+                const SizedBox(width: 6),
+                Text(
+                  '$count',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 11,
+                    color: AppTheme.mutedSilver,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+}
+
+
+class _StarFilterDropdown extends StatelessWidget {
+  final int? selectedStar;
+  final Function(int?) onSelected;
+
+  const _StarFilterDropdown({
+    required this.selectedStar,
+    required this.onSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isSelected = selectedStar != null;
+
+    return PopupMenuButton<int?>(
+      onSelected: onSelected,
+      offset: const Offset(0, 45),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 8,
+      color: AppTheme.creamWhite,
+      itemBuilder: (context) => [
+        PopupMenuItem<int?>(
+          value: null,
+          child: Row(
+            children: [
+              const Icon(Icons.clear_all, size: 18, color: AppTheme.mutedSilver),
+              const SizedBox(width: 10),
               Text(
-                '$count',
+                l10n.all,
                 style: GoogleFonts.montserrat(
-                  fontSize: 11,
-                  color: AppTheme.mutedSilver,
+                  fontSize: 13,
+                  color: AppTheme.deepCharcoal,
                 ),
               ),
             ],
           ),
-        );
-      }).toList(),
+        ),
+        ...List.generate(5, (i) {
+          final star = 5 - i;
+          return PopupMenuItem<int?>(
+            value: star,
+            child: Row(
+              children: [
+                Row(
+                  children: List.generate(
+                    star,
+                    (index) => const Icon(
+                      Icons.star,
+                      size: 14,
+                      color: AppTheme.accentGold,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '($star)',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 12,
+                    color: AppTheme.mutedSilver,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+      ],
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? AppTheme.primaryDb : AppTheme.creamWhite,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? AppTheme.primaryDb : AppTheme.softTaupe.withValues(alpha: 0.5),
+            width: isSelected ? 1.5 : 1,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppTheme.primaryDb.withValues(alpha: 0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  )
+                ]
+              : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              isSelected ? '$selectedStar ★' : l10n.rating,
+              style: GoogleFonts.montserrat(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: isSelected ? AppTheme.creamWhite : AppTheme.deepCharcoal,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              Icons.keyboard_arrow_down_rounded,
+              size: 16,
+              color: isSelected ? AppTheme.creamWhite : AppTheme.deepCharcoal,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -469,8 +714,18 @@ class _FilterChipWidget extends StatelessWidget {
           color: isSelected ? AppTheme.primaryDb : AppTheme.creamWhite,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? AppTheme.primaryDb : AppTheme.softTaupe,
+            color: isSelected ? AppTheme.primaryDb : AppTheme.softTaupe.withValues(alpha: 0.5),
+            width: isSelected ? 1.5 : 1,
           ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppTheme.primaryDb.withValues(alpha: 0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  )
+                ]
+              : null,
         ),
         child: Text(
           label,
@@ -485,14 +740,82 @@ class _FilterChipWidget extends StatelessWidget {
   }
 }
 
-class _ReviewCard extends StatelessWidget {
+class _ReviewCard extends ConsumerWidget {
   final ReviewItem review;
   final String timeAgo;
 
   const _ReviewCard({required this.review, required this.timeAgo});
 
+  Future<void> _handleHelpful(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      await ref.read(reviewApiServiceProvider).reactToReview(review.id);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.helpfulSuccess)),
+        );
+        // Refresh the review list to show updated count
+        ref.invalidate(reviewListProvider(review.productId));
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.error)),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleReport(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
+    final controller = TextEditingController();
+    
+    final reason = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.creamWhite,
+        title: Text(l10n.report, style: GoogleFonts.playfairDisplay(fontWeight: FontWeight.bold)),
+        content: TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            hintText: l10n.reportReasonHint,
+            hintStyle: GoogleFonts.montserrat(fontSize: 13),
+          ),
+          maxLines: 3,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.cancel, style: const TextStyle(color: AppTheme.mutedSilver)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, controller.text),
+            child: Text(l10n.confirm, style: const TextStyle(color: AppTheme.accentGold)),
+          ),
+        ],
+      ),
+    );
+
+    if (reason != null && reason.trim().isNotEmpty) {
+      try {
+        await ref.read(reviewApiServiceProvider).reportReview(review.id, reason.trim());
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.reportSuccess)),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.error)),
+          );
+        }
+      }
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final name = review.user.fullName;
     final initial = name.isNotEmpty ? name[0].toUpperCase() : '?';
@@ -618,26 +941,57 @@ class _ReviewCard extends StatelessWidget {
               ),
             ),
           ],
-          if (review.helpfulCount > 0) ...[
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                const Icon(
-                  Icons.favorite_border,
-                  size: 14,
-                  color: AppTheme.mutedSilver,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  l10n.peopleFoundHelpful(review.helpfulCount),
-                  style: GoogleFonts.montserrat(
-                    fontSize: 11,
-                    color: AppTheme.mutedSilver,
-                  ),
-                ),
-              ],
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              _ReviewActionButton(
+                icon: Icons.thumb_up_alt_outlined,
+                label: "${l10n.helpful} (${review.helpfulCount})",
+                onTap: () => _handleHelpful(context, ref),
+              ),
+              const SizedBox(width: 24),
+              _ReviewActionButton(
+                icon: Icons.flag_outlined,
+                label: l10n.report,
+                onTap: () => _handleReport(context, ref),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ReviewActionButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _ReviewActionButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: AppTheme.mutedSilver),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: GoogleFonts.montserrat(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: AppTheme.mutedSilver,
             ),
-          ],
+          ),
         ],
       ),
     );

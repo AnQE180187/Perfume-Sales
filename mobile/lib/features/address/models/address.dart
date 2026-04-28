@@ -1,4 +1,4 @@
-enum AddressLabel { home, office, gift }
+enum AddressLabel { home, office, gift, hotel, school, cafe, other }
 
 extension AddressLabelX on AddressLabel {
   String get displayName {
@@ -9,6 +9,14 @@ extension AddressLabelX on AddressLabel {
         return 'Văn phòng';
       case AddressLabel.gift:
         return 'Quà tặng';
+      case AddressLabel.hotel:
+        return 'Khách sạn';
+      case AddressLabel.school:
+        return 'Trường học';
+      case AddressLabel.cafe:
+        return 'Cửa hàng';
+      case AddressLabel.other:
+        return 'Khác';
     }
   }
 
@@ -16,6 +24,10 @@ extension AddressLabelX on AddressLabel {
     final value = (raw ?? '').trim().toLowerCase();
     if (value.contains('van')) return AddressLabel.office;
     if (value.contains('qua')) return AddressLabel.gift;
+    if (value.contains('khach')) return AddressLabel.hotel;
+    if (value.contains('truong')) return AddressLabel.school;
+    if (value.contains('cua')) return AddressLabel.cafe;
+    if (value.contains('khac')) return AddressLabel.other;
     return AddressLabel.home;
   }
 }

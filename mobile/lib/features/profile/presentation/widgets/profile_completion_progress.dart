@@ -102,19 +102,9 @@ class ProfileCompletionProgress extends StatelessWidget {
     return GestureDetector(
       onLongPress: () => _showCriteria(context),
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: AppTheme.deepCharcoal.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
+        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        padding: const EdgeInsets.all(20),
+        decoration: AppTheme.getPremiumShadow(borderRadius: 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -125,45 +115,43 @@ class ProfileCompletionProgress extends StatelessWidget {
                   'Hoàn thiện hồ sơ',
                   style: GoogleFonts.montserrat(
                     fontSize: 13,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
                     color: AppTheme.deepCharcoal,
                   ),
                 ),
                 Text(
                   '$percentInt%',
                   style: GoogleFonts.montserrat(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
                     color: AppTheme.accentGold,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
             Stack(
               children: [
                 Container(
-                  height: 8,
+                  height: 6,
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: AppTheme.ivoryBackground,
-                    borderRadius: BorderRadius.circular(4),
+                    color: AppTheme.softTaupe.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(3),
                   ),
                 ),
                 AnimatedContainer(
-                  duration: const Duration(milliseconds: 800),
-                  curve: Curves.easeOutCubic,
-                  height: 8,
-                  width: (MediaQuery.of(context).size.width - 64) * percentage,
+                  duration: const Duration(milliseconds: 1000),
+                  curve: Curves.easeOutExpo,
+                  height: 6,
+                  width: (MediaQuery.of(context).size.width - 80) * percentage,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [AppTheme.accentGold, AppTheme.accentGold.withOpacity(0.7)],
-                    ),
-                    borderRadius: BorderRadius.circular(4),
+                    gradient: AppTheme.getGoldGradient(),
+                    borderRadius: BorderRadius.circular(3),
                     boxShadow: [
                       BoxShadow(
-                        color: AppTheme.accentGold.withOpacity(0.3),
-                        blurRadius: 4,
+                        color: AppTheme.accentGold.withValues(alpha: 0.3),
+                        blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
                     ],

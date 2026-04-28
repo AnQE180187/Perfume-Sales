@@ -12,12 +12,14 @@ class AiInsightCard extends StatelessWidget {
   final List<String> olfactoryTags;
   final VoidCallback onFindNextScent;
   final VoidCallback onViewScentProfile;
+  final EdgeInsets? margin;
 
   const AiInsightCard({
     super.key,
     required this.olfactoryTags,
     required this.onFindNextScent,
     required this.onViewScentProfile,
+    this.margin,
   });
 
   @override
@@ -27,12 +29,14 @@ class AiInsightCard extends StatelessWidget {
     final displayTags = olfactoryTags.take(3).toList();
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
+      margin: margin ?? const EdgeInsets.symmetric(horizontal: 20),
       height: 180,
       decoration: BoxDecoration(
         color: AppTheme.deepCharcoal,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
+        borderRadius: margin == EdgeInsets.zero 
+            ? const BorderRadius.vertical(bottom: Radius.circular(24))
+            : BorderRadius.circular(24),
+        boxShadow: margin == EdgeInsets.zero ? null : [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 20,
@@ -41,7 +45,9 @@ class AiInsightCard extends StatelessWidget {
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: margin == EdgeInsets.zero 
+            ? const BorderRadius.vertical(bottom: Radius.circular(24))
+            : BorderRadius.circular(24),
         child: Stack(
           children: [
             // High-end photographic background
@@ -51,7 +57,7 @@ class AiInsightCard extends StatelessWidget {
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) => Container(
                   color: AppTheme.deepCharcoal.withValues(alpha: 0.8),
-                  child: const Center(
+                  child: Center(
                     child: Icon(Icons.auto_awesome_rounded, color: AppTheme.accentGold, size: 40),
                   ),
                 ),
@@ -79,7 +85,7 @@ class AiInsightCard extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.auto_awesome_rounded, color: AppTheme.accentGold, size: 12),
+                      Icon(Icons.auto_awesome_rounded, color: AppTheme.accentGold, size: 12),
                       const SizedBox(width: 8),
                       Text(
                         l10n.aiScentSignature,

@@ -106,11 +106,17 @@ class StaffPosService {
     }
   }
 
-  Future<PosOrder> createDraftOrder({required String storeId}) async {
+  Future<PosOrder> createDraftOrder({
+    required String storeId,
+    String? customerPhone,
+  }) async {
     try {
       final response = await client.post(
         ApiEndpoints.staffPosOrders,
-        data: {'storeId': storeId},
+        data: {
+          'storeId': storeId,
+          if (customerPhone != null) 'customerPhone': customerPhone,
+        },
       );
       final data = response.data is Map && response.data['data'] != null
           ? response.data['data']
@@ -198,6 +204,24 @@ class StaffPosService {
           ? response.data['data']
           : response.data;
       return PosOrder.fromJson(Map<String, dynamic>.from(data as Map));
+    } catch (e) {
+      _rethrowMapped(e);
+    }
+  }
+
+  Future<PosOrder> syncCartItems({
+    required String orderId,
+    required List<Map<String, dynamic>> items,
+  }) async {
+    try {
+      final response = await client.patch(
+        ApiEndpoints.staffPosOrderSyncItems(orderId),
+        data: {'items': items},
+      );
+      final data = response.data is Map && response.data['data'] != null
+          ? response.data['data']
+          : response.data;
+      return PosOrder.fromJson(Map<String, dynamic>.from(data));
     } catch (e) {
       _rethrowMapped(e);
     }
@@ -373,6 +397,59 @@ class StaffPosService {
           ? response.data['data']
           : response.data;
       return Map<String, dynamic>.from(data as Map);
+    } catch (e) {
+      _rethrowMapped(e);
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getCustomerPromotions({
+    String? phone,
+    String? userId,
+  }) async {
+    final response = await client.get(
+      ApiEndpoints.staffPosCustomerPromotions,
+      queryParameters: {
+        if (phone != null) 'phone': phone,
+        if (userId != null) 'userId': userId,
+      },
+    );
+    final data = response.data is Map && response.data['data'] != null
+        ? response.data['data']
+        : response.data;
+        
+    if (data is List) {
+      return data.map((e) => Map<String, dynamic>.from(e)).toList();
+    }
+    return [];
+  }
+
+  Future<PosOrder> applyPromotion({
+    required String orderId,
+    required String code,
+  }) async {
+    try {
+      final response = await client.post(
+        ApiEndpoints.staffPosApplyPromotion(orderId),
+        data: {'code': code},
+      );
+      final data = response.data is Map && response.data['data'] != null
+          ? response.data['data']
+          : response.data;
+      return PosOrder.fromJson(Map<String, dynamic>.from(data));
+    } catch (e) {
+      _rethrowMapped(e);
+    }
+  }
+
+  Future<PosOrder> removePromotion({required String orderId}) async {
+    try {
+      final response = await client.delete(
+        ApiEndpoints.staffPosRemovePromotion(orderId),
+      );
+      final data = response.data is Map && response.data['data'] != null
+          ? response.data['data']
+          : response.data;
+      return PosOrder.fromJson(Map<String, dynamic>.from(data));
     } catch (e) {
       _rethrowMapped(e);
     }

@@ -254,56 +254,35 @@ class _ScentLayer extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           AnimatedScale(
-            scale: isActive ? 1.12 : 0.95,
-            duration: const Duration(milliseconds: 400),
+            scale: isActive ? 1.15 : 0.95,
+            duration: const Duration(milliseconds: 600),
             curve: Curves.easeOutBack,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 400),
-              curve: Curves.easeOutCubic,
+            child: Container(
               width: iconSize,
               height: iconSize,
-              decoration: BoxDecoration(
-                color: isActive ? AppTheme.accentGold : Colors.white,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isActive ? AppTheme.accentGold : AppTheme.softTaupe,
-                  width: isActive ? 0 : 0.8,
+              child: CustomPaint(
+                painter: HandDrawnCirclePainter(
+                  color: isActive ? AppTheme.accentGold : AppTheme.softTaupe.withValues(alpha: 0.3),
+                  isFilled: isActive,
+                  strokeWidth: isActive ? 0 : 1.2,
                 ),
-                boxShadow: isActive
-                    ? [
-                        BoxShadow(
-                          color: AppTheme.accentGold.withValues(alpha: 0.3),
-                          blurRadius: 20,
-                          spreadRadius: 2,
-                        ),
-                        BoxShadow(
-                          color: AppTheme.accentGold.withValues(alpha: 0.15),
-                          blurRadius: 40,
-                          spreadRadius: 8,
-                        ),
-                      ]
-                    : [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.03),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-              ),
-              child: Icon(
-                icon,
-                color: isActive ? Colors.white : AppTheme.mutedSilver,
-                size: isActive ? 24 : 20,
+                child: Center(
+                  child: Icon(
+                    icon,
+                    color: isActive ? Colors.white : AppTheme.mutedSilver,
+                    size: isActive ? 24 : 20,
+                  ),
+                ),
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Text(
             label,
             style: GoogleFonts.montserrat(
               fontSize: 8,
               fontWeight: FontWeight.w700,
-              letterSpacing: 1.2,
+              letterSpacing: 1.5,
               color: isActive ? AppTheme.accentGold : AppTheme.mutedSilver,
             ),
           ),
@@ -323,6 +302,76 @@ class _ScentLayer extends StatelessWidget {
       ),
     );
   }
+}
+
+class HandDrawnCirclePainter extends CustomPainter {
+  final Color color;
+  final bool isFilled;
+  final double strokeWidth;
+
+  HandDrawnCirclePainter({
+    required this.color,
+    required this.isFilled,
+    required this.strokeWidth,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = isFilled ? PaintingStyle.fill : PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round
+      ..isAntiAlias = true;
+
+    final path = Path();
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2;
+
+    // Create an organic "wobbly" circle
+    const steps = 8;
+    for (int i = 0; i <= steps; i++) {
+      final angle = (i * 2 * 3.14159) / steps;
+      // Vary the radius slightly for each step
+      final variance = i == steps ? 0.0 : (i % 2 == 0 ? 0.95 : 1.05);
+      final r = radius * variance;
+      
+      final x = center.dx + r * 1 * (1.0 + (i % 3 == 0 ? 0.02 : -0.02)) * (i % 2 == 0 ? 0.98 : 1.02) * (i == 0 || i == steps ? 1.0 : 0.96 + (0.08 * (i % 5 / 5))) * (0.95 + (0.1 * (i % 7 / 7))) * (0.9 + (0.2 * (i % 4 / 4)));
+      // Simplify logic for a better hand-drawn look:
+      // We use a fixed set of variance multipliers to make it look "sketched"
+    }
+
+    // Refined hand-drawn path
+    final points = <Offset>[];
+    const numPoints = 12;
+    final rList = [1.0, 1.05, 0.98, 1.02, 0.95, 1.08, 0.97, 1.03, 0.99, 1.04, 0.96, 1.0];
+    
+    for (int i = 0; i < numPoints; i++) {
+      final angle = (i * 2 * 3.14159) / numPoints;
+      final r = radius * rList[i];
+      points.add(Offset(center.dx + r * 1.0 * (i == 0 ? 1.0 : 1.0) * (i % 2 == 0 ? 0.98 : 1.02) * (i % 3 == 0 ? 1.01 : 0.99), center.dy + r * 1.0 * (i % 4 == 0 ? 0.97 : 1.03)));
+    }
+    
+    // Draw with cubic curves for smoothness
+    path.moveTo(points[0].dx, points[0].dy);
+    for (int i = 0; i < points.length; i++) {
+      final p1 = points[i];
+      final p2 = points[(i + 1) % points.length];
+      final xc = (p1.dx + p2.dx) / 2;
+      final yc = (p1.dy + p2.dy) / 2;
+      path.quadraticBezierTo(p1.dx, p1.dy, xc, yc);
+    }
+    path.close();
+
+    if (isFilled) {
+      // Add a subtle glow for filled version
+      canvas.drawShadow(path, color.withValues(alpha: 0.3), 10, true);
+    }
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
 
 String _previewNote(List<String> notes, String fallback) {

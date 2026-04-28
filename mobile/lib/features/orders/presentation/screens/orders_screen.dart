@@ -79,6 +79,8 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
         centerTitle: true,
         bottom: TabBar(
           controller: _tabController,
+          isScrollable: false,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
           labelStyle: GoogleFonts.montserrat(
             fontWeight: FontWeight.w700,
             fontSize: 13,
@@ -127,30 +129,47 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen>
           return TabBarView(
             controller: _tabController,
             children: [
-              ActiveOrdersSection(
-                orders: activeOrders,
-                onRefresh: _refresh,
-                onTapOrder: _openOrderDetail,
-                onTrackOrder: _openTracking,
+              _wrapResponsive(
+                ActiveOrdersSection(
+                  orders: activeOrders,
+                  onRefresh: _refresh,
+                  onTapOrder: _openOrderDetail,
+                  onTrackOrder: _openTracking,
+                ),
               ),
-              CompletedOrdersSection(
-                orders: completedOrders,
-                onRefresh: _refresh,
-                onTapOrder: _openOrderDetail,
+              _wrapResponsive(
+                CompletedOrdersSection(
+                  orders: completedOrders,
+                  onRefresh: _refresh,
+                  onTapOrder: _openOrderDetail,
+                ),
               ),
-              ReturnsSection(
-                orders: returnedOrders,
-                onRefresh: _refresh,
-                onTapReturn: _openReturnDetail,
+              _wrapResponsive(
+                ReturnsSection(
+                  orders: returnedOrders,
+                  onRefresh: _refresh,
+                  onTapReturn: _openReturnDetail,
+                ),
               ),
-              CancelledOrdersSection(
-                orders: state.cancelled,
-                onRefresh: _refresh,
-                onTapOrder: _openOrderDetail,
+              _wrapResponsive(
+                CancelledOrdersSection(
+                  orders: state.cancelled,
+                  onRefresh: _refresh,
+                  onTapOrder: _openOrderDetail,
+                ),
               ),
             ],
           );
         },
+      ),
+    );
+  }
+
+  Widget _wrapResponsive(Widget child) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 700),
+        child: child,
       ),
     );
   }

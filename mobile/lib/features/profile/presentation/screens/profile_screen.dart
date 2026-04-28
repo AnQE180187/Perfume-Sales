@@ -335,7 +335,7 @@ class _LoyaltyCta extends ConsumerWidget {
                           )
                         : Text(
                             points > 0
-                                ? '$points ${AppLocalizations.of(context)!.pointsLabel}  •  ${AppLocalizations.of(context)!.tierLabel} ${AppLocalizations.of(context)!.localeName == 'vi' ? statusAsync.value!.tierNameVi : tier}'
+                                ? '$points ${AppLocalizations.of(context)!.pointsLabel}'
                                 : AppLocalizations.of(context)!.startPoints,
                             style: TextStyle(
                               fontFamily: 'Montserrat',
