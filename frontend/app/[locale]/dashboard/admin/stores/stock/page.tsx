@@ -142,6 +142,7 @@ export default function AdminStockRedesignPage() {
         price: v.price,
         imageUrl: p.images?.[0]?.url ?? null,
         stock: v.stock,
+        purchasePrice: v.purchasePrice,
       })),
     );
   }, [products]);
@@ -274,7 +275,8 @@ export default function AdminStockRedesignPage() {
           productName: v.productName,
           variantName: v.variantName,
           brandName: v.brandName,
-          quantity: 1
+          quantity: 1,
+          costPrice: v.purchasePrice || 0
         }]);
       }
     }
@@ -344,7 +346,7 @@ export default function AdminStockRedesignPage() {
         variantName: variant.variantName,
         brandName: variant.brandName,
         quantity: 1,
-        costPrice: 0, // Initialize with 0
+        costPrice: variant.purchasePrice || 0,
       },
     ]);
     setImportSearch("");
@@ -360,6 +362,7 @@ export default function AdminStockRedesignPage() {
         variantName: variant.variantName,
         brandName: variant.brandName,
         quantity: 1,
+        costPrice: 0,
       },
     ]);
     setTransferSearch("");
@@ -371,15 +374,15 @@ export default function AdminStockRedesignPage() {
     setSaving(true);
     setError(null);
     try {
-      for (const item of importItems) {
-        await storesService.adminImportStock({
-          storeId: importStoreId,
+      await storesService.batchImportStock({
+        storeId: importStoreId,
+        items: importItems.map(item => ({
           variantId: item.variantId,
           quantity: item.quantity,
-          purchasePrice: item.costPrice, // Sending the cost price to backend
-          reason: importReason || t("import.default_reason"),
-        });
-      }
+          purchasePrice: item.costPrice
+        })),
+        reason: importReason || t("import.default_reason"),
+      });
       setSuccess(t("import.success", { count: importItems.length }));
       setImportItems([]);
       setImportReason("");
