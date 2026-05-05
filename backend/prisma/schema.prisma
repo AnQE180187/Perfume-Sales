@@ -226,6 +226,7 @@ model ProductVariant {
   sku       String?  @unique
   barcode   String?  @unique
   price     Int
+  purchasePrice Int @default(0) // Giá nhập mặc định / gần nhất
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -854,6 +855,7 @@ model InventoryLog {
   storeId   String?
   type      InventoryLogType
   quantity  Int
+  purchasePrice Int? // Giá nhập tại thời điểm giao dịch
   reason    String?
   createdAt DateTime         @default(now())
 

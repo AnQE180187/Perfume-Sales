@@ -2656,7 +2656,15 @@
         }
       },
       "inventory": {
+        "all": "Tất cả",
         "title": "Quản Lý Tồn Kho",
+        "table_store": "Cửa hàng / Kho",
+        "table_product": "Sản phẩm",
+        "table_type": "Loại",
+        "table_quantity": "Số lượng",
+        "table_staff": "Nhân viên",
+        "table_date": "Ngày thực hiện",
+        "table_reason": "Lý do",
         "subtitle": "Theo dõi và cập nhật số lượng hàng tồn kho tại các boutique.",
         "store": "Phân bổ Boutique",
         "select_store": "Vui lòng chọn quầy để xem sản phẩm.",
