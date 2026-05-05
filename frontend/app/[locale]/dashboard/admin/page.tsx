@@ -34,6 +34,7 @@ interface OverviewData {
     inventoryValue: number;
     successRate: number;
     returnRate: number;
+    cancellationRate: number;
     revenueChange: number;
     ordersChange: number;
 }
@@ -67,12 +68,15 @@ function ChangeChip({ value }: { value: number }) {
 export default function AdminDashboard() {
     const t = useTranslations('dashboard.admin');
 
+    // Period and Date state
+    const [period, setPeriod] = useState<'week' | 'month' | 'year' | 'quarter' | 'custom'>('month');
+    const [dateRange, setDateRange] = useState<{ start?: string; end?: string }>({});
+
     // Overview state
     const [overview, setOverview] = useState<OverviewData | null>(null);
     const [overviewLoading, setOverviewLoading] = useState(true);
 
     // Chart state
-    const [period, setPeriod] = useState<'week' | 'month' | 'year'>('month');
     const [trend, setTrend] = useState<SalesTrendPoint[]>([]);
     const [trendLoading, setTrendLoading] = useState(true);
 
@@ -89,13 +93,18 @@ export default function AdminDashboard() {
     const [aiConversion, setAiConversion] = useState<any>(null);
     const [aiConversionLoading, setAiConversionLoading] = useState(true);
 
+    const [isInventoryExpanded, setIsInventoryExpanded] = useState(false);
+    const [isHeatmapExpanded, setIsHeatmapExpanded] = useState(false);
+
     const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date());
 
     // ── Fetchers ────────────────────────────────────────────────────────────
-    const fetchOverview = useCallback(async () => {
+    const fetchOverview = useCallback(async (start?: string, end?: string) => {
         try {
             setOverviewLoading(true);
-            const { data } = await api.get<OverviewData>('/analytics/overview');
+            const { data } = await api.get<OverviewData>('/analytics/overview', {
+                params: { startDate: start, endDate: end }
+            });
             setOverview(data);
         } catch (e) {
             console.error('Analytics overview error:', e);
@@ -104,10 +113,16 @@ export default function AdminDashboard() {
         }
     }, []);
 
-    const fetchTrend = useCallback(async (p: 'week' | 'month' | 'year') => {
+    const fetchTrend = useCallback(async (p: string, start?: string, end?: string) => {
         try {
             setTrendLoading(true);
-            const { data } = await api.get<SalesTrendPoint[]>('/analytics/sales-trend', { params: { period: p } });
+            const { data } = await api.get<SalesTrendPoint[]>('/analytics/sales-trend', {
+                params: { 
+                    period: p === 'custom' ? 'month' : p, 
+                    startDate: start, 
+                    endDate: end 
+                } 
+            });
             setTrend(data);
         } catch (e) {
             console.error('Sales trend error:', e);
@@ -119,7 +134,7 @@ export default function AdminDashboard() {
     const fetchTopProducts = useCallback(async () => {
         try {
             setTopLoading(true);
-            const { data } = await api.get<TopProductDto[]>('/analytics/top-products', { params: { limit: 5 } });
+            const { data } = await api.get<TopProductDto[]>('/analytics/top-products', { params: { limit: 4 } });
             setTopProducts(data);
         } catch (e) {
             console.error('Top products error:', e);
@@ -143,7 +158,7 @@ export default function AdminDashboard() {
     const fetchRecentOrders = useCallback(async () => {
         try {
             setRecentLoading(true);
-            const { data } = await api.get<RecentOrderDto[]>('/analytics/recent-orders', { params: { limit: 8 } });
+            const { data } = await api.get<RecentOrderDto[]>('/analytics/recent-orders', { params: { limit: 5 } });
             setRecentOrders(data);
         } catch (e) {
             console.error('Recent orders error:', e);
@@ -165,28 +180,32 @@ export default function AdminDashboard() {
     }, []);
 
     const refreshAll = useCallback(() => {
-        fetchOverview();
-        fetchTrend(period);
+        fetchOverview(dateRange.start, dateRange.end);
+        fetchTrend(period, dateRange.start, dateRange.end);
         fetchTopProducts();
         fetchChannel();
         fetchRecentOrders();
         fetchAiConversion();
         setLastRefreshed(new Date());
-    }, [fetchOverview, fetchTrend, period, fetchTopProducts, fetchChannel, fetchRecentOrders, fetchAiConversion]);
+    }, [fetchOverview, fetchTrend, period, dateRange, fetchTopProducts, fetchChannel, fetchRecentOrders, fetchAiConversion]);
 
-    // Initial load
+    // Initial load & Re-fetch when dateRange or period changes
     useEffect(() => {
-        fetchOverview();
+        if (period !== 'custom') {
+            fetchOverview(undefined, undefined);
+            fetchTrend(period, undefined, undefined);
+        } else if (dateRange.start && dateRange.end) {
+            fetchOverview(dateRange.start, dateRange.end);
+            fetchTrend('custom', dateRange.start, dateRange.end);
+        }
+    }, [period, dateRange, fetchOverview, fetchTrend]);
+
+    useEffect(() => {
         fetchTopProducts();
         fetchChannel();
         fetchRecentOrders();
         fetchAiConversion();
-    }, [fetchOverview, fetchTopProducts, fetchChannel, fetchRecentOrders, fetchAiConversion]);
-
-    // Re-fetch when period changes
-    useEffect(() => {
-        fetchTrend(period);
-    }, [period, fetchTrend]);
+    }, [fetchTopProducts, fetchChannel, fetchRecentOrders, fetchAiConversion]);
 
     // ── Stat card definitions ────────────────────────────────────────────────
     const statCards = overview
@@ -229,12 +248,13 @@ export default function AdminDashboard() {
                 subtext: t('home.stats.stock_value_suffix'),
             },
             {
-                label: t('home.stats.return_rate'),
-                value: `${(overview.returnRate || 0).toFixed(1)}%`,
+                label: t('home.stats.cancellation_rate'),
+                value: `${(overview.cancellationRate || 0).toFixed(1)}%`,
                 change: null,
                 icon: RotateCcw,
                 color: 'bg-red-500/10 text-red-400',
-                href: '/dashboard/admin/returns',
+                href: '/dashboard/admin/orders',
+                subtext: `Tỉ lệ Hoàn trả: ${(overview.returnRate || 0).toFixed(1)}%`,
             },
         ]
         : [];
@@ -244,7 +264,7 @@ export default function AdminDashboard() {
             <div className="flex flex-col gap-6 md:gap-7 py-6 md:py-8 px-4 sm:px-6 md:px-8 max-w-[1600px] mx-auto">
 
                 {/* ── Header ─────────────────────────────────────────────── */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 md:gap-4">
+                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
                     <header className="space-y-1">
                         <h1 className="text-fluid-3xl font-heading gold-gradient uppercase tracking-tighter leading-none">
                             {t('home.title')}
@@ -253,16 +273,56 @@ export default function AdminDashboard() {
                             {t('home.subtitle')}
                         </p>
                     </header>
-                    <div className="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto">
-                        <span className="text-[9px] text-muted-foreground uppercase tracking-widest block opacity-70">
-                            {t('home.stats.updated_at')} {lastRefreshed.toLocaleTimeString('vi-VN')}
-                        </span>
+
+                    <div className="flex flex-wrap items-center gap-4 bg-white/5 p-2 rounded-[2rem] border border-white/10 shadow-2xl backdrop-blur-xl">
+                        {[
+                            { id: 'week', label: '7D' },
+                            { id: 'month', label: '30D' },
+                            { id: 'quarter', label: 'Quarter' },
+                            { id: 'year', label: '1Y' },
+                            { id: 'custom', label: 'Custom' },
+                        ].map((p) => (
+                            <button
+                                key={p.id}
+                                onClick={() => setPeriod(p.id as any)}
+                                className={cn(
+                                    "px-4 py-2 rounded-full text-[10px] font-black tracking-widest transition-all duration-300 uppercase",
+                                    period === p.id 
+                                        ? "bg-gold text-black shadow-[0_0_20px_rgba(212,175,55,0.4)]" 
+                                        : "text-white/40 hover:text-white hover:bg-white/5"
+                                )}
+                            >
+                                {p.label}
+                            </button>
+                        ))}
+
+                        {period === 'custom' && (
+                            <div className="flex items-center gap-2 px-2 border-l border-white/10 animate-in fade-in slide-in-from-left-2 duration-300">
+                                <input 
+                                    type="date" 
+                                    className="bg-black/40 border border-white/10 rounded-lg px-2 py-1 text-[10px] text-white focus:outline-none focus:border-gold/50 cursor-pointer"
+                                    onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+                                />
+                                <span className="text-white/20 text-[10px]">to</span>
+                                <input 
+                                    type="date" 
+                                    className="bg-black/40 border border-white/10 rounded-lg px-2 py-1 text-[10px] text-white focus:outline-none focus:border-gold/50 cursor-pointer"
+                                    onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+                                />
+                            </div>
+                        )}
+
+                        <div className="h-8 w-px bg-white/10 mx-2 hidden sm:block" />
+
                         <button
                             onClick={refreshAll}
-                            className="flex items-center gap-2 text-[9px] font-extrabold uppercase tracking-widest border border-gold/20 bg-gold/5 text-gold rounded-full px-5 py-2.5 hover:bg-gold hover:text-black transition-all active:scale-95"
+                            disabled={overviewLoading}
+                            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/5 text-white/80 hover:text-white hover:bg-white/10 transition-all border border-white/10 active:scale-95 group"
                         >
-                            <RefreshCw className="w-3 h-3" />
-                            {t('home.stats.refresh')}
+                            <RefreshCw className={cn("w-3.5 h-3.5 transition-transform duration-700", overviewLoading && "animate-spin")} />
+                            <span className="text-[10px] font-black uppercase tracking-widest">
+                                {t('home.stats.refresh')}
+                            </span>
                         </button>
                     </div>
                 </div>
@@ -356,8 +416,14 @@ export default function AdminDashboard() {
 
                 {/* Full Width Inventory Sections */}
                 <section className="mt-8 space-y-8">
-                    <InventoryHealthWidget />
-                    <StockHeatmapWidget />
+                    <InventoryHealthWidget 
+                        isExpanded={isInventoryExpanded} 
+                        onToggle={() => setIsInventoryExpanded(!isInventoryExpanded)} 
+                    />
+                    <StockHeatmapWidget 
+                        isExpanded={isHeatmapExpanded} 
+                        onToggle={() => setIsHeatmapExpanded(!isHeatmapExpanded)} 
+                    />
                 </section>
             </div>
         </AuthGuard>

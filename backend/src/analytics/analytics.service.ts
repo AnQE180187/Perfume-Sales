@@ -14,6 +14,7 @@ export interface OverviewDto {
   inventoryValue: number;   // New: Total Value of stock at cost
   successRate: number;      // New: Percentage of completed orders
   returnRate: number;       // New: Percentage of returned orders
+  cancellationRate: number; // New: Percentage of cancelled orders
   revenueChange: number;
   ordersChange: number;
 }
@@ -68,18 +69,29 @@ export class AnalyticsService {
   /**
    * Main overview stats for the dashboard header cards
    */
-  async getOverview(): Promise<OverviewDto> {
+  async getOverview(startDate?: string, endDate?: string): Promise<OverviewDto> {
     const now = new Date();
+    
+    let currentStart: Date;
+    let currentEnd: Date;
+    let previousStart: Date;
+
+    if (startDate && endDate) {
+      currentStart = new Date(startDate);
+      currentEnd = new Date(endDate);
+      const durationMs = currentEnd.getTime() - currentStart.getTime();
+      previousStart = new Date(currentStart.getTime() - durationMs);
+    } else {
+      // Default: last 30 days
+      currentStart = new Date(now);
+      currentStart.setDate(currentStart.getDate() - 30);
+      currentEnd = now;
+      previousStart = new Date(currentStart);
+      previousStart.setDate(previousStart.getDate() - 30);
+    }
+
     const startOfToday = new Date(now);
     startOfToday.setHours(0, 0, 0, 0);
-
-    // Current period = last 30 days
-    const thirtyDaysAgo = new Date(now);
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-    // Previous period = 30-60 days ago (for comparison)
-    const sixtyDaysAgo = new Date(now);
-    sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
 
     const paidStatuses: PaymentStatus[] = [
       PaymentStatus.PAID,
@@ -89,7 +101,7 @@ export class AnalyticsService {
     // Current period orders
     const currentOrders = await this.prisma.order.findMany({
       where: {
-        createdAt: { gte: thirtyDaysAgo },
+        createdAt: { gte: currentStart, lte: currentEnd },
       },
       select: {
         finalAmount: true,
@@ -100,6 +112,11 @@ export class AnalyticsService {
           select: {
             purchasePrice: true,
             quantity: true,
+            variant: {
+              select: {
+                purchasePrice: true
+              }
+            }
           }
         }
       },
@@ -108,7 +125,7 @@ export class AnalyticsService {
     // Previous period orders (for % change)
     const previousOrders = await this.prisma.order.findMany({
       where: {
-        createdAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo },
+        createdAt: { gte: previousStart, lt: currentStart },
       },
       select: {
         finalAmount: true,
@@ -171,13 +188,17 @@ export class AnalyticsService {
     // AI consultations (chat + quiz) in current period
     const aiConsultations = await this.prisma.aiRequestLog.count({
       where: {
-        createdAt: { gte: thirtyDaysAgo },
+        createdAt: { gte: currentStart, lte: currentEnd },
       },
     });
 
     const totalProfit = currentPaid.reduce((acc, o) => {
       const revenue = o.finalAmount - o.refundAmount;
-      const cogs = o.items.reduce((sum, item) => sum + (item.purchasePrice || 0) * item.quantity, 0);
+      const cogs = o.items.reduce((sum, item: any) => {
+        // Fallback to variant price if recorded item price is missing
+        const cost = item.purchasePrice ?? item.variant?.purchasePrice ?? 0;
+        return sum + cost * item.quantity;
+      }, 0);
       return acc + (revenue - cogs);
     }, 0);
 
@@ -189,10 +210,11 @@ export class AnalyticsService {
 
     // Success & Return Rates
     const returnsCount = await this.prisma.returnRequest.count({
-      where: { createdAt: { gte: thirtyDaysAgo } }
+      where: { createdAt: { gte: currentStart, lte: currentEnd } }
     });
     const successRate = totalOrders > 0 ? (completedOrders / totalOrders) * 100 : 100;
     const returnRate = totalOrders > 0 ? (returnsCount / totalOrders) * 100 : 0;
+    const cancellationRate = totalOrders > 0 ? (cancelledOrders / totalOrders) * 100 : 0;
 
     return {
       totalRevenue,
@@ -204,10 +226,11 @@ export class AnalyticsService {
       aiConsultations,
       totalProfit,
       inventoryValue,
-      successRate,
-      returnRate,
       revenueChange,
       ordersChange,
+      successRate,
+      returnRate,
+      cancellationRate,
     };
   }
 
@@ -216,27 +239,39 @@ export class AnalyticsService {
    * @param period 'week' | 'month' | 'year'
    */
   async getSalesTrend(
-    period: 'week' | 'month' | 'year' = 'month',
+    period: 'week' | 'month' | 'year' | 'quarter' = 'month',
+    startDate?: string,
+    endDate?: string,
   ): Promise<SalesTrendPoint[]> {
     const now = new Date();
-    let startDate: Date;
+    let start: Date;
+    let end: Date = now;
 
-    switch (period) {
-      case 'week':
-        startDate = new Date(now);
-        startDate.setDate(startDate.getDate() - 7);
-        break;
-      case 'year':
-        startDate = new Date(now);
-        startDate.setFullYear(startDate.getFullYear() - 1);
-        break;
-      case 'month':
-      default:
-        startDate = new Date(now);
-        startDate.setDate(startDate.getDate() - 30);
-        break;
+    if (startDate && endDate) {
+      start = new Date(startDate);
+      end = new Date(endDate);
+    } else {
+      switch (period) {
+        case 'week':
+          start = new Date(now);
+          start.setDate(start.getDate() - 7);
+          break;
+        case 'quarter':
+          start = new Date(now);
+          start.setMonth(start.getMonth() - 3);
+          break;
+        case 'year':
+          start = new Date(now);
+          start.setFullYear(start.getFullYear() - 1);
+          break;
+        case 'month':
+        default:
+          start = new Date(now);
+          start.setDate(start.getDate() - 30);
+          break;
+      }
+      start.setHours(0, 0, 0, 0);
     }
-    startDate.setHours(0, 0, 0, 0);
 
     const paidStatuses: PaymentStatus[] = [
       PaymentStatus.PAID,
@@ -245,7 +280,7 @@ export class AnalyticsService {
 
     const orders = await this.prisma.order.findMany({
       where: {
-        createdAt: { gte: startDate },
+        createdAt: { gte: start, lte: end },
         paymentStatus: { in: paidStatuses },
       },
       select: {
@@ -260,8 +295,8 @@ export class AnalyticsService {
     const map = new Map<string, { revenue: number; orders: number }>();
 
     // Pre-fill all dates so chart has no gaps
-    const cursor = new Date(startDate);
-    while (cursor <= now) {
+    const cursor = new Date(start);
+    while (cursor <= end) {
       const key = cursor.toISOString().slice(0, 10);
       map.set(key, { revenue: 0, orders: 0 });
       cursor.setDate(cursor.getDate() + 1);
@@ -546,7 +581,9 @@ export class AnalyticsService {
         paymentStatus: { in: [PaymentStatus.PAID, PaymentStatus.PARTIALLY_REFUNDED] },
       },
       include: {
-        items: true,
+        items: {
+          include: { variant: { select: { purchasePrice: true } } }
+        },
       },
     });
 
@@ -559,7 +596,7 @@ export class AnalyticsService {
       
       for (const item of order.items) {
         // If purchasePrice wasn't captured, fallback to current variant purchasePrice
-        const cost = item.purchasePrice || 0;
+        const cost = item.purchasePrice ?? item.variant?.purchasePrice ?? 0;
         totalCogs += cost * item.quantity;
       }
     }

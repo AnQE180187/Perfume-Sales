@@ -1454,6 +1454,7 @@
           "inventory_value": "Giá trị Kho",
           "success_rate": "Tỉ lệ Thành công",
           "return_rate": "Tỉ lệ Hoàn trả",
+          "cancellation_rate": "Tỉ lệ Hủy đơn",
           "orders": "Tổng Đơn hàng",
           "consultations": "Lượt tư vấn AI",
           "members": "Thành viên Cao cấp",
