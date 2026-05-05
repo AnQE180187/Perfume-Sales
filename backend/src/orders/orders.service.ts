@@ -128,6 +128,7 @@ export class OrdersService {
               return {
                 variantId: item.variantId,
                 unitPrice: item.variant.price,
+                purchasePrice: item.variant.purchasePrice, // Capture cost price at time of sale
                 quantity: item.quantity,
                 totalPrice: item.quantity * item.variant.price,
                 isAiRecommended: !!recommendedByQuiz,

@@ -492,6 +492,7 @@ model OrderItem {
   orderId    String
   variantId  String
   unitPrice  Int
+  purchasePrice Int? // Giá vốn tại thời điểm bán
   quantity   Int
   totalPrice Int
 

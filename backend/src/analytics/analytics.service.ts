@@ -10,7 +10,11 @@ export interface OverviewDto {
   totalCustomers: number;
   newCustomersToday: number;
   aiConsultations: number;
-  revenueChange: number;   // % change vs previous period
+  totalProfit: number;      // New: Total Profit (Revenue - COGS)
+  inventoryValue: number;   // New: Total Value of stock at cost
+  successRate: number;      // New: Percentage of completed orders
+  returnRate: number;       // New: Percentage of returned orders
+  revenueChange: number;
   ordersChange: number;
 }
 
@@ -92,6 +96,12 @@ export class AnalyticsService {
         refundAmount: true,
         status: true,
         paymentStatus: true,
+        items: {
+          select: {
+            purchasePrice: true,
+            quantity: true,
+          }
+        }
       },
     });
 
@@ -165,6 +175,25 @@ export class AnalyticsService {
       },
     });
 
+    const totalProfit = currentPaid.reduce((acc, o) => {
+      const revenue = o.finalAmount - o.refundAmount;
+      const cogs = o.items.reduce((sum, item) => sum + (item.purchasePrice || 0) * item.quantity, 0);
+      return acc + (revenue - cogs);
+    }, 0);
+
+    // Inventory Value
+    const inventories = await this.prisma.inventory.findMany({
+      include: { variant: { select: { purchasePrice: true } } }
+    });
+    const inventoryValue = inventories.reduce((sum, inv) => sum + (inv.onHand * (inv.variant.purchasePrice || 0)), 0);
+
+    // Success & Return Rates
+    const returnsCount = await this.prisma.returnRequest.count({
+      where: { createdAt: { gte: thirtyDaysAgo } }
+    });
+    const successRate = totalOrders > 0 ? (completedOrders / totalOrders) * 100 : 100;
+    const returnRate = totalOrders > 0 ? (returnsCount / totalOrders) * 100 : 0;
+
     return {
       totalRevenue,
       totalOrders,
@@ -173,6 +202,10 @@ export class AnalyticsService {
       totalCustomers,
       newCustomersToday,
       aiConsultations,
+      totalProfit,
+      inventoryValue,
+      successRate,
+      returnRate,
       revenueChange,
       ordersChange,
     };
@@ -497,6 +530,243 @@ export class AnalyticsService {
       totalItemsSold: itemsCount,
       aiRecommendedItemsSold: aiItemsCount,
       conversionRate: Math.round(conversionRate * 10) / 10
+    };
+  }
+
+  /**
+   * Advanced financial analytics including profit, margin, and ROI
+   */
+  async getFinancialAnalytics() {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const paidOrders = await this.prisma.order.findMany({
+      where: {
+        createdAt: { gte: thirtyDaysAgo },
+        paymentStatus: { in: [PaymentStatus.PAID, PaymentStatus.PARTIALLY_REFUNDED] },
+      },
+      include: {
+        items: true,
+      },
+    });
+
+    let totalRevenue = 0;
+    let totalCogs = 0; // Cost of Goods Sold
+
+    for (const order of paidOrders) {
+      const orderRevenue = order.finalAmount - order.refundAmount;
+      totalRevenue += orderRevenue;
+      
+      for (const item of order.items) {
+        // If purchasePrice wasn't captured, fallback to current variant purchasePrice
+        const cost = item.purchasePrice || 0;
+        totalCogs += cost * item.quantity;
+      }
+    }
+
+    const grossProfit = totalRevenue - totalCogs;
+    const grossMargin = totalRevenue > 0 ? (grossProfit / totalRevenue) * 100 : 0;
+    const roi = totalCogs > 0 ? (grossProfit / totalCogs) * 100 : 0;
+
+    // Total inventory value at cost
+    const inventories = await this.prisma.inventory.findMany({
+      include: { variant: { select: { purchasePrice: true } } },
+    });
+    const totalInventoryValue = inventories.reduce((sum, inv) => {
+      return sum + (inv.onHand * (inv.variant.purchasePrice || 0));
+    }, 0);
+
+    return {
+      totalRevenue,
+      totalCogs,
+      grossProfit,
+      grossMargin: Math.round(grossMargin * 10) / 10,
+      roi: Math.round(roi * 10) / 10,
+      inventoryValue: totalInventoryValue,
+    };
+  }
+
+  /**
+   * Inventory turnover and predicted stock-out dates
+   */
+  async getInventoryHealth() {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    // Get sales volume for each variant in last 30 days
+    const sales = await this.prisma.orderItem.groupBy({
+      by: ['variantId'],
+      where: {
+        order: {
+          createdAt: { gte: thirtyDaysAgo },
+          paymentStatus: { in: [PaymentStatus.PAID, PaymentStatus.PARTIALLY_REFUNDED] },
+        },
+      },
+      _sum: { quantity: true },
+    });
+
+    const salesMap = new Map(sales.map(s => [s.variantId, s._sum.quantity || 0]));
+
+    // Get current stock
+    const inventories = await this.prisma.inventory.findMany({
+      include: { 
+        variant: { 
+          include: { product: { select: { name: true } } } 
+        } 
+      },
+    });
+
+    const variantStock = new Map<string, { name: string, stock: number }>();
+    for (const inv of inventories) {
+      const existing = variantStock.get(inv.variantId);
+      if (existing) {
+        existing.stock += inv.available;
+      } else {
+        variantStock.set(inv.variantId, {
+          name: `${inv.variant.product.name} - ${inv.variant.name}`,
+          stock: inv.available
+        });
+      }
+    }
+
+    const healthItems = Array.from(variantStock.entries()).map(([variantId, data]) => {
+      const monthlySales = salesMap.get(variantId) || 0;
+      const dailySalesRate = monthlySales / 30;
+      const daysRemaining = dailySalesRate > 0 ? Math.floor(data.stock / dailySalesRate) : 999;
+      
+      // Turnover rate = Cost of Goods Sold / Average Inventory
+      // Here we use a simpler version: Units Sold / Current Stock
+      const turnoverRate = data.stock > 0 ? (monthlySales / data.stock) : 0;
+
+      return {
+        variantId,
+        name: data.name,
+        currentStock: data.stock,
+        monthlySales,
+        daysRemaining,
+        turnoverRate: Math.round(turnoverRate * 100) / 100,
+        status: daysRemaining < 7 ? 'CRITICAL' : daysRemaining < 15 ? 'WARNING' : 'HEALTHY'
+      };
+    });
+
+    return healthItems
+      .sort((a, b) => a.daysRemaining - b.daysRemaining)
+      .slice(0, 20);
+  }
+
+  /**
+   * Stock Movement Heatmap: Matrix of products vs stores showing velocity & stock
+   */
+  async getStockMovementHeatmap() {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    // 1. Get all active stores
+    const stores = await this.prisma.store.findMany({
+      where: { isActive: true },
+      select: { id: true, name: true, address: true }
+    });
+
+    // 2. Get top 20 variants by total sales
+    const topSales = await this.prisma.orderItem.groupBy({
+      by: ['variantId'],
+      where: {
+        order: {
+          createdAt: { gte: thirtyDaysAgo },
+          paymentStatus: { in: [PaymentStatus.PAID, PaymentStatus.PARTIALLY_REFUNDED] },
+        },
+      },
+      _sum: { quantity: true },
+      orderBy: { _sum: { quantity: 'desc' } },
+      take: 20
+    });
+
+    const variantIds = topSales.map(s => s.variantId);
+
+    // 3. Get full variant/product info
+    const variants = await this.prisma.productVariant.findMany({
+      where: { id: { in: variantIds } },
+      include: { product: { select: { name: true } } }
+    });
+
+    // 4. Get sales per store per variant (using findMany since groupBy has limits on nested relations)
+    const salesItems = await this.prisma.orderItem.findMany({
+      where: {
+        variantId: { in: variantIds },
+        order: {
+          createdAt: { gte: thirtyDaysAgo },
+          paymentStatus: { in: [PaymentStatus.PAID, PaymentStatus.PARTIALLY_REFUNDED] },
+        },
+      },
+      select: {
+        variantId: true,
+        quantity: true,
+        order: { select: { storeId: true } }
+      }
+    });
+
+    // 5. Get current stock per store per variant
+    const stockPerStore = await this.prisma.inventory.findMany({
+      where: { variantId: { in: variantIds } },
+      select: { warehouseId: true, variantId: true, available: true }
+    });
+
+    // 6. Build Matrix
+    const matrix = variants.map(v => {
+      const storeData = stores.map(s => {
+        // Aggregate sales for this variant at this store
+        const sales = salesItems
+          .filter(item => item.variantId === v.id && item.order.storeId === s.id)
+          .reduce((sum, item) => sum + item.quantity, 0);
+
+        const stock = stockPerStore.find(st => st.variantId === v.id && st.warehouseId === s.id)?.available || 0;
+        const velocity = sales / 30; // units per day
+        const daysRemaining = velocity > 0 ? Math.floor(stock / velocity) : (stock > 0 ? 999 : 0);
+        
+        return {
+          storeId: s.id,
+          stock,
+          velocity: Math.round(velocity * 100) / 100,
+          daysRemaining
+        };
+      });
+
+      return {
+        variantId: v.id,
+        variantName: `${v.product.name} - ${v.name}`,
+        stores: storeData
+      };
+    });
+
+    // 7. Generate Recommendations
+    const recommendations: any[] = [];
+    matrix.forEach(row => {
+      const criticalStores = row.stores.filter(s => s.daysRemaining < 5 && s.velocity > 0.1);
+      const healthyStores = row.stores.filter(s => s.daysRemaining > 30 && s.stock > 10);
+
+      if (criticalStores.length > 0 && healthyStores.length > 0) {
+        criticalStores.forEach(target => {
+          const source = healthyStores.sort((a, b) => b.stock - a.stock)[0];
+          if (source) {
+            recommendations.push({
+              variantId: row.variantId,
+              variantName: row.variantName,
+              fromStoreId: source.storeId,
+              fromStoreName: stores.find(s => s.id === source.storeId)?.name,
+              toStoreId: target.storeId,
+              toStoreName: stores.find(s => s.id === target.storeId)?.name,
+              suggestedQuantity: Math.min(Math.floor(source.stock / 2), 10),
+              reason: `Boutique ${stores.find(s => s.id === target.storeId)?.name} sắp cháy hàng (${target.daysRemaining} ngày), Boutique ${stores.find(s => s.id === source.storeId)?.name} đang dư tồn kho (${source.daysRemaining} ngày).`
+            });
+          }
+        });
+      }
+    });
+
+    return {
+      stores,
+      matrix,
+      recommendations
     };
   }
 }

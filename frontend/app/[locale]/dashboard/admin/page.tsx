@@ -6,20 +6,22 @@ import { useTranslations } from 'next-intl';
 import {
     TrendingUp, ArrowUpRight, ArrowDownRight,
     Users, BrainCircuit, ShoppingBag, RefreshCw,
+    CheckCircle, RotateCcw,
 } from 'lucide-react';
 import { AuthGuard } from '@/components/auth/auth-guard';
 import { SalesChart, SalesTrendPoint } from '@/components/dashboard/admin/SalesChart';
 import { TopProductsList, TopProductDto } from '@/components/dashboard/admin/TopProductsList';
 import { ChannelDonutChart } from '@/components/dashboard/admin/ChannelDonutChart';
 import { AiConversionWidget } from '@/components/dashboard/admin/AiConversionWidget';
-import { LowStockWidget } from '@/components/dashboard/admin/LowStockWidget';
+import { InventoryHealthWidget } from '@/components/dashboard/admin/InventoryHealthWidget';
+import { StockHeatmapWidget } from '@/components/dashboard/admin/StockHeatmapWidget';
 import { RecentOrdersFeed, RecentOrderDto } from '@/components/dashboard/admin/RecentOrdersFeed';
 import { StoreRevenueWidget } from '@/components/dashboard/admin/StoreRevenueWidget';
 import api from '@/lib/axios';
 import { cn } from '@/lib/utils';
+import { Link } from '@/lib/i18n';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-
 interface OverviewData {
     totalRevenue: number;
     totalOrders: number;
@@ -28,6 +30,10 @@ interface OverviewData {
     totalCustomers: number;
     newCustomersToday: number;
     aiConsultations: number;
+    totalProfit: number;
+    inventoryValue: number;
+    successRate: number;
+    returnRate: number;
     revenueChange: number;
     ordersChange: number;
 }
@@ -76,9 +82,6 @@ export default function AdminDashboard() {
 
     const [channelData, setChannelData] = useState<{ online: number; pos: number }>({ online: 0, pos: 0 });
     const [channelLoading, setChannelLoading] = useState(true);
-
-    const [lowStock, setLowStock] = useState<any[]>([]);
-    const [lowStockLoading, setLowStockLoading] = useState(true);
 
     const [recentOrders, setRecentOrders] = useState<RecentOrderDto[]>([]);
     const [recentLoading, setRecentLoading] = useState(true);
@@ -137,18 +140,6 @@ export default function AdminDashboard() {
         }
     }, []);
 
-    const fetchLowStock = useCallback(async () => {
-        try {
-            setLowStockLoading(true);
-            const { data } = await api.get('/analytics/low-stock');
-            setLowStock(data);
-        } catch (e) {
-            console.error('Low stock error:', e);
-        } finally {
-            setLowStockLoading(false);
-        }
-    }, []);
-
     const fetchRecentOrders = useCallback(async () => {
         try {
             setRecentLoading(true);
@@ -178,21 +169,19 @@ export default function AdminDashboard() {
         fetchTrend(period);
         fetchTopProducts();
         fetchChannel();
-        fetchLowStock();
         fetchRecentOrders();
         fetchAiConversion();
         setLastRefreshed(new Date());
-    }, [fetchOverview, fetchTrend, period, fetchTopProducts, fetchChannel, fetchLowStock, fetchRecentOrders, fetchAiConversion]);
+    }, [fetchOverview, fetchTrend, period, fetchTopProducts, fetchChannel, fetchRecentOrders, fetchAiConversion]);
 
     // Initial load
     useEffect(() => {
         fetchOverview();
         fetchTopProducts();
         fetchChannel();
-        fetchLowStock();
         fetchRecentOrders();
         fetchAiConversion();
-    }, [fetchOverview, fetchTopProducts, fetchChannel, fetchLowStock, fetchRecentOrders, fetchAiConversion]);
+    }, [fetchOverview, fetchTopProducts, fetchChannel, fetchRecentOrders, fetchAiConversion]);
 
     // Re-fetch when period changes
     useEffect(() => {
@@ -210,6 +199,21 @@ export default function AdminDashboard() {
                 color: 'bg-emerald-500/10 text-emerald-500',
             },
             {
+                label: t('home.stats.profit'),
+                value: formatVND(overview.totalProfit),
+                change: null,
+                icon: BrainCircuit,
+                color: 'bg-blue-500/10 text-blue-400',
+            },
+            {
+                label: t('home.stats.success_rate'),
+                value: `${(overview.successRate || 0).toFixed(1)}%`,
+                change: null,
+                icon: CheckCircle,
+                color: 'bg-emerald-500/10 text-emerald-400',
+                href: '/dashboard/admin/orders',
+            },
+            {
                 label: t('home.stats.orders'),
                 value: overview.totalOrders.toLocaleString(),
                 change: overview.ordersChange,
@@ -217,20 +221,20 @@ export default function AdminDashboard() {
                 color: 'bg-gold/10 text-gold',
             },
             {
-                label: t('home.stats.members'),
-                value: overview.totalCustomers.toLocaleString(),
+                label: t('home.stats.inventory_value'),
+                value: formatVND(overview.inventoryValue),
                 change: null,
-                icon: Users,
-                color: 'bg-blue-500/10 text-blue-400',
-                subtext: t('home.stats.today', { count: overview.newCustomersToday }),
+                icon: RefreshCw,
+                color: 'bg-violet-500/10 text-violet-400',
+                subtext: t('home.stats.stock_value_suffix'),
             },
             {
-                label: t('home.stats.consultations'),
-                value: overview.aiConsultations.toLocaleString(),
+                label: t('home.stats.return_rate'),
+                value: `${(overview.returnRate || 0).toFixed(1)}%`,
                 change: null,
-                icon: BrainCircuit,
-                color: 'bg-violet-500/10 text-violet-400',
-                subtext: t('home.stats.ai_suffix'),
+                icon: RotateCcw,
+                color: 'bg-red-500/10 text-red-400',
+                href: '/dashboard/admin/returns',
             },
         ]
         : [];
@@ -264,43 +268,58 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* ── KPI Stats ──────────────────────────────────────────── */}
-                <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+                <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     {overviewLoading
-                        ? Array.from({ length: 4 }).map((_, i) => (
+                        ? Array.from({ length: 6 }).map((_, i) => (
                             <div key={i} className="glass bg-background/40 rounded-[2rem] border border-border p-8 animate-pulse h-40" />
                         ))
-                        : statCards.map((card, i) => (
-                            <motion.div
-                                key={i}
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: i * 0.1 }}
-                                className="glass bg-background/40 rounded-[2rem] border border-border p-6 hover:border-gold/20 hover:shadow-xl hover:shadow-gold/5 transition-all group flex flex-col justify-between min-h-[160px]"
-                            >
-                                <div className="flex justify-between items-center mb-6">
-                                    <div className={`p-3 rounded-xl ${card.color} group-hover:scale-110 transition-transform shadow-lg shadow-black/5`}>
-                                        <card.icon className="w-5 h-5" />
+                        : statCards.map((card: any, i) => {
+                            const CardContent = (
+                                <motion.div
+                                    key={i}
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ delay: i * 0.1 }}
+                                    className={cn(
+                                        "glass bg-background/40 rounded-[2rem] border border-border p-6 hover:border-gold/20 hover:shadow-xl hover:shadow-gold/5 transition-all group flex flex-col justify-between h-full min-h-[165px]",
+                                        card.href && "cursor-pointer"
+                                    )}
+                                >
+                                    <div className="flex justify-between items-center mb-4">
+                                        <div className={`p-3 rounded-xl ${card.color} group-hover:scale-110 transition-transform shadow-lg shadow-black/5`}>
+                                            <card.icon className="w-5 h-5" />
+                                        </div>
+                                        {card.change !== null && card.change !== undefined && (
+                                            <ChangeChip value={card.change} />
+                                        )}
                                     </div>
-                                    {card.change !== null && card.change !== undefined && (
-                                        <ChangeChip value={card.change} />
-                                    )}
-                                </div>
-                                
-                                <div>
-                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.1em] mb-1 opacity-70">
-                                        {card.label}
-                                    </p>
-                                    <h4 className="text-2xl sm:text-3xl font-heading text-foreground tracking-tight leading-none mb-2">
-                                        {card.value}
-                                    </h4>
-                                    {card.subtext && (
-                                        <p className="text-[9px] text-muted-foreground uppercase tracking-widest font-medium opacity-40">
-                                            {card.subtext}
+                                    
+                                    <div className="flex flex-col justify-end flex-1">
+                                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.1em] mb-1 opacity-70">
+                                            {card.label}
                                         </p>
-                                    )}
-                                </div>
-                            </motion.div>
-                        ))
+                                        <h4 className="text-2xl sm:text-3xl font-heading text-foreground tracking-tight leading-none">
+                                            {card.value}
+                                        </h4>
+                                        <div className="min-h-[14px] mt-1">
+                                            {card.subtext && (
+                                                <p className="text-[9px] text-muted-foreground uppercase tracking-widest font-medium opacity-40">
+                                                    {card.subtext}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            );
+
+                            return card.href ? (
+                                <Link key={i} href={card.href}>
+                                    {CardContent}
+                                </Link>
+                            ) : (
+                                <div key={i}>{CardContent}</div>
+                            );
+                        })
                     }
                 </section>
 
@@ -334,10 +353,12 @@ export default function AdminDashboard() {
                         <RecentOrdersFeed data={recentOrders} loading={recentLoading} />
                     </div>
                 </section>
-                <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mt-6">
-                    <LowStockWidget data={lowStock} loading={lowStockLoading} />
-                </section>
 
+                {/* Full Width Inventory Sections */}
+                <section className="mt-8 space-y-8">
+                    <InventoryHealthWidget />
+                    <StockHeatmapWidget />
+                </section>
             </div>
         </AuthGuard>
     );

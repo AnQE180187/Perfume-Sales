@@ -1450,12 +1450,17 @@
         "search_placeholder": "Tìm theo mã đơn, tên, số điện thoại...",
         "stats": {
           "revenue": "Tổng Doanh thu",
+          "profit": "Lợi nhuận gộp",
+          "inventory_value": "Giá trị Kho",
+          "success_rate": "Tỉ lệ Thành công",
+          "return_rate": "Tỉ lệ Hoàn trả",
           "orders": "Tổng Đơn hàng",
           "consultations": "Lượt tư vấn AI",
           "members": "Thành viên Cao cấp",
           "delivery": "Giao hàng Tb.",
           "today": "+{count} hôm nay",
           "ai_suffix": "Phiên AI · 30 ngày",
+          "stock_value_suffix": "Giá vốn toàn hệ thống",
           "refresh": "Làm mới",
           "updated_at": "Cập nhật:"
         },

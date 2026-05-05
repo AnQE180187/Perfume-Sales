@@ -1,9 +1,11 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AnalyticsService } from './analytics.service';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 
 @Controller('analytics')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService) {}
 
@@ -62,5 +64,23 @@ export class AnalyticsController {
   @Get('ai-conversion')
   async getAiConversionRate() {
     return this.analyticsService.getAiConversionRate();
+  }
+
+  @Get('financial')
+  @Roles('ADMIN')
+  async getFinancialAnalytics() {
+    return this.analyticsService.getFinancialAnalytics();
+  }
+
+  @Get('inventory-health')
+  @Roles('ADMIN')
+  async getInventoryHealth() {
+    return this.analyticsService.getInventoryHealth();
+  }
+
+  @Get('stock-heatmap')
+  @Roles('ADMIN')
+  async getStockMovementHeatmap() {
+    return this.analyticsService.getStockMovementHeatmap();
   }
 }
