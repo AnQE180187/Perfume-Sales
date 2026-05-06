@@ -25,8 +25,8 @@
 *   **Multi-Platform Ecosystem**: Includes a Flutter-based Mobile App for customers and a integrated Zalo Mini App.
 
 ### 💳 Payments & Shipping Integration
-*   **Local Payment Gateways**: Integrated with PayOS, VNPay, Momo, and Cash-on-Delivery (COD).
-*   **Logistics Partners**: Automated shipping requests and status synchronization with Giao Hàng Nhanh (GHN) and Giao Hàng Tiết Kiệm (GHTK).
+*   **Local Payment Gateways**: Integrated with PayOS and Cash-on-Delivery (COD).
+*   **Logistics Partners**: Automated shipping requests and status synchronization with Giao Hàng Nhanh (GHN).
 
 ### 📊 CRM & Advanced Analytics
 *   **Loyalty Program**: Automated points accumulation and redemption system.
