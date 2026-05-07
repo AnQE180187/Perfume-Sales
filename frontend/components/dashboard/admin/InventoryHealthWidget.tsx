@@ -6,6 +6,7 @@ import { Package, AlertCircle, TrendingUp, Calendar } from 'lucide-react';
 import api from '@/lib/axios';
 import { cn } from '@/lib/utils';
 import { Link } from '@/lib/i18n';
+import Image from 'next/image';
 
 interface HealthItem {
     variantId: string;

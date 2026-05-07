@@ -773,6 +773,7 @@
       "reset_profile": "Reset Profile",
       "preferred_tab": "Preferred Notes",
       "avoided_tab": "Avoided Notes",
+      "manage_dna_title": "Customize Your DNA",
       "search_placeholder": "Search and add a {type} note...",
       "search_preferred": "preferred",
       "search_avoided": "avoided",
