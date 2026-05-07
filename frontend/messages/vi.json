@@ -658,6 +658,7 @@
     "profile": {
       "title": "Hồ Sơ Cá Nhân",
       "subtitle": "Quản lý thông tin và tùy chỉnh trải nghiệm mùi hương của bạn.",
+      "member_since": "Thành viên từ",
       "user_placeholder": "Khách Perfume GPT",
       "personal_info": "Thông tin cá nhân",
       "roles": {

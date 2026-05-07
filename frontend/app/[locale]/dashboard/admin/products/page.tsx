@@ -83,6 +83,8 @@ export default function AdminProducts() {
     categoryId: '' as '' | number,
     scentFamilyId: '' as '' | number,
     description: '',
+    shortDescription: '',
+    longDescription: '',
     gender: '',
     longevity: '',
     concentration: '',
@@ -168,6 +170,8 @@ export default function AdminProducts() {
             categoryId: p.categoryId ?? '',
             scentFamilyId: p.scentFamilyId ?? '',
             description: p.description ?? '',
+            shortDescription: p.shortDescription ?? '',
+            longDescription: p.longDescription ?? '',
             gender: p.gender ?? '',
             longevity: p.longevity ?? '',
             concentration: p.concentration ?? '',
@@ -222,6 +226,8 @@ export default function AdminProducts() {
       categoryId: '',
       scentFamilyId: '',
       description: '',
+      shortDescription: '',
+      longDescription: '',
       gender: '',
       longevity: '',
       concentration: '',
@@ -333,6 +339,8 @@ export default function AdminProducts() {
     categoryId: form.categoryId === '' ? null : form.categoryId,
     scentFamilyId: form.scentFamilyId === '' ? null : form.scentFamilyId,
     description: form.description || undefined,
+    shortDescription: form.shortDescription || undefined,
+    longDescription: form.longDescription || undefined,
     gender: form.gender || undefined,
     longevity: form.longevity || undefined,
     concentration: form.concentration || undefined,
@@ -1024,7 +1032,27 @@ export default function AdminProducts() {
                           </div>
 
                           <div className="space-y-3">
-                            <label className="text-[10px] uppercase tracking-widest text-muted-foreground font-black ml-1">Mô Tả Sản Phẩm</label>
+                            <label className="text-[10px] uppercase tracking-widest text-muted-foreground font-black ml-1">Mô Tả Sản Phẩm - Đoạn 1 (Hiển thị trên nút "Thêm vào giỏ hàng")</label>
+                            <textarea
+                              className="w-full bg-secondary/10 border border-border rounded-[2.5rem] py-8 px-10 outline-none focus:border-gold min-h-[150px] transition-all text-sm font-medium leading-relaxed resize-none shadow-inner"
+                              value={form.shortDescription}
+                              onChange={(e) => setForm((f) => ({ ...f, shortDescription: e.target.value }))}
+                              placeholder="Mô tả ngắn gọn, câu chuyện về mùi hương này (hiển thị ở trên nút Thêm vào giỏ hàng)..."
+                            />
+                          </div>
+
+                          <div className="space-y-3">
+                            <label className="text-[10px] uppercase tracking-widest text-muted-foreground font-black ml-1">Mô Tả Sản Phẩm - Đoạn 2 (Hiển thị dưới các hương)</label>
+                            <textarea
+                              className="w-full bg-secondary/10 border border-border rounded-[2.5rem] py-8 px-10 outline-none focus:border-gold min-h-[250px] transition-all text-sm font-medium leading-relaxed resize-none shadow-inner"
+                              value={form.longDescription}
+                              onChange={(e) => setForm((f) => ({ ...f, longDescription: e.target.value }))}
+                              placeholder="Mô tả chi tiết, cảm xúc và trải nghiệm sâu sắc của mùi hương (hiển thị dưới các nốt hương)..."
+                            />
+                          </div>
+
+                          <div className="space-y-3">
+                            <label className="text-[10px] uppercase tracking-widest text-muted-foreground font-black ml-1">Mô Tả Sản Phẩm (Legacy - Giữ lại cho tương thích)</label>
                             <textarea
                               className="w-full bg-secondary/10 border border-border rounded-[2.5rem] py-8 px-10 outline-none focus:border-gold min-h-[250px] transition-all text-sm font-medium leading-relaxed resize-none shadow-inner"
                               value={form.description}
