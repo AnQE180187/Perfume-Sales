@@ -820,7 +820,22 @@
       "suggestion_mode": "Suggestion Mode",
       "ai_safe_suggestion": "Safe Suggestion: Focuses on familiar scents you love.",
       "ai_balanced_suggestion": "Balanced Suggestion: Explore new scents while staying comfortable.",
-      "ai_daring_suggestion": "Breakthrough Suggestion: Prioritize unique and entirely new experiences."
+      "ai_daring_suggestion": "Breakthrough Suggestion: Prioritize unique and entirely new experiences.",
+      "analyzing": "Analyzing DNA...",
+      "neural_scanning": "Neural Scanning Active..."
+    },
+    "chat": {
+      "buttons": {
+        "back": "Back",
+        "send_image": "Send Image"
+      },
+      "placeholders": {
+        "type_message": "Type your message..."
+      },
+      "fallbacks": {
+        "no_selection_title": "Select a conversation",
+        "no_selection_subtitle": "Choose an existing conversation from the list to begin."
+      }
     },
     "ai_logs": {
       "title": "AI System Performance",
@@ -2393,6 +2408,10 @@
               "loyalty": "Loyalty",
               "ai_chat": "AI Consultation",
               "quiz": "Quiz Results",
+              "scent_dna": "Scent DNA",
+              "consultation": "AI Consultation",
+              "rewards": "Rewards",
+              "notifications": "Notifications",
               "explore": "Explore module →"
             }
           },
@@ -2778,46 +2797,14 @@
     "shipping_fee_summary": "Logistics Surcharge"
   },
   "consultation_page": {
-    "section_prefix": "Section",
-    "prev_step": "Back",
-    "analysis": {
-      "initializing": "Initializing neural weights...",
-      "loading": "Loading olfactory dataset...",
-      "cross_referencing": "Cross-referencing {intensity} profiles...",
-      "finalizing": "Finalizing emotional anchors...",
-      "calculating": "Perfume GPT Neural Engine is calculating...",
-      "complete": "Analysis Complete",
-      "description": "Neural match verified with 98.4% precision across all olfactory dimensions.",
-      "dna_blueprint": "Your DNA Blueprint.",
-      "profile_label": "PROFILE",
-      "view_profile": "View Your Profile"
-    },
+    "analyzing": "AI is distilling essence...",
+    "blueprint_title": "The Scent Blueprint",
+    "blueprint_subtitle": "Your personal olfactory coordinates",
+    "results_ready": "Results Ready",
     "steps": {
-      "intensity": {
-        "title": "Select your prioritized scent intensity.",
-        "options": {
-          "subtle": "Subtle & Ethereal",
-          "balanced": "Balanced & Elegant",
-          "intense": "Powerful & Bold"
-        }
-      },
-      "environment": {
-        "title": "In which environment do you presence most?",
-        "options": {
-          "outdoor": "Sunny Outdoors",
-          "urban": "Modern Urban Spaces",
-          "midnight": "Quiet Night Lounges"
-        }
-      },
-      "emotion": {
-        "title": "The emotion you wish to manifest.",
-        "options": {
-          "sophisticated": "Sophistication",
-          "playful": "Playfulness",
-          "mysterious": "Mystery",
-          "vitality": "Vitality"
-        }
-      }
+      "intensity": { "title": "Which intensity resonates with you?" },
+      "vibe": { "title": "What is your target aesthetic?" },
+      "season": { "title": "In which season will it emerge?" }
     }
   },
   "boutiques_page": {
@@ -3226,6 +3213,29 @@
     "today": "Today",
     "this_week": "This week",
     "this_month": "This month"
+  },
+  "rewards_page": {
+    "elite_badge": "Elite Circle",
+    "requirement": "Requirement",
+    "perks": "Exclusive Perks",
+    "current_points": "Current Credits",
+    "tiers": {
+      "silver": { "name": "Silver", "req": "New Member", "perk": "Standard Privileges" },
+      "gold": { "name": "Gold", "req": "500+ Credits", "perk": "5% Deduction on all orders" },
+      "platinum": { "name": "Platinum", "req": "2000+ Credits", "perk": "10% Deduction + Rare Gifts" },
+      "obsidian": { "name": "Obsidian", "req": "5000+ Credits", "perk": "Elite Access & Private Events" }
+    }
+  },
+  "consultation_page": {
+    "analyzing": "AI is distilling essence...",
+    "blueprint_title": "The Scent Blueprint",
+    "blueprint_subtitle": "Your personal olfactory coordinates",
+    "results_ready": "Results Ready",
+    "steps": {
+      "intensity": { "title": "Which intensity resonates with you?" },
+      "vibe": { "title": "What is your target aesthetic?" },
+      "season": { "title": "In which season will it emerge?" }
+    }
   }
 }
 

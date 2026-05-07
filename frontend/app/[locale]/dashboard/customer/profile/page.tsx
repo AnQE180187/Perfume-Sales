@@ -5,9 +5,11 @@ import { userService } from '@/services/user.service';
 import { authService } from '@/services/auth.service';
 import { useAuthStore } from '@/store/auth.store';
 import { AddressManager } from '@/components/address/address-manager';
-import { User, Mail, Shield, Edit2, Loader2, CheckCircle, Send, Phone } from 'lucide-react';
+import { User, Mail, Shield, Edit2, Loader2, CheckCircle, Send, Phone, Calendar, Target, Zap, ShieldCheck } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslations, useLocale, useFormatter } from 'next-intl';
+import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 type ProfileData = {
     id: string;
@@ -20,7 +22,6 @@ type ProfileData = {
     avatarUrl?: string | null;
     budgetMin?: number | null;
     budgetMax?: number | null;
-    loyaltyPoints?: number;
     createdAt?: string;
     emailVerified?: boolean;
 };
@@ -68,9 +69,7 @@ export default function ProfilePage() {
         }
     };
 
-    useEffect(() => {
-        loadProfile();
-    }, []);
+    useEffect(() => { loadProfile(); }, []);
 
     const handleResendVerification = async () => {
         setSendingVerify(true);
@@ -100,16 +99,11 @@ export default function ProfilePage() {
             setData(updated);
             setEditing(false);
             if (token && authUser && (updated.fullName !== authUser.name || updated.email !== authUser.email)) {
-                setAuth(
-                    { ...authUser, name: updated.fullName || updated.email, email: updated.email },
-                    token,
-                );
+                setAuth({ ...authUser, name: updated.fullName || updated.email, email: updated.email }, token);
             }
         } catch (e) {
             setError((e as Error).message);
-        } finally {
-            setSaving(false);
-        }
+        } finally { setSaving(false); }
     };
 
     const formatCurrency = (amount: number) => {
@@ -122,284 +116,274 @@ export default function ProfilePage() {
 
     if (loading) {
         return (
-            <AuthGuard>
-                <main className="p-8 max-w-5xl mx-auto flex items-center justify-center min-h-[400px]">
-                    <Loader2 className="w-8 h-8 animate-spin text-gold" />
-                </main>
-            </AuthGuard>
+            <div className="flex h-[400px] items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-gold" />
+            </div>
         );
     }
 
     return (
-        <AuthGuard>
-            <main className="p-8 max-w-5xl mx-auto">
-                <header className="mb-12">
-                    <h1 className="text-4xl font-heading gold-gradient mb-2 uppercase tracking-tighter">
-                        {t('title')}
-                    </h1>
-                    <p className="text-muted-foreground font-body text-sm uppercase tracking-widest">
-                        {t('subtitle')}
-                    </p>
-                </header>
+        <div className="space-y-12 pb-12">
+            <header>
+                <div className="flex items-center gap-4 mb-4">
+                    <div className="h-[1px] w-12 bg-gold/50" />
+                    <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-gold/60">Registry</span>
+                </div>
+                <h1 className="font-heading text-5xl font-bold uppercase tracking-tighter text-foreground md:text-6xl">
+                    Persona <span className="gold-gradient">Matrix</span>
+                </h1>
+                <p className="mt-4 font-body text-base text-stone-500 max-w-2xl">{t('subtitle')}</p>
+            </header>
 
-                {error && (
-                    <div className="mb-6 p-4 rounded-2xl bg-destructive/10 text-destructive text-sm">
-                        {error}
-                    </div>
-                )}
+            {error && (
+                <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-4 text-xs font-bold uppercase tracking-widest text-red-600 dark:text-red-500">
+                    {error}
+                </div>
+            )}
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                    <div className="lg:col-span-1 space-y-8">
-                        <div className="glass p-10 rounded-[3.5rem] border-gold/10 text-center relative group">
-                            <div className="w-32 h-32 rounded-[2.5rem] bg-secondary mx-auto mb-6 relative overflow-hidden border-2 border-border flex items-center justify-center">
-                                {data?.avatarUrl ? (
-                                    <img src={data.avatarUrl} alt="" className="w-full h-full object-cover" />
-                                ) : (
-                                    <User className="w-16 h-16 text-muted-foreground/50" />
-                                )}
-                            </div>
-                            <h2 className="font-heading text-xl text-foreground uppercase tracking-widest mb-1">
-                                {data?.fullName || data?.email || t('user_placeholder')}
-                            </h2>
-                            <p className="text-[10px] text-gold uppercase tracking-[0.3em] font-bold">
-                                {data?.role ? t(`roles.${data.role.toLowerCase()}`) : t('roles.customer')}
-                            </p>
-                        </div>
-
-                        <div className="glass p-8 rounded-[2.5rem] border-border space-y-6">
-                            <h3 className="font-heading text-[10px] uppercase tracking-widest text-muted-foreground mb-4">
-                                {t('security.title')}
-                            </h3>
-                            <div className="flex items-center gap-4 text-xs font-body text-foreground">
-                                <Shield className="w-4 h-4 text-emerald-500" />
-                                <span>{t('security.protected')}</span>
-                            </div>
-                        </div>
-
-                        <div className="glass p-8 rounded-[2.5rem] border-border space-y-4">
-                            <h3 className="font-heading text-[10px] uppercase tracking-widest text-muted-foreground mb-4">
-                                {t('verification.title')}
-                            </h3>
-                            {data?.emailVerified ? (
-                                <div className="flex items-center gap-4 text-xs font-body text-emerald-500">
-                                    <CheckCircle className="w-4 h-4" />
-                                    <span>{t('verification.verified')}</span>
-                                </div>
+            <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
+                {/* Left Sidebar */}
+                <div className="lg:col-span-4 space-y-8">
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="glass relative overflow-hidden rounded-[3rem] p-12 text-center"
+                    >
+                        <div className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-gold/5 blur-[60px]" />
+                        <div className="relative mx-auto mb-8 h-32 w-32 overflow-hidden rounded-[2.5rem] border-2 border-black/10 dark:border-white/10 bg-stone-100 dark:bg-zinc-800 p-1 shadow-2xl">
+                            {data?.avatarUrl ? (
+                                <img src={data.avatarUrl} alt="" className="h-full w-full rounded-[2.2rem] object-cover" />
                             ) : (
-                                <div className="space-y-3">
-                                    <p className="text-xs text-muted-foreground">
-                                        {t('verification.unverified')}
-                                    </p>
-                                    <button
-                                        type="button"
-                                        onClick={handleResendVerification}
-                                        disabled={sendingVerify}
-                                        className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gold text-gold text-[10px] font-heading uppercase tracking-widest hover:bg-gold/10 disabled:opacity-50"
-                                    >
-                                        {sendingVerify ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
-                                        {t('verification.resend')}
-                                    </button>
-                                    {verifyMsg && (
-                                        <p className="text-[10px] text-muted-foreground">{verifyMsg}</p>
-                                    )}
+                                <div className="flex h-full w-full items-center justify-center rounded-[2.2rem] bg-stone-50 dark:bg-zinc-900 text-stone-400 dark:text-stone-600 font-heading text-4xl font-bold">
+                                    {data?.fullName ? data.fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : data?.email?.[0].toUpperCase()}
                                 </div>
                             )}
                         </div>
-                    </div>
+                        <h2 className="font-heading text-2xl font-bold uppercase tracking-widest text-foreground">
+                            {data?.fullName || data?.email || t('user_placeholder')}
+                        </h2>
+                        <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.4em] text-gold/80">
+                            {data?.role ? t(`roles.${data.role.toLowerCase()}`) : t('roles.customer')}
+                        </p>
+                    </motion.div>
 
-                    <div className="lg:col-span-2 space-y-8">
-                        <div className="glass p-10 rounded-[3rem] border-border">
-                            <div className="flex justify-between items-center mb-10">
-                                <h3 className="font-heading text-lg uppercase tracking-widest">{t('personal_info')}</h3>
-                                {!editing ? (
-                                    <button
-                                        type="button"
-                                        onClick={() => setEditing(true)}
-                                        className="flex items-center gap-2 text-gold text-[10px] uppercase font-heading tracking-widest hover:underline"
-                                    >
-                                        <Edit2 className="w-3 h-3" /> {t('edit')}
-                                    </button>
-                                ) : (
-                                    <div className="flex gap-2">
-                                        <button
-                                            type="button"
-                                            onClick={handleSave}
-                                            disabled={saving}
-                                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gold text-primary text-[10px] uppercase font-heading tracking-widest disabled:opacity-50"
-                                        >
-                                            {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : null} {t('save')}
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setEditing(false)}
-                                            className="px-4 py-2 rounded-xl border border-border text-[10px] uppercase font-heading tracking-widest"
-                                        >
-                                            {t('cancel')}
-                                        </button>
-                                    </div>
-                                )}
+                    <div className="rounded-[2.5rem] border border-black/5 dark:border-white/5 bg-stone-100/30 dark:bg-zinc-900/20 p-10 backdrop-blur-xl">
+                        <h3 className="mb-8 text-[10px] font-bold uppercase tracking-[0.5em] text-stone-400 dark:text-stone-600">Account Registry</h3>
+                        <div className="space-y-8">
+                            <div className="group">
+                                <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-stone-500 dark:text-stone-400 group-hover:text-gold transition-colors">Identity Status</p>
+                                <p className="mt-1 text-[11px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-500/80">Authenticated</p>
                             </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                                <div className="space-y-2">
-                                    <label className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-heading">
-                                        {t('labels.fullName')}
-                                    </label>
-                                    {editing ? (
-                                        <input
-                                            type="text"
-                                            value={form.fullName}
-                                            onChange={(e) => setForm((f) => ({ ...f, fullName: e.target.value }))}
-                                            className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm"
-                                        />
-                                    ) : (
-                                        <p className="font-body text-sm border-b border-border/50 pb-2">
-                                            {data?.fullName || t('fallback.empty')}
-                                        </p>
-                                    )}
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-heading">
-                                        {t('labels.phone')}
-                                    </label>
-                                    {editing ? (
-                                        <input
-                                            type="tel"
-                                            value={form.phone}
-                                            onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-                                            className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm"
-                                            placeholder={t('placeholders.phone')}
-                                        />
-                                    ) : (
-                                        <p className="font-body text-sm border-b border-border/50 pb-2 flex items-center gap-2">
-                                            <Phone className="w-3 h-3 text-muted-foreground" />
-                                            {data?.phone || t('fallback.empty')}
-                                        </p>
-                                    )}
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-heading">
-                                        {t('labels.email')}
-                                    </label>
-                                    <p className="font-body text-sm border-b border-border/50 pb-2 flex items-center gap-2">
-                                        <Mail className="w-3 h-3 text-muted-foreground" />
-                                        {data?.email || t('fallback.empty')}
-                                    </p>
-                                    <span className="text-[10px] text-muted-foreground leading-relaxed">
-                                        {t('labels.email_immutable')}
-                                    </span>
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-heading">
-                                        {t('labels.gender')}
-                                    </label>
-                                    {editing ? (
-                                        <div className="relative">
-                                            <select
-                                                value={form.gender}
-                                                onChange={(e) => setForm((f) => ({ ...f, gender: e.target.value }))}
-                                                className="w-full px-4 py-3.5 rounded-2xl border border-border/50 bg-zinc-50 dark:bg-white/5 text-[10px] uppercase tracking-widest focus:border-gold outline-none transition-all appearance-none cursor-pointer"
-                                            >
-                                                <option value="" className="bg-white dark:bg-zinc-900">—</option>
-                                                <option value="MALE" className="bg-white dark:bg-zinc-900">{t('gender_options.male')}</option>
-                                                <option value="FEMALE" className="bg-white dark:bg-zinc-900">{t('gender_options.female')}</option>
-                                                <option value="OTHER" className="bg-white dark:bg-zinc-900">{t('gender_options.other')}</option>
-                                            </select>
-                                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-50">
-                                                <User size={12} />
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <p className="font-body text-sm border-b border-border/50 pb-2">
-                                            {data?.gender ? t(`gender_options.${data.gender.toLowerCase()}`) : t('fallback.empty')}
-                                        </p>
-                                    )}
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-heading">
-                                        {t('labels.dob')}
-                                    </label>
-                                    {editing ? (
-                                        <input
-                                            type="date"
-                                            value={form.dateOfBirth}
-                                            onChange={(e) => setForm((f) => ({ ...f, dateOfBirth: e.target.value }))}
-                                            className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm"
-                                        />
-                                    ) : (
-                                        <p className="font-body text-sm border-b border-border/50 pb-2">
-                                            {data?.dateOfBirth
-                                                ? format.dateTime(new Date(data.dateOfBirth), { dateStyle: 'long' })
-                                                : t('fallback.empty')}
-                                        </p>
-                                    )}
-                                </div>
-                                <div className="space-y-2 md:col-span-2">
-                                    {data?.role === 'CUSTOMER' ? (
-                                        <div className="pt-6 border-t border-border/40">
-                                            <AddressManager />
-                                        </div>
-                                    ) : null}
-                                </div>
-                                {data?.role === 'CUSTOMER' && (
-                                    <>
-                                        <div className="space-y-2">
-                                            <label className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-heading">
-                                                {t('labels.min_budget')}
-                                            </label>
-                                            {editing ? (
-                                                <input
-                                                    type="number"
-                                                    value={form.budgetMin}
-                                                    onChange={(e) =>
-                                                        setForm((f) => ({
-                                                            ...f,
-                                                            budgetMin: e.target.value ? Number(e.target.value) : '',
-                                                        }))
-                                                    }
-                                                    onFocus={(e) => e.target.select()}
-                                                    className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm"
-                                                />
-                                            ) : (
-                                                <p className="font-body text-sm border-b border-border/50 pb-2 text-gold">
-                                                    {data?.budgetMin != null
-                                                        ? formatCurrency(data.budgetMin)
-                                                        : t('fallback.empty')}
-                                                </p>
-                                            )}
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-[8px] uppercase tracking-[0.3em] text-muted-foreground font-heading">
-                                                {t('labels.max_budget')}
-                                            </label>
-                                            {editing ? (
-                                                <input
-                                                    type="number"
-                                                    value={form.budgetMax}
-                                                    onChange={(e) =>
-                                                        setForm((f) => ({
-                                                            ...f,
-                                                            budgetMax: e.target.value ? Number(e.target.value) : '',
-                                                        }))
-                                                    }
-                                                    onFocus={(e) => e.target.select()}
-                                                    className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm"
-                                                />
-                                            ) : (
-                                                <p className="font-body text-sm border-b border-border/50 pb-2 text-gold">
-                                                    {data?.budgetMax != null
-                                                        ? formatCurrency(data.budgetMax)
-                                                        : t('fallback.empty')}
-                                                </p>
-                                            )}
-                                        </div>
-                                    </>
-                                )}
+                            <div className="group">
+                                <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-stone-500 dark:text-stone-400 group-hover:text-gold transition-colors">Access Level</p>
+                                <p className="mt-1 text-[11px] font-bold uppercase tracking-widest text-foreground">Standard Tier</p>
+                            </div>
+                            <div className="group">
+                                <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-stone-500 dark:text-stone-400 group-hover:text-gold transition-colors">Neural Encryption</p>
+                                <p className="mt-1 text-[11px] font-bold uppercase tracking-widest text-stone-600 dark:text-stone-700">AES-256 Enabled</p>
                             </div>
                         </div>
                     </div>
+
+                    <div className="rounded-[2.5rem] border border-black/5 dark:border-white/5 bg-stone-100/30 dark:bg-zinc-900/20 p-8 backdrop-blur-xl">
+                        <h3 className="mb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-stone-400 dark:text-stone-600">{t('verification.title')}</h3>
+                        {data?.emailVerified ? (
+                            <div className="flex items-center gap-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 p-4">
+                                <CheckCircle size={20} className="text-emerald-600 dark:text-emerald-500" />
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-500">{t('verification.verified')}</span>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                <p className="text-[10px] font-medium leading-relaxed text-stone-500">{t('verification.unverified')}</p>
+                                <button
+                                    type="button"
+                                    onClick={handleResendVerification}
+                                    disabled={sendingVerify}
+                                    className="group flex h-12 w-full items-center justify-center gap-3 rounded-xl border border-gold/30 bg-gold/5 text-[10px] font-bold uppercase tracking-widest text-gold transition-all hover:bg-gold hover:text-black cursor-pointer"
+                                >
+                                    {sendingVerify ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4 transition-transform group-hover:-translate-y-1 group-hover:translate-x-1" />}
+                                    {t('verification.resend')}
+                                </button>
+                                {verifyMsg && <p className="text-center text-[10px] font-bold text-stone-400 dark:text-stone-600">{verifyMsg}</p>}
+                            </div>
+                        )}
+                    </div>
                 </div>
-            </main>
-        </AuthGuard>
+
+                {/* Main Content */}
+                <div className="lg:col-span-8 space-y-8">
+                    <motion.div 
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="glass rounded-[3rem] p-10 lg:p-16"
+                    >
+                        <div className="mb-12 flex items-center justify-between">
+                            <h3 className="font-heading text-2xl font-bold uppercase tracking-widest text-foreground">{t('personal_info')}</h3>
+                            {!editing ? (
+                                <button
+                                    type="button"
+                                    onClick={() => setEditing(true)}
+                                    className="group flex items-center gap-3 rounded-full border border-black/10 dark:border-white/10 bg-stone-100 dark:bg-white/5 px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-stone-500 dark:text-stone-400 transition-all hover:bg-gold hover:text-black hover:border-gold hover:shadow-[0_0_20px_rgba(197,160,89,0.3)] cursor-pointer"
+                                >
+                                    <Edit2 size={14} /> {t('edit')}
+                                </button>
+                            ) : (
+                                <div className="flex gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={handleSave}
+                                        disabled={saving}
+                                        className="flex h-12 items-center gap-3 rounded-full bg-gold px-8 text-[10px] font-bold uppercase tracking-widest text-black shadow-lg shadow-gold/20 disabled:opacity-20 cursor-pointer"
+                                    >
+                                        {saving && <Loader2 className="h-4 w-4 animate-spin" />} {t('save')}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setEditing(false)}
+                                        className="h-12 rounded-full border border-black/10 dark:border-white/10 bg-stone-100 dark:bg-white/5 px-8 text-[10px] font-bold uppercase tracking-widest text-stone-500 dark:text-stone-400 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer"
+                                    >
+                                        {t('cancel')}
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-12 md:grid-cols-2">
+                            {/* Name */}
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-bold uppercase tracking-[0.4em] text-stone-400 dark:text-stone-700">
+                                    {t('labels.fullName')}
+                                </label>
+                                {editing ? (
+                                    <input
+                                        value={form.fullName}
+                                        onChange={(e) => setForm(f => ({ ...f, fullName: e.target.value }))}
+                                        className="w-full rounded-2xl border border-black/5 dark:border-white/5 bg-stone-100/50 dark:bg-white/[0.02] py-5 px-6 text-sm outline-none transition-all focus:border-gold/30 focus:bg-stone-100 dark:focus:bg-white/[0.05] text-foreground"
+                                    />
+                                ) : (
+                                    <p className="font-heading text-xl font-bold uppercase tracking-widest text-foreground border-b border-black/5 dark:border-white/5 pb-4">
+                                        {data?.fullName || t('fallback.empty')}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Phone */}
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-bold uppercase tracking-[0.4em] text-stone-400 dark:text-stone-700">
+                                    {t('labels.phone')}
+                                </label>
+                                {editing ? (
+                                    <input
+                                        value={form.phone}
+                                        onChange={(e) => setForm(f => ({ ...f, phone: e.target.value }))}
+                                        className="w-full rounded-2xl border border-black/5 dark:border-white/5 bg-stone-100/50 dark:bg-white/[0.02] py-5 px-6 text-sm outline-none transition-all focus:border-gold/30 focus:bg-stone-100 dark:focus:bg-white/[0.05] text-foreground"
+                                        placeholder={t('placeholders.phone')}
+                                    />
+                                ) : (
+                                    <p className="font-heading text-xl font-bold uppercase tracking-widest text-foreground border-b border-black/5 dark:border-white/5 pb-4">
+                                        {data?.phone || t('fallback.empty')}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Email */}
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-bold uppercase tracking-[0.4em] text-stone-400 dark:text-stone-700">
+                                    {t('labels.email')}
+                                </label>
+                                <div className="flex flex-col border-b border-black/5 dark:border-white/5 pb-4">
+                                    <p className="font-heading text-xl font-bold tracking-tight text-foreground/60">{data?.email}</p>
+                                    <span className="mt-2 text-[8px] font-bold uppercase tracking-[0.2em] text-stone-400 dark:text-stone-700">{t('labels.email_immutable')}</span>
+                                </div>
+                            </div>
+
+                            {/* Gender */}
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-bold uppercase tracking-[0.4em] text-stone-400 dark:text-stone-700">
+                                    {t('labels.gender')}
+                                </label>
+                                {editing ? (
+                                    <select
+                                        value={form.gender}
+                                        onChange={(e) => setForm(f => ({ ...f, gender: e.target.value }))}
+                                        className="w-full rounded-2xl border border-black/5 dark:border-white/5 bg-stone-50 dark:bg-zinc-900 py-5 px-6 text-[10px] font-bold uppercase tracking-widest outline-none transition-all focus:border-gold/30 text-foreground"
+                                    >
+                                        <option value="">—</option>
+                                        <option value="MALE">{t('gender_options.male')}</option>
+                                        <option value="FEMALE">{t('gender_options.female')}</option>
+                                        <option value="OTHER">{t('gender_options.other')}</option>
+                                    </select>
+                                ) : (
+                                    <p className="font-heading text-xl font-bold uppercase tracking-widest text-foreground border-b border-black/5 dark:border-white/5 pb-4">
+                                        {data?.gender ? t(`gender_options.${data.gender.toLowerCase()}`) : t('fallback.empty')}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* DOB */}
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-bold uppercase tracking-[0.4em] text-stone-400 dark:text-stone-700">
+                                    {t('labels.dob')}
+                                </label>
+                                {editing ? (
+                                    <input
+                                        type="date"
+                                        value={form.dateOfBirth}
+                                        onChange={(e) => setForm(f => ({ ...f, dateOfBirth: e.target.value }))}
+                                        className="w-full rounded-2xl border border-black/5 dark:border-white/5 bg-stone-100/50 dark:bg-white/[0.02] py-5 px-6 text-sm outline-none transition-all focus:border-gold/30 focus:bg-stone-100 dark:focus:bg-white/[0.05] text-foreground"
+                                    />
+                                ) : (
+                                    <p className="font-heading text-xl font-bold uppercase tracking-widest text-foreground border-b border-black/5 dark:border-white/5 pb-4">
+                                        {data?.dateOfBirth ? format.dateTime(new Date(data.dateOfBirth), { dateStyle: 'long' }) : t('fallback.empty')}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Budget Matrix (AI Training) */}
+                            {data?.role === 'CUSTOMER' && (
+                                <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-12 pt-8 border-t border-black/5 dark:border-white/5">
+                                    <div className="space-y-4">
+                                        <label className="text-[10px] font-bold uppercase tracking-[0.4em] text-stone-400 dark:text-stone-700">{t('labels.min_budget')}</label>
+                                        {editing ? (
+                                            <input
+                                                type="number"
+                                                value={form.budgetMin}
+                                                onChange={(e) => setForm(f => ({ ...f, budgetMin: e.target.value ? Number(e.target.value) : '' }))}
+                                                className="w-full rounded-2xl border border-black/5 dark:border-white/5 bg-stone-100/50 dark:bg-white/[0.02] py-5 px-6 text-sm outline-none transition-all focus:border-gold/30 focus:bg-stone-100 dark:focus:bg-white/[0.05] text-foreground"
+                                            />
+                                        ) : (
+                                            <p className="font-heading text-2xl font-bold text-gold tracking-tighter border-b border-black/5 dark:border-white/5 pb-4">
+                                                {data?.budgetMin != null ? formatCurrency(data.budgetMin) : t('fallback.empty')}
+                                            </p>
+                                        )}
+                                    </div>
+                                    <div className="space-y-4">
+                                        <label className="text-[10px] font-bold uppercase tracking-[0.4em] text-stone-400 dark:text-stone-700">{t('labels.max_budget')}</label>
+                                        {editing ? (
+                                            <input
+                                                type="number"
+                                                value={form.budgetMax}
+                                                onChange={(e) => setForm(f => ({ ...f, budgetMax: e.target.value ? Number(e.target.value) : '' }))}
+                                                className="w-full rounded-2xl border border-black/5 dark:border-white/5 bg-stone-100/50 dark:bg-white/[0.02] py-5 px-6 text-sm outline-none transition-all focus:border-gold/30 focus:bg-stone-100 dark:focus:bg-white/[0.05] text-foreground"
+                                            />
+                                        ) : (
+                                            <p className="font-heading text-2xl font-bold text-gold tracking-tighter border-b border-black/5 dark:border-white/5 pb-4">
+                                                {data?.budgetMax != null ? formatCurrency(data.budgetMax) : t('fallback.empty')}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </motion.div>
+
+                    {data?.role === 'CUSTOMER' && (
+                        <div className="glass rounded-[3rem] p-10 lg:p-16">
+                            <AddressManager />
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
     );
 }

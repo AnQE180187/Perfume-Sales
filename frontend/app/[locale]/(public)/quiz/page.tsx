@@ -14,6 +14,13 @@ import {
   ScanSearch,
   ShieldCheck,
   Sparkles,
+  Zap,
+  Bot,
+  BrainCircuit,
+  Loader2,
+  ChevronRight,
+  ChevronLeft,
+  X
 } from 'lucide-react';
 
 import { QuizForm } from '@/components/quiz/QuizForm';
@@ -89,58 +96,6 @@ export default function QuizPage() {
     [locale],
   );
 
-  const ritualHighlights = [
-    {
-      icon: Sparkles,
-      title: t('steps.gender.title'),
-      description: t('steps.gender.subtitle'),
-    },
-    {
-      icon: FlaskConical,
-      title: t('steps.scent_family.title'),
-      description: t('steps.scent_family.subtitle'),
-    },
-    {
-      icon: Clock3,
-      title: t('steps.longevity.title'),
-      description: t('intro.time_estimate'),
-    },
-  ];
-
-  const introBenefits = [
-    {
-      icon: ShieldCheck,
-      title: pageCopy.introSummaryTitle,
-      description: pageCopy.introSummaryText,
-    },
-    {
-      icon: BadgeCheck,
-      title: pageCopy.introAssuranceTitle,
-      description: pageCopy.introAssurance,
-    },
-  ];
-
-  const analysisSteps = [
-    t('analyzing.step1'),
-    t('analyzing.step2'),
-    t('analyzing.step3'),
-    t('analyzing.step4'),
-  ];
-
-  const handleStart = () => {
-    setState('quiz');
-  };
-
-  const handleViewHistory = () => {
-    setState('history');
-  };
-
-  const handleShowResultFromHistory = (recs: QuizRecommendation[], analysisText?: string) => {
-    setRecommendations(recs);
-    setAnalysis(analysisText || null);
-    setState('results');
-  };
-
   const handleSubmit = async (answers: QuizAnswers) => {
     setIsSubmitting(true);
     setError(null);
@@ -168,364 +123,176 @@ export default function QuizPage() {
     setState('quiz');
   };
 
-  return (
-    <div className="relative isolate min-h-screen overflow-hidden bg-background text-foreground">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(197,160,89,0.08),transparent_24%),radial-gradient(circle_at_85%_18%,rgba(164,122,69,0.08),transparent_18%),linear-gradient(180deg,#fdfdfd_0%,#f8f7f4_100%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(197,160,89,0.16),transparent_24%),radial-gradient(circle_at_85%_18%,rgba(164,122,69,0.18),transparent_18%),linear-gradient(180deg,#0b0c0f_0%,#07080a_100%)]" />
-      <div className="absolute inset-0 opacity-[0.06] [background-image:linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:88px_88px]" />
-      <div className="pointer-events-none absolute left-[-12rem] top-24 h-[24rem] w-[24rem] rounded-full bg-gold/10 blur-[120px]" />
-      <div className="pointer-events-none absolute bottom-[-10rem] right-[-8rem] h-[26rem] w-[26rem] rounded-full bg-[#8f6b3f]/10 blur-[140px]" />
+  const handleShowResultFromHistory = (recs: QuizRecommendation[], analysisText?: string) => {
+    setRecommendations(recs);
+    setAnalysis(analysisText || null);
+    setState('results');
+  };
 
-      <main className="container-responsive relative z-10 pb-16 pt-16 sm:pt-20 lg:pb-24 lg:pt-28">
+  return (
+    <div className="relative isolate min-h-screen overflow-hidden bg-[#020617] text-[#F8FAFC]">
+      {/* Cinematic Background */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,#1e293b,transparent)]" />
+      <div className="absolute inset-0 opacity-[0.03] [background-image:radial-gradient(#ffffff_1px,transparent_1px)] [background-size:40px_40px]" />
+      <div className="pointer-events-none absolute left-0 top-0 h-full w-full bg-[radial-gradient(circle_at_0%_0%,rgba(197,160,89,0.05),transparent_50%),radial-gradient(circle_at_100%_100%,rgba(197,160,89,0.05),transparent_50%)]" />
+
+      <main className="container relative z-10 mx-auto px-4 py-20 sm:px-6 lg:px-8">
         <AnimatePresence mode="wait">
           {state === 'intro' && (
-            <motion.section
+            <motion.div
               key="intro"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -30 }}
-              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              className="w-full"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.05 }}
+              className="mx-auto max-w-5xl"
             >
-              <div className="grid gap-6 xl:grid-cols-[1.18fr_0.82fr]">
-                <motion.div
-                  whileHover={{ y: -4 }}
-                  transition={{ duration: 0.28 }}
-                  className="group relative overflow-hidden rounded-[2.2rem] border border-border bg-card p-7 shadow-[0_20px_60px_-40px_rgba(0,0,0,0.06)] dark:shadow-[0_36px_90px_-50px_rgba(0,0,0,0.85)] sm:p-9 lg:p-12"
-                >
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(197,160,89,0.16),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.03),transparent_38%)]" />
-                  <div className="pointer-events-none absolute -right-16 top-8 h-60 w-60 rounded-full bg-gold/10 blur-[110px] transition-transform duration-500 group-hover:scale-110" />
+              <div className="relative overflow-hidden rounded-[3rem] border border-white/5 bg-zinc-900/40 p-8 backdrop-blur-3xl md:p-20">
+                <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-gold/10 blur-3xl" />
+                <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-gold/5 blur-3xl" />
 
-                  <div className="relative">
-                    <div className="inline-flex items-center gap-2 rounded-full border border-gold/20 bg-gold/10 px-4 py-2 text-sm font-medium text-gold">
-                      <Sparkles size={15} />
+                <div className="relative space-y-12">
+                  <div className="space-y-6 text-center">
+                    <motion.div 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="inline-flex items-center gap-2 rounded-full border border-gold/20 bg-gold/5 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.3em] text-gold"
+                    >
+                      <Sparkles size={14} />
                       {t('intro.label')}
-                    </div>
-
-                    <div className="mt-7 max-w-4xl">
-                      <h1 className="font-heading text-[clamp(3.1rem,6vw,5.6rem)] leading-[0.92] tracking-[-0.05em] text-foreground">
-                        {t('intro.title')}
-                      </h1>
-                      <p className="mt-5 max-w-2xl text-base leading-8 text-muted-foreground sm:text-lg">
+                    </motion.div>
+                    
+                    <h1 className="font-heading text-5xl font-bold uppercase tracking-tighter text-foreground md:text-8xl">
+                        The <span className="gold-gradient">Ritual</span>
+                    </h1>
+                    
+                    <p className="mx-auto max-w-2xl font-body text-base leading-relaxed text-stone-400 md:text-xl">
                         {t('intro.description')}
-                      </p>
-                    </div>
-
-                    <div className="mt-8 flex flex-wrap items-center gap-3">
-                      {isAuthenticated ? (
-                        <>
-                          <button
-                            onClick={handleStart}
-                            className="group inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-[linear-gradient(135deg,#d6b36d,#b68948)] px-8 text-sm font-semibold text-luxury-black shadow-[0_22px_55px_-22px_rgba(197,160,89,0.7)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_30px_75px_-24px_rgba(197,160,89,0.6)]"
-                          >
-                            <FlaskConical size={18} />
-                            {locale === 'vi' ? 'Bắt Đầu Trả Lời' : 'Start Answering'}
-                          </button>
-                          <button
-                            onClick={handleViewHistory}
-                            className="group inline-flex min-h-14 items-center justify-center gap-3 rounded-full border border-border bg-secondary px-8 text-sm font-semibold text-foreground transition-all duration-300 hover:-translate-y-1 hover:border-gold/30 hover:bg-gold/5"
-                          >
-                            <Clock3 size={18} />
-                            {locale === 'vi' ? 'Xem Lịch Sử' : 'View History'}
-                          </button>
-                        </>
-                      ) : (
-                        <Link
-                          href="/login"
-                          className="group inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-[linear-gradient(135deg,#d6b36d,#b68948)] px-8 text-sm font-semibold text-luxury-black shadow-[0_22px_55px_-22px_rgba(197,160,89,0.7)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_30px_75px_-24px_rgba(197,160,89,0.6)]"
-                        >
-                          <LogIn size={18} />
-                          {t('intro.login_btn')}
-                        </Link>
-                      )}
-
-                      <div className="inline-flex min-h-14 items-center rounded-full border border-border bg-secondary px-5 text-sm text-[#d2ccc2] backdrop-blur">
-                        {t('intro.time_estimate')}
-                      </div>
-                    </div>
-
-                    {!isAuthenticated && (
-                      <p className="mt-5 max-w-xl text-sm leading-7 text-muted-foreground">
-                        {t('intro.login_required')}
-                      </p>
-                    )}
-
-                    <div className="mt-10 grid gap-4 lg:grid-cols-3">
-                      {pageCopy.heroMetrics.map((item, index) => (
-                        <motion.div
-                          key={item.label}
-                          initial={{ opacity: 0, y: 18 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.1 + index * 0.08, duration: 0.35 }}
-                          whileHover={{ y: -4 }}
-                          className="rounded-[1.5rem] border border-border bg-secondary px-5 py-5 backdrop-blur"
-                        >
-                          <p className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
-                            {item.label}
-                          </p>
-                          <p className="mt-4 font-heading text-3xl leading-none tracking-[-0.04em] text-foreground">
-                            {item.value}
-                          </p>
-                        </motion.div>
-                      ))}
-                    </div>
-
-                    <div className="mt-10 grid gap-4 lg:grid-cols-3">
-                      {ritualHighlights.map((item, index) => {
-                        const Icon = item.icon;
-
-                        return (
-                          <motion.div
-                            key={item.title}
-                            initial={{ opacity: 0, y: 18 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.16 + index * 0.08, duration: 0.35 }}
-                            whileHover={{ y: -4 }}
-                            className="rounded-[1.7rem] border border-border bg-card p-5"
-                          >
-                            <div className="flex h-12 w-12 items-center justify-center rounded-[1rem] bg-gold/10 text-gold">
-                              <Icon size={20} strokeWidth={1.7} />
-                            </div>
-                            <p className="mt-4 text-base font-semibold text-foreground">{item.title}</p>
-                            <p className="mt-2 text-sm leading-7 text-muted-foreground">{item.description}</p>
-                          </motion.div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </motion.div>
-
-                <div className="grid gap-6">
-                  <motion.div
-                    initial={{ opacity: 0, x: 16 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-                    className="relative overflow-hidden rounded-[2.2rem] border border-gold/20 bg-card p-7 shadow-[0_20px_60px_-40px_rgba(0,0,0,0.06)] dark:shadow-[0_36px_90px_-50px_rgba(0,0,0,0.85)] lg:p-9"
-                  >
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(197,160,89,0.15),transparent_24%)]" />
-
-                    <div className="relative flex items-start justify-between gap-5">
-                      <div>
-                        <p className="text-sm font-medium text-gold">{pageCopy.introPanelTitle}</p>
-                        <h2 className="mt-3 font-heading text-[clamp(2rem,4vw,3.1rem)] leading-[1.02] tracking-[-0.04em] text-foreground">
-                          {pageCopy.introPanelHeading}
-                        </h2>
-                      </div>
-                      <div className="flex h-14 w-14 items-center justify-center rounded-[1.15rem] border border-gold/20 bg-secondary text-gold">
-                        <ScanSearch size={22} />
-                      </div>
-                    </div>
-
-                    <p className="relative mt-5 max-w-xl text-sm leading-8 text-muted-foreground sm:text-base">
-                      {pageCopy.introPanelText}
                     </p>
-
-                    <div className="relative mt-8 space-y-4">
-                      {analysisSteps.slice(0, 3).map((item, index) => (
-                        <motion.div
-                          key={item}
-                          initial={{ opacity: 0, x: -12 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.12 + index * 0.1, duration: 0.35 }}
-                          whileHover={{ x: 4 }}
-                          className="flex items-start gap-4 rounded-[1.35rem] border border-border bg-secondary px-4 py-4"
-                        >
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gold text-sm font-semibold text-luxury-black">
-                            {index + 1}
-                          </div>
-                          <p className="pt-0.5 text-sm leading-7 text-foreground">{item}</p>
-                        </motion.div>
-                      ))}
-                    </div>
-
-                    <div className="relative mt-7 rounded-[1.5rem] border border-border bg-secondary px-5 py-4">
-                      <p className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
-                        {t('results.ai_picked')}
-                      </p>
-                      <p className="mt-2 text-sm leading-7 text-foreground">
-                        {pageCopy.introAssurance}
-                      </p>
-                    </div>
-                  </motion.div>
-
-                  <div className="grid gap-4 md:grid-cols-2">
-                    {introBenefits.map((item, index) => {
-                      const Icon = item.icon;
-
-                      return (
-                        <motion.div
-                          key={item.title}
-                          initial={{ opacity: 0, y: 18 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.18 + index * 0.08, duration: 0.35 }}
-                          whileHover={{ y: -4 }}
-                          className="rounded-[1.8rem] border border-border bg-card p-6 shadow-[0_20px_60px_-40px_rgba(0,0,0,0.06)] dark:shadow-[0_24px_70px_-48px_rgba(0,0,0,0.9)]"
-                        >
-                          <div className="flex h-11 w-11 items-center justify-center rounded-[0.95rem] bg-gold/10 text-gold">
-                            <Icon size={20} strokeWidth={1.75} />
-                          </div>
-                          <p className="mt-4 text-base font-semibold text-foreground">{item.title}</p>
-                          <p className="mt-2 text-sm leading-7 text-muted-foreground">{item.description}</p>
-                        </motion.div>
-                      );
-                    })}
                   </div>
+
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                    {pageCopy.heroMetrics.map((item, i) => (
+                      <div key={i} className="rounded-3xl border border-white/5 bg-white/[0.02] p-6 text-center transition-all hover:bg-white/[0.05]">
+                        <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-stone-500">{item.label}</p>
+                        <p className="font-heading text-4xl text-gold">{item.value}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex flex-col items-center justify-center gap-6 md:flex-row">
+                    {isAuthenticated ? (
+                      <>
+                        <button
+                          onClick={() => setState('quiz')}
+                          className="group relative flex h-16 items-center gap-4 overflow-hidden rounded-full bg-gold px-12 font-heading text-xs font-bold uppercase tracking-[0.2em] text-black transition-all hover:scale-105"
+                        >
+                          <FlaskConical size={18} />
+                          <span>{locale === 'vi' ? 'Bắt Đầu Nghi Lễ' : 'Begin Ritual'}</span>
+                          <ChevronRight size={18} className="transition-transform group-hover:translate-x-1" />
+                        </button>
+                        <button
+                          onClick={() => setState('history')}
+                          className="flex h-16 items-center gap-4 rounded-full border border-white/10 bg-white/5 px-10 font-heading text-xs font-bold uppercase tracking-[0.2em] text-foreground transition-all hover:bg-white/10"
+                        >
+                          <Clock3 size={18} />
+                          <span>{locale === 'vi' ? 'Lịch Sử Cảm Quan' : 'Olfactory History'}</span>
+                        </button>
+                      </>
+                    ) : (
+                      <Link
+                        href="/login"
+                        className="group relative flex h-16 items-center gap-4 overflow-hidden rounded-full bg-gold px-12 font-heading text-xs font-bold uppercase tracking-[0.2em] text-black transition-all hover:scale-105"
+                      >
+                        <LogIn size={18} />
+                        <span>{t('intro.login_btn')}</span>
+                        <ChevronRight size={18} className="transition-transform group-hover:translate-x-1" />
+                      </Link>
+                    )}
+                  </div>
+
+                  {!isAuthenticated && (
+                    <p className="text-center text-xs font-medium uppercase tracking-widest text-stone-500">
+                      {t('intro.login_required')}
+                    </p>
+                  )}
                 </div>
               </div>
-            </motion.section>
+            </motion.div>
           )}
 
           {state === 'quiz' && (
-            <motion.section
+            <motion.div
               key="quiz"
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -18 }}
-              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-              className="w-full"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="mx-auto max-w-4xl"
             >
-              {error ? (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mx-auto mb-6 max-w-4xl rounded-[1.5rem] border border-red-500/20 bg-red-500/10 px-5 py-4 text-sm leading-7 text-red-100 shadow-[0_26px_60px_-40px_rgba(239,68,68,0.5)]"
-                >
-                  {error}
-                </motion.div>
-              ) : null}
-
-              <QuizForm onSubmit={handleSubmit} isSubmitting={isSubmitting} />
-            </motion.section>
+                <div className="mb-12 flex items-center justify-between px-4">
+                    <button 
+                        onClick={() => setState('intro')}
+                        className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-stone-500 transition-colors hover:text-gold"
+                    >
+                        <ChevronLeft size={16} />
+                        Abort Ritual
+                    </button>
+                    <div className="flex items-center gap-3">
+                        <div className="h-1 w-12 rounded-full bg-gold" />
+                        <div className="h-1 w-12 rounded-full bg-white/10" />
+                        <div className="h-1 w-12 rounded-full bg-white/10" />
+                    </div>
+                </div>
+                {error && (
+                    <div className="mb-8 rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-center text-xs font-bold uppercase tracking-widest text-red-500">
+                        {error}
+                    </div>
+                )}
+                <QuizForm onSubmit={handleSubmit} isSubmitting={isSubmitting} />
+            </motion.div>
           )}
 
           {state === 'analyzing' && (
-            <motion.section
+            <motion.div
               key="analyzing"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.4 }}
-              className="mx-auto w-full max-w-[1440px]"
+              className="flex min-h-[60vh] flex-col items-center justify-center text-center"
             >
-              <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
-                <motion.div
-                  initial={{ opacity: 0, y: 18 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.42 }}
-                  className="relative overflow-hidden rounded-[2.2rem] border border-border bg-card p-7 shadow-[0_20px_60px_-40px_rgba(0,0,0,0.06)] dark:shadow-[0_40px_90px_-54px_rgba(0,0,0,0.88)] lg:p-10"
-                >
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(197,160,89,0.16),transparent_30%)]" />
-                  <div className="pointer-events-none absolute right-8 top-8 h-32 w-32 rounded-full bg-gold/10 blur-[70px]" />
-
-                  <div className="relative">
-                    <div className="inline-flex items-center gap-2 rounded-full border border-gold/20 bg-gold/10 px-4 py-2 text-sm font-medium text-gold">
-                      <Sparkles size={15} />
-                      {pageCopy.analyzeBadge}
+                <div className="relative mb-12">
+                    <div className="absolute inset-0 animate-ping rounded-full bg-gold/20" />
+                    <div className="relative flex h-32 w-32 items-center justify-center rounded-full border border-gold/30 bg-gold/5 backdrop-blur-2xl shadow-[0_0_50px_rgba(197,160,89,0.1)]">
+                        <BrainCircuit size={48} className="animate-pulse text-gold" />
                     </div>
+                </div>
+                
+                <h2 className="mb-4 font-heading text-4xl font-bold uppercase tracking-widest text-foreground">
+                    {pageCopy.analyzeTitle}
+                </h2>
+                <p className="mx-auto max-w-lg font-body text-stone-400">
+                    {pageCopy.analyzeText}
+                </p>
 
-                    <h2 className="mt-6 max-w-2xl font-heading text-[clamp(2.35rem,4vw,4rem)] leading-[0.96] tracking-[-0.04em] text-foreground">
-                      {pageCopy.analyzeTitle}
-                    </h2>
-                    <p className="mt-5 max-w-xl text-base leading-8 text-muted-foreground">
-                      {pageCopy.analyzeText}
-                    </p>
-
-                    <div className="mt-8 h-2 overflow-hidden rounded-full bg-secondary">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: '100%' }}
-                        transition={{ duration: 2.8, ease: 'easeInOut' }}
-                        className="h-full rounded-full bg-gold-btn-gradient"
-                      />
-                    </div>
-
-                    <div className="mt-8 grid gap-4 sm:grid-cols-3">
-                      {pageCopy.heroMetrics.map((item, index) => (
-                        <motion.div
-                          key={item.label}
-                          initial={{ opacity: 0, y: 12 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.12 + index * 0.08, duration: 0.3 }}
-                          className="rounded-[1.4rem] border border-border bg-secondary px-4 py-4"
-                        >
-                          <p className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
-                            {item.label}
-                          </p>
-                          <p className="mt-3 font-heading text-2xl text-foreground">{item.value}</p>
-                        </motion.div>
-                      ))}
-                    </div>
-
-                    <div className="mt-8 rounded-[1.5rem] border border-border bg-secondary px-5 py-5">
-                      <p className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
-                        {pageCopy.analyzePanelTitle}
-                      </p>
-                      <p className="mt-3 text-sm leading-7 text-foreground">{pageCopy.analyzePanelText}</p>
-                    </div>
-                  </div>
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, y: 18 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.42, delay: 0.06 }}
-                  className="relative overflow-hidden rounded-[2.2rem] border border-border bg-card p-7 shadow-[0_20px_60px_-40px_rgba(0,0,0,0.06)] dark:shadow-[0_40px_90px_-54px_rgba(0,0,0,0.88)] lg:p-10"
-                >
-                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),transparent_36%)]" />
-
-                  <div className="relative">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <p className="text-sm font-medium text-gold">{pageCopy.analyzePanelTitle}</p>
-                        <h3 className="mt-3 font-heading text-3xl leading-tight tracking-[-0.03em] text-foreground">
-                          {t('results.ai_picked')}
-                        </h3>
-                      </div>
-                      <div className="flex h-12 w-12 items-center justify-center rounded-[1rem] border border-border bg-secondary text-gold">
-                        <Gem size={20} />
-                      </div>
-                    </div>
-
-                    <div className="mt-8 space-y-4">
-                      {analysisSteps.map((item, index) => (
-                        <motion.div
-                          key={item}
-                          initial={{ opacity: 0, x: -16 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.2 + index * 0.16, duration: 0.35 }}
-                          className="flex items-start gap-4 rounded-[1.5rem] border border-border bg-secondary px-5 py-5"
-                        >
-                          <div className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gold text-sm font-semibold text-luxury-black">
-                            {String(index + 1).padStart(2, '0')}
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3">
-                              <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(74,222,128,0.6)]" />
-                              <p className="text-sm leading-7 text-foreground">{item}</p>
-                            </div>
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-
-                    <div className="mt-7 rounded-[1.5rem] border border-gold/20 bg-gold/10 px-5 py-5">
-                      <div className="flex items-center gap-3">
-                        <CheckCircle2 size={18} className="text-gold" />
-                        <p className="text-sm leading-7 text-foreground">{t('analyzing.message')}</p>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              </div>
-            </motion.section>
+                <div className="mt-12 flex gap-4">
+                    {[0, 0.5, 1].map((delay, i) => (
+                        <div key={i} className="h-1 w-24 overflow-hidden rounded-full bg-white/5">
+                            <motion.div 
+                                initial={{ x: '-100%' }}
+                                animate={{ x: '100%' }}
+                                transition={{ repeat: Infinity, duration: 2, ease: "linear", delay }}
+                                className="h-full w-full bg-gold"
+                            />
+                        </div>
+                    ))}
+                </div>
+            </motion.div>
           )}
 
           {state === 'results' && (
-            <motion.section
+            <motion.div
               key="results"
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -18 }}
-              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
               className="w-full"
             >
               <RecommendationCards 
@@ -533,20 +300,30 @@ export default function QuizPage() {
                 analysis={analysis}
                 onRetake={handleRetake} 
               />
-            </motion.section>
+            </motion.div>
           )}
 
           {state === 'history' && (
-            <motion.section
+            <motion.div
               key="history"
-              initial={{ opacity: 0, y: 18 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -18 }}
-              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-              className="w-full"
+              className="mx-auto max-w-5xl"
             >
-              <QuizHistory onViewResult={handleShowResultFromHistory} onBack={() => setState('intro')} />
-            </motion.section>
+                <div className="mb-12 flex items-center justify-between px-4">
+                    <div className="space-y-1">
+                        <h2 className="font-heading text-3xl font-bold uppercase tracking-widest text-gold">Archives</h2>
+                        <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-stone-500">Your olfactory journey history</p>
+                    </div>
+                    <button 
+                        onClick={() => setState('intro')}
+                        className="flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/5 transition-all hover:bg-white/10 hover:rotate-90"
+                    >
+                        <X size={20} />
+                    </button>
+                </div>
+                <QuizHistory onViewResult={handleShowResultFromHistory} onBack={() => setState('intro')} />
+            </motion.div>
           )}
         </AnimatePresence>
       </main>

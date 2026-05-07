@@ -25,9 +25,12 @@ import {
   Wind,
   Zap,
   Leaf,
+  ChevronRight,
+  Target
 } from 'lucide-react';
 
 import { type QuizAnswers } from '@/services/quiz.service';
+import { cn } from '@/lib/utils';
 
 interface QuizOption {
   label: string;
@@ -62,110 +65,16 @@ export function QuizForm({ onSubmit, isSubmitting }: QuizFormProps) {
         ? {
           progressLabel: 'Tiến độ hồ sơ',
           currentLabel: 'Đang trả lời',
-          selectionsLabel: 'Tóm tắt lựa chọn',
-          pendingLabel: 'Trạng thái hiện tại',
-          pickHint: 'Chọn một phương án để chuyển sang bước tiếp theo.',
+          pickHint: 'Chọn một phương án để tiếp tục cuộc hành trình.',
           answerPlaceholder: 'Chưa chọn',
-          selectedLabel: 'Đã chọn',
-          nextLabel: 'Bước kế tiếp',
-          nextFallback: 'Hoàn tất để nhận shortlist',
-          stageLabel: 'Lộ trình gợi ý',
-          summaryHint: 'Mỗi lựa chọn đều được dùng để tinh chỉnh danh sách gợi ý cuối cùng.',
-          submittingLabel: 'Hệ thống đang gửi hồ sơ mùi hương của bạn...',
-          durationLabel: 'Khoảng 2 phút để hoàn tất',
-          backHint: 'Bạn có thể quay lại bước trước để thay đổi lựa chọn.',
-          completedLabel: 'Đã hoàn thành',
+          submittingLabel: 'Đang chắt lọc tinh túy mùi hương...',
         }
         : {
           progressLabel: 'Profile progress',
           currentLabel: 'Current step',
-          selectionsLabel: 'Selection summary',
-          pendingLabel: 'Current status',
-          pickHint: 'Choose one option to move to the next step.',
+          pickHint: 'Choose one option to continue the journey.',
           answerPlaceholder: 'Not selected',
-          selectedLabel: 'Selected',
-          nextLabel: 'Up next',
-          nextFallback: 'Finish to receive the shortlist',
-          stageLabel: 'Recommendation flow',
-          summaryHint: 'Each answer is used to refine the final shortlist.',
-          submittingLabel: 'Sending your scent profile to the system...',
-          durationLabel: 'About 2 minutes to finish',
-          backHint: 'You can return to the previous step and adjust your selection.',
-          completedLabel: 'Completed',
-        },
-    [locale],
-  );
-
-  const optionNotes = useMemo<Record<string, Record<string, string>>>(
-    () =>
-      locale === 'vi'
-        ? {
-          gender: {
-            MALE: 'Tập trung vào cảm giác nam tính, chỉn chu và lịch lãm.',
-            FEMALE: 'Ưu tiên nét mềm mại, thanh lịch và nữ tính hơn.',
-            UNISEX: 'Giữ sự cân bằng để dễ dùng và linh hoạt trong nhiều dịp.',
-          },
-          occasion: {
-            daily: 'Thiên về cảm giác sạch sẽ, dễ dùng và không gây mệt.',
-            office: 'Ưu tiên sự chuyên nghiệp, gọn gàng và tinh tế.',
-            date: 'Nghiêng về độ cuốn hút và cảm giác gần gũi hơn.',
-            party: 'Phù hợp môi trường đông người với cá tính rõ ràng.',
-            special_event: 'Dành cho những dịp cần dấu ấn nổi bật hơn thường ngày.',
-          },
-          budgetMin: {
-            '0-500000': 'Mức dễ tiếp cận, phù hợp để bắt đầu tìm đúng gu.',
-            '500000-1000000': 'Khoảng giá cân bằng giữa chất lượng và độ linh hoạt.',
-            '1000000-2000000': 'Phù hợp nếu bạn muốn trải nghiệm cao cấp hơn.',
-            '2000000-5000000': 'Tập trung vào các lựa chọn có chiều sâu và hoàn thiện tốt.',
-            '5000000-99999999': 'Dành cho trải nghiệm sưu tầm hoặc gu mùi nổi bật.',
-          },
-          preferredFamily: {
-            Fresh: 'Sáng, sạch, dễ chịu và phù hợp nhiều hoàn cảnh sử dụng.',
-            Floral: 'Mềm mại, nữ tính hoặc thanh lịch tùy cách phối tầng hương.',
-            Woody: 'Ấm, sang, có chiều sâu và thường tạo cảm giác trưởng thành.',
-            Oriental: 'Đậm hơn, bí ẩn hơn và để lại dấu ấn rõ ràng.',
-            Aromatic: 'Thảo mộc, xanh và có cảm giác gọn gàng, hiện đại.',
-          },
-          longevity: {
-            light: 'Phù hợp nhu cầu nhẹ nhàng, thoáng và dễ làm mới trong ngày.',
-            moderate: 'Cân bằng giữa độ hiện diện và sự dễ chịu khi dùng thường xuyên.',
-            long_lasting: 'Giữ mùi đủ lâu cho ngày dài hoặc các cuộc hẹn quan trọng.',
-            very_long: 'Ưu tiên độ bám tỏa rõ rệt và cảm giác đậm dấu ấn hơn.',
-          },
-        }
-        : {
-          gender: {
-            MALE: 'Leans into a clean, tailored, and masculine profile.',
-            FEMALE: 'Prioritizes a softer, elegant, and more feminine feel.',
-            UNISEX: 'Keeps the profile balanced and versatile across occasions.',
-          },
-          occasion: {
-            daily: 'Aims for something clean, easy to wear, and never tiring.',
-            office: 'Keeps the tone polished, composed, and understated.',
-            date: 'Moves toward a more intimate and magnetic impression.',
-            party: 'Built for energy, presence, and clearer personality.',
-            special_event: 'Reserved for moments that call for extra impact.',
-          },
-          budgetMin: {
-            '0-500000': 'Accessible options to start defining your taste.',
-            '500000-1000000': 'A balanced zone between quality and flexibility.',
-            '1000000-2000000': 'Ideal if you want a more premium experience.',
-            '2000000-5000000': 'Focused on depth, richness, and better finish.',
-            '5000000-99999999': 'Best for collectors or standout signatures.',
-          },
-          preferredFamily: {
-            Fresh: 'Bright, clean, and easy to wear in most routines.',
-            Floral: 'Soft, elegant, and expressive depending on composition.',
-            Woody: 'Warm, refined, and usually more grounded in character.',
-            Oriental: 'Deeper, richer, and more memorable in presence.',
-            Aromatic: 'Herbal, green, and clean with a modern edge.',
-          },
-          longevity: {
-            light: 'Best for a softer, airy presence during the day.',
-            moderate: 'Balanced for comfort and steady presence.',
-            long_lasting: 'Suitable for long workdays and important plans.',
-            very_long: 'Prioritizes stronger projection and lasting impact.',
-          },
+          submittingLabel: 'Distilling olfactory essence...',
         },
     [locale],
   );
@@ -242,27 +151,8 @@ export function QuizForm({ onSubmit, isSubmitting }: QuizFormProps) {
 
   const totalSteps = steps.length;
   const currentStep = steps[step];
-  const currentChoice = answers[currentStep.key];
   const progress = ((step + 1) / totalSteps) * 100;
-  const completedCount = steps.filter((item) => Boolean(answers[item.key])).length;
-  const nextStep = steps[step + 1] ?? null;
   const CurrentStepIcon = currentStep.stepIcon;
-
-  const selectionSummary = steps.map((item) => {
-    const selectedValue = answers[item.key];
-    const selectedOption = item.options.find((option) => option.value === selectedValue);
-
-    return {
-      id: item.id,
-      title: t(item.titleKey),
-      value: selectedOption?.label ?? helperCopy.answerPlaceholder,
-      completed: Boolean(selectedOption),
-    };
-  });
-
-  const currentSelectionLabel =
-    currentStep.options.find((option) => option.value === currentChoice)?.label ??
-    helperCopy.answerPlaceholder;
 
   const handleSelect = (value: string) => {
     const newAnswers = { ...answers, [currentStep.key]: value };
@@ -290,105 +180,128 @@ export function QuizForm({ onSubmit, isSubmitting }: QuizFormProps) {
     onSubmit(quizAnswers);
   };
 
-  const handleBack = () => {
-    if (step > 0) {
-      setStep(step - 1);
-    }
-  };
-
-  const getGridClass = (count: number) => {
-    if (count <= 3) return 'grid-cols-1 lg:grid-cols-3';
-    if (count === 4) return 'grid-cols-1 md:grid-cols-2 xl:grid-cols-4';
-    if (count === 5) return 'grid-cols-1 md:grid-cols-2 xl:grid-cols-5';
-    return 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3';
-  };
-
-  const getOptionNote = (stepKey: keyof QuizAnswers, value: string) =>
-    optionNotes[String(stepKey)]?.[value] ?? '';
-
   return (
-    <div className="mx-auto w-full max-w-[1440px]">
-      <div className="grid gap-5 xl:grid-cols-[320px_minmax(0,1fr)]">
-        <aside className="rounded-[2rem] border border-border bg-card p-5 xl:sticky xl:top-24 xl:self-start sm:p-6">
-          <p className="text-sm text-muted-foreground">{helperCopy.currentLabel}</p>
-          <p className="mt-1 font-heading text-5xl leading-none text-foreground">{String(step + 1).padStart(2, '0')}</p>
-          <div className="mt-4 h-2 overflow-hidden rounded-full bg-secondary">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${progress}%` }}
-              transition={{ duration: 0.4 }}
-              className="h-full rounded-full bg-[linear-gradient(90deg,#8f6b3f,#d6b36d,#f0d7a1)]"
-            />
-          </div>
-          <p className="mt-2 text-sm text-muted-foreground">{Math.round(progress)}%</p>
-          <div className="mt-5 space-y-2">
-            {selectionSummary.map((item) => (
-              <div key={item.id} className="rounded-xl border border-border bg-secondary p-3">
-                <p className="text-xs text-muted-foreground">{item.title}</p>
-                <p className="text-sm font-medium text-foreground">{item.value}</p>
-              </div>
-            ))}
-          </div>
-        </aside>
+    <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+      <div className="lg:col-span-4">
+        <div className="sticky top-24 rounded-[2.5rem] border border-white/5 bg-zinc-900/40 p-8 backdrop-blur-xl">
+            <div className="mb-8 space-y-2">
+                <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gold/60">{helperCopy.progressLabel}</p>
+                <div className="flex items-end gap-3">
+                    <span className="font-heading text-6xl font-bold leading-none text-foreground">{String(step + 1).padStart(2, '0')}</span>
+                    <span className="mb-2 text-xl font-medium text-stone-600">/ {String(totalSteps).padStart(2, '0')}</span>
+                </div>
+            </div>
 
-        <section className="rounded-[2rem] border border-border bg-card p-6 lg:p-8">
-          <div className="inline-flex items-center gap-2 rounded-full border border-gold/20 bg-gold/10 px-3 py-1.5 text-sm font-medium text-gold">
-            <CurrentStepIcon size={14} />
-            {t('step_label')} {currentStep.id} / {totalSteps}
-          </div>
-          <h2 className="mt-4 font-heading text-4xl text-foreground">{t(currentStep.titleKey)}</h2>
-          <p className="mt-2 text-base text-muted-foreground">{t(currentStep.subtitleKey)}</p>
+            <div className="mb-10 h-1.5 w-full overflow-hidden rounded-full bg-white/5">
+                <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progress}%` }}
+                    className="h-full bg-gold shadow-[0_0_15px_rgba(197,160,89,0.5)]"
+                />
+            </div>
 
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={step}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -16 }}
-              transition={{ duration: 0.25 }}
-              className={`mt-6 grid gap-4 ${getGridClass(currentStep.options.length)}`}
-            >
-              {currentStep.options.map((opt, index) => {
-                const Icon = opt.icon;
-                const isSelected = answers[currentStep.key] === opt.value;
-                const supportText = opt.description || getOptionNote(currentStep.key, opt.value);
-                return (
-                  <button
-                    key={opt.value}
-                    onClick={() => handleSelect(opt.value)}
-                    disabled={isSubmitting}
-                    className={`rounded-[1.4rem] border p-5 text-left transition-all ${
-                      isSelected ? 'border-gold bg-gold/5' : 'border-border bg-secondary hover:border-gold/30'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        {Icon ? <Icon size={18} /> : null}
-                        <p className="text-base font-semibold text-foreground">{opt.label}</p>
-                      </div>
-                      <span className="text-xs text-muted-foreground">{String(index + 1).padStart(2, '0')}</span>
+            <div className="space-y-4">
+                {steps.map((s, i) => (
+                    <div key={s.id} className="flex items-center gap-4">
+                        <div className={cn(
+                            "flex h-8 w-8 items-center justify-center rounded-full border text-[10px] font-bold transition-all duration-500",
+                            i < step ? "border-gold bg-gold text-black" : i === step ? "border-gold text-gold shadow-[0_0_10px_rgba(197,160,89,0.2)]" : "border-white/5 text-stone-600"
+                        )}>
+                            {i < step ? <Check size={14} strokeWidth={3} /> : s.id}
+                        </div>
+                        <span className={cn(
+                            "text-[10px] font-bold uppercase tracking-widest transition-colors",
+                            i === step ? "text-foreground" : "text-stone-500"
+                        )}>
+                            {t(s.titleKey)}
+                        </span>
                     </div>
-                    <p className="mt-2 text-sm text-muted-foreground">{supportText}</p>
-                  </button>
-                );
-              })}
-            </motion.div>
-          </AnimatePresence>
+                ))}
+            </div>
+        </div>
+      </div>
 
-          <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-6">
-            <p className="text-sm text-muted-foreground">{isSubmitting ? helperCopy.submittingLabel : helperCopy.pickHint}</p>
-            {step > 0 ? (
-              <button
-                onClick={handleBack}
-                disabled={isSubmitting}
-                className="inline-flex min-h-12 items-center gap-2 rounded-full border border-border bg-secondary px-5 text-sm font-medium text-foreground"
-              >
-                <ArrowLeft size={16} />
-                {t('prev_step')}
-              </button>
-            ) : null}
-          </div>
-        </section>
+      <div className="lg:col-span-8">
+        <div className="rounded-[3rem] border border-white/5 bg-zinc-900/20 p-8 backdrop-blur-xl md:p-12">
+            <header className="mb-12">
+                <div className="mb-4 inline-flex items-center gap-3 rounded-2xl border border-gold/20 bg-gold/5 px-4 py-2 text-gold">
+                    <CurrentStepIcon size={18} />
+                    <span className="text-[10px] font-bold uppercase tracking-widest">{t('step_label')} {currentStep.id}</span>
+                </div>
+                <h2 className="font-heading text-4xl uppercase tracking-widest text-foreground md:text-5xl">
+                    {t(currentStep.titleKey)}
+                </h2>
+                <p className="mt-4 font-body text-base text-stone-400">
+                    {t(currentStep.subtitleKey)}
+                </p>
+            </header>
+
+            <AnimatePresence mode="wait">
+                <motion.div
+                    key={step}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="grid grid-cols-1 gap-4 sm:grid-cols-2"
+                >
+                    {currentStep.options.map((opt) => {
+                        const Icon = opt.icon;
+                        const isSelected = answers[currentStep.key] === opt.value;
+                        return (
+                            <button
+                                key={opt.value}
+                                onClick={() => handleSelect(opt.value)}
+                                disabled={isSubmitting}
+                                className={cn(
+                                    "group relative flex flex-col justify-between overflow-hidden rounded-[2rem] border p-8 text-left transition-all duration-300",
+                                    isSelected 
+                                        ? "border-gold bg-gold/10 shadow-[0_0_40px_rgba(197,160,89,0.1)]" 
+                                        : "border-white/5 bg-white/[0.02] hover:border-gold/30 hover:bg-white/[0.05]"
+                                )}
+                            >
+                                <div className="mb-8 flex items-center justify-between">
+                                    <div className={cn(
+                                        "flex h-12 w-12 items-center justify-center rounded-2xl transition-all duration-500",
+                                        isSelected ? "bg-gold text-black" : "bg-zinc-800 text-stone-400 group-hover:text-gold"
+                                    )}>
+                                        {Icon && <Icon size={24} />}
+                                    </div>
+                                    <div className={cn(
+                                        "h-2 w-2 rounded-full transition-all",
+                                        isSelected ? "bg-gold shadow-[0_0_10px_rgba(197,160,89,0.8)]" : "bg-white/5"
+                                    )} />
+                                </div>
+                                
+                                <div className="space-y-2">
+                                    <h4 className="font-heading text-lg font-bold uppercase tracking-widest text-foreground">
+                                        {opt.label}
+                                    </h4>
+                                    <p className="text-xs leading-relaxed text-stone-500">
+                                        {opt.description || t(`steps.${currentStep.key}.options.${opt.value.toLowerCase()}_desc`, { defaultValue: '' })}
+                                    </p>
+                                </div>
+                            </button>
+                        );
+                    })}
+                </motion.div>
+            </AnimatePresence>
+
+            <div className="mt-12 flex items-center justify-between border-t border-white/5 pt-8">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-stone-600">
+                    {isSubmitting ? helperCopy.submittingLabel : helperCopy.pickHint}
+                </p>
+                {step > 0 && (
+                    <button
+                        onClick={() => setStep(step - 1)}
+                        disabled={isSubmitting}
+                        className="flex h-12 items-center gap-3 rounded-full border border-white/10 px-6 text-[10px] font-bold uppercase tracking-widest text-stone-400 transition-all hover:bg-white/5 hover:text-foreground"
+                    >
+                        <ArrowLeft size={16} />
+                        {t('prev_step')}
+                    </button>
+                )}
+            </div>
+        </div>
       </div>
     </div>
   );

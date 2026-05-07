@@ -16,11 +16,15 @@ import {
   Trash2,
   AlertCircle,
   Play,
+  Zap,
+  Package,
+  ArrowUpRight
 } from "lucide-react";
 import { returnsService } from "@/services/returns.service";
 import api from "@/lib/axios";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface OrderItem {
   id: number;
@@ -67,37 +71,32 @@ export function CreateReturnModal({
   const t = useTranslations("dashboard.customer.returns.create_modal");
 
   const [reason, setReason] = useState("");
-  const [selectedReasonType, setSelectedReasonType] = useState<
-    "STORE" | "CUSTOMER" | ""
-  >(""); // STORE = [DAMAGED]/[WRONG_ITEM], CUSTOMER = others
+  const [selectedReasonType, setSelectedReasonType] = useState<"STORE" | "CUSTOMER" | "">(""); 
   const [additionalNote, setAdditionalNote] = useState("");
   const [bankName, setBankName] = useState("");
   const [bankAccount, setBankAccount] = useState("");
   const [bankHolder, setBankHolder] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [itemStates, setItemStates] = useState<Record<number, ReturnItemState>>(
-    () => {
-      const initial: Record<number, ReturnItemState> = {};
-      items.forEach((item) => {
-        initial[item.id] = {
-          selected: false,
-          quantity: 1,
-          reason: "",
-          images: [],
-          videoUrl: null,
-          videoName: null,
-          uploadingImages: false,
-          uploadingVideo: false,
-        };
-      });
-      return initial;
-    },
-  );
+  const [itemStates, setItemStates] = useState<Record<number, ReturnItemState>>(() => {
+    const initial: Record<number, ReturnItemState> = {};
+    items.forEach((item) => {
+      initial[item.id] = {
+        selected: false,
+        quantity: 1,
+        reason: "",
+        images: [],
+        videoUrl: null,
+        videoName: null,
+        uploadingImages: false,
+        uploadingVideo: false,
+      };
+    });
+    return initial;
+  });
 
   const imageInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
   const videoInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
 
-  // ── helpers ───────────────────────────────────────────────────────────────
   const toggleItem = (id: number) =>
     setItemStates((prev) => ({
       ...prev,
@@ -111,10 +110,7 @@ export function CreateReturnModal({
       ...prev,
       [id]: {
         ...prev[id],
-        quantity: Math.min(
-          item.quantity,
-          Math.max(1, prev[id].quantity + delta),
-        ),
+        quantity: Math.min(item.quantity, Math.max(1, prev[id].quantity + delta)),
       },
     }));
   };
@@ -125,7 +121,6 @@ export function CreateReturnModal({
       [id]: { ...prev[id], reason: value },
     }));
 
-  // ── image upload ──────────────────────────────────────────────────────────
   const handleImageUpload = async (id: number, files: FileList | null) => {
     if (!files || files.length === 0) return;
     const current = itemStates[id].images.length;
@@ -137,17 +132,18 @@ export function CreateReturnModal({
       [id]: { ...prev[id], uploadingImages: true },
     }));
     try {
-      const validFiles = Array.from(files)
-        .slice(0, remaining)
-        .filter((f) => {
+      const validFiles = Array.from(files).slice(0, remaining).filter((f) => {
           if (f.size > 5 * 1024 * 1024) {
-            toast.error(`Ảnh "${f.name}" vượt quá 5MB`);
+            toast.error(`Image "${f.name}" exceeds 5MB`);
             return false;
           }
           return true;
         });
 
-      if (validFiles.length === 0) return;
+      if (validFiles.length === 0) {
+          setItemStates((prev) => ({ ...prev, [id]: { ...prev[id], uploadingImages: false } }));
+          return;
+      }
       const formData = new FormData();
       validFiles.forEach((f) => formData.append("images", f));
       const res = await api.post<string[]>("/reviews/upload-images", formData, {
@@ -162,29 +158,33 @@ export function CreateReturnModal({
         },
       }));
     } catch {
-      toast.error(t("error_upload_failed") || "Lỗi tải ảnh lên");
-      setItemStates((prev) => ({
-        ...prev,
-        [id]: { ...prev[id], uploadingImages: false },
-      }));
+      toast.error(t("error_upload_failed") || "Upload error");
+      setItemStates((prev) => ({ ...prev, [id]: { ...prev[id], uploadingImages: false } }));
     }
   };
 
   const removeImage = (itemId: number, imgIdx: number) =>
     setItemStates((prev) => ({
       ...prev,
-      [itemId]: {
-        ...prev[itemId],
-        images: prev[itemId].images.filter((_, i) => i !== imgIdx),
-      },
+      [itemId]: { ...prev[itemId], images: prev[itemId].images.filter((_, i) => i !== imgIdx) },
     }));
 
-  // ── video upload ──────────────────────────────────────────────────────────
   const handleVideoSelect = async (id: number, files: FileList | null) => {
     if (!files || files.length === 0) return;
     const file = files[0];
 
-    // validate duration client-side
+    const getVideoDuration = (file: File): Promise<number> => {
+        return new Promise((resolve) => {
+            const video = document.createElement('video');
+            video.preload = 'metadata';
+            video.onloadedmetadata = () => {
+                window.URL.revokeObjectURL(video.src);
+                resolve(video.duration);
+            };
+            video.src = URL.createObjectURL(file);
+        });
+    };
+
     const duration = await getVideoDuration(file);
     if (duration < MIN_VIDEO_SECONDS) {
       toast.error(t("video_too_short"));
@@ -197,20 +197,13 @@ export function CreateReturnModal({
       return;
     }
 
-    setItemStates((prev) => ({
-      ...prev,
-      [id]: { ...prev[id], uploadingVideo: true },
-    }));
+    setItemStates((prev) => ({ ...prev, [id]: { ...prev[id], uploadingVideo: true } }));
     try {
       const formData = new FormData();
-      formData.append("video", file); // field name must be "video"
-      const res = await api.post<{ url: string }>(
-        "/returns/upload-video",
-        formData,
-        {
+      formData.append("video", file);
+      const res = await api.post<{ url: string }>("/returns/upload-video", formData, {
           headers: { "Content-Type": "multipart/form-data" },
-        },
-      );
+      });
       setItemStates((prev) => ({
         ...prev,
         [id]: {
@@ -222,23 +215,16 @@ export function CreateReturnModal({
       }));
       toast.success(t("video_uploaded"));
     } catch {
-      toast.error(t("error_upload_failed") || "Lỗi tải video lên");
-      setItemStates((prev) => ({
-        ...prev,
-        [id]: { ...prev[id], uploadingVideo: false },
-      }));
+      toast.error(t("error_upload_failed") || "Upload error");
+      setItemStates((prev) => ({ ...prev, [id]: { ...prev[id], uploadingVideo: false } }));
     }
   };
 
   const removeVideo = (id: number) => {
-    setItemStates((prev) => ({
-      ...prev,
-      [id]: { ...prev[id], videoUrl: null, videoName: null },
-    }));
+    setItemStates((prev) => ({ ...prev, [id]: { ...prev[id], videoUrl: null, videoName: null } }));
     if (videoInputRefs.current[id]) videoInputRefs.current[id]!.value = "";
   };
 
-  // ── submit ────────────────────────────────────────────────────────────────
   const handleSubmit = async () => {
     const selectedItems = items.filter((i) => itemStates[i.id]?.selected);
     if (selectedItems.length === 0) {
@@ -268,681 +254,194 @@ export function CreateReturnModal({
 
     setSubmitting(true);
     try {
-      // Generate a unique idempotency key to prevent duplicate submissions
       const idempotencyKey = crypto.randomUUID();
-      // Combine reason with additional note for complete context
-      const completeReason = additionalNote.trim()
-        ? `${reason} | ${additionalNote.trim()}`
-        : reason;
+      const completeReason = additionalNote.trim() ? `${reason} | ${additionalNote.trim()}` : reason;
 
-      await returnsService.createReturn(
-        {
+      await returnsService.createReturn({
           orderId,
           reason: completeReason,
-          paymentInfo: {
-            bankName,
-            accountNumber: bankAccount,
-            accountName: bankHolder,
-          },
+          paymentInfo: { bankName, accountNumber: bankAccount, accountName: bankHolder },
           items: selectedItems.map((item) => ({
             variantId: item.variantId,
             quantity: itemStates[item.id].quantity,
             reason: itemStates[item.id].reason || undefined,
             images: [
               ...itemStates[item.id].images,
-              ...(itemStates[item.id].videoUrl
-                ? [itemStates[item.id].videoUrl!]
-                : []),
+              ...(itemStates[item.id].videoUrl ? [itemStates[item.id].videoUrl!] : []),
             ],
           })),
-        },
-        idempotencyKey,
-      );
+        }, idempotencyKey);
       toast.success(t("success"));
       onSuccess();
     } catch (err: any) {
-      toast.error(
-        err?.response?.data?.message || t("error_submit_failed"),
-      );
-    } finally {
-      setSubmitting(false);
-    }
+      toast.error(err?.response?.data?.message || t("error_submit_failed"));
+    } finally { setSubmitting(false); }
   };
 
-  const selectedCount = items.filter((i) => itemStates[i.id]?.selected).length;
   const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(amount);
+    new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount);
 
-  // ─────────────────────────────────────────────────────────────────────────
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 bg-black/80 backdrop-blur-xl" onClick={onClose} />
 
-      {/* Modal */}
-      <div className="relative w-full max-w-2xl max-h-[90vh] flex flex-col bg-background border border-border rounded-[2rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+      <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} className="relative w-full max-w-2xl max-h-[90vh] flex flex-col bg-zinc-950 border border-white/5 rounded-[3rem] shadow-2xl overflow-hidden backdrop-blur-3xl">
         {/* Header */}
-        <div className="flex items-center justify-between px-8 py-6 border-b border-border bg-background/80 backdrop-blur-xl flex-shrink-0">
+        <div className="flex items-center justify-between px-10 py-8 border-b border-white/5 flex-shrink-0">
           <div>
-            <div className="flex items-center gap-3 mb-1">
-              <div className="w-8 h-8 rounded-xl bg-amber-500/10 flex items-center justify-center">
-                <RotateCcw size={16} className="text-amber-500" />
+            <div className="flex items-center gap-3 mb-2">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold/10 text-gold">
+                <RotateCcw size={20} />
               </div>
-              <h2 className="text-xl font-heading uppercase tracking-widest text-foreground">
-                {t("title")}
-              </h2>
+              <h2 className="font-heading text-2xl font-bold uppercase tracking-widest text-foreground">{t("title")}</h2>
             </div>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-[.3em] font-bold">
-              {t("subtitle")}
-            </p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-stone-500">{t("subtitle")}</p>
           </div>
-          <button
-            onClick={onClose}
-            className="w-10 h-10 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-all"
-          >
-            <X size={18} />
+          <button onClick={onClose} className="group h-12 w-12 rounded-full border border-white/5 flex items-center justify-center text-stone-500 hover:text-foreground transition-all">
+            <X size={20} className="transition-transform group-hover:rotate-90" />
           </button>
         </div>
 
-        {/* Scrollable body */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar px-8 py-6 space-y-6">
-          {/* Items selection */}
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-4">
-              {t("select_items")}
-            </p>
-            <div className="space-y-3">
+        {/* Manifest Body */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar px-10 py-10 space-y-10">
+          {/* Item Selection Archive */}
+          <div className="space-y-6">
+            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-stone-700">{t("select_items")}</p>
+            <div className="space-y-4">
               {items.map((item) => {
                 const state = itemStates[item.id];
                 const imageUrl = item.product?.images?.[0]?.url;
-                const imgCount = state.images.length;
-                const hasMinImages = imgCount >= MIN_IMAGES;
-
                 return (
-                  <div
-                    key={item.id}
-                    className={`rounded-2xl border transition-all overflow-hidden ${
-                      state.selected
-                        ? "border-gold/40 bg-gold/5"
-                        : "border-border bg-secondary/20 hover:border-border/80"
-                    }`}
-                  >
-                    {/* Item header row */}
-                    <div
-                      className="flex items-center gap-4 p-4 cursor-pointer"
-                      onClick={() => toggleItem(item.id)}
-                    >
-                      {/* Checkbox */}
-                      <div
-                        className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                          state.selected
-                            ? "bg-gold border-gold"
-                            : "border-border"
-                        }`}
-                      >
-                        {state.selected && (
-                          <CheckCircle
-                            size={12}
-                            className="text-primary-foreground fill-primary-foreground"
-                          />
-                        )}
+                  <div key={item.id} className={cn("rounded-[2.5rem] border transition-all duration-500 overflow-hidden", state.selected ? "border-gold/30 bg-gold/5" : "border-white/5 bg-zinc-900/40")}>
+                    <div className="flex items-center gap-6 p-6 cursor-pointer" onClick={() => toggleItem(item.id)}>
+                      <div className={cn("h-6 w-6 rounded-lg border-2 flex items-center justify-center transition-all", state.selected ? "bg-gold border-gold" : "border-stone-800")}>
+                        {state.selected && <CheckCircle size={14} className="text-black" />}
                       </div>
-
-                      {/* Product image */}
-                      <div className="w-14 h-14 rounded-xl overflow-hidden bg-secondary flex-shrink-0 relative">
-                        {imageUrl ? (
-                          <Image
-                            src={imageUrl}
-                            alt={item.product?.name || ""}
-                            fill
-                            className="object-cover"
-                            sizes="56px"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xl">
-                            📦
-                          </div>
-                        )}
+                      <div className="relative h-16 w-16 overflow-hidden rounded-2xl border border-white/5 bg-zinc-800">
+                        {imageUrl ? <Image src={imageUrl} alt={item.product?.name || ""} fill className="object-cover" /> : <Package className="m-auto text-stone-700" size={24} />}
                       </div>
-
-                      {/* Info */}
-                      <div className="flex-1 min-w-0">
-                        <p className="font-bold text-sm text-foreground uppercase tracking-tight line-clamp-1">
-                          {item.product?.name}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground uppercase">
-                          × {item.quantity} — {formatCurrency(item.unitPrice)}
-                        </p>
+                      <div className="flex-1">
+                        <p className="font-heading text-base font-bold uppercase tracking-widest text-foreground line-clamp-1">{item.product?.name}</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-stone-500">× {item.quantity} · {formatCurrency(item.unitPrice)}</p>
                       </div>
-
-                      <span className="font-bold text-sm text-foreground flex-shrink-0">
-                        {formatCurrency(item.totalPrice)}
-                      </span>
+                      <p className="font-heading text-lg font-bold text-foreground tracking-tighter">{formatCurrency(item.totalPrice)}</p>
                     </div>
 
-                    {/* Expanded area */}
-                    {state.selected && (
-                      <div className="px-4 pb-4 space-y-5 border-t border-gold/10 pt-4">
-                        {/* Quantity */}
-                        <div className="flex items-center gap-4">
-                          <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex-shrink-0">
-                            {t("quantity_label")}
-                          </span>
-                          <div className="flex items-center gap-2 bg-secondary/50 rounded-xl p-1">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                updateQty(item.id, -1);
-                              }}
-                              disabled={state.quantity <= 1}
-                              className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-background/80 transition-all disabled:opacity-40"
-                            >
-                              <Minus size={12} />
-                            </button>
-                            <span className="w-8 text-center font-bold text-sm">
-                              {state.quantity}
-                            </span>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                updateQty(item.id, 1);
-                              }}
-                              disabled={state.quantity >= item.quantity}
-                              className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-background/80 transition-all disabled:opacity-40"
-                            >
-                              <Plus size={12} />
-                            </button>
-                          </div>
-                          <span className="text-[10px] text-muted-foreground">
-                            / {item.quantity}
-                          </span>
-                        </div>
-
-                        {/* Item reason */}
-                        <div>
-                          <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-2">
-                            {t("item_reason_label")}
-                          </label>
-                          <input
-                            type="text"
-                            value={state.reason}
-                            onChange={(e) =>
-                              updateReason(item.id, e.target.value)
-                            }
-                            placeholder={t("item_reason_placeholder")}
-                            onClick={(e) => e.stopPropagation()}
-                            className="w-full bg-background/60 border border-border rounded-xl px-4 py-2.5 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-gold/50 transition-colors"
-                          />
-                        </div>
-
-                        {/* ── IMAGES ──────────────────────────────────────── */}
-                        <div>
-                          <div className="flex items-center justify-between mb-1">
-                            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                              {t("images_label")}
-                            </label>
-                            {/* Progress indicator */}
-                            <span
-                              className={`text-[9px] font-bold uppercase tracking-widest ${hasMinImages ? "text-emerald-500" : "text-amber-500"}`}
-                            >
-                              {imgCount}/{MAX_IMAGES}
-                              {!hasMinImages && ` (min ${MIN_IMAGES})`}
-                            </span>
-                          </div>
-                          <p className="text-[9px] text-muted-foreground/70 mb-3">
-                            {t("images_desc")}
-                          </p>
-
-                          {/* Progress bar */}
-                          <div className="h-1 bg-secondary rounded-full mb-3 overflow-hidden">
-                            <div
-                              className={`h-full rounded-full transition-all duration-500 ${
-                                hasMinImages ? "bg-emerald-500" : "bg-amber-500"
-                              }`}
-                              style={{
-                                width: `${(imgCount / MAX_IMAGES) * 100}%`,
-                              }}
-                            />
-                          </div>
-
-                          {!hasMinImages && imgCount > 0 && (
-                            <div className="flex items-center gap-2 text-amber-500 text-[9px] font-bold uppercase tracking-widest mb-3">
-                              <AlertCircle size={10} />
-                              <span>{t("min_images_warning")}</span>
+                    <AnimatePresence>
+                      {state.selected && (
+                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="px-6 pb-8 border-t border-white/5 pt-6 space-y-8">
+                          <div className="flex items-center gap-6">
+                            <span className="text-[9px] font-bold uppercase tracking-widest text-stone-700">Coordinates (Qty)</span>
+                            <div className="flex h-10 items-center gap-4 rounded-xl bg-white/5 p-1 px-3 border border-white/5">
+                                <button onClick={(e) => { e.stopPropagation(); updateQty(item.id, -1); }} disabled={state.quantity <= 1} className="text-stone-500 hover:text-white disabled:opacity-20"><Minus size={14} /></button>
+                                <span className="font-heading text-sm font-bold text-gold w-4 text-center">{state.quantity}</span>
+                                <button onClick={(e) => { e.stopPropagation(); updateQty(item.id, 1); }} disabled={state.quantity >= item.quantity} className="text-stone-500 hover:text-white disabled:opacity-20"><Plus size={14} /></button>
                             </div>
-                          )}
-
-                          {/* Image grid */}
-                          <div className="flex flex-wrap gap-2">
-                            {state.images.map((url, idx) => (
-                              <div
-                                key={idx}
-                                className="relative w-20 h-20 rounded-xl overflow-hidden group border border-border"
-                              >
-                                <Image
-                                  src={url}
-                                  alt={`evidence-${idx}`}
-                                  fill
-                                  className="object-cover"
-                                  sizes="80px"
-                                />
-                                {/* Overlay with remove */}
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    removeImage(item.id, idx);
-                                  }}
-                                  className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
-                                >
-                                  <Trash2 size={16} className="text-white" />
-                                </button>
-                                {/* Index badge */}
-                                <div className="absolute top-1 left-1 w-4 h-4 rounded-full bg-black/60 flex items-center justify-center">
-                                  <span className="text-[8px] font-bold text-white">
-                                    {idx + 1}
-                                  </span>
-                                </div>
-                              </div>
-                            ))}
-
-                            {/* Add image button */}
-                            {state.images.length < MAX_IMAGES && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  imageInputRefs.current[item.id]?.click();
-                                }}
-                                disabled={state.uploadingImages}
-                                className="w-20 h-20 rounded-xl border-2 border-dashed border-border hover:border-gold/40 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-gold transition-all disabled:opacity-50"
-                              >
-                                {state.uploadingImages ? (
-                                  <Loader2 size={16} className="animate-spin" />
-                                ) : (
-                                  <>
-                                    <ImageIcon size={16} />
-                                    <span className="text-[8px] font-bold uppercase">
-                                      {t("add_photo")}
-                                    </span>
-                                  </>
-                                )}
-                              </button>
-                            )}
-
-                            <input
-                              ref={(el) => {
-                                imageInputRefs.current[item.id] = el;
-                              }}
-                              type="file"
-                              accept="image/*"
-                              multiple
-                              className="hidden"
-                              onChange={(e) =>
-                                handleImageUpload(item.id, e.target.files)
-                              }
-                            />
                           </div>
-                        </div>
 
-                        {/* ── VIDEO ────────────────────────────────────────── */}
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <Video size={12} className="text-gold" />
-                            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                              {t("video_label")}
-                            </label>
+                          <div className="space-y-4">
+                              <label className="text-[9px] font-bold uppercase tracking-widest text-stone-700">{t("item_reason_label")}</label>
+                              <input type="text" value={state.reason} onChange={(e) => updateReason(item.id, e.target.value)} className="w-full h-12 rounded-xl border border-white/5 bg-zinc-800/50 px-6 text-xs text-foreground outline-none focus:border-gold/30 transition-colors" placeholder={t("item_reason_placeholder")} />
                           </div>
-                          <p className="text-[9px] text-muted-foreground/70 mb-3">
-                            {t("video_desc")}
-                          </p>
 
-                          {state.videoUrl ? (
-                            /* Video preview */
-                            <div className="relative rounded-2xl overflow-hidden border border-border bg-black group">
-                              <video
-                                src={state.videoUrl}
-                                controls
-                                className="w-full max-h-40 object-contain"
-                                muted
-                                playsInline
-                              />
-                              {/* Remove button */}
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  removeVideo(item.id);
-                                }}
-                                className="absolute top-2 right-2 w-7 h-7 rounded-full bg-red-500/80 hover:bg-red-500 flex items-center justify-center text-white transition-all"
-                              >
-                                <Trash2 size={12} />
-                              </button>
-                              {/* Uploaded badge */}
-                              <div className="absolute bottom-2 left-2 flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-500/80 text-white text-[8px] font-bold uppercase tracking-widest">
-                                <CheckCircle size={10} />
-                                {t("video_uploaded")}
+                          <div className="space-y-4">
+                              <div className="flex justify-between items-end">
+                                  <label className="text-[9px] font-bold uppercase tracking-widest text-stone-700">{t("images_label")}</label>
+                                  <span className={cn("text-[9px] font-bold tracking-widest uppercase", state.images.length >= MIN_IMAGES ? "text-emerald-500" : "text-amber-500")}>
+                                      {state.images.length}/{MAX_IMAGES} (Min {MIN_IMAGES})
+                                  </span>
                               </div>
-                            </div>
-                          ) : (
-                            /* Upload button */
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                videoInputRefs.current[item.id]?.click();
-                              }}
-                              disabled={state.uploadingVideo}
-                              className="w-full py-5 rounded-2xl border-2 border-dashed border-border hover:border-gold/40 flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-gold transition-all disabled:opacity-50 bg-secondary/10"
-                            >
-                              {state.uploadingVideo ? (
-                                <>
-                                  <Loader2 size={20} className="animate-spin" />
-                                  <span className="text-[9px] font-bold uppercase tracking-widest">
-                                    {t("video_uploading")}
-                                  </span>
-                                </>
-                              ) : (
-                                <>
-                                  <div className="flex items-center gap-2">
-                                    <Play size={18} />
-                                    <Video size={18} />
-                                  </div>
-                                  <span className="text-[9px] font-bold uppercase tracking-widest">
-                                    {t("add_video")}
-                                  </span>
-                                  <span className="text-[8px] text-muted-foreground/60 uppercase tracking-widest">
-                                    MP4 / MOV / WEBM · {MIN_VIDEO_SECONDS}s –{" "}
-                                    {MAX_VIDEO_SECONDS}s
-                                  </span>
-                                </>
-                              )}
-                            </button>
-                          )}
-
-                          <input
-                            ref={(el) => {
-                              videoInputRefs.current[item.id] = el;
-                            }}
-                            type="file"
-                            accept="video/*"
-                            className="hidden"
-                            onChange={(e) =>
-                              handleVideoSelect(item.id, e.target.files)
-                            }
-                          />
-                        </div>
-                      </div>
-                    )}
+                              <div className="flex flex-wrap gap-4">
+                                  {state.images.map((url, idx) => (
+                                      <div key={idx} className="group relative h-20 w-20 overflow-hidden rounded-xl border border-white/5">
+                                          <Image src={url} alt="Evidence" fill className="object-cover" />
+                                          <button onClick={() => removeImage(item.id, idx)} className="absolute inset-0 bg-red-500/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                              <Trash2 size={16} className="text-white" />
+                                          </button>
+                                      </div>
+                                  ))}
+                                  {state.images.length < MAX_IMAGES && (
+                                      <button onClick={() => imageInputRefs.current[item.id]?.click()} disabled={state.uploadingImages} className="h-20 w-20 flex flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-stone-800 hover:border-gold/30 transition-all text-stone-600 hover:text-gold">
+                                          {state.uploadingImages ? <Loader2 size={16} className="animate-spin" /> : <><ImageIcon size={16} /><span className="text-[8px] font-bold uppercase">Add</span></>}
+                                      </button>
+                                  )}
+                              </div>
+                              <input ref={(el) => { imageInputRefs.current[item.id] = el; }} type="file" accept="image/*" multiple className="hidden" onChange={(e) => handleImageUpload(item.id, e.target.files)} />
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 );
               })}
             </div>
           </div>
 
-          {/* Overall reason - Redesigned with logic */}
-          <div>
-            <div className="mb-6">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-4">
-                {t("reason_selection_title")}
-              </label>
-
-              {/* Store Fault - Ship Refundable */}
-              <div className="mb-6">
-                <p className="text-[9px] font-bold uppercase tracking-widest text-green-500/80 mb-3 flex items-center gap-2">
-                  <CheckCircle size={12} /> {t("store_fault_title")}
-                </p>
-                <div className="grid grid-cols-1 gap-3">
-                  {[
-                    { key: "[DAMAGED]", label: t("reasons.damaged") },
-                    { key: "[WRONG_ITEM]", label: t("reasons.wrong_item") },
-                    { key: "[EXPIRED]", label: t("reasons.expired") },
-                  ].map((opt) => (
-                    <label
-                      key={opt.key}
-                      onClick={() => {
-                        setSelectedReasonType("STORE");
-                        setReason(opt.key);
-                      }}
-                      className={cn(
-                        "flex items-center gap-3 p-4 rounded-2xl border-2 transition-all cursor-pointer",
-                        selectedReasonType === "STORE" && reason === opt.key
-                          ? "border-green-500/60 bg-green-500/10"
-                          : "border-border/30 bg-background/20 hover:border-green-500/30",
-                      )}
-                    >
-                      <input
-                        type="radio"
-                        name="reason"
-                        value={opt.key}
-                        checked={
-                          selectedReasonType === "STORE" && reason === opt.key
-                        }
-                        onChange={() => {
-                          setSelectedReasonType("STORE");
-                          setReason(opt.key);
-                        }}
-                        className="w-4 h-4 accent-green-500"
-                      />
-                      <span className="text-sm font-medium text-foreground">
-                        {opt.label}
-                      </span>
-                    </label>
-                  ))}
-                </div>
+          {/* Global Reason Selection */}
+          <div className="space-y-8">
+              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-stone-700">{t("reason_selection_title")}</p>
+              <div className="grid gap-6 md:grid-cols-2">
+                  <div className="space-y-4">
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-emerald-500 flex items-center gap-2">
+                          <CheckCircle size={14} /> {t("store_fault_title")}
+                      </p>
+                      <div className="space-y-2">
+                          {["[DAMAGED]", "[WRONG_ITEM]", "[EXPIRED]"].map((key) => (
+                              <button key={key} onClick={() => { setSelectedReasonType("STORE"); setReason(key); }} className={cn("w-full h-12 flex items-center gap-4 px-6 rounded-xl border text-[10px] font-bold uppercase tracking-widest transition-all", selectedReasonType === "STORE" && reason === key ? "bg-emerald-500 text-black border-emerald-500 shadow-lg shadow-emerald-500/20" : "bg-white/5 text-stone-400 border-white/5 hover:border-emerald-500/30")}>
+                                  <div className={cn("h-2 w-2 rounded-full", selectedReasonType === "STORE" && reason === key ? "bg-black" : "bg-emerald-500")} />
+                                  {t(`reasons.${key.slice(1, -1).toLowerCase()}` as any)}
+                              </button>
+                          ))}
+                      </div>
+                  </div>
+                  <div className="space-y-4">
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-amber-500 flex items-center gap-2">
+                          <AlertCircle size={14} /> {t("customer_fault_title")}
+                      </p>
+                      <div className="space-y-2">
+                          {["[SCENT_MISMATCH]", "[COLOR_MISMATCH]", "[QUALITY_ISSUE]", "[PERSONAL_CHANGE]"].map((key) => (
+                              <button key={key} onClick={() => { setSelectedReasonType("CUSTOMER"); setReason(key); }} className={cn("w-full h-12 flex items-center gap-4 px-6 rounded-xl border text-[10px] font-bold uppercase tracking-widest transition-all", selectedReasonType === "CUSTOMER" && reason === key ? "bg-amber-500 text-black border-amber-500 shadow-lg shadow-amber-500/20" : "bg-white/5 text-stone-400 border-white/5 hover:border-amber-500/30")}>
+                                  <div className={cn("h-2 w-2 rounded-full", selectedReasonType === "CUSTOMER" && reason === key ? "bg-black" : "bg-amber-500")} />
+                                  {t(`reasons.${key.slice(1, -1).toLowerCase()}` as any)}
+                              </button>
+                          ))}
+                      </div>
+                  </div>
               </div>
+          </div>
 
-              {/* Customer Reason - No Ship Refund */}
-              <div>
-                <p className="text-[9px] font-bold uppercase tracking-widest text-amber-500/80 mb-3 flex items-center gap-2">
-                  <AlertCircle size={12} /> {t("customer_fault_title")}
-                </p>
-                <div className="grid grid-cols-1 gap-3">
-                  {[
-                    {
-                      key: "[SCENT_MISMATCH]",
-                      label: t("reasons.scent_mismatch"),
-                    },
-                    {
-                      key: "[COLOR_MISMATCH]",
-                      label: t("reasons.color_mismatch"),
-                    },
-                    {
-                      key: "[QUALITY_ISSUE]",
-                      label: t("reasons.quality_issue"),
-                    },
-                    {
-                      key: "[PERSONAL_CHANGE]",
-                      label: t("reasons.personal_change"),
-                    },
-                  ].map((opt) => (
-                    <label
-                      key={opt.key}
-                      onClick={() => {
-                        setSelectedReasonType("CUSTOMER");
-                        setReason(opt.key);
-                      }}
-                      className={cn(
-                        "flex items-center gap-3 p-4 rounded-2xl border-2 transition-all cursor-pointer",
-                        selectedReasonType === "CUSTOMER" && reason === opt.key
-                          ? "border-amber-500/60 bg-amber-500/10"
-                          : "border-border/30 bg-background/20 hover:border-amber-500/30",
-                      )}
-                    >
-                      <input
-                        type="radio"
-                        name="reason"
-                        value={opt.key}
-                        checked={
-                          selectedReasonType === "CUSTOMER" &&
-                          reason === opt.key
-                        }
-                        onChange={() => {
-                          setSelectedReasonType("CUSTOMER");
-                          setReason(opt.key);
-                        }}
-                        className="w-4 h-4 accent-amber-500"
-                      />
-                      <span className="text-sm font-medium text-foreground">
-                        {opt.label}
-                      </span>
-                    </label>
-                  ))}
-                </div>
+          {/* Refund Coordinates */}
+          <div className="space-y-6 pt-10 border-t border-white/5">
+              <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-stone-700">Financial Registry (Bank Details)</p>
+              <div className="grid gap-6 sm:grid-cols-2">
+                  <div className="space-y-2">
+                      <label className="text-[9px] font-bold uppercase tracking-widest text-stone-700">Bank Agency</label>
+                      <input type="text" value={bankName} onChange={(e) => setBankName(e.target.value)} className="w-full h-12 rounded-xl border border-white/5 bg-zinc-800/50 px-6 text-xs text-foreground outline-none focus:border-gold/30 transition-colors" placeholder="e.g., Vietcombank" />
+                  </div>
+                  <div className="space-y-2">
+                      <label className="text-[9px] font-bold uppercase tracking-widest text-stone-700">Account Number</label>
+                      <input type="text" value={bankAccount} onChange={(e) => setBankAccount(e.target.value)} className="w-full h-12 rounded-xl border border-white/5 bg-zinc-800/50 px-6 font-mono text-xs text-foreground outline-none focus:border-gold/30 transition-colors" placeholder="0001000..." />
+                  </div>
+                  <div className="space-y-2 sm:col-span-2">
+                      <label className="text-[9px] font-bold uppercase tracking-widest text-stone-700">Account Holder</label>
+                      <input type="text" value={bankHolder} onChange={(e) => setBankHolder(e.target.value)} className="w-full h-12 rounded-xl border border-white/5 bg-zinc-800/50 px-6 text-xs font-bold uppercase tracking-widest text-foreground outline-none focus:border-gold/30 transition-colors" placeholder="FULL NAME" />
+                  </div>
               </div>
-            </div>
-
-            {/* Refund Preview Alert */}
-            {reason && (
-              <div
-                className={cn(
-                  "p-4 rounded-2xl border-2 mb-6 animate-in slide-in-from-top-2 duration-300",
-                  selectedReasonType === "STORE"
-                    ? "border-green-500/30 bg-green-500/10"
-                    : "border-amber-500/30 bg-amber-500/10",
-                )}
-              >
-                <p
-                  className={cn(
-                    "text-sm font-bold flex items-center gap-2",
-                    selectedReasonType === "STORE"
-                      ? "text-green-500"
-                      : "text-amber-600",
-                  )}
-                >
-                  {selectedReasonType === "STORE" ? (
-                    <>
-                      <CheckCircle size={14} />
-                      {t("refund_full")}
-                    </>
-                  ) : (
-                    <>
-                      <AlertCircle size={14} />
-                      {t("refund_product_only")}
-                    </>
-                  )}
-                </p>
-              </div>
-            )}
-
-            {/* Additional notes */}
-            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-2">
-              {t("additional_note_label")}
-            </label>
-            <textarea
-              value={additionalNote}
-              onChange={(e) => setAdditionalNote(e.target.value)}
-              placeholder={
-                selectedReasonType
-                  ? t("additional_note_placeholder")
-                  : t("no_reason_note_placeholder")
-              }
-              rows={2}
-              disabled={!selectedReasonType}
-              className={cn(
-                "w-full border rounded-2xl px-4 py-3 text-sm placeholder:text-muted-foreground/50 focus:outline-none transition-colors resize-none",
-                !selectedReasonType
-                  ? "bg-secondary/20 border-border/30 text-muted-foreground/50 cursor-not-allowed"
-                  : "bg-secondary/30 border-border focus:border-gold/50",
-              )}
-            />
-
-            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-2 mt-6">
-              {t("bank_info_title")}
-            </label>
-            <div className="grid grid-cols-1 gap-4 bg-gold/5 p-5 rounded-2xl border border-gold/20 mb-6">
-              <p className="text-xs text-gold mb-2">
-                {t("bank_info_notice")}
-              </p>
-              <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-1">
-                  {t("bank_name_label")}
-                </label>
-                <input
-                  type="text"
-                  value={bankName}
-                  onChange={(e) => setBankName(e.target.value)}
-                  placeholder="VD: Vietcombank"
-                  className="w-full bg-secondary/30 border border-border rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-gold/50"
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-1">
-                    {t("bank_account_label")}
-                  </label>
-                  <input
-                    type="text"
-                    value={bankAccount}
-                    onChange={(e) => setBankAccount(e.target.value)}
-                    placeholder="VD: 1012345678"
-                    className="w-full bg-secondary/30 border border-border rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-gold/50"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-1">
-                    {t("bank_holder_label")}
-                  </label>
-                  <input
-                    type="text"
-                    value={bankHolder}
-                    onChange={(e) => setBankHolder(e.target.value)}
-                    placeholder="VD: NGUYEN VAN A"
-                    className="w-full bg-secondary/30 border border-border rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-gold/50"
-                    required
-                  />
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="flex items-center justify-between px-8 py-5 border-t border-border bg-background/80 backdrop-blur-xl flex-shrink-0">
-          <button
-            onClick={onClose}
-            className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
-          >
-            {t("cancel_btn")}
-          </button>
-
-          <button
-            onClick={handleSubmit}
-            disabled={submitting || selectedCount === 0}
-            className="flex items-center gap-2 px-6 py-3 bg-gold text-primary-foreground rounded-2xl font-bold text-[10px] uppercase tracking-widest hover:bg-gold/90 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-gold/20"
-          >
-            {submitting ? (
-              <Loader2 size={14} className="animate-spin" />
-            ) : (
-              <Upload size={14} />
-            )}
-            {submitting ? t("submitting") : t("submit_btn")}
-            {selectedCount > 0 && !submitting && (
-              <span className="ml-1 w-5 h-5 rounded-full bg-primary-foreground/20 flex items-center justify-center text-[9px]">
-                {selectedCount}
-              </span>
-            )}
-          </button>
+        {/* Footer Manifest */}
+        <div className="p-10 border-t border-white/5 bg-black/40 flex items-center justify-between gap-8">
+            <div className="hidden sm:block">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-stone-500">Items Registered</p>
+                <p className="font-heading text-xl font-bold text-foreground">{items.filter(i => itemStates[i.id].selected).length} Selected</p>
+            </div>
+            <button onClick={handleSubmit} disabled={submitting} className="flex-1 sm:flex-none flex h-16 items-center justify-center gap-4 rounded-2xl bg-gold px-12 text-[10px] font-black uppercase tracking-widest text-black shadow-2xl shadow-gold/20 transition-all hover:scale-[1.02] disabled:opacity-50">
+                {submitting ? <Loader2 size={18} className="animate-spin" /> : <Zap size={18} />}
+                {submitting ? "Processing Registry..." : "Initialize Reversion"}
+            </button>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
-}
-
-// ── utils ──────────────────────────────────────────────────────────────────
-function getVideoDuration(file: File): Promise<number> {
-  return new Promise((resolve) => {
-    const video = document.createElement("video");
-    video.preload = "metadata";
-    video.onloadedmetadata = () => {
-      window.URL.revokeObjectURL(video.src);
-      resolve(video.duration);
-    };
-    video.onerror = () => resolve(0);
-    video.src = URL.createObjectURL(file);
-  });
 }

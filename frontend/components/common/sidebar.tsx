@@ -89,10 +89,9 @@ export const Sidebar = ({
     const customerItems: SidebarItem[] = [
         { icon: Heart, label: commonT('favorites'), href: '/dashboard/customer/favorite' },
         { icon: Dna, label: dashboardT('scent_dna.badge'), href: '/dashboard/customer/scent-dna' },
+        { icon: Sparkles, label: navT('customer.consultation') || 'Consultation', href: '/dashboard/customer/consultation' },
         { icon: ClipboardList, label: commonT('orders'), href: '/dashboard/customer/orders' },
         { icon: RotateCcw, label: navT('customer.returns'), href: '/dashboard/customer/returns' },
-        { icon: Coins, label: navT('customer.loyalty'), href: '/dashboard/customer/loyalty' },
-        { icon: Tag, label: navT('customer.promotions'), href: '/dashboard/customer/promotions' },
     ];
 
     const staffItems: SidebarItem[] = [

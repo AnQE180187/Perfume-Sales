@@ -13,10 +13,11 @@ import {
     Loader2,
     Clock,
     XCircle,
-    Receipt
+    Receipt,
+    ChevronLeft,
+    Zap
 } from 'lucide-react';
 import { orderService, type Order } from '@/services/order.service';
-import { AuthGuard } from '@/components/auth/auth-guard';
 import { cn } from '@/lib/utils';
  
 export default function CustomerOrdersPage() {
@@ -38,16 +39,16 @@ export default function CustomerOrdersPage() {
         accountHolder: '',
         note: '',
     });
- 
+
     const STATUS_CONFIG = {
-        PENDING: { label: t('status.pending'), color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', icon: Clock },
-        CONFIRMED: { label: t('status.confirmed'), color: 'bg-blue-500/10 text-blue-600 border-blue-500/20', icon: PackageCheck },
-        PROCESSING: { label: t('status.processing'), color: 'bg-purple-500/10 text-purple-600 border-purple-500/20', icon: PackageCheck },
-        SHIPPED: { label: t('status.shipped'), color: 'bg-orange-500/10 text-orange-600 border-orange-500/20', icon: Truck },
-        COMPLETED: { label: t('status.completed'), color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', icon: PackageCheck },
-        CANCELLED: { label: t('status.cancelled'), color: 'bg-red-500/10 text-red-600 border-red-500/20', icon: XCircle },
+        PENDING: { label: t('status.pending'), color: 'bg-amber-500/10 text-amber-600 dark:text-amber-500 border-amber-500/20', icon: Clock },
+        CONFIRMED: { label: t('status.confirmed'), color: 'bg-blue-500/10 text-blue-600 dark:text-blue-500 border-blue-500/20', icon: PackageCheck },
+        PROCESSING: { label: t('status.processing'), color: 'bg-purple-500/10 text-purple-600 dark:text-purple-500 border-purple-500/20', icon: PackageCheck },
+        SHIPPED: { label: t('status.shipped'), color: 'bg-orange-500/10 text-orange-600 dark:text-orange-500 border-orange-500/20', icon: Truck },
+        COMPLETED: { label: t('status.completed'), color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-500 border-emerald-500/20', icon: PackageCheck },
+        CANCELLED: { label: t('status.cancelled'), color: 'bg-red-500/10 text-red-600 dark:text-red-500 border-red-500/20', icon: XCircle },
     };
- 
+
     const fetchOrders = useCallback(async () => {
         setLoading(true);
         try {
@@ -60,7 +61,7 @@ export default function CustomerOrdersPage() {
             setLoading(false);
         }
     }, [skip, take]);
- 
+
     useEffect(() => {
         fetchOrders();
     }, [fetchOrders]);
@@ -75,18 +76,11 @@ export default function CustomerOrdersPage() {
             maximumFractionDigits: 0
         });
     };
- 
-    const tCommon = useTranslations('common');
 
     const openRefundModal = async (orderId: string) => {
         setRefundModalOrderId(orderId);
         setLoadingRefundInfo(true);
-        setRefundInfo({
-            bankName: '',
-            accountNumber: '',
-            accountHolder: '',
-            note: '',
-        });
+        setRefundInfo({ bankName: '', accountNumber: '', accountHolder: '', note: '' });
         try {
             const existing = await orderService.getRefundBankInfo(orderId);
             if (existing) {
@@ -97,243 +91,209 @@ export default function CustomerOrdersPage() {
                     note: existing.note || '',
                 });
             }
-        } catch {
-            // keep empty form
-        } finally {
-            setLoadingRefundInfo(false);
-        }
+        } catch { /* keep empty */ } finally { setLoadingRefundInfo(false); }
     };
 
     return (
-        <AuthGuard allowedRoles={['customer', 'staff', 'admin']}>
-            <div className="flex flex-col gap-10 py-10 px-8">
-                <header className="mb-4 md:mb-8">
-                    <h1 className="text-2xl md:text-3xl font-heading gold-gradient mb-2 uppercase tracking-tighter">
-                        {t('title')}
-                    </h1>
-                    <p className="text-[8px] md:text-[10px] text-muted-foreground uppercase tracking-[0.3em] font-bold">
-                        {t('subtitle')}
-                    </p>
-                </header>
+        <div className="space-y-12 pb-12">
+            <header>
+                <div className="flex items-center gap-4 mb-4">
+                    <div className="h-[1px] w-12 bg-gold/50" />
+                    <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-gold/60">Registry</span>
+                </div>
+                <h1 className="font-heading text-5xl font-bold uppercase tracking-tighter text-foreground md:text-6xl">
+                    Acquisition <span className="gold-gradient">Archives</span>
+                </h1>
+                <p className="mt-4 font-body text-base text-stone-500 max-w-2xl">{t('subtitle')}</p>
+            </header>
 
-                <div className="space-y-6 md:space-y-8">
-                    {loading ? (
-                        <div className="py-20 flex justify-center">
-                            <Loader2 className="animate-spin text-gold" size={32} />
-                        </div>
-                    ) : orders.length === 0 ? (
-                        <div className="py-16 md:py-20 text-center space-y-6 glass rounded-[2.5rem] md:rounded-[3rem] border border-border bg-background/40">
-                            <Receipt className="mx-auto text-muted-foreground/20 w-[60px] h-[60px] md:w-[80px] md:h-[80px]" strokeWidth={1} />
-                            <div className="space-y-2 px-6">
-                                <h3 className="text-lg md:text-xl font-heading text-foreground uppercase tracking-widest">{t('empty_title')}</h3>
-                                <p className="text-[9px] md:text-[10px] font-bold tracking-widest uppercase text-muted-foreground">{t('empty_desc')}</p>
-                            </div>
-                        </div>
-                    ) : (
-                        orders.map((order, i) => {
-                            const style = STATUS_CONFIG[order.status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.PENDING;
-                            const StatusIcon = style.icon;
+            <div className="space-y-6">
+                {loading ? (
+                    Array.from({ length: 3 }).map((_, i) => (
+                        <div key={i} className="h-48 animate-pulse rounded-[2.5rem] bg-stone-100 dark:bg-white/5" />
+                    ))
+                ) : orders.length === 0 ? (
+                    <div className="py-32 text-center rounded-[3rem] glass">
+                        <Receipt className="mx-auto text-stone-300 dark:text-stone-800 mb-8" size={80} strokeWidth={1} />
+                        <h3 className="font-heading text-2xl uppercase tracking-widest text-foreground">{t('empty_title')}</h3>
+                        <p className="mt-4 text-[10px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-600">{t('empty_desc')}</p>
+                    </div>
+                ) : (
+                    orders.map((order, i) => {
+                        const config = STATUS_CONFIG[order.status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.PENDING;
+                        const Icon = config.icon;
 
-                            return (
-                                <motion.div
-                                    key={order.id}
-                                    initial={{ opacity: 0, y: 15 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: i * 0.05 }}
-                                    className="glass bg-background/40 rounded-[2rem] md:rounded-[3rem] p-5 md:p-8 border border-border shadow-sm hover:shadow-xl transition-all"
-                                >
-                                    <div className="flex flex-col gap-6">
-                                        {/* Order Brief */}
-                                        <div className="flex-1">
-                                            <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-5 md:mb-6">
-                                                <div className="w-full sm:w-auto">
-                                                    <span className="text-[10px] font-black text-gold uppercase tracking-[.4em] mb-2 block leading-none">
-                                                        {t('order_label')} #{order.code}
-                                                    </span>
-                                                    <h2 className="text-lg md:text-xl font-heading text-stone-900 dark:text-stone-100 mb-1.5 uppercase tracking-wide leading-snug">
-                                                        {order.items?.[0]?.product?.name || t('fragrance_acquisition')}
-                                                        {order.items && order.items.length > 1 && <span className="text-[10px] md:text-xs italic text-stone-500 ml-2"> {t('more_suffix', { count: order.items.length - 1 })}</span>}
-                                                    </h2>
-                                                    <p className="text-[10px] text-stone-500 dark:text-stone-400 font-bold uppercase tracking-widest flex items-center gap-2">
-                                                        <Calendar size={12} className="text-gold/60" />
-                                                        {new Date(order.createdAt!).toLocaleDateString(locale === 'vi' ? 'vi-VN' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                                                    </p>
-                                                </div>
-                                                <div className="flex sm:flex-col justify-between items-center sm:items-end w-full sm:w-auto border-t sm:border-t-0 border-border/10 pt-3 sm:pt-0">
-                                                    <span className="text-xl font-heading text-stone-900 dark:text-stone-100 block sm:mb-2 tracking-tighter">
-                                                        {formatCurrency(order.finalAmount)}
-                                                    </span>
-                                                    <div className={cn(
-                                                        "inline-flex items-center gap-1.5 text-[7px] md:text-[8px] px-3 md:px-4 py-1 rounded-full font-bold uppercase tracking-widest border transition-all",
-                                                        style.color
-                                                    )}>
-                                                        <StatusIcon size={10} />
-                                                        {style.label}
-                                                    </div>
+                        return (
+                            <motion.div
+                                key={order.id}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: i * 0.1 }}
+                                className="glass group relative overflow-hidden rounded-[2.5rem] p-8 transition-all duration-500 hover:border-gold/30"
+                            >
+                                <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+                                    <div className="flex-1 space-y-6">
+                                        <div className="flex flex-wrap items-center gap-4">
+                                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-stone-100 dark:bg-white/5 text-gold group-hover:bg-gold group-hover:text-black transition-all duration-500">
+                                                <Icon size={24} />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-bold uppercase tracking-widest text-gold/60">ID: {order.code}</p>
+                                                <h3 className="font-heading text-xl font-bold uppercase tracking-widest text-foreground">
+                                                    {order.items?.[0]?.product?.name || t('fragrance_acquisition')}
+                                                    {order.items && order.items.length > 1 && (
+                                                        <span className="ml-3 text-[10px] font-bold text-stone-400 dark:text-stone-600">
+                                                            + {order.items.length - 1} OTHERS
+                                                        </span>
+                                                    )}
+                                                </h3>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-wrap gap-8 pt-4">
+                                            <div className="space-y-1">
+                                                <p className="text-[9px] font-bold uppercase tracking-widest text-stone-500 dark:text-stone-700">Date Initiated</p>
+                                                <div className="flex items-center gap-2 text-xs font-medium text-stone-600 dark:text-stone-300">
+                                                    <Calendar size={12} className="text-gold" />
+                                                    {format.dateTime(new Date(order.createdAt!), { day: 'numeric', month: 'long', year: 'numeric' })}
                                                 </div>
                                             </div>
-
-                                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-t border-border/50 pt-5 mt-2">
-                                                <div className="flex items-start gap-3">
-                                                    <div className="p-2 sm:p-2.5 bg-secondary/50 rounded-xl md:rounded-2xl text-muted-foreground border border-border shrink-0">
-                                                        <MapPin size={14} />
-                                                    </div>
-                                                    <div>
-                                                        <h4 className="text-[7px] font-bold text-muted-foreground uppercase tracking-widest mb-1">{t('destination')}</h4>
-                                                        <p className="text-[9px] md:text-[10px] text-foreground font-medium uppercase tracking-tight line-clamp-1 md:line-clamp-2 italic">
-                                                            {order.shippingAddress}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center justify-end gap-3 shrink-0">
-                                                    {order.status === 'CANCELLED' && order.paymentStatus === 'PAID' && (
-                                                        <button
-                                                            onClick={() => openRefundModal(order.id)}
-                                                            className="text-[8px] md:text-[10px] font-bold uppercase tracking-widest text-red-600 border border-red-500/20 px-4 py-2 rounded-full hover:bg-red-500/5 transition-all text-center"
-                                                        >
-                                                            TK hoàn tiền
-                                                        </button>
-                                                    )}
-                                                    <Link
-                                                        href={`/dashboard/customer/orders/${order.id}`}
-                                                        className="text-[8px] md:text-[10px] font-bold uppercase tracking-widest text-foreground flex items-center gap-2 hover:text-gold transition-colors group min-h-[32px]"
-                                                    >
-                                                        {t('view_details')} <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                                                    </Link>
+                                            <div className="space-y-1">
+                                                <p className="text-[9px] font-bold uppercase tracking-widest text-stone-500 dark:text-stone-700">Total Value</p>
+                                                <p className="font-heading text-lg font-bold text-foreground tracking-tighter">{formatCurrency(order.finalAmount)}</p>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-[9px] font-bold uppercase tracking-widest text-stone-500 dark:text-stone-700">Status</p>
+                                                <div className={cn("inline-flex items-center gap-2 rounded-full border px-4 py-1 text-[10px] font-bold uppercase tracking-widest", config.color)}>
+                                                    <div className="h-1 w-1 rounded-full bg-current" />
+                                                    {config.label}
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </motion.div>
-                            );
-                        })
-                    )}
-                </div>
 
-                {!loading && total > 0 && (
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mt-10">
-                        <p className="text-[9px] md:text-[10px] uppercase tracking-widest font-bold text-muted-foreground text-center md:text-left">
-                            {`${skip + 1}-${Math.min(skip + take, total)} / ${total}`}
-                        </p>
-                        <div className="flex items-center justify-center gap-2">
-                            <select
-                                value={take}
-                                onChange={(e) => {
-                                    const nextTake = Number(e.target.value);
-                                    setTake(nextTake);
-                                    setSkip(0);
-                                }}
-                                className="bg-background/60 border border-border rounded-full px-3 py-2 text-[9px] font-bold uppercase tracking-widest outline-none focus:border-gold transition-colors"
-                            >
-                                <option value={5}>5 / trang</option>
-                                <option value={10}>10 / trang</option>
-                                <option value={20}>20 / trang</option>
-                            </select>
-                            <div className="flex items-center gap-1.5 ml-2">
-                                <button
-                                    type="button"
-                                    onClick={() => setSkip((s) => Math.max(0, s - take))}
-                                    disabled={skip === 0}
-                                    className="w-10 h-10 flex items-center justify-center rounded-full border border-border text-[9px] font-bold uppercase disabled:opacity-30 hover:bg-gold/5 transition-all active:scale-90"
-                                >
-                                    <ChevronRight className="rotate-180" size={14} />
-                                </button>
-                                <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground w-12 text-center">
-                                    {currentPage}/{totalPages}
-                                </span>
-                                <button
-                                    type="button"
-                                    onClick={() => setSkip((s) => (s + take < total ? s + take : s))}
-                                    disabled={skip + take >= total}
-                                    className="w-10 h-10 flex items-center justify-center rounded-full border border-border text-[9px] font-bold uppercase disabled:opacity-30 hover:bg-gold/5 transition-all active:scale-90"
-                                >
-                                    <ChevronRight size={14} />
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                                    <div className="flex flex-col lg:items-end gap-6 pt-6 lg:pt-0 lg:border-l lg:border-black/5 dark:lg:border-white/5 lg:pl-10">
+                                        <div className="space-y-2 lg:text-right">
+                                            <div className="flex lg:justify-end items-center gap-2 text-stone-400 dark:text-stone-600">
+                                                <MapPin size={12} />
+                                                <span className="text-[9px] font-bold uppercase tracking-widest">Destination</span>
+                                            </div>
+                                            <p className="text-[10px] font-medium text-stone-500 dark:text-stone-500 uppercase leading-relaxed max-w-[200px]">{order.shippingAddress}</p>
+                                        </div>
+                                        <div className="flex items-center gap-4">
+                                            {order.status === 'CANCELLED' && order.paymentStatus === 'PAID' && (
+                                                <button onClick={() => openRefundModal(order.id)} className="flex h-12 items-center px-6 rounded-full border border-red-500/20 bg-red-500/5 text-[10px] font-bold uppercase tracking-widest text-red-600 dark:text-red-500 hover:bg-red-500/10 transition-all cursor-pointer">
+                                                    Refund Portal
+                                                </button>
+                                            )}
+                                            <Link href={`/dashboard/customer/orders/${order.id}`} className="flex h-12 items-center gap-3 rounded-full bg-stone-100 dark:bg-white/5 border border-black/5 dark:border-white/10 px-6 text-[10px] font-bold uppercase tracking-widest text-stone-600 dark:text-stone-300 transition-all hover:bg-gold hover:text-black hover:border-gold hover:shadow-[0_0_20px_rgba(197,160,89,0.3)]">
+                                                Details <ChevronRight size={14} />
+                                            </Link>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="absolute inset-0 -z-10 bg-gradient-to-br from-gold/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                            </motion.div>
+                        );
+                    })
                 )}
-
-                <footer className="mt-10 pt-10 border-t border-border text-center">
-                    <p className="text-[8px] font-bold uppercase tracking-[.4em] text-muted-foreground">
-                        {tCommon('engine_version')}
-                    </p>
-                </footer>
             </div>
 
+            {!loading && total > 0 && (
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 pt-8 border-t border-black/5 dark:border-white/5">
+                    <div className="flex items-center gap-4">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-stone-500 dark:text-stone-700">Displaying</span>
+                        <div className="h-10 px-4 rounded-xl border border-black/5 dark:border-white/5 bg-stone-100/50 dark:bg-white/[0.02] flex items-center text-xs font-bold text-foreground">
+                            {skip + 1} - {Math.min(skip + take, total)} of {total}
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                         <button
+                            onClick={() => setSkip(Math.max(0, skip - take))}
+                            disabled={skip === 0}
+                            className="h-12 w-12 flex items-center justify-center rounded-full border border-black/5 dark:border-white/5 bg-stone-100/50 dark:bg-white/[0.02] text-stone-400 hover:text-gold disabled:opacity-20 transition-all cursor-pointer"
+                        >
+                            <ChevronLeft size={20} />
+                        </button>
+                        <div className="h-12 px-6 rounded-full border border-black/5 dark:border-white/5 bg-stone-100/50 dark:bg-white/[0.02] flex items-center font-heading text-xs font-bold text-foreground">
+                            {currentPage} / {totalPages}
+                        </div>
+                        <button
+                            onClick={() => setSkip(skip + take < total ? skip + take : skip)}
+                            disabled={skip + take >= total}
+                            className="h-12 w-12 flex items-center justify-center rounded-full border border-black/5 dark:border-white/5 bg-stone-100/50 dark:bg-white/[0.02] text-stone-400 hover:text-gold disabled:opacity-20 transition-all cursor-pointer"
+                        >
+                            <ChevronRight size={20} />
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Refund Modal */}
             {refundModalOrderId && (
-                <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="w-full max-w-lg rounded-3xl bg-white dark:bg-zinc-900 border border-stone-200 dark:border-white/10 p-8 space-y-4">
-                        <h3 className="text-lg font-heading uppercase tracking-widest text-foreground">
-                            Thông tin tài khoản nhận hoàn tiền
-                        </h3>
-                        {loadingRefundInfo ? (
-                            <div className="py-10 flex items-center justify-center">
-                                <Loader2 className="animate-spin text-gold" size={24} />
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-md" onClick={() => setRefundModalOrderId(null)} />
+                    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="glass relative w-full max-w-xl rounded-[3rem] p-12 shadow-2xl">
+                        <div className="mb-10 space-y-4">
+                            <div className="flex items-center gap-3 rounded-full border border-red-500/20 bg-red-500/5 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-red-600 dark:text-red-500 w-fit">
+                                <Zap size={14} /> Refund Sync Request
                             </div>
+                            <h3 className="font-heading text-3xl font-bold uppercase tracking-widest text-foreground">Account Registry</h3>
+                            <p className="text-xs text-stone-500">Please provide the financial coordinates for the reversal process.</p>
+                        </div>
+
+                        {loadingRefundInfo ? (
+                            <div className="py-12 flex justify-center"><Loader2 className="animate-spin text-gold" size={32} /></div>
                         ) : (
-                            <>
-                                <input
-                                    value={refundInfo.bankName}
-                                    onChange={(e) => setRefundInfo((p) => ({ ...p, bankName: e.target.value }))}
-                                    placeholder="Tên ngân hàng"
-                                    className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold"
-                                />
-                                <input
-                                    value={refundInfo.accountNumber}
-                                    onChange={(e) => setRefundInfo((p) => ({ ...p, accountNumber: e.target.value }))}
-                                    placeholder="Số tài khoản"
-                                    className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold"
-                                />
-                                <input
-                                    value={refundInfo.accountHolder}
-                                    onChange={(e) => setRefundInfo((p) => ({ ...p, accountHolder: e.target.value }))}
-                                    placeholder="Tên chủ tài khoản"
-                                    className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold"
-                                />
-                                <textarea
-                                    value={refundInfo.note}
-                                    onChange={(e) => setRefundInfo((p) => ({ ...p, note: e.target.value }))}
-                                    placeholder="Ghi chú (không bắt buộc)"
-                                    className="w-full bg-secondary/20 border border-border rounded-xl py-3 px-4 outline-none focus:border-gold min-h-24"
-                                />
-                            </>
+                            <div className="space-y-4">
+                                {[
+                                    { label: 'Institution', key: 'bankName', placeholder: 'Bank Name' },
+                                    { label: 'Identifier', key: 'accountNumber', placeholder: 'Account Number' },
+                                    { label: 'Holder', key: 'accountHolder', placeholder: 'Full Name' }
+                                ].map((field) => (
+                                    <div key={field.key} className="space-y-2">
+                                        <p className="text-[8px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-700 px-4">{field.label}</p>
+                                        <input
+                                            value={(refundInfo as any)[field.key]}
+                                            onChange={(e) => setRefundInfo(p => ({ ...p, [field.key]: e.target.value }))}
+                                            placeholder={field.placeholder}
+                                            className="w-full rounded-2xl border border-black/5 dark:border-white/5 bg-stone-100/50 dark:bg-white/[0.02] py-5 px-6 text-sm outline-none transition-all focus:border-gold/30 focus:bg-stone-100 dark:focus:bg-white/[0.05] text-foreground"
+                                        />
+                                    </div>
+                                ))}
+                                <div className="space-y-2">
+                                    <p className="text-[8px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-700 px-4">Encryption Note</p>
+                                    <textarea
+                                        value={refundInfo.note}
+                                        onChange={(e) => setRefundInfo(p => ({ ...p, note: e.target.value }))}
+                                        placeholder="Optional metadata..."
+                                        className="w-full rounded-2xl border border-black/5 dark:border-white/5 bg-stone-100/50 dark:bg-white/[0.02] py-5 px-6 text-sm outline-none transition-all focus:border-gold/30 focus:bg-stone-100 dark:focus:bg-white/[0.05] min-h-[120px] text-foreground"
+                                    />
+                                </div>
+                            </div>
                         )}
 
-                        <div className="flex gap-3 pt-2">
+                        <div className="mt-10 flex gap-4">
+                            <button onClick={() => setRefundModalOrderId(null)} className="flex-1 h-16 rounded-full border border-black/5 dark:border-white/10 text-[10px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-500 hover:bg-black/5 cursor-pointer">Cancel</button>
                             <button
-                                onClick={() => setRefundModalOrderId(null)}
-                                className="flex-1 py-3 rounded-full border border-border text-muted-foreground hover:bg-secondary/50 text-[10px] font-bold uppercase tracking-widest"
-                            >
-                                Đóng
-                            </button>
-                            <button
-                                disabled={
-                                    loadingRefundInfo ||
-                                    savingRefundInfo ||
-                                    !refundInfo.bankName.trim() ||
-                                    !refundInfo.accountNumber.trim() ||
-                                    !refundInfo.accountHolder.trim()
-                                }
+                                disabled={loadingRefundInfo || savingRefundInfo || !refundInfo.bankName || !refundInfo.accountNumber || !refundInfo.accountHolder}
                                 onClick={async () => {
                                     setSavingRefundInfo(true);
                                     try {
                                         await orderService.submitRefundBankInfo(refundModalOrderId, refundInfo);
                                         setRefundModalOrderId(null);
                                     } catch (e: any) {
-                                        alert(e?.response?.data?.message || e?.message || 'Không thể gửi thông tin hoàn tiền');
-                                    } finally {
-                                        setSavingRefundInfo(false);
-                                    }
+                                        alert(e?.response?.data?.message || 'Synchronization failed');
+                                    } finally { setSavingRefundInfo(false); }
                                 }}
-                                className="flex-1 py-3 rounded-full bg-gold text-primary-foreground text-[10px] font-bold uppercase tracking-widest disabled:opacity-50"
+                                className="flex-1 h-16 rounded-full bg-gold text-[10px] font-bold uppercase tracking-widest text-black shadow-lg shadow-gold/20 disabled:opacity-20 cursor-pointer"
                             >
-                                {savingRefundInfo ? 'Đang gửi...' : 'Gửi thông tin'}
+                                {savingRefundInfo ? 'Transmitting...' : 'Commit Protocol'}
                             </button>
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
             )}
-        </AuthGuard>
+        </div>
     );
 }

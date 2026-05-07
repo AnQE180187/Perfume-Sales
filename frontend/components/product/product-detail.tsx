@@ -580,25 +580,24 @@ export default function ProductDetail({ product }: { product: Product }) {
               </div>
             )}
 
-            <div className="rounded-[2.2rem] border border-black/6 bg-card p-6 shadow-[0_20px_60px_-42px_rgba(15,23,42,0.25)] dark:border-white/10">
-              <p className="text-sm font-medium text-gold">{labels.craftsmanship}</p>
-              <div className="mt-6 grid gap-4">
-                <div className="flex gap-4 rounded-[1.4rem] border border-black/6 bg-background p-4 dark:border-white/10">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gold/12 text-gold">
-                    <BrainCircuit className="h-6 w-6" />
-                  </div>
+            <div className="rounded-[2.2rem] border border-black/6 bg-card p-8 shadow-[0_20px_60px_-42px_rgba(15,23,42,0.25)] dark:border-white/10 md:col-span-2">
+              <div className="flex items-center gap-3 mb-8">
+                <div className="h-px w-8 bg-gold/50" />
+                <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-gold">{labels.craftsmanship}</p>
+              </div>
+              <div className="grid gap-10 md:grid-cols-2">
+                <div className="flex gap-6 items-start">
+                  <BrainCircuit className="h-6 w-6 text-gold shrink-0 mt-1" />
                   <div>
-                    <h3 className="text-base font-semibold text-foreground">{t('pattern_matching')}</h3>
-                    <p className="mt-2 text-sm leading-7 text-muted-foreground">{t('pattern_matching_desc')}</p>
+                    <h3 className="text-lg font-semibold text-foreground tracking-tight">{t('pattern_matching')}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground/80 font-body">{t('pattern_matching_desc')}</p>
                   </div>
                 </div>
-                <div className="flex gap-4 rounded-[1.4rem] border border-black/6 bg-background p-4 dark:border-white/10">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gold/12 text-gold">
-                    <ShieldCheck className="h-6 w-6" />
-                  </div>
+                <div className="flex gap-6 items-start">
+                  <ShieldCheck className="h-6 w-6 text-gold shrink-0 mt-1" />
                   <div>
-                    <h3 className="text-base font-semibold text-foreground">{t('authenticity_shield')}</h3>
-                    <p className="mt-2 text-sm leading-7 text-muted-foreground">{t('authenticity_shield_desc')}</p>
+                    <h3 className="text-lg font-semibold text-foreground tracking-tight">{t('authenticity_shield')}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground/80 font-body">{t('authenticity_shield_desc')}</p>
                   </div>
                 </div>
               </div>
@@ -692,30 +691,53 @@ export default function ProductDetail({ product }: { product: Product }) {
           </section>
 
           {noteGroups.length > 0 && (
-            <section className="rounded-[2.6rem] border border-black/6 bg-card p-6 shadow-[0_28px_80px_-50px_rgba(15,23,42,0.25)] dark:border-white/10 md:p-8">
-              <div className="border-b border-border/60 pb-4">
-                <p className="text-sm font-medium text-gold">{labels.scentFamily}</p>
-                <h2 className="mt-1 text-2xl font-semibold text-foreground">{t('olfactory_structure')}</h2>
+            <section className="rounded-[2.6rem] border border-black/6 bg-card p-8 shadow-[0_28px_80px_-50px_rgba(15,23,42,0.25)] dark:border-white/10 md:p-12">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-border/40 pb-8 mb-10">
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="h-1 w-4 bg-gold rounded-full" />
+                    <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-gold">{labels.scentFamily}</p>
+                  </div>
+                  <h2 className="text-3xl font-heading tracking-tighter uppercase">{t('olfactory_structure')}</h2>
+                </div>
+                <p className="text-sm text-muted-foreground max-w-xs md:text-right italic">
+                  {locale === 'vi' ? 'Hành trình khứu giác qua các tầng hương tinh tế.' : 'An olfactory journey through sophisticated layers.'}
+                </p>
               </div>
 
-              <div className="mt-6 grid gap-5 md:grid-cols-3">
-                {noteGroups.map((group) => (
+              <div className="grid gap-12 md:grid-cols-3 relative">
+                {/* Visual Dividers for Desktop */}
+                <div className="hidden md:block absolute left-1/3 top-10 bottom-0 w-px bg-gradient-to-b from-border/50 via-border/20 to-transparent" />
+                <div className="hidden md:block absolute left-2/3 top-10 bottom-0 w-px bg-gradient-to-b from-border/50 via-border/20 to-transparent" />
+
+                {noteGroups.map((group, idx) => (
                   <motion.div
                     key={group.type}
-                    initial={{ opacity: 0, y: 14 }}
+                    initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 0.35 }}
-                    className="flex flex-col items-center text-center rounded-[2rem] border border-black/6 bg-background p-6 md:p-8 dark:border-white/10"
+                    transition={{ duration: 0.5, delay: idx * 0.1 }}
+                    className="flex flex-col"
                   >
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gold/10 mb-5">
-                      {group.icon}
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="text-gold opacity-80">
+                        {group.icon}
+                      </div>
+                      <h3 className="text-lg font-bold uppercase tracking-widest text-foreground">
+                        {group.label}
+                      </h3>
                     </div>
-                    <h3 className="text-base md:text-lg font-semibold text-foreground leading-snug">
-                      {group.label}
-                    </h3>
-                    <div className="my-4 h-[2px] w-12 bg-gold/20" />
-                    <p className="text-sm leading-7 text-muted-foreground">{group.items.join(', ')}</p>
+                    
+                    <div className="space-y-3">
+                      {group.items.map((item, i) => (
+                        <div key={i} className="flex items-center gap-3 group">
+                          <div className="h-1 w-1 rounded-full bg-gold/30 group-hover:bg-gold transition-colors" />
+                          <span className="text-base text-muted-foreground group-hover:text-foreground transition-colors font-body">
+                            {item}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </motion.div>
                 ))}
               </div>

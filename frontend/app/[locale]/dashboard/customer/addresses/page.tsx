@@ -77,37 +77,38 @@ export default function AddressesPage() {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center p-20">
-                <Loader2 className="animate-spin text-gold" size={32} />
+            <div className="flex h-[400px] items-center justify-center">
+                <Loader2 className="h-10 w-10 animate-spin text-gold" />
             </div>
         );
     }
 
     return (
-        <div className="flex flex-col gap-6 md:gap-10 p-4 sm:p-10">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-10">
-                <div className="flex flex-col">
-                    <h1 className="text-2xl md:text-3xl font-heading gold-gradient uppercase tracking-tighter flex items-center gap-3">
-                        <MapPinned className="text-gold w-8 h-8 md:w-10 md:h-10" />
-                        {t('title')}
+        <div className="space-y-12 pb-12">
+            <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
+                <div>
+                    <div className="flex items-center gap-4 mb-4">
+                        <div className="h-[1px] w-12 bg-gold/50" />
+                        <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-gold/60">Registry</span>
+                    </div>
+                    <h1 className="font-heading text-5xl font-bold uppercase tracking-tighter text-foreground md:text-6xl">
+                        Logistics <span className="gold-gradient">Coordinates</span>
                     </h1>
-                    <p className="text-muted-foreground font-body text-[10px] md:text-xs uppercase tracking-widest mt-1">
-                        {t('subtitle')}
-                    </p>
+                    <p className="mt-4 font-body text-[10px] font-bold uppercase tracking-widest text-stone-500">{t('subtitle')}</p>
                 </div>
                 <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
                     <DialogTrigger asChild>
-                        <Button onClick={() => setSelectedAddress(null)} className="rounded-full bg-luxury-black dark:bg-gold hover:scale-105 transition-transform w-full md:w-auto min-h-[44px] md:min-h-0 text-[10px] font-bold uppercase tracking-widest px-8">
-                            <Plus className="mr-2 h-4 w-4" /> {t('add_new')}
-                        </Button>
+                        <button onClick={() => setSelectedAddress(null)} className="h-14 rounded-full bg-gold px-10 text-[10px] font-bold uppercase tracking-widest text-black shadow-lg shadow-gold/20 hover:scale-105 transition-all cursor-pointer">
+                            <Plus className="mr-2 h-4 w-4 inline-block" /> {t('add_new')}
+                        </button>
                     </DialogTrigger>
-                    <DialogContent className="rounded-[2.5rem] border-gold/10 glass max-w-2xl p-6 md:p-10">
-                        <DialogHeader>
-                            <DialogTitle className="text-xl md:text-2xl font-serif text-gold uppercase tracking-widest">
-                                {selectedAddress ? t('edit') : t('add_new')}
-                            </DialogTitle>
-                        </DialogHeader>
-                        <div className="py-2 md:py-4">
+                    <DialogContent className="rounded-[3rem] border-black/5 dark:border-white/5 glass max-w-2xl p-0 overflow-hidden">
+                        <div className="p-10 lg:p-16">
+                            <DialogHeader className="mb-10">
+                                <DialogTitle className="font-heading text-3xl font-bold uppercase tracking-widest text-foreground">
+                                    {selectedAddress ? 'Modify Entry' : 'New Coordinate'}
+                                </DialogTitle>
+                            </DialogHeader>
                             <AddressForm
                                 onSubmit={handleFormSubmit}
                                 initialData={selectedAddress || {}}
@@ -116,28 +117,29 @@ export default function AddressesPage() {
                         </div>
                     </DialogContent>
                 </Dialog>
-            </div>
+            </header>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {addresses.map((address) => (
-                    <div key={address.id} className="relative group">
+                    <motion.div 
+                        key={address.id} 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="relative group"
+                    >
                         <AddressCard address={address} />
-                        <div className="absolute top-4 right-4 md:top-6 md:right-6 flex items-center gap-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="absolute top-8 right-8 flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-all duration-300">
                             {!address.isDefault && (
-                                <Button
-                                    size="icon"
-                                    variant="outline"
-                                    className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-background/80 md:bg-white/50 backdrop-blur-sm border-gold/20 hover:border-gold hover:text-gold shadow-lg"
+                                <button
+                                    className="w-10 h-10 rounded-full glass border-black/5 dark:border-white/5 flex items-center justify-center text-gold hover:bg-gold hover:text-black transition-all shadow-xl cursor-pointer"
                                     onClick={() => handleSetDefault(address.id)}
                                     title={t('set_default')}
                                 >
-                                    <Star className="h-4 w-4 text-gold" />
-                                </Button>
+                                    <Star className="h-4 w-4" />
+                                </button>
                             )}
-                            <Button
-                                size="icon"
-                                variant="outline"
-                                className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-background/80 md:bg-white/50 backdrop-blur-sm border-gold/20 hover:border-gold hover:text-gold shadow-lg"
+                            <button
+                                className="w-10 h-10 rounded-full glass border-black/5 dark:border-white/5 flex items-center justify-center text-stone-400 hover:bg-gold hover:text-black transition-all shadow-xl cursor-pointer"
                                 onClick={() => {
                                     setSelectedAddress(address);
                                     setIsFormOpen(true);
@@ -145,34 +147,33 @@ export default function AddressesPage() {
                                 title={t('edit')}
                             >
                                 <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                                size="icon"
-                                variant="destructive"
-                                className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-red-500 shadow-lg"
+                            </button>
+                            <button
+                                className="w-10 h-10 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-xl cursor-pointer"
                                 onClick={() => handleDelete(address.id)}
                             >
                                 <Trash className="h-4 w-4" />
-                            </Button>
+                            </button>
                         </div>
-                    </div>
+                    </motion.div>
                 ))}
             </div>
 
             {addresses.length === 0 && (
-                 <div className="text-center py-20 border-2 border-dashed border-stone-200 dark:border-white/10 rounded-[2rem] glass">
-                    <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground mb-6">{t('no_addresses')}</p>
+                 <div className="text-center py-24 glass rounded-[3rem]">
+                    <MapPinned className="mx-auto text-stone-200 dark:text-stone-800 mb-6" size={64} />
+                    <p className="text-[10px] uppercase font-bold tracking-[0.3em] text-stone-400 dark:text-stone-700 mb-8">{t('no_addresses')}</p>
                     <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
                         <DialogTrigger asChild>
-                             <Button onClick={() => setSelectedAddress(null)} className="rounded-full bg-gold text-primary font-bold uppercase tracking-widest px-8 py-3 h-auto text-[10px]">
-                                <Plus className="mr-2 h-4 w-4" /> {t('add_new')}
-                            </Button>
+                             <button onClick={() => setSelectedAddress(null)} className="h-14 rounded-full bg-stone-100 dark:bg-white/5 border border-black/5 dark:border-white/10 px-10 text-[10px] font-bold uppercase tracking-widest text-stone-600 dark:text-stone-400 hover:bg-gold hover:text-black transition-all cursor-pointer">
+                                <Plus className="mr-2 h-4 w-4 inline-block" /> {t('add_new')}
+                            </button>
                         </DialogTrigger>
-                        <DialogContent className="rounded-[2.5rem] border-gold/10 glass max-w-2xl">
-                             <DialogHeader>
-                                <DialogTitle className="text-2xl font-serif text-gold uppercase tracking-widest">{t('add_new')}</DialogTitle>
-                            </DialogHeader>
-                             <div className="py-4">
+                        <DialogContent className="rounded-[3rem] border-black/5 dark:border-white/5 glass max-w-2xl p-0 overflow-hidden">
+                            <div className="p-10 lg:p-16">
+                                <DialogHeader className="mb-10">
+                                    <DialogTitle className="font-heading text-3xl font-bold uppercase tracking-widest text-foreground">New Coordinate</DialogTitle>
+                                </DialogHeader>
                                 <AddressForm onSubmit={handleFormSubmit} loading={submitting} />
                             </div>
                         </DialogContent>

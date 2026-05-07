@@ -10,6 +10,7 @@ import { useTranslations, useFormatter } from 'next-intl';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/store/auth.store';
 import { Link } from '@/lib/i18n';
+import { cn } from '@/lib/utils';
 
 export default function CustomerPromotions() {
     const t = useTranslations('dashboard.customer.promotions');
@@ -104,89 +105,89 @@ export default function CustomerPromotions() {
     };
 
     return (
-        <AuthGuard allowedRoles={['customer']}>
-            <main className="p-8 max-w-7xl mx-auto pb-32">
-                <header className="mb-20 flex flex-col md:flex-row justify-between items-center gap-8">
+        <div className="space-y-12 pb-12">
+            <header className="flex flex-col md:flex-row justify-between items-center gap-8">
+                <div>
+                    <div className="flex items-center gap-4 mb-4">
+                        <div className="h-[1px] w-12 bg-gold/50" />
+                        <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-gold/60">Registry</span>
+                    </div>
+                    <h1 className="font-heading text-5xl font-bold uppercase tracking-tighter text-foreground md:text-6xl">
+                        Aura <span className="gold-gradient">Privilege</span>
+                    </h1>
+                    <p className="mt-4 font-body text-[10px] font-bold uppercase tracking-widest text-stone-500">{t('subtitle')}</p>
+                </div>
+
+                <motion.div 
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="glass px-10 py-8 rounded-[3rem] flex items-center gap-8"
+                >
+                    <div className="w-14 h-14 rounded-2xl border border-gold/20 flex items-center justify-center text-gold glass shadow-inner">
+                        <Coins size={24} />
+                    </div>
                     <div>
-                        <div className="flex items-center gap-3 text-gold mb-4 uppercase tracking-[.4em] font-bold text-[10px]">
-                            <Sparkles size={16} />
-                            <span>{tMarket('badge')}</span>
-                        </div>
-                        <h1 className="text-2xl md:text-3xl font-heading gold-gradient mb-2 uppercase tracking-tighter">{t('title')}</h1>
-                        <p className="mt-4 text-muted-foreground font-body text-[11px] uppercase tracking-[.3em] font-medium max-w-xl">
-                            {t('subtitle')}
-                        </p>
+                        <p className="text-[10px] text-stone-400 dark:text-stone-700 uppercase tracking-[.4em] font-black mb-2">{tMarket('your_points')}</p>
+                        <p className="text-4xl font-heading text-gold tracking-tighter">{format.number(userPoints)} <span className="text-xs uppercase font-body tracking-[0.3em] opacity-50 ml-1">pts</span></p>
                     </div>
+                </motion.div>
+            </header>
 
-                    <motion.div 
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="glass px-10 py-6 rounded-[2.5rem] border-gold/20 flex items-center gap-6 shadow-2xl shadow-gold/10"
-                    >
-                        <div className="w-12 h-12 rounded-2xl bg-gold flex items-center justify-center text-black">
-                            <Coins size={24} />
+            {loading ? (
+                <div className="flex h-[400px] items-center justify-center">
+                    <Loader2 className="h-10 w-10 animate-spin text-gold" />
+                </div>
+            ) : (
+                <div className="space-y-16">
+                    {/* Available Marketplace Section */}
+                    <section>
+                        <div className="flex items-center gap-6 mb-12">
+                            <h2 className="font-heading text-2xl font-bold uppercase tracking-widest text-foreground flex items-center gap-4 italic">
+                                <Tag className="text-emerald-500" />
+                                {t('marketplace_title')}
+                            </h2>
+                            <div className="h-[1px] flex-1 bg-gradient-to-r from-gold/20 to-transparent" />
                         </div>
-                        <div>
-                            <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold mb-1">{tMarket('your_points')}</p>
-                            <p className="text-3xl font-serif text-gold">{format.number(userPoints)} <span className="text-sm">pts</span></p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-8">
+                            {publicPromos.map((promo) => (
+                                <OfferCard 
+                                    key={promo.id} 
+                                    promo={promo} 
+                                    type="public"
+                                    onAction={() => handleClaim(promo.id)}
+                                    loading={actionLoading === promo.id}
+                                    tMarket={tMarket}
+                                    t={t}
+                                    tFeatured={tFeatured}
+                                    format={format}
+                                    formatTimeRemaining={formatTimeRemaining}
+                                />
+                            ))}
+                            {redeemablePromos.map((promo) => (
+                                <OfferCard 
+                                    key={promo.id} 
+                                    promo={promo} 
+                                    type="redeemable"
+                                    onAction={() => handleRedeem(promo.id, promo.pointsCost)}
+                                    loading={actionLoading === promo.id}
+                                    tMarket={tMarket}
+                                    t={t}
+                                    tFeatured={tFeatured}
+                                    format={format}
+                                    formatTimeRemaining={formatTimeRemaining}
+                                />
+                            ))}
                         </div>
-                    </motion.div>
-                </header>
-
-                {loading ? (
-                    <div className="py-40 flex flex-col items-center justify-center gap-6">
-                        <Loader2 className="w-12 h-12 animate-spin text-gold" />
-                        <p className="text-[10px] uppercase tracking-[.4em] font-bold text-muted-foreground">{tMarket('loading')}</p>
-                    </div>
-                ) : (
-                    <div className="space-y-24">
-                        {/* Available Marketplace Section */}
-                        <section>
-                            <div className="flex items-center gap-6 mb-12">
-                                <h2 className="text-2xl font-heading uppercase tracking-widest italic flex items-center gap-4">
-                                    <Tag className="text-emerald-500" />
-                                    {t('marketplace_title')}
-                                </h2>
-                                <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-border" />
+                        {publicPromos.length === 0 && redeemablePromos.length === 0 && (
+                            <div className="py-24 text-center glass rounded-[3rem]">
+                                <Tag className="mx-auto text-stone-200 dark:text-stone-800 mb-6" size={64} />
+                                <p className="text-[10px] uppercase font-bold tracking-[0.3em] text-stone-400 dark:text-stone-700">{tMarket('no_public')}</p>
                             </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-8">
-                                {publicPromos.map((promo) => (
-                                    <OfferCard 
-                                        key={promo.id} 
-                                        promo={promo} 
-                                        type="public"
-                                        onAction={() => handleClaim(promo.id)}
-                                        loading={actionLoading === promo.id}
-                                        tMarket={tMarket}
-                                        t={t}
-                                        tFeatured={tFeatured}
-                                        format={format}
-                                        formatTimeRemaining={formatTimeRemaining}
-                                    />
-                                ))}
-                                {redeemablePromos.map((promo) => (
-                                    <OfferCard 
-                                        key={promo.id} 
-                                        promo={promo} 
-                                        type="redeemable"
-                                        onAction={() => handleRedeem(promo.id, promo.pointsCost)}
-                                        loading={actionLoading === promo.id}
-                                        tMarket={tMarket}
-                                        t={t}
-                                        tFeatured={tFeatured}
-                                        format={format}
-                                        formatTimeRemaining={formatTimeRemaining}
-                                    />
-                                ))}
-                            </div>
-                            {publicPromos.length === 0 && redeemablePromos.length === 0 && (
-                                <EmptyState message={tMarket('no_public')} icon={Tag} />
-                            )}
-                        </section>
-                    </div>
-                )}
-            </main>
-        </AuthGuard>
+                        )}
+                    </section>
+                </div>
+            )}
+        </div>
     );
 }
 
@@ -194,36 +195,35 @@ function OfferCard({ promo, type, onAction, loading, tMarket, t, tFeatured, form
     return (
         <motion.div
             whileHover={{ y: -5 }}
-            className="group relative h-full"
+            className="group relative"
         >
-            <div className="glass rounded-[2.5rem] bg-background/40 border border-white/5 overflow-hidden h-full relative z-10 transition-all duration-300 group-hover:border-gold/30">
-                <div className="p-6 flex flex-col h-full relative z-20">
-                    <div className="flex justify-between items-start mb-6">
-                        <div className="space-y-3">
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg ${type === 'public' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-gold/10 text-gold'}`}>
-                                {type === 'public' ? <Tag size={18} /> : <Coins size={18} />}
-                            </div>
+            <div className="glass rounded-[2.5rem] overflow-hidden h-full group-hover:border-gold/30 transition-all duration-500 shadow-2xl shadow-black/5 dark:shadow-black/20">
+                <div className="p-8 flex flex-col h-full space-y-8">
+                    <div className="flex justify-between items-start">
+                        <div className={cn(
+                            "w-14 h-14 rounded-2xl flex items-center justify-center glass border",
+                            type === 'public' ? 'text-emerald-500 border-emerald-500/20' : 'text-gold border-gold/20'
+                        )}>
+                            {type === 'public' ? <Tag size={24} /> : <Coins size={24} />}
                         </div>
-                        <div className="text-right">
-                            <div className="px-3 py-1.5 rounded-full bg-background/60 border border-white/5 text-[8px] uppercase tracking-[.3em] font-bold text-muted-foreground flex items-center backdrop-blur-md">
-                                {formatTimeRemaining(promo.endDate)}
-                            </div>
+                        <div className="px-4 py-2 rounded-full glass border border-black/5 dark:border-white/5 text-[9px] font-bold uppercase tracking-[.2em] text-gold shadow-lg shadow-black/5 dark:shadow-black/20">
+                            {formatTimeRemaining(promo.endDate)}
                         </div>
                     </div>
 
-                    <div className="flex-1">
-                        <h3 className="text-xl font-heading uppercase tracking-wider mb-2 group-hover:text-gold transition-colors duration-300">{promo.code}</h3>
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-body italic mb-6 leading-relaxed max-w-full line-clamp-2">{promo.description || t('fallback_desc')}</p>
+                    <div className="flex-1 space-y-4">
+                        <h3 className="font-heading text-2xl font-bold uppercase tracking-widest text-foreground group-hover:text-gold transition-colors duration-300">{promo.code}</h3>
+                        <p className="font-body text-[10px] font-bold uppercase tracking-widest text-stone-500 line-clamp-2 leading-relaxed italic">{promo.description || t('fallback_desc')}</p>
                         
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
+                        <div className="flex items-center gap-4">
+                            <div className="flex-1 h-1.5 bg-stone-100 dark:bg-white/5 rounded-full overflow-hidden">
                                 <motion.div 
                                     initial={{ width: 0 }}
                                     animate={{ width: promo.usageLimit ? `${Math.max(0, Math.min(100, ((promo.usageLimit - promo.usedCount) / promo.usageLimit) * 100))}%` : '100%' }}
                                     className="h-full bg-gold/40"
                                 />
                             </div>
-                            <span className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground/80 whitespace-nowrap">
+                            <span className="text-[8px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-700 whitespace-nowrap">
                                 {promo.usageLimit 
                                     ? t('remaining_slots', { remaining: Math.max(0, promo.usageLimit - promo.usedCount), limit: promo.usageLimit })
                                     : t('unlimited')}
@@ -231,30 +231,31 @@ function OfferCard({ promo, type, onAction, loading, tMarket, t, tFeatured, form
                         </div>
                     </div>
 
-                    <div className="mt-auto pt-6 border-t border-white/5 space-y-4">
+                    <div className="pt-8 border-t border-black/5 dark:border-white/5 space-y-6">
                         <div className="space-y-1">
-                            <p className="text-[7px] text-muted-foreground uppercase tracking-[.4em] font-bold opacity-60">{t('benefit_label')}</p>
-                            <p className="text-xl font-serif text-gold leading-none">
+                            <p className="text-[8px] font-bold uppercase tracking-[.4em] text-stone-400 dark:text-stone-700">{t('benefit_label')}</p>
+                            <p className="font-heading text-3xl font-bold text-gold tracking-tighter">
                                 {promo.discountType === 'PERCENTAGE' 
                                     ? <>{promo.discountValue}% OFF</>
-                                    : <>{format.number(promo.discountValue)} <span className="text-[10px]">đ</span></>}
+                                    : <>{format.number(promo.discountValue, { maximumFractionDigits: 0 })} <span className="text-xs uppercase">đ</span></>}
                             </p>
                         </div>
 
                         <button
                             onClick={onAction}
                             disabled={loading}
-                            className={`w-full h-12 rounded-xl font-heading text-[9px] uppercase tracking-[.2em] font-bold flex items-center justify-center gap-2 transition-all active:scale-95 shadow-xl ${
+                            className={cn(
+                                "w-full h-14 rounded-2xl text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-3 transition-all active:scale-95 shadow-xl cursor-pointer",
                                 type === 'public' 
-                                    ? 'bg-emerald-500 text-black hover:bg-emerald-400' 
+                                    ? 'bg-emerald-600 dark:bg-emerald-500 text-white hover:bg-emerald-700' 
                                     : 'bg-gold text-black hover:bg-gold/80'
-                            }`}
+                            )}
                         >
                             {loading ? (
-                                <Loader2 size={14} className="animate-spin block" />
+                                <Loader2 size={16} className="animate-spin" />
                             ) : (
                                 <>
-                                    {type === 'public' ? <Plus size={16} strokeWidth={3} /> : <Zap size={16} strokeWidth={3} />}
+                                    {type === 'public' ? <Plus size={18} strokeWidth={3} /> : <Zap size={18} strokeWidth={3} />}
                                     <span>{type === 'public' ? tMarket('claim_btn') : tMarket('redeem_btn', { points: promo.pointsCost })}</span>
                                 </>
                             )}
@@ -266,7 +267,7 @@ function OfferCard({ promo, type, onAction, loading, tMarket, t, tFeatured, form
     );
 }
 
-function OwnedVoucherCard({ promo: userPromo, i, copyToClipboard, copiedCode, formatTimeRemaining, t, tFeatured }: any) {
+function OwnedVoucherCard({ promo: userPromo, i, copyToClipboard, copiedCode, formatTimeRemaining, t }: any) {
     const promo = userPromo.promotion || {};
     
     return (
@@ -274,48 +275,46 @@ function OwnedVoucherCard({ promo: userPromo, i, copyToClipboard, copiedCode, fo
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.1 }}
-            className="glass p-1 bg-gradient-to-br from-gold/20 via-transparent to-gold/5 rounded-[3.5rem] group"
+            className="group"
         >
-            <div className="bg-background/40 backdrop-blur-3xl p-10 rounded-[3.4rem] h-full flex flex-col relative overflow-hidden">
+            <div className="glass rounded-[3rem] p-10 h-full relative overflow-hidden group-hover:border-gold/30 transition-all duration-500">
                 <div className="flex justify-between items-start mb-8">
                     <div className="w-16 h-16 glass rounded-2xl border-gold/20 flex items-center justify-center text-gold">
                         <Tag size={24} />
                     </div>
                     {promo.endDate && (
-                        <div className="text-right">
-                            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gold/10 border border-gold/10 text-gold text-[8px] uppercase tracking-[.3em] font-bold">
-                                <Timer size={14} />
-                                {formatTimeRemaining(promo.endDate)}
-                            </div>
+                        <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-gold/10 border border-gold/10 text-gold text-[8px] font-bold uppercase tracking-[.3em]">
+                            <Timer size={14} />
+                            {formatTimeRemaining(promo.endDate)}
                         </div>
                     )}
                 </div>
 
-                <h2 className="text-3xl font-heading text-foreground uppercase tracking-wider mb-3 leading-tight group-hover:text-gold transition-colors">
+                <h2 className="font-heading text-3xl font-bold uppercase tracking-widest text-foreground mb-4 group-hover:text-gold transition-colors">
                     {promo.code || 'UNKNOWN'}
                 </h2>
-                <p className="text-[11px] text-muted-foreground font-body leading-relaxed mb-8 flex-1 italic uppercase tracking-widest">
+                <p className="font-body text-[10px] font-bold uppercase tracking-widest text-stone-500 leading-relaxed italic mb-8">
                     {promo.description || t('fallback_desc')}
                 </p>
 
-                <div className="flex items-center justify-between pt-8 border-t border-white/5">
+                <div className="pt-8 border-t border-black/5 dark:border-white/5 flex items-center justify-between">
                     <div className="space-y-1">
-                        <p className="text-[9px] text-muted-foreground uppercase tracking-[.3em] font-bold">{t('benefit_label')}</p>
-                        <p className="text-2xl font-serif text-gold">
+                        <p className="text-[8px] font-bold uppercase tracking-[.3em] text-stone-400 dark:text-stone-700">{t('benefit_label')}</p>
+                        <p className="font-heading text-3xl font-bold text-gold tracking-tighter">
                             {promo.discountValue ? (
                                 promo.discountType === 'PERCENTAGE' 
-                                    ? t('discount_off', { value: promo.discountValue }) 
-                                    : `-${new Intl.NumberFormat().format(promo.discountValue)} ${tFeatured('currency_symbol') || 'đ'}`
+                                    ? `${promo.discountValue}% OFF`
+                                    : `-${new Intl.NumberFormat().format(promo.discountValue)} đ`
                             ) : '---'}
                         </p>
                     </div>
                     <button
                         onClick={() => copyToClipboard(promo.code)}
-                        className="h-14 px-8 rounded-2xl glass border-gold/20 text-gold font-heading text-[10px] uppercase tracking-[.3em] font-bold hover:bg-gold hover:text-black transition-all flex items-center gap-3 active:scale-95 shadow-xl shadow-gold/5"
+                        className="h-14 px-8 rounded-2xl glass border-gold/20 text-gold font-bold uppercase tracking-widest text-[10px] hover:bg-gold hover:text-black transition-all flex items-center gap-3 active:scale-95 shadow-xl cursor-pointer"
                     >
                         {copiedCode === promo.code ? (
                             <>
-                                <CheckCircle2 size={16} className="animate-in zoom-in" />
+                                <CheckCircle2 size={16} />
                                 {t('copied')}
                             </>
                         ) : (
@@ -328,15 +327,5 @@ function OwnedVoucherCard({ promo: userPromo, i, copyToClipboard, copiedCode, fo
                 </div>
             </div>
         </motion.div>
-    );
-}
-
-function EmptyState({ message, icon: Icon }: any) {
-    return (
-        <div className="glass p-20 rounded-[4rem] text-center bg-background/20 relative overflow-hidden">
-             <div className="absolute inset-0 bg-gradient-to-b from-gold/5 to-transparent pointer-events-none" />
-            <Icon className="w-16 h-16 text-gold/20 mx-auto mb-8" />
-            <p className="text-[11px] text-muted-foreground font-body uppercase tracking-[.3em] font-bold">{message}</p>
-        </div>
     );
 }

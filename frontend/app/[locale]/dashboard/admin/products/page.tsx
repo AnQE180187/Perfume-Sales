@@ -478,22 +478,17 @@ export default function AdminProducts() {
         <section className="grid grid-cols-2 2xl:grid-cols-4 gap-4 mb-10">
           {[
             { label: 'Tổng Sản Phẩm', value: stats?.totalProducts ?? 0, icon: Box, color: 'text-gold' },
-            { label: 'Tổng Đơn Vị Tồn', value: stats?.totalStock ?? 0, icon: Database, color: 'text-blue-500' },
+            { label: 'Tổng Đơn Vị Tồn', value: stats?.totalStock ?? 0, icon: Database, color: 'text-blue-400' },
             { label: 'Sắp Hết Hàng', value: stats?.lowStockVariants ?? 0, icon: AlertTriangle, color: 'text-amber-500' },
             { label: 'Đã Hết Hàng', value: stats?.outOfStockVariants ?? 0, icon: XCircle, color: 'text-red-500' },
           ].map((stat, i) => (
-            <div key={i} className="glass group/stat p-5 rounded-[2rem] border border-white/10 flex flex-col gap-3 relative overflow-hidden transition-all duration-500 hover:border-gold/20">
-              <div className="absolute -right-4 -top-4 w-24 h-24 bg-gold/5 rounded-full blur-2xl group-hover/stat:bg-gold/10 transition-all duration-700" />
-              
-              <div className="flex items-center justify-between relative z-10">
-                <div className={cn("p-2.5 rounded-xl bg-white/5 border border-white/5", stat.color)}>
-                  <stat.icon className="w-4 h-4" />
-                </div>
+            <div key={i} className="glass p-6 rounded-[2rem] border border-white/5 flex items-center gap-5 transition-all hover:border-gold/20 hover:bg-white/5">
+              <div className={cn("flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5", stat.color)}>
+                <stat.icon className="w-5 h-5 opacity-80" />
               </div>
-
-              <div className="space-y-0.5 relative z-10">
-                <p className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground opacity-60">{stat.label}</p>
-                <h4 className="text-2xl font-heading tracking-tighter italic gold-gradient">{stat.value.toLocaleString()}</h4>
+              <div className="space-y-0.5">
+                <p className="text-[9px] uppercase tracking-[0.2em] font-bold text-muted-foreground/60">{stat.label}</p>
+                <h4 className="text-2xl font-heading tracking-tighter gold-gradient italic">{stat.value.toLocaleString()}</h4>
               </div>
             </div>
           ))}
@@ -665,11 +660,11 @@ export default function AdminProducts() {
                       <h3 className="font-heading text-base text-foreground line-clamp-1 leading-tight group-hover:text-gold transition-colors">{p.name}</h3>
                     </div>
 
-                    <div className="flex flex-wrap gap-1.5 mb-4">
-                      <span className="text-[7px] uppercase tracking-tighter font-bold text-muted-foreground/60 border border-border/40 px-1.5 py-0.5 rounded-md bg-secondary/5">
+                    <div className="flex flex-wrap gap-1.5 mb-4 opacity-60">
+                      <span className="text-[7px] uppercase tracking-widest font-bold text-foreground border border-white/10 px-2 py-0.5 rounded-full bg-white/5">
                         {p.concentration || "Parfum"}
                       </span>
-                      <span className="text-[7px] uppercase tracking-tighter font-bold text-muted-foreground/60 border border-border/40 px-1.5 py-0.5 rounded-md bg-secondary/5">
+                      <span className="text-[7px] uppercase tracking-widest font-bold text-foreground border border-white/10 px-2 py-0.5 rounded-full bg-white/5">
                         {p.scentFamily?.name || "Floral"}
                       </span>
                     </div>

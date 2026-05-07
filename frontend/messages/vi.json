@@ -844,7 +844,37 @@
       "suggestion_mode": "Chế độ gợi ý",
       "ai_safe_suggestion": "Gợi ý an toàn: Tập trung vào các mùi hương quen thuộc với bạn.",
       "ai_balanced_suggestion": "Gợi ý cân bằng: Khám phá mùi hương mới nhưng vẫn giữ nét quen thuộc.",
-      "ai_daring_suggestion": "Gợi ý phá cách: Ưu tiên trải nghiệm độc đáo và mới lạ hoàn toàn."
+      "ai_daring_suggestion": "Gợi ý phá cách: Ưu tiên trải nghiệm độc đáo và mới lạ hoàn toàn.",
+      "analyzing": "Đang phân tích DNA...",
+      "neural_scanning": "Hệ thống đang quét cấu trúc hương..."
+    },
+    "chat": {
+      "buttons": {
+        "back": "Quay lại",
+        "send_image": "Gửi ảnh"
+      },
+      "placeholders": {
+        "type_message": "Nhập tin nhắn..."
+      },
+      "fallbacks": {
+        "no_selection_title": "Chọn một cuộc trò chuyện",
+        "no_selection_subtitle": "Chọn một cuộc hội thoại từ danh sách để bắt đầu."
+      }
+    },
+    "consultation": {
+      "analyzing": "AI đang tổng hợp dữ liệu...",
+      "blueprint_title": "Bản Thiết Kế Mùi Hương",
+      "blueprint_subtitle": "Bản đồ khứu giác dành riêng cho bạn",
+      "results_ready": "Kết quả đã sẵn sàng"
+    },
+    "rewards": {
+      "elite_badge": "Hội Viên Thân Thiết",
+      "requirement": "Yêu cầu",
+      "perks": "Đặc quyền",
+      "current_points": "Điểm hiện có"
+    },
+    "notifications_page": {
+      "syncing": "Đang đồng bộ..."
     },
     "ai_logs": {
       "title": "Hiệu Suất Hệ Thống AI",
@@ -1142,6 +1172,10 @@
           "loyalty": "Điểm thưởng",
           "ai_chat": "Tư vấn AI",
           "quiz": "Kết quả Trắc nghiệm",
+          "scent_dna": "Scent DNA",
+          "consultation": "Tư vấn AI",
+          "rewards": "Phần thưởng",
+          "notifications": "Thông báo",
           "explore": "Khám phá thêm →"
         }
       },
@@ -1434,6 +1468,7 @@
         "empty": "Bạn chưa có thông báo nào.",
         "view_details": "Xem Chi Tiết",
         "load_more": "Tải Thêm Thông Báo",
+        "syncing": "Đang đồng bộ...",
         "time": {
           "just_now": "Vừa xong",
           "mins_ago": "{count} phút trước",
@@ -3298,5 +3333,28 @@
     "today": "Hôm nay",
     "this_week": "Tuần này",
     "this_month": "Tháng này"
+  },
+  "rewards_page": {
+    "elite_badge": "Hội Viên Thân Thiết",
+    "requirement": "Yêu cầu",
+    "perks": "Đặc quyền",
+    "current_points": "Điểm hiện có",
+    "tiers": {
+      "silver": { "name": "Bạc (Silver)", "req": "Hội viên mới", "perk": "Ưu đãi cơ bản" },
+      "gold": { "name": "Vàng (Gold)", "req": "500+ Điểm", "perk": "Giảm 5% mọi đơn hàng" },
+      "platinum": { "name": "Bạch Kim (Platinum)", "req": "2000+ Điểm", "perk": "Giảm 10% + Quà tặng quý hiếm" },
+      "obsidian": { "name": "Hắc Diện Thạch (Obsidian)", "req": "5000+ Điểm", "perk": "Đặc quyền thượng hạng & Private Event" }
+    }
+  },
+  "consultation_page": {
+    "analyzing": "AI đang tổng hợp dữ liệu...",
+    "blueprint_title": "Bản Thiết Kế Mùi Hương",
+    "blueprint_subtitle": "Bản đồ khứu giác dành riêng cho bạn",
+    "results_ready": "Kết quả đã sẵn sàng",
+    "steps": {
+      "intensity": { "title": "Bạn thích độ đậm đặc như thế nào?" },
+      "vibe": { "title": "Phong cách bạn hướng tới?" },
+      "season": { "title": "Bạn muốn dùng vào mùa nào?" }
+    }
   }
 }

@@ -2,8 +2,9 @@
 
 import { UserAddress } from '@/services/address.service';
 import { cn } from '@/lib/utils';
-import { MapPin, Phone, User, CheckCircle2 } from 'lucide-react';
+import { MapPin, Phone, User, CheckCircle2, ShieldCheck, Zap } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { motion } from 'framer-motion';
 
 interface AddressCardProps {
     address: UserAddress;
@@ -16,61 +17,63 @@ export function AddressCard({ address, selected, onClick, className }: AddressCa
     const t = useTranslations('address.card');
 
     return (
-        <div
+        <motion.div
+            layout
             onClick={onClick}
             className={cn(
-                'relative rounded-[2rem] border-2 p-7 transition-all cursor-pointer group shadow-[0_20px_50px_-36px_rgba(15,23,42,0.28)]',
+                'relative rounded-[2.5rem] border p-10 transition-all duration-500 cursor-pointer group backdrop-blur-3xl',
                 selected
-                    ? 'border-gold bg-gold/5 dark:bg-gold/10'
-                    : 'border-stone-100 dark:border-white/5 bg-white dark:bg-zinc-900 hover:border-gold/50',
+                    ? 'border-gold bg-gold/5 shadow-[0_20px_50px_-36px_rgba(197,160,89,0.3)]'
+                    : 'border-white/5 bg-zinc-900/40 hover:border-gold/30',
                 className
             )}
         >
-            {selected && (
-                <div className="absolute right-5 top-5 text-gold">
-                    <CheckCircle2 size={22} />
-                </div>
-            )}
-
-            <div className="space-y-5">
+            <div className="flex justify-between items-start mb-8">
                 <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-50 text-stone-500 transition-colors group-hover:text-gold dark:bg-zinc-800 dark:text-stone-400">
-                        <User size={16} />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold/10 text-gold">
+                        <MapPin size={18} />
                     </div>
                     <div>
-                        <p className="text-xs font-semibold text-stone-500 dark:text-stone-400">{t('recipient')}</p>
-                        <p className="text-lg font-semibold text-luxury-black dark:text-white">{address.recipientName}</p>
+                        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-stone-700">{t('shipping')}</p>
+                        <p className="font-heading text-lg font-bold text-foreground tracking-widest">ARCHIVE #{address.id.slice(-6).toUpperCase()}</p>
+                    </div>
+                </div>
+                {selected && (
+                    <div className="h-8 w-8 rounded-full bg-gold flex items-center justify-center text-black shadow-lg shadow-gold/20">
+                        <CheckCircle2 size={16} />
+                    </div>
+                )}
+            </div>
+
+            <div className="space-y-8">
+                <div className="grid gap-8 sm:grid-cols-2">
+                    <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-stone-700">
+                            <User size={12} className="text-gold/60" /> {t('recipient')}
+                        </div>
+                        <p className="font-heading text-base font-bold text-foreground uppercase tracking-widest">{address.recipientName}</p>
+                    </div>
+                    <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-stone-700">
+                            <Phone size={12} className="text-gold/60" /> {t('phone')}
+                        </div>
+                        <p className="font-mono text-base font-bold text-foreground tracking-widest">{address.phone}</p>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-50 text-stone-500 transition-colors group-hover:text-gold dark:bg-zinc-800 dark:text-stone-400">
-                        <Phone size={16} />
-                    </div>
-                    <div>
-                        <p className="text-xs font-semibold text-stone-500 dark:text-stone-400">{t('phone')}</p>
-                        <p className="text-base font-medium text-luxury-black dark:text-white">{address.phone}</p>
-                    </div>
-                </div>
-
-                <div className="flex items-start gap-3 border-t border-stone-50 pt-3 dark:border-white/5">
-                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-stone-50 text-stone-500 transition-colors group-hover:text-gold dark:bg-zinc-800 dark:text-stone-400">
-                        <MapPin size={16} />
-                    </div>
-                    <div className="flex-1">
-                        <p className="mb-1 text-xs font-semibold text-stone-500 dark:text-stone-400">{t('shipping')}</p>
-                        <p className="text-sm leading-7 text-stone-600 dark:text-stone-300">
-                            {address.detailAddress}, {address.wardName}, {address.districtName}, {address.provinceName}
-                        </p>
-                    </div>
+                <div className="pt-8 border-t border-white/5">
+                    <p className="text-sm leading-relaxed text-stone-400 font-body italic">
+                        {address.detailAddress}, {address.wardName}, {address.districtName}, {address.provinceName}
+                    </p>
                 </div>
             </div>
 
             {address.isDefault && (
-                <div className="mt-5 inline-flex items-center rounded-full border border-stone-200 bg-stone-100 px-3 py-1.5 dark:border-white/10 dark:bg-white/5">
-                    <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">{t('default')}</span>
+                <div className="absolute bottom-6 right-6 flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 py-1.5 shadow-lg shadow-emerald-500/10">
+                    <ShieldCheck size={12} className="text-emerald-500" />
+                    <span className="text-[8px] font-black uppercase tracking-widest text-emerald-500">{t('default')}</span>
                 </div>
             )}
-        </div>
+        </motion.div>
     );
 }

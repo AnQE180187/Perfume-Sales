@@ -23,58 +23,19 @@ import {
 import { Link } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
-const STATUS_CONFIG: Record<
-  ReturnStatus,
-  { icon: any; color: string }
-> = {
-  REQUESTED: {
-    icon: Clock,
-    color: "bg-amber-500/10 text-amber-600 border-amber-500/20",
-  },
-  AWAITING_CUSTOMER: {
-    icon: AlertCircle,
-    color: "bg-blue-500/10 text-blue-600 border-blue-500/20",
-  },
-  REVIEWING: {
-    icon: RefreshCw,
-    color: "bg-purple-500/10 text-purple-600 border-purple-500/20",
-  },
-  APPROVED: {
-    icon: CheckCircle,
-    color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
-  },
-  RETURNING: {
-    icon: Truck,
-    color: "bg-orange-500/10 text-orange-600 border-orange-500/20",
-  },
-  RECEIVED: {
-    icon: Package,
-    color: "bg-teal-500/10 text-teal-600 border-teal-500/20",
-  },
-  REFUNDING: {
-    icon: RefreshCw,
-    color: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
-  },
-  REFUND_FAILED: {
-    icon: XCircle,
-    color: "bg-red-500/10 text-red-600 border-red-500/20",
-  },
-  COMPLETED: {
-    icon: CheckCircle,
-    color: "bg-gold/10 text-amber-600 border-gold/20",
-  },
-  REJECTED: {
-    icon: XCircle,
-    color: "bg-red-500/10 text-red-600 border-red-500/20",
-  },
-  REJECTED_AFTER_RETURN: {
-    icon: XCircle,
-    color: "bg-red-500/10 text-red-600 border-red-500/20",
-  },
-  CANCELLED: {
-    icon: XCircle,
-    color: "bg-stone-500/10 text-stone-500 border-stone-500/20",
-  },
+const STATUS_CONFIG: Record<ReturnStatus, { icon: any; color: string }> = {
+  REQUESTED: { icon: Clock, color: "bg-amber-500/10 text-amber-500 border-amber-500/20" },
+  AWAITING_CUSTOMER: { icon: AlertCircle, color: "bg-blue-500/10 text-blue-500 border-blue-500/20" },
+  REVIEWING: { icon: RefreshCw, color: "bg-purple-500/10 text-purple-500 border-purple-500/20" },
+  APPROVED: { icon: CheckCircle, color: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" },
+  RETURNING: { icon: Truck, color: "bg-orange-500/10 text-orange-500 border-orange-500/20" },
+  RECEIVED: { icon: Package, color: "bg-teal-500/10 text-teal-500 border-teal-500/20" },
+  REFUNDING: { icon: RefreshCw, color: "bg-indigo-500/10 text-indigo-500 border-indigo-500/20" },
+  REFUND_FAILED: { icon: XCircle, color: "bg-red-500/10 text-red-500 border-red-500/20" },
+  COMPLETED: { icon: CheckCircle, color: "bg-gold/10 text-gold border-gold/20" },
+  REJECTED: { icon: XCircle, color: "bg-red-500/10 text-red-500 border-red-500/20" },
+  REJECTED_AFTER_RETURN: { icon: XCircle, color: "bg-red-500/10 text-red-500 border-red-500/20" },
+  CANCELLED: { icon: XCircle, color: "bg-stone-500/10 text-stone-500 border-stone-500/20" },
 };
 
 export function ReturnList() {
@@ -86,16 +47,10 @@ export function ReturnList() {
 
   const fetchReturns = () => {
     setLoading(true);
-    returnsService
-      .listMyReturns()
-      .then(setReturns)
-      .catch(() => setReturns([]))
-      .finally(() => setLoading(false));
+    returnsService.listMyReturns().then(setReturns).catch(() => setReturns([])).finally(() => setLoading(false));
   };
 
-  useEffect(() => {
-    fetchReturns();
-  }, []);
+  useEffect(() => { fetchReturns(); }, []);
 
   const formatCurrency = (amount?: number) => {
     if (!amount) return "—";
@@ -107,132 +62,95 @@ export function ReturnList() {
   };
 
   return (
-    <div className="flex flex-col gap-6 md:gap-10 p-4 sm:p-10">
-      <header className="mb-4 md:mb-8">
-        <h1 className="text-2xl md:text-3xl font-heading gold-gradient mb-2 uppercase tracking-tighter">
-          {t("title")}
-        </h1>
-        <p className="text-[8px] md:text-[10px] text-muted-foreground uppercase tracking-[0.35em] font-bold">
-          {t("subtitle")}
-        </p>
+    <div className="space-y-12 pb-12">
+      <header>
+          <div className="flex items-center gap-4 mb-4">
+              <div className="h-[1px] w-12 bg-gold/50" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-gold/60">Registry</span>
+          </div>
+          <h1 className="font-heading text-5xl font-bold uppercase tracking-tighter text-foreground md:text-6xl">
+              Reversion <span className="gold-gradient">Logs</span>
+          </h1>
+          <p className="mt-4 font-body text-[10px] font-bold uppercase tracking-widest text-stone-500">{t("subtitle")}</p>
       </header>
 
-      {loading ? (
-        <div className="py-20 flex justify-center">
-          <Loader2 className="animate-spin text-gold" size={32} />
-        </div>
-      ) : returns.length === 0 ? (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="py-16 md:py-20 text-center space-y-6 glass rounded-[2.5rem] md:rounded-[3rem] border border-border bg-background/40"
-        >
-          <RotateCcw
-            className="mx-auto text-muted-foreground/20 w-[60px] h-[60px] md:w-[80px] md:h-[80px]"
-            strokeWidth={1}
-          />
-          <div className="space-y-2 px-6">
-            <h3 className="text-lg md:text-xl font-heading text-foreground uppercase tracking-widest">
-              {t("empty_title")}
-            </h3>
-            <p className="text-[9px] md:text-[10px] font-bold tracking-widest uppercase text-muted-foreground">
-              {t("empty_desc")}
-            </p>
-          </div>
-          <Link
-            href="/dashboard/customer/orders"
-            className="inline-flex items-center gap-2 text-gold hover:text-gold/80 text-[10px] font-bold uppercase tracking-widest transition-colors"
-          >
-            {t("back_to_orders")} <ChevronRight size={12} />
-          </Link>
-        </motion.div>
-      ) : (
-        <div className="space-y-6">
-          {returns.map((ret, i) => {
-            const cfg =
-              STATUS_CONFIG[ret.status as ReturnStatus] ||
-              STATUS_CONFIG.REQUESTED;
-            const StatusIcon = cfg.icon;
+      <div className="space-y-6">
+        {loading ? (
+            <div className="flex h-[400px] items-center justify-center">
+                <Loader2 className="h-10 w-10 animate-spin text-gold" />
+            </div>
+        ) : returns.length === 0 ? (
+            <div className="py-24 text-center glass rounded-[3rem]">
+                <RotateCcw className="mx-auto text-stone-200 dark:text-stone-800 mb-6" size={64} strokeWidth={1} />
+                <h3 className="font-heading text-2xl uppercase tracking-widest text-foreground">{t("empty_title")}</h3>
+                <p className="mt-4 text-[10px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-700">{t("empty_desc")}</p>
+                <Link href="/dashboard/customer/orders" className="mt-8 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gold hover:opacity-80">
+                    {t("back_to_orders")} <ChevronRight size={14} />
+                </Link>
+            </div>
+        ) : (
+            returns.map((ret, i) => {
+                const config = STATUS_CONFIG[ret.status as ReturnStatus] || STATUS_CONFIG.REQUESTED;
+                const Icon = config.icon;
 
-            return (
-              <motion.div
-                key={ret.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.08 }}
-                className="glass bg-black/60 backdrop-blur-xl rounded-3xl p-8 border border-gold/20 shadow-lg hover:shadow-2xl hover:border-gold/40 transition-all flex flex-col md:flex-row gap-6 relative overflow-hidden group"
-              >
-                {/* Decorative glow */}
-                <div className="absolute inset-0 bg-gradient-to-br from-gold/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-                <div className="flex flex-col lg:flex-row gap-6">
-                  {/* Left section */}
-                  <div className="flex-1">
-                    <div className="flex flex-col sm:flex-row items-start justify-between gap-4 mb-5 md:mb-6">
-                      <div className="w-full sm:w-auto">
-                        <span className="text-[8px] font-bold text-gold uppercase tracking-[.3em] mb-1 block">
-                          {t("return_id")}
-                        </span>
-                        <p className="font-mono font-bold text-foreground text-[10px] md:text-sm uppercase tracking-tighter">
-                          #{ret.id.slice(-10).toUpperCase()}
-                        </p>
-                      </div>
-                      <div
-                        className={cn(
-                          "inline-flex items-center gap-1.5 px-3 md:px-4 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border transition-all",
-                          cfg.color
-                        )}
-                      >
-                        <StatusIcon className="w-2.5 h-2.5 md:w-3 md:h-3" />
-                        {t(`status.${ret.status}` as any) || ret.status}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 md:gap-6 border-t border-gold/10 pt-5 mt-2 relative z-10">
-                      <div>
-                        <p className="text-[8px] md:text-[9px] font-bold text-muted-foreground uppercase tracking-widest mb-1">
-                          {t("order_ref")}
-                        </p>
-                        <p className="text-[10px] md:text-[11px] font-bold text-foreground uppercase truncate">
-                          {ret.orderId.slice(-10).toUpperCase()}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-[8px] md:text-[9px] font-bold text-muted-foreground uppercase tracking-widest mb-1">
-                          {t("items_count", { count: ret.items.length })}
-                        </p>
-                        <p className="text-[10px] md:text-[11px] font-bold text-foreground uppercase tracking-tighter">
-                          {ret.items.length} {t("items_label")}
-                        </p>
-                      </div>
-                      {ret.refundAmount != null && (
-                        <div className="col-span-2 sm:col-span-1 border-t sm:border-t-0 border-gold/5 pt-3 sm:pt-0">
-                          <p className="text-[8px] md:text-[9px] font-bold text-muted-foreground uppercase tracking-widest mb-1">
-                            {t("refund_label")}
-                          </p>
-                          <p className="text-base md:text-sm font-heading font-bold text-gold">
-                            {formatCurrency(ret.refundAmount)}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Action */}
-                  <div className="flex items-end lg:items-center relative z-10 shrink-0 border-t lg:border-t-0 border-gold/10 pt-5 lg:pt-0 mt-4 lg:mt-0 lg:pl-6 lg:border-l">
-                    <Link
-                      href={`/dashboard/customer/returns/${ret.id}`}
-                      className="flex justify-center items-center gap-2 px-6 py-3.5 w-full lg:w-auto bg-gold/10 hover:bg-gold hover:text-black border border-gold/30 rounded-2xl text-[9px] md:text-xs font-bold uppercase tracking-widest text-gold transition-all duration-300 min-h-[44px]"
+                return (
+                    <motion.div
+                        key={ret.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.1 }}
+                        className="group relative glass rounded-[2.5rem] p-8 md:p-10 hover:border-gold/30 transition-all duration-500 shadow-2xl shadow-black/5 dark:shadow-black/20"
                     >
-                      {t("view_detail")}
-                      <ChevronRight size={14} className="ml-1" />
-                    </Link>
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
-      )}
+                        <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-10">
+                            <div className="flex-1 space-y-8">
+                                <div className="flex flex-wrap items-center gap-6">
+                                    <div className={cn(
+                                        "flex h-16 w-16 items-center justify-center rounded-2xl glass border group-hover:scale-110 group-hover:rotate-3 transition-all duration-700",
+                                        config.color.split(" ")[0], // bg
+                                        config.color.split(" ")[2]  // border
+                                    )}>
+                                        <Icon size={28} className={config.color.split(" ")[1]} />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-700 mb-1">ID: #{ret.id.slice(-8).toUpperCase()}</p>
+                                        <h3 className="font-heading text-2xl font-bold uppercase tracking-widest text-foreground">
+                                            {t("items_count", { count: ret.items.length })} {t("items_label")}
+                                        </h3>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-wrap gap-12 pt-4">
+                                    <div className="space-y-2">
+                                        <p className="text-[9px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-700">Order Ref</p>
+                                        <p className="text-[11px] font-bold text-foreground">#{ret.orderId.slice(-8).toUpperCase()}</p>
+                                    </div>
+                                    {ret.refundAmount != null && (
+                                        <div className="space-y-2">
+                                            <p className="text-[9px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-700">Refund Value</p>
+                                            <p className="font-heading text-xl font-bold text-gold tracking-tighter">{formatCurrency(ret.refundAmount)}</p>
+                                        </div>
+                                    )}
+                                    <div className="space-y-2">
+                                        <p className="text-[9px] font-bold uppercase tracking-widest text-stone-400 dark:text-stone-700">Status</p>
+                                        <div className={cn("inline-flex items-center gap-2 rounded-full border px-5 py-1.5 text-[10px] font-bold uppercase tracking-widest shadow-lg", config.color)}>
+                                            <div className="h-1.5 w-1.5 rounded-full bg-current animate-pulse" />
+                                            {t(`status.${ret.status}` as any) || ret.status}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="shrink-0">
+                                <Link href={`/dashboard/customer/returns/${ret.id}`} className="flex h-14 items-center gap-3 rounded-full bg-gold px-10 text-[10px] font-bold uppercase tracking-widest text-black shadow-lg shadow-gold/20 hover:scale-105 transition-all">
+                                    Details <ChevronRight size={14} />
+                                </Link>
+                            </div>
+                        </div>
+                    </motion.div>
+                );
+            })
+        )}
+      </div>
     </div>
   );
 }

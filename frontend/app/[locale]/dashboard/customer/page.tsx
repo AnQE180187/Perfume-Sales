@@ -1,13 +1,26 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useFormatter, useLocale, useTranslations } from 'next-intl';
-import { ArrowUpRight, Coins, Inbox, Loader2, MapPinned, Sparkles, Tag, User, Zap } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
+import { 
+    ArrowUpRight, 
+    Inbox, 
+    Loader2, 
+    MapPinned, 
+    Sparkles, 
+    User, 
+    Zap, 
+    Dna, 
+    Bot, 
+    Bell, 
+    ChevronRight,
+    Heart,
+    ShieldCheck
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
-import { AuthGuard } from '@/components/auth/auth-guard';
 import { Link } from '@/lib/i18n';
-import { loyaltyService } from '@/services/loyalty.service';
-import { promotionService } from '@/services/promotion.service';
 import { quizService, type QuizRecommendation } from '@/services/quiz.service';
 
 interface LatestQuizResult {
@@ -25,21 +38,9 @@ interface LatestQuizResult {
 export default function CustomerDashboard() {
     const t = useTranslations('dashboard.customer.home');
     const locale = useLocale();
-    const format = useFormatter();
 
-    const [points, setPoints] = useState<number | null>(null);
-    const [loading, setLoading] = useState(true);
     const [quizLoading, setQuizLoading] = useState(true);
-    const [offersLoading, setOffersLoading] = useState(true);
     const [latestQuiz, setLatestQuiz] = useState<LatestQuizResult | null>(null);
-    const [offersCount, setOffersCount] = useState(0);
-
-    useEffect(() => {
-        loyaltyService.getStatus()
-            .then((data) => setPoints(data.points))
-            .catch(console.error)
-            .finally(() => setLoading(false));
-    }, []);
 
     useEffect(() => {
         quizService.getHistory()
@@ -52,194 +53,213 @@ export default function CustomerDashboard() {
             .finally(() => setQuizLoading(false));
     }, []);
 
-    useEffect(() => {
-        Promise.all([
-            promotionService.getPublic(),
-            promotionService.getRedeemable(),
-        ])
-            .then(([publicPromotions, redeemablePromotions]) => {
-                setOffersCount(publicPromotions.length + redeemablePromotions.length);
-            })
-            .catch(console.error)
-            .finally(() => setOffersLoading(false));
-    }, []);
-
     const latestRecommendations = latestQuiz?.recommendation ?? latestQuiz?.recommendations ?? [];
     const featuredRecommendation = latestRecommendations[0];
 
+    const modules = [
+        { key: 'profile', icon: User, href: '/dashboard/customer/profile', color: 'text-stone-400 dark:text-stone-500' },
+        { key: 'orders', icon: Inbox, href: '/dashboard/customer/orders', color: 'text-stone-400 dark:text-stone-500' },
+        { key: 'loyalty', icon: Zap, href: '/dashboard/customer/loyalty', color: 'text-gold' },
+        { key: 'scent_dna', icon: Dna, href: '/dashboard/customer/scent-dna', color: 'text-gold' },
+        { key: 'consultation', icon: Bot, href: '/dashboard/customer/consultation', color: 'text-gold' },
+        { key: 'favorite', icon: Heart, href: '/dashboard/customer/favorite', color: 'text-stone-400 dark:text-stone-500' },
+        { key: 'addresses', icon: MapPinned, href: '/dashboard/customer/addresses', color: 'text-stone-400 dark:text-stone-500' },
+        { key: 'notifications', icon: Bell, href: '/dashboard/customer/notifications', color: 'text-stone-400 dark:text-stone-500' },
+    ];
+
     return (
-        <AuthGuard allowedRoles={['customer']}>
-            <main className="mx-auto max-w-7xl p-4 sm:p-8">
-                <header className="mb-8 flex flex-col items-start justify-between gap-4 md:mb-12 md:flex-row md:items-end">
-                    <div>
-                        <h1 className="mb-2 text-3xl font-heading uppercase tracking-tighter gold-gradient md:text-4xl">{t('title')}</h1>
-                        <p className="font-body text-[10px] uppercase tracking-widest text-muted-foreground md:text-sm">{t('subtitle')}</p>
+        <div className="mx-auto max-w-7xl">
+            <motion.header 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-12 flex flex-col items-start justify-between gap-6 md:flex-row md:items-end"
+            >
+                <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                        <div className="h-[1px] w-8 bg-gold/50" />
+                        <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-gold/80">{t('title')}</span>
                     </div>
+                    <h1 className="text-4xl font-heading uppercase tracking-tighter text-foreground md:text-6xl">
+                        The <span className="gold-gradient">Sanctum</span>
+                    </h1>
+                </div>
+            </motion.header>
 
-                    <div className="flex w-full gap-4 md:w-auto">
-                        <div className="glass flex flex-1 items-center gap-2 rounded-2xl border-gold/10 px-4 py-2 md:flex-none md:gap-3 md:px-6 md:py-3">
-                            {loading ? (
-                                <Loader2 size={14} className="animate-spin text-gold" />
-                            ) : (
-                                <Coins size={14} className="text-gold" />
-                            )}
-                            <div className="text-left">
-                                <p className="text-[7px] font-bold uppercase tracking-widest text-muted-foreground md:text-[8px]">{t('credits_label')}</p>
-                                <p className="font-heading text-[10px] text-foreground md:text-xs">
-                                    {loading ? '---' : format.number(points ?? 0)} {t('credits_suffix')}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </header>
-
-                <div className="mb-12 grid grid-cols-1 gap-6 md:gap-8 lg:grid-cols-3">
-                    <div className="glass rounded-[2.5rem] bg-gradient-to-br from-gold/20 via-transparent to-gold/5 p-1 md:rounded-[3rem] lg:col-span-2">
-                        <div className="flex h-full flex-col gap-6 rounded-[2.4rem] bg-background/40 p-6 backdrop-blur-3xl md:rounded-[2.9rem] md:flex-row md:gap-10 md:p-10">
-                            <div className="glass relative flex min-h-[200px] w-full items-center justify-center overflow-hidden rounded-[2rem] border-gold/10 aspect-square md:w-1/2 md:aspect-auto md:rounded-[2.5rem]">
-                                {quizLoading ? (
-                                    <>
-                                        <div className="absolute inset-0 bg-[url('/hero-bottle.png')] bg-cover bg-center opacity-10" />
-                                        <div className="relative z-10 text-center">
-                                            <Loader2 className="mx-auto mb-4 h-6 w-6 animate-spin text-gold md:h-8 md:w-8" />
-                                            <span className="font-heading text-[8px] uppercase tracking-[0.4em] text-gold md:text-[10px]">{t('analyzing')}</span>
-                                        </div>
-                                    </>
-                                ) : featuredRecommendation ? (
-                                    <>
-                                        {featuredRecommendation.imageUrl ? (
-                                            <img
-                                                src={featuredRecommendation.imageUrl}
-                                                alt={featuredRecommendation.name}
-                                                className="h-full w-full object-cover"
-                                            />
-                                        ) : (
-                                            <>
-                                                <div className="absolute inset-0 bg-[url('/hero-bottle.png')] bg-cover bg-center opacity-10" />
-                                                <Sparkles className="relative z-10 h-6 w-6 text-gold md:h-8 md:w-8" />
-                                            </>
-                                        )}
-                                    </>
-                                ) : (
-                                    <>
-                                        <div className="absolute inset-0 bg-[url('/hero-bottle.png')] bg-cover bg-center opacity-10" />
-                                        <div className="relative z-10 text-center">
-                                            <Sparkles className="mx-auto mb-4 h-6 w-6 animate-pulse text-gold md:h-8 md:w-8" />
-                                            <span className="font-heading text-[8px] uppercase tracking-[0.4em] text-gold md:text-[10px]">{t('analyzing')}</span>
-                                        </div>
-                                    </>
-                                )}
-                            </div>
-
-                            <div className="flex flex-1 flex-col justify-center text-center md:text-left">
-                                {featuredRecommendation ? (
-                                    <>
-                                        <p className="mb-2 font-heading text-[8px] uppercase tracking-[0.4em] text-gold md:text-[10px]">
-                                            {locale === 'vi' ? 'Đã cập nhật' : 'Updated'}
-                                        </p>
-                                        <h2 className="mb-3 text-xl font-heading uppercase leading-tight tracking-widest text-foreground md:mb-4 md:text-2xl">
-                                            {featuredRecommendation.name}
-                                        </h2>
-                                        <div className="mb-4 flex flex-wrap justify-center gap-2 md:mb-6 md:justify-start">
-                                            <span className="rounded-full bg-gold/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-gold">
-                                                {latestRecommendations.length} {locale === 'vi' ? 'Gợi ý' : 'Recommendations'}
-                                            </span>
-                                            {latestQuiz?.preferredFamily ? (
-                                                <span className="rounded-full bg-secondary px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                                                    {latestQuiz.preferredFamily}
-                                                </span>
-                                            ) : null}
-                                        </div>
-                                        <p className="mb-6 line-clamp-3 font-body text-[11px] leading-relaxed text-muted-foreground md:mb-8 md:text-sm">
-                                            {featuredRecommendation.reason || latestQuiz?.analysis || t('evolving_desc')}
-                                        </p>
-                                        <div className="flex justify-center md:justify-start">
-                                            <Link
-                                                href="/quiz"
-                                                className="rounded-full border border-border px-8 py-3.5 text-center font-heading text-[10px] font-bold uppercase tracking-widest text-foreground transition-all hover:border-gold/30 hover:text-gold"
-                                            >
-                                                {locale === 'vi' ? 'Xem kết quả' : 'View Results'}
-                                            </Link>
-                                        </div>
-                                    </>
-                                ) : (
-                                    <>
-                                        <h2 className="mb-3 text-xl font-heading uppercase leading-tight tracking-widest text-foreground md:mb-4 md:text-2xl">{t('evolving_title')}</h2>
-                                        <p className="mb-6 font-body text-[11px] leading-relaxed text-muted-foreground md:mb-8 md:text-sm">
-                                            {t('evolving_desc')}
-                                        </p>
-                                        <Link
-                                            href="/quiz"
-                                            className="rounded-full bg-gold px-8 py-3.5 text-center font-heading text-[10px] font-bold uppercase tracking-widest text-primary-foreground transition-all hover:scale-105"
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+                {/* Featured Intelligence Section */}
+                <motion.div 
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="lg:col-span-8"
+                >
+                    <div className="glass group relative overflow-hidden rounded-[2.5rem] p-1 transition-all duration-500 hover:border-gold/30">
+                        <div className="absolute inset-0 bg-gradient-to-br from-gold/5 via-transparent to-transparent opacity-50" />
+                        
+                        <div className="relative flex h-full flex-col gap-8 rounded-[2.4rem] p-8 md:flex-row md:p-12">
+                            <div className="relative aspect-square w-full shrink-0 overflow-hidden rounded-3xl border border-black/5 dark:border-white/10 md:w-[320px]">
+                                <AnimatePresence mode="wait">
+                                    {quizLoading ? (
+                                        <motion.div 
+                                            key="loading"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            exit={{ opacity: 0 }}
+                                            className="flex h-full items-center justify-center bg-stone-100 dark:bg-zinc-900"
                                         >
-                                            {t('refresh_btn')}
-                                        </Link>
-                                    </>
-                                )}
+                                            <div className="text-center">
+                                                <Loader2 size={32} className="mx-auto mb-4 animate-spin text-gold" />
+                                                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gold/60">{t('analyzing')}</p>
+                                            </div>
+                                        </motion.div>
+                                    ) : featuredRecommendation ? (
+                                        <motion.div
+                                            key="result"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            className="h-full"
+                                        >
+                                            <img
+                                                src={featuredRecommendation.imageUrl || '/hero-bottle.png'}
+                                                alt={featuredRecommendation.name}
+                                                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                            />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+                                        </motion.div>
+                                    ) : (
+                                        <motion.div 
+                                            key="empty"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            className="flex h-full items-center justify-center bg-stone-100 dark:bg-zinc-900"
+                                        >
+                                            <Sparkles size={48} className="text-gold/20" />
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
                             </div>
-                        </div>
-                    </div>
 
-                    <div className="grid grid-cols-1 gap-4 md:gap-6 xs:grid-cols-2 lg:grid-cols-1">
-                        <Link href="/dashboard/customer/loyalty">
-                            <div className="glass group flex h-full flex-col justify-between rounded-[2rem] border-gold/10 p-6 transition-all hover:border-gold/30 md:rounded-[2.5rem] md:p-8">
-                                <div className="mb-4 flex items-start justify-between">
-                                    <h3 className="font-heading text-[8px] uppercase tracking-[0.4em] text-gold md:text-[10px]">{t('credits_label')}</h3>
-                                    <ArrowUpRight size={12} className="text-muted-foreground transition-colors group-hover:text-gold" />
-                                </div>
-                                <div className="flex items-center gap-3 md:gap-4">
-                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold/10 text-gold md:h-12 md:w-12 md:rounded-2xl">
-                                        <Coins className="h-5 w-5 md:h-6 md:w-6" />
+                            <div className="flex flex-1 flex-col justify-center">
+                                <div className="mb-6 space-y-4">
+                                    <div className="flex items-center gap-3">
+                                        <span className="flex h-6 items-center rounded-full bg-gold/10 px-3 text-[10px] font-bold uppercase tracking-widest text-gold">
+                                            AI Synthesis
+                                        </span>
+                                        {latestQuiz?.preferredFamily && (
+                                            <span className="text-[10px] font-medium uppercase tracking-widest text-stone-400 dark:text-stone-500">
+                                                {latestQuiz.preferredFamily}
+                                            </span>
+                                        )}
                                     </div>
-                                    <p className="font-heading text-lg uppercase text-foreground md:text-2xl">
-                                        {loading ? '---' : format.number(points ?? 0)} <span className="font-body text-[8px] text-muted-foreground md:text-sm">{t('credits_suffix')}</span>
+                                    
+                                    <h2 className="text-3xl font-heading uppercase tracking-widest text-foreground md:text-4xl">
+                                        {featuredRecommendation ? featuredRecommendation.name : t('evolving_title')}
+                                    </h2>
+                                    
+                                    <p className="line-clamp-4 font-body text-sm leading-relaxed text-stone-600 dark:text-stone-400">
+                                        {featuredRecommendation?.reason || latestQuiz?.analysis || t('evolving_desc')}
                                     </p>
                                 </div>
-                            </div>
-                        </Link>
 
-                        <Link href="/dashboard/customer/promotions">
-                            <div className="glass group flex h-full flex-col justify-between rounded-[2rem] border-gold/10 bg-gradient-to-br from-transparent to-gold/5 p-6 transition-all hover:border-gold/30 md:rounded-[2.5rem] md:p-8">
-                                <div className="mb-4 flex items-start justify-between">
-                                    <div className="rounded-xl bg-gold/10 p-2 text-gold transition-transform group-hover:scale-110 md:rounded-2xl md:p-3">
-                                        <Tag className="h-4 w-4 md:h-5 md:w-5" />
-                                    </div>
-                                    <span className="animate-pulse rounded-full bg-gold/20 px-2 py-1 text-[7px] font-bold uppercase tracking-widest text-gold md:text-[8px]">{t('offers_new')}</span>
+                                <div className="flex flex-wrap gap-4">
+                                    <Link
+                                        href="/quiz"
+                                        className="group/btn relative flex items-center gap-3 overflow-hidden rounded-full bg-gold px-8 py-4 text-[11px] font-bold uppercase tracking-widest text-black transition-all hover:pr-10"
+                                    >
+                                        <span className="relative z-10">{featuredRecommendation ? (locale === 'vi' ? 'Xem Kết Quả' : 'View Results') : t('refresh_btn')}</span>
+                                        <ChevronRight size={16} className="relative z-10 transition-transform group-hover/btn:translate-x-1" />
+                                        <div className="absolute inset-0 -translate-x-full bg-white/20 transition-transform group-hover:translate-x-0" />
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
+
+                {/* Quick Actions / Stats Section */}
+                <motion.div 
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="space-y-6 lg:col-span-4"
+                >
+                    <div className="glass rounded-[2.5rem] p-8">
+                        <h3 className="mb-6 text-[10px] font-bold uppercase tracking-[0.3em] text-gold/60">Registry Status</h3>
+                        <div className="space-y-6">
+                            <div className="flex items-center justify-between border-b border-black/5 dark:border-white/5 pb-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                                    <span className="text-xs text-stone-500">Neural Sync</span>
+                                </div>
+                                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-500">ACTIVE</span>
+                            </div>
+                            <div className="flex items-center justify-between border-b border-black/5 dark:border-white/5 pb-4">
+                                <div className="flex items-center gap-3">
+                                    <ShieldCheck size={14} className="text-gold" />
+                                    <span className="text-xs text-stone-500">Encryption</span>
+                                </div>
+                                <span className="text-xs font-bold text-foreground">AES-256</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <User size={14} className="text-stone-400 dark:text-stone-500" />
+                                    <span className="text-xs text-stone-500">Identity</span>
+                                </div>
+                                <span className="text-xs font-bold text-foreground uppercase tracking-widest">Guest</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <Link href="/dashboard/chat">
+                        <div className="group relative flex items-center justify-between overflow-hidden rounded-[2rem] border border-gold/10 bg-gold/5 p-6 transition-all hover:bg-gold/10">
+                            <div className="relative z-10 flex items-center gap-4">
+                                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gold text-black transition-transform duration-500 group-hover:rotate-12">
+                                    <Zap size={20} />
                                 </div>
                                 <div>
-                                    <h3 className="text-base font-heading uppercase leading-tight tracking-widest text-foreground md:text-lg">{t('offers_title')}</h3>
-                                    <p className="mt-1 text-[8px] uppercase text-muted-foreground md:text-[10px]">
-                                        {offersLoading ? '...' : t('offers_desc', { count: offersCount })}
-                                    </p>
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-gold">Priority Access</p>
+                                    <p className="text-sm font-semibold text-foreground uppercase tracking-wider">AI Consultation</p>
                                 </div>
                             </div>
-                        </Link>
-                    </div>
+                            <ArrowUpRight size={20} className="relative z-10 text-gold opacity-0 transition-all duration-300 group-hover:translate-x-1 group-hover:-translate-y-1 group-hover:opacity-100" />
+                            <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-gold/5 blur-2xl transition-all group-hover:bg-gold/10" />
+                        </div>
+                    </Link>
+                </motion.div>
+            </div>
+
+            {/* Grid Modules */}
+            <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="mt-12"
+            >
+                <div className="mb-8 flex items-center gap-4">
+                    <h3 className="text-[11px] font-bold uppercase tracking-[0.5em] text-stone-400 dark:text-stone-500">Navigation Matrix</h3>
+                    <div className="h-[1px] flex-1 bg-gradient-to-r from-black/10 to-transparent dark:from-white/10" />
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 md:gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    {[
-                        { key: 'profile', icon: User, href: '/dashboard/profile', color: 'text-purple-400' },
-                        { key: 'addresses', icon: MapPinned, href: '/dashboard/customer/addresses', color: 'text-green-400' },
-                        { key: 'orders', icon: Inbox, href: '/dashboard/customer/orders', color: 'text-blue-400' },
-                        { key: 'loyalty', icon: Coins, href: '/dashboard/customer/loyalty', color: 'text-gold' },
-                        { key: 'ai_chat', icon: Zap, href: '/dashboard/chat', color: 'text-ai' },
-                        { key: 'quiz', icon: Sparkles, href: '/quiz', color: 'text-gold' },
-                    ].map((item, i) => (
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+                    {modules.map((item, i) => (
                         <Link key={i} href={item.href}>
-                            <div className="glass group flex items-center gap-4 rounded-2xl border-border px-5 py-4 transition-all hover:border-gold/30 md:rounded-3xl md:px-6 md:py-5">
-                                <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-secondary/50 transition-transform group-hover:scale-110 md:h-12 md:w-12 md:rounded-2xl ${item.color}`}>
-                                    <item.icon className="h-[18px] w-[18px] md:h-5 md:w-5" />
+                            <motion.div 
+                                whileHover={{ y: -5, scale: 1.02 }}
+                                className="glass group relative overflow-hidden rounded-[2rem] p-6 transition-all duration-300 hover:border-gold/30"
+                            >
+                                <div className={cn("mb-4 flex h-14 w-14 items-center justify-center rounded-[1.25rem] bg-stone-100 dark:bg-zinc-800/50 transition-all duration-500 group-hover:bg-gold group-hover:text-black group-hover:shadow-[0_0_30px_rgba(197,160,89,0.3)]", item.color)}>
+                                    <item.icon size={24} />
                                 </div>
-                                <div>
-                                    <h4 className="text-[9px] font-bold uppercase tracking-widest text-foreground md:text-[10px]">{t(`modules.${item.key}`)}</h4>
-                                    <p className="mt-0.5 text-[7px] uppercase tracking-tighter text-muted-foreground md:text-[8px]">{t('modules.explore')}</p>
+                                <div className="space-y-1">
+                                    <h4 className="text-[11px] font-bold uppercase tracking-[0.15em] text-foreground transition-colors group-hover:text-gold">{t(`modules.${item.key}`)}</h4>
+                                    <p className="text-[9px] uppercase tracking-[0.2em] text-stone-500 font-medium">{t('modules.explore')}</p>
                                 </div>
-                            </div>
+                                <ArrowUpRight size={14} className="absolute right-6 top-6 text-stone-400 dark:text-stone-600 opacity-0 transition-all group-hover:opacity-100 group-hover:text-gold" />
+                            </motion.div>
                         </Link>
                     ))}
                 </div>
-            </main>
-        </AuthGuard>
+            </motion.div>
+        </div>
     );
 }
