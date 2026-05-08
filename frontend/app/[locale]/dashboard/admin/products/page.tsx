@@ -15,7 +15,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const MAX_IMAGES = 10;
 
 type ExistingImage = { id: number; url: string; order: number };
-type VariantForm = { id?: string; name: string; price: number; purchasePrice: number; stock: number; sku: string };
+type VariantForm = { id?: string; name: string; price: number; purchasePrice: number; stock: number; sku: string; barcode: string };
 
 function slugify(s: string) {
   return s
@@ -87,7 +87,7 @@ export default function AdminProducts() {
     longevity: '',
     concentration: '',
     isActive: true,
-    variants: [{ name: t('form.variants.default_name'), price: 0, purchasePrice: 0, stock: 0, sku: '' }] as VariantForm[],
+    variants: [{ name: t('form.variants.default_name'), price: 0, purchasePrice: 0, stock: 0, sku: '', barcode: '' }] as VariantForm[],
     scentNotes: [] as { name: string; type: 'TOP' | 'MIDDLE' | 'BASE' }[],
     sillage: '',
     seasons: '',
@@ -173,8 +173,8 @@ export default function AdminProducts() {
             concentration: p.concentration ?? '',
             isActive: p.isActive,
             variants: p.variants?.length
-              ? p.variants.map(v => ({ id: v.id, name: v.name, price: v.price, purchasePrice: v.purchasePrice || 0, stock: v.stock, sku: v.sku ?? '' }))
-              : [{ name: t('form.variants.default_name'), price: 0, purchasePrice: 0, stock: 0, sku: '' }],
+              ? p.variants.map(v => ({ id: v.id, name: v.name, price: v.price, purchasePrice: v.purchasePrice || 0, stock: v.stock, sku: v.sku ?? '', barcode: v.barcode ?? '' }))
+              : [{ name: t('form.variants.default_name'), price: 0, purchasePrice: 0, stock: 0, sku: '', barcode: '' }],
             scentNotes: p.notes?.map(n => ({ name: n.note.name, type: n.note.type })) ?? [],
             sillage: p.sillage ?? '',
             seasons: p.seasons?.join(', ') ?? '',
@@ -226,7 +226,7 @@ export default function AdminProducts() {
       longevity: '',
       concentration: '',
       isActive: true,
-      variants: [{ name: t('form.variants.default_name'), price: 0, purchasePrice: 0, stock: 0, sku: '' }],
+      variants: [{ name: t('form.variants.default_name'), price: 0, purchasePrice: 0, stock: 0, sku: '', barcode: '' }],
       scentNotes: [],
       sillage: '',
       seasons: '',
@@ -254,7 +254,7 @@ export default function AdminProducts() {
   const addVariant = () => {
     setForm(f => ({
       ...f,
-      variants: [...f.variants, { name: '', price: 0, purchasePrice: 0, stock: 0, sku: '' }]
+      variants: [...f.variants, { name: '', price: 0, purchasePrice: 0, stock: 0, sku: '', barcode: '' }]
     }));
   };
 
@@ -343,7 +343,8 @@ export default function AdminProducts() {
       price: v.price,
       purchasePrice: v.purchasePrice,
       stock: v.stock,
-      sku: v.sku.trim() || undefined
+      sku: v.sku.trim() || undefined,
+      barcode: v.barcode.trim() || undefined
     })),
     scentNotes: form.scentNotes.filter(n => n.name.trim()).map(n => ({
       name: n.name.trim(),
@@ -771,7 +772,7 @@ export default function AdminProducts() {
                  initial={{ opacity: 0, scale: 0.95, y: 30 }}
                  animate={{ opacity: 1, scale: 1, y: 0 }}
                  exit={{ opacity: 0, scale: 0.95, y: 30 }}
-                 className="bg-background border-t sm:border border-white/20 rounded-t-[2.5rem] sm:rounded-[2.5rem] max-w-5xl w-full h-full sm:h-[90vh] overflow-hidden flex flex-col shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)] relative"
+                 className="bg-background border-t sm:border border-white/20 rounded-t-[2.5rem] sm:rounded-[2.5rem] max-w-[95vw] 2xl:max-w-[1500px] w-full h-full sm:h-[90vh] overflow-hidden flex flex-col shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)] relative"
                  onClick={(e: React.MouseEvent) => e.stopPropagation()}
               >
               {/* Modal Header */}
@@ -1112,60 +1113,77 @@ export default function AdminProducts() {
                           <div className="bg-zinc-50 dark:bg-zinc-900/40 rounded-[3rem] border border-border overflow-hidden shadow-2xl">
                             <table className="w-full text-left">
                               <thead className="bg-zinc-100/50 dark:bg-white/5">
-                                <tr className="border-b border-border">
-                                  <th className="px-10 py-6 text-[10px] uppercase tracking-[.4em] font-black text-muted-foreground">Dung Tích / Tên</th>
-                                  <th className="px-10 py-6 text-[10px] uppercase tracking-[.4em] font-black text-muted-foreground">Giá Bán</th>
-                                  <th className="px-10 py-6 text-[10px] uppercase tracking-[.4em] font-black text-gold">Giá Nhập (Vốn)</th>
-                                  <th className="px-10 py-6 text-[10px] uppercase tracking-[.4em] font-black text-muted-foreground">Số Lượng Kho</th>
-                                  <th className="px-10 py-6 text-right"></th>
+                                <tr className="border-b border-border text-nowrap">
+                                  <th className="w-[15%] px-6 py-6 text-[10px] uppercase tracking-[.4em] font-black text-muted-foreground">Tên / Dung tích</th>
+                                  <th className="w-[22%] px-6 py-6 text-[10px] uppercase tracking-[.4em] font-black text-muted-foreground">Mã SKU</th>
+                                  <th className="w-[22%] px-6 py-6 text-[10px] uppercase tracking-[.4em] font-black text-muted-foreground">Mã Barcode</th>
+                                  <th className="w-[13%] px-6 py-6 text-[10px] uppercase tracking-[.4em] font-black text-muted-foreground">Giá Bán</th>
+                                  <th className="w-[13%] px-6 py-6 text-[10px] uppercase tracking-[.4em] font-black text-gold">Giá Nhập</th>
+                                  <th className="w-[10%] px-6 py-6 text-[10px] uppercase tracking-[.4em] font-black text-muted-foreground text-center">Kho</th>
+                                  <th className="w-[5%] px-6 py-6 text-right"></th>
                                 </tr>
                               </thead>
                               <tbody className="divide-y divide-border/50">
                                 {form.variants.map((v, i) => (
                                   <tr key={i} className="group hover:bg-gold/5 transition-colors">
-                                    <td className="px-10 py-8">
+                                    <td className="px-6 py-8">
                                       <input
-                                        className="w-full bg-transparent border-b border-transparent focus:border-gold outline-none text-sm font-bold uppercase tracking-widest py-1 transition-all"
+                                        className="w-full bg-transparent border-b border-transparent focus:border-gold outline-none text-[11px] font-bold uppercase tracking-widest py-1 transition-all placeholder:italic placeholder:font-normal"
                                         value={v.name}
-                                        placeholder="Ví dụ: 100ml, 50ml, Travel Size"
+                                        placeholder="VD: 100ml"
                                         onChange={(e) => updateVariant(i, { name: e.target.value })}
                                       />
                                     </td>
-                                    <td className="px-10 py-8">
-                                      <div className="flex items-center gap-2">
-                                        <span className="text-muted-foreground text-sm font-serif italic">₫</span>
+                                    <td className="px-6 py-8">
+                                      <input
+                                        className="w-full bg-transparent border-b border-transparent focus:border-gold outline-none text-[10px] font-mono py-1 transition-all text-muted-foreground"
+                                        value={v.sku}
+                                        placeholder="Tự sinh nếu trống"
+                                        onChange={(e) => updateVariant(i, { sku: e.target.value })}
+                                      />
+                                    </td>
+                                    <td className="px-6 py-8">
+                                      <input
+                                        className="w-full bg-transparent border-b border-transparent focus:border-gold outline-none text-[10px] font-mono py-1 transition-all text-muted-foreground"
+                                        value={v.barcode}
+                                        placeholder="Tự sinh nếu trống"
+                                        onChange={(e) => updateVariant(i, { barcode: e.target.value })}
+                                      />
+                                    </td>
+                                    <td className="px-6 py-8">
+                                      <div className="flex items-center gap-1">
+                                        <span className="text-muted-foreground text-[10px] font-serif italic">₫</span>
                                         <input
                                           type="number"
-                                          className="w-32 bg-transparent border-b border-transparent focus:border-gold outline-none text-sm font-mono py-1 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                          className="w-full bg-transparent border-b border-transparent focus:border-gold outline-none text-xs font-mono py-1 transition-all"
                                           value={v.price || ''}
                                           onChange={(e) => updateVariant(i, { price: e.target.value === '' ? 0 : Number(e.target.value) })}
                                           onFocus={(e) => e.target.select()}
                                         />
                                       </div>
                                     </td>
-                                    <td className="px-10 py-8">
-                                      <div className="flex items-center gap-2">
-                                        <span className="text-gold text-sm font-serif italic">₫</span>
+                                    <td className="px-6 py-8 text-gold">
+                                      <div className="flex items-center gap-1">
+                                        <span className="text-gold/50 text-[10px] font-serif italic">₫</span>
                                         <input
                                           type="number"
-                                          className="w-32 bg-transparent border-b border-transparent focus:border-gold outline-none text-sm font-mono py-1 transition-all text-gold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                          className="w-full bg-transparent border-b border-transparent focus:border-gold outline-none text-xs font-mono py-1 transition-all text-gold"
                                           value={v.purchasePrice || ''}
                                           onChange={(e) => updateVariant(i, { purchasePrice: e.target.value === '' ? 0 : Number(e.target.value) })}
                                           onFocus={(e) => e.target.select()}
-                                          placeholder="0"
                                         />
                                       </div>
                                     </td>
-                                    <td className="px-10 py-8">
+                                    <td className="px-6 py-8 text-center">
                                       <input
                                         type="number"
-                                        className="w-24 bg-transparent border-b border-transparent focus:border-gold outline-none text-sm font-mono py-1 transition-all text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                        className="w-full bg-transparent border-b border-transparent focus:border-gold outline-none text-xs font-mono py-1 transition-all text-center"
                                         value={v.stock || ''}
                                         onChange={(e) => updateVariant(i, { stock: e.target.value === '' ? 0 : Number(e.target.value) })}
                                         onFocus={(e) => e.target.select()}
                                       />
                                     </td>
-                                    <td className="px-10 py-8 text-right">
+                                    <td className="px-6 py-8 text-right">
                                       {form.variants.length > 1 && (
                                         <button
                                           type="button"
